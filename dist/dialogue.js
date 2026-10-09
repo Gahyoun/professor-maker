@@ -1,3 +1,4 @@
+import {examWindow,academicWeeks} from './academic-calendar.js';
 // Original bilingual student voices. Abilities never appear as numeric dialogue.
 const lines = text => text.trim().split('\n').map(row => { const [ko, en] = row.trim().split(' | '); return { ko, en }; });
 export const DIALOGUES = {
@@ -355,6 +356,9 @@ function hash(text) {
 function value(source, key, fallback = 50) { const n = source?.[key]; return Number.isFinite(n) ? n : fallback; }
 // Pure and deterministic: rendering, switching locale and reloading never consume RNG.
 export function studentLine(s, lang = 'ko') {
+  if(s.started&&s.hidden?.trust>=40&&academicWeeks(s).some((_,i)=>examWindow(s,i)))return lang==='ko'?'교수님, 시험 주와 그 전주에는 자율 시간을 주실 수 있을까요? 제가 공부 계획을 세워 볼게요.':'Could I plan my own time for exam week and the week before?';
+  if(s.advising?.inattention>=6)return lang==='ko'?'제가 제대로 가고 있는지, 구체적으로 한 번 봐 주실 수 있을까요?':'Could we look more closely at how I am doing?';
+  if(s.advising?.lastFeedback==='praise'&&s.advising.streak>=4)return lang==='ko'?'좋다고 해 주셔서 감사해요. 어떤 부분을 더 다듬으면 좋을지도 알고 싶어요.':'Thank you. I would also like to know what I can improve.';
   const month = value(s, 'month', 0), h = s.hidden || {}, t = s.temperament || {}, b = s.behavior || {};
   const report = s.lastReport || {}, phase = s.project?.phase;
   let performance = report.completion ?? report.performance;

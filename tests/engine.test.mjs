@@ -12,7 +12,7 @@ function resolve(s,route='integrated') {
   while(s.pending&&!s.ending) {
     assert.ok(guard++<8,'decision queue must terminate');
     const kind=s.pending.kind;if(kind==='story'||kind==='academic-exam'||kind==='thesis'){const c=kind==='story'?'encourage':kind==='academic-exam'?'support':({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[s.pending.step];s=decide(s,c);continue;}
-    s=decide(s,kind==='external-admission'?'remain':kind==='event'?0:kind==='route'?route:kind==='masters'?'continue':kind==='qual'?'exam':kind==='sabbatical'?'home':kind==='defense'?'defend':'consult');
+    s=decide(s,kind==='presentation-recovery'?'rehearse':kind==='external-admission'?'remain':kind==='event'?0:kind==='route'?route:kind==='masters'?'continue':kind==='qual'?'exam':kind==='sabbatical'?'home':kind==='defense'?'defend':'consult');
   }
   return s;
 }
@@ -43,7 +43,7 @@ export function play(goal='institute',seed=1,route='integrated',locale='ko') {
 }
 
 test('version 4 uses 96 months with calendar-based weekly plans and a serial six-phase project',()=>{
-  const s=createState('Student',42);assert.equal(VERSION,4);assert.equal(MONTHS,96);assert.ok([4,5].includes(s.plan.length));assert.equal(PROJECT_PHASES.length,6);assert.equal(Object.keys(ACTIVITIES).length,12);assert.ok(validateSave(s));
+  const s=createState('Student',42);assert.equal(VERSION,4);assert.equal(MONTHS,96);assert.ok([4,5].includes(s.plan.length));assert.equal(PROJECT_PHASES.length,6);assert.equal(Object.keys(ACTIVITIES).length,9);assert.ok(validateSave(s));
 });
 test('simulation and decisions preserve their inputs; seeded runs reproduce outcomes',()=>{
   const initial=createState('Student',42),snapshot=JSON.stringify(initial);
@@ -225,7 +225,7 @@ test('sustained overwork causes leave while sustained relationship damage causes
   for(let i=0;i<36&&!s.ending;i++){
     const primary=['study','experiment','experiment','analysis','paper','paper'][s.project.phase],plan=Array(4).fill(primary);
     if([4,10].includes(calendarMonth(s.month,s.locale)))plan[2]='conference';
-    s=resolve(simulateMonth(s,plan,{proposal:plan,feedback:'listen'}));
+    s=resolve(simulateMonth(s,plan,{proposal:plan,feedback:'listen',policies:{work:'intensive',study:'research'}}));
   }
   assert.equal(s.ending,'leave');assert.ok(s.history.some(h=>h.kind==='warning'&&h.reason==='health'));assert.ok(abilityScore(s,'rapport')>12);assert.ok(abilityScore(s,'trust')>12);
 });
@@ -332,10 +332,10 @@ test('public-institution grant amounts stay stable while private variations rema
   }
   assert.ok(privateAmounts.size>5);
 });
-test('default physics age-38 public PI completes the eight years with the student proposal',()=>{
+test('physics age-38 public PI completes eight years with proposals and expenses adjusted during funding gaps',()=>{
   for(const labMode of ['dry','wet']){
     let s=createState('Student',6,{age:38,fieldId:'050',labMode,institution:'national',gender:'female'});
-    for(let month=0;month<96&&!s.ending;month++)s=resolve(simulateMonth(s,proposeSchedule(s),{feedback:'listen',facultyAction:'routine'}));
+    for(let month=0;month<96&&!s.ending;month++){if(s.grants.status==='bridge')s.lab.budget={...s.lab.budget,environment:1,performance:0,publicity:0};s=resolve(simulateMonth(s,proposeSchedule(s),{feedback:'listen',facultyAction:'routine'}));}
     assert.equal(s.month,96,labMode);assert.ok(canDefend(s),labMode);assert.ok(!['gameover','dropout','leave'].includes(s.ending),JSON.stringify({labMode,ending:s.ending}));assert.ok(validateSave(s));
   }
 });

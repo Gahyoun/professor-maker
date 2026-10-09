@@ -4,7 +4,7 @@ import {createState,simulateMonth,decide,proposeSchedule,validateSave} from '../
 import {facultyCapacity,allocateCredits} from '../dist/workload.js';
 import {studentAppearance,renderPortrait} from '../dist/appearance.js';
 import {weeklyScene} from '../dist/weekly-scene.js';
-const choices={story:'encourage','academic-exam':'support',event:0,route:'integrated','external-admission':'remain',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
+const choices={story:'encourage','academic-exam':'support',event:0,route:'integrated','presentation-recovery':'rehearse','external-admission':'remain',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
 function resolve(s,route='integrated',graduate=false){let guard=0;while(s.pending&&!s.ending){assert.ok(guard++<12);const p=s.pending;let c=choices[p.kind]??({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[p.step];if(p.kind==='route')c=route;if(p.kind==='masters'&&graduate)c='graduate';s=decide(s,c);}return s;}
 
 test('Korean academic years contain 52–53 seven-day weeks and exams do not collide with the conference week',()=>{
@@ -13,7 +13,7 @@ test('Korean academic years contain 52–53 seven-day weeks and exams do not col
 });
 test('undergraduate observation is possible only during conference week; exam weeks prioritize study',()=>{
  const s=createState('',6);assert.ok(!proposeSchedule(s).includes('conference'));assert.throws(()=>simulateMonth(s,['conference','rest','rest','rest']),/observation/);
- s.month=1;const proposed=proposeSchedule(s);assert.equal(proposed[2],'conference');assert.equal(proposed.at(-1),'study');const n=simulateMonth(s,proposed);assert.equal(n.career.conferences,0);assert.ok([n.pending,...n.pendingQueue].some(p=>p?.kind==='academic-exam'));
+ s.month=1;const proposed=proposeSchedule(s);assert.equal(proposed[2],'conference');assert.equal(proposed.at(-1),'coursework');const n=simulateMonth(s,proposed);assert.equal(n.career.conferences,0);assert.ok([n.pending,...n.pendingQueue].some(p=>p?.kind==='academic-exam'));
 });
 test('unused workload credits persist and advance; excess credits are rejected before changing state',()=>{
  const s=createState('',6),allocation={research:2,teaching:2,admin:1,mentoring:2},before=JSON.stringify(s);const n=simulateMonth(s,proposeSchedule(s),{allocation});assert.equal(JSON.stringify(s),before);assert.deepEqual(n.allocation,allocation);assert.deepEqual(allocateCredits(allocation,12),allocation);assert.ok(validateSave(n));const tooMuch={...allocation,research:facultyCapacity(s).credits};assert.throws(()=>simulateMonth(s,proposeSchedule(s),{allocation:tooMuch}),/workload/);
@@ -24,5 +24,5 @@ test('full master and integrated routes follow staged defenses and never award a
  s.pending={kind:'thesis',level:'masters',step:'draft'};assert.throws(()=>decide(s,'outline'),/Integrated/);
 });
 test('portraits and weekly characters have transparent backgrounds and six original outfit shapes',()=>{
- const a=studentAppearance(6,'female'),variants=new Set();for(let outfit=0;outfit<6;outfit++){const svg=renderPortrait({...a,outfit});assert.ok(!svg.includes('<rect width="80"'));variants.add(svg);}assert.equal(variants.size,6);const s=createState('',6),next=simulateMonth(s,proposeSchedule(s));const scene=weeklyScene(next,next.lastReport.results[0],0);assert.ok(scene.includes('pixel-character-stage'));assert.ok(!scene.includes('pixel-room'));assert.ok(scene.includes(`${next.plan.length}`));
+ const a=studentAppearance(6,'female'),variants=new Set();for(let outfit=0;outfit<6;outfit++){const svg=renderPortrait({...a,outfit});assert.ok(!svg.includes('<rect width="80"'));variants.add(svg);}assert.equal(variants.size,6);const s=createState('',6),next=simulateMonth(s,proposeSchedule(s));const scene=weeklyScene(next,next.lastReport.results[0],0);assert.ok(scene.includes('pixel-room'));assert.ok(scene.includes('scene-dry'));assert.ok(scene.includes(`${next.plan.length}`));
 });

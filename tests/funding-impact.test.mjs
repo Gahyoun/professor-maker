@@ -37,7 +37,7 @@ test('external admission is offered at undergraduate and master transitions and 
 
 test('undergraduate conferences teach observation only, with a fixed final-year October showcase',()=>{
  const s=createState('',6);s.month=19;s.project.phase=3;const n=simulateMonth(s,['rest','rest','conference','rest']);assert.equal(n.career.conferences,0);assert.equal(n.lastReport.results[2].outcome,'attended');assert.equal(n.pending.id,'undergraduate-contest');assert.ok(validateSave(decide(n,0)));
- const grad=createState('',6);grad.month=26;grad.route='integrated';grad.history=[{kind:'paper',month:18,projectId:1}];grad.career.papers=grad.career.completedProjects=grad.career.submissions=1;grad.project.id=2;const out=simulateMonth(grad,['rest','rest','conference','rest']);assert.equal(out.career.conferences,1);assert.equal(out.history.find(e=>e.kind==='conference').projectId,1);
+ const grad=createState('',6);grad.month=26;grad.route='integrated';grad.history=[{kind:'paper',month:18,projectId:1},{kind:'month',month:25,results:[{actual:'language',performed:true},{actual:'language',performed:true}]}];grad.career.papers=grad.career.completedProjects=grad.career.submissions=1;grad.project.id=2;const out=simulateMonth(grad,['rest','rest','conference','rest']);assert.equal(out.career.conferences,1);assert.equal(out.history.find(e=>e.kind==='conference').projectId,1);
 });
 
 test('faculty capacity and efficiency vary with seniority and seeded calendar pressure without consuming RNG',()=>{

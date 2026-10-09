@@ -15,3 +15,5 @@ export function weekContext(state,index,count=academicWeeks(state).length){
  return {conference,exam,examType:[4,10].includes(month)?'중간고사':'기말고사',important:exam&&state.month<24};
 }
 export function availableActivities(state,index,count){const context=weekContext(state,index,count);return {conference:state.month>=24||context.conference};}
+
+export function examWindow(state,index,count=academicWeeks(state).length){return weekContext(state,index,count).exam||index+1<count&&weekContext(state,index+1,count).exam;}

@@ -1,4 +1,4 @@
-import {academicWeeks,weekContext} from './academic-calendar.js';
+import {academicWeeks,weekContext,examWindow} from './academic-calendar.js';
 import {CHAPTERS,THESIS_STEPS} from './main-story.js';
 import {initialTravel,validTravel,abstractAcceptance,canTravel} from './travel.js';
 import {facultyCapacity,allocateCredits} from './workload.js';
@@ -23,18 +23,24 @@ export function developmentalStage(s){const level=s.month<24?'undergrad':s.month
 const activity = (ko, en, icon) => ({ ko, en, icon });
 export const ACTIVITIES = {
   study: activity(['문헌 공부', '논문과 교재를 읽으며 연구 질문을 다듬는다.'], ['Read & study', 'Read papers and refine a research question.'], 'book'),
-  experiment: activity(['실험', '관찰과 실험으로 가설을 검증한다.'], ['Experiment', 'Test a hypothesis against observations.'], 'flask'),
+  coursework: activity(['교과목 공부 · Course work', '수업의 개념과 문제를 정리하며 시험과 퀄을 준비한다.'], ['Course work', 'Study course concepts and prepare for exams and qualification.'], 'book'),
+  experiment: activity(['실험·연구', '관찰과 실험으로 가설을 검증한다.'], ['Experiment', 'Test a hypothesis against observations.'], 'flask'),
   analysis: activity(['데이터 분석', '재현성과 통계, 그래프를 점검한다.'], ['Analyze data', 'Check statistics, reproducibility and figures.'], 'chart'),
-  paper: activity(['논문 쓰기', '결과를 정리하고 심사 의견에 답한다.'], ['Write a paper', 'Build an argument and answer reviewers.'], 'pen'),
   conference: activity(['학술 발표', '준비된 프로젝트를 학회에서 발표한다.'], ['Conference', 'Present a prepared project to peers.'], 'globe'),
+  free: activity(['자율 시간', '학생이 공부·여행·휴식 중 필요한 활동을 스스로 선택한다.'], ['Self-directed time', 'The student chooses study, travel or rest.'], 'leaf'),
+  language: activity(['언어와 발표 연습', '읽기와 글쓰기, 발표를 연습한다.'], ['Language & presentation', 'Practice reading, writing and speaking.'], 'globe'),
+  industry: activity(['산학과제 수행 · RA', '산학과제의 연구 업무를 맡아 현장의 문제를 다룬다.'], ['Industry collaboration', 'Connect research with practical problems.'], 'briefcase'),
+  teach: activity(['수업보조 · TA', '수업 자료와 실습, 질문 응답을 도우며 배움을 전달한다.'], ['Teach & mentor', 'Help another person learn.'], 'book'),
+};
+// Retained for historical saves and earlier monthly records, never selectable in current play.
+export const LEGACY_ACTIVITIES={
+  paper: activity(['논문 쓰기', '결과를 정리하고 심사 의견에 답한다.'], ['Write a paper', 'Build an argument and answer reviewers.'], 'pen'),
+  video: activity(['과학 콘텐츠', '연구를 대중에게 설명하는 연습을 한다.'], ['Science communication', 'Practice explaining research to the public.'], 'play'),
   rest: activity(['휴식', '쉬는 시간을 일정의 일부로 확보한다.'], ['Rest', 'Protect time to recover.'], 'leaf'),
   coffee: activity(['커피와 대화', '연구실 밖에서 안부와 고민을 나눈다.'], ['Coffee & a conversation', 'Talk about life beyond the lab.'], 'cup'),
-  language: activity(['언어와 발표 연습', '읽기와 글쓰기, 발표를 연습한다.'], ['Language & presentation', 'Practice reading, writing and speaking.'], 'globe'),
-  industry: activity(['산학 협업', '현장의 문제를 연구와 연결한다.'], ['Industry collaboration', 'Connect research with practical problems.'], 'briefcase'),
   startup: activity(['창업 실험', '작은 시제품을 만들고 수요를 알아본다.'], ['Venture prototype', 'Build a prototype and investigate demand.'], 'spark'),
-  video: activity(['과학 콘텐츠', '연구를 대중에게 설명하는 연습을 한다.'], ['Science communication', 'Practice explaining research to the public.'], 'play'),
-  teach: activity(['수업과 멘토링', '다음 사람에게 배운 것을 전달한다.'], ['Teach & mentor', 'Help another person learn.'], 'book'),
 };
+export const currentActivity=id=>({rest:'free',coffee:'free',startup:'industry',paper:'analysis',video:'language'})[id]??id;
 export const PROJECT_PHASES = [
   {id:'idea',ko:'연구 질문',en:'Research question',target:24},
   {id:'preliminary',ko:'예비 실험',en:'Preliminary work',target:32},
@@ -64,11 +70,11 @@ const scores=s=>Object.fromEntries(HIDDEN_KEYS.map(k=>[k,abilityScore(s,k)]));
 const FACULTY_KEYS = ['research','teaching','admin','mentoring'];
 const BUDGET_KEYS = ['salary','environment','performance','publicity'];
 const FEEDBACK = ['listen','praise','critique','harsh'];
-const WEEKLY_OUTCOMES = ['completed','recovered','not_completed','inconclusive','progress','presented','attended','preparing'];
-const knownActivity = id => typeof id==='string'&&Object.hasOwn(ACTIVITIES,id);
-const FACULTY_ACTIONS = ['routine','funding','recommend','support','report','abroad_student','abroad_together','abroad_shared','abstract'];
+const WEEKLY_OUTCOMES = ['completed','explored','recovered','not_completed','inconclusive','progress','presented','attended','presentation_failed','preparing'];
+const knownActivity = id => typeof id==='string'&&(Object.hasOwn(ACTIVITIES,id)||Object.hasOwn(LEGACY_ACTIVITIES,id));
+const FACULTY_ACTIONS = ['routine','funding','recommend','support','report','abroad_student','abroad_together','abroad_shared','abstract','conversation'];
 const ENDINGS = ['bachelor','masters','true','institute','corporate','unrelated','startup','unemployed','youtuber','resident_researcher','leave','dropout','unfinished','gameover','external_masters','external_phd'];
-const PENDING_KINDS = ['route','masters','qual','sabbatical','service','service-review','defense','event','external-admission','story','academic-exam','thesis'];
+const PENDING_KINDS = ['route','masters','qual','sabbatical','service','service-review','defense','event','external-admission','story','academic-exam','thesis','presentation-recovery'];
 const clamp = (n,lo=0,hi=100) => Math.max(lo,Math.min(hi,n));
 function random(s) { s.seed=(Math.imul(1664525,s.seed)+1013904223)>>>0; return s.seed/4294967296; }
 function gaussian(s,mean,deviation,min=0,max=100) {
@@ -107,12 +113,14 @@ export function salaryBase(s) { return s.month<24?13:s.route==='masters'&&(s.mon
 export function monthlyBudgetCost(s,budget=s.lab.budget) { const wet=s.professorProfile.labMode==='wet';return salaryBase(s)*budget.salary/100+budget.environment*(wet?2.5:2)+budget.performance*2+budget.publicity+(wet?3:0); }
 export function proposeSchedule(s) {
   const phase=s.project?.phase||0;
-  const primary=['study','experiment','experiment','analysis','paper','paper'][phase];
+  const primary=['study','experiment','experiment','analysis','analysis','analysis'][phase];
   const secondary=phase===0?'study':phase===1?'study':phase===2?'analysis':primary;
   const h=scores(s);
-  const care=h.stamina<60||h.stress>45?'rest':h.rapport<45?'coffee':'rest';
-  const growth=h.motivation<40?'coffee':s.month>=24&&phase>=1&&!s.project.conference?'conference':h.language<55?'language':s.temperament.expression>60?'teach':s.temperament.curiosity>60?'analysis':'study';
-  const weeks=academicWeeks(s),plan=[primary,secondary,care,growth];if(weeks.length===5)plan.push(care);for(let i=0;i<plan.length;i++){const c=weekContext(s,i,plan.length);if(c.conference)plan[i]='conference';else if(c.important)plan[i]='study';}return plan;
+  const care='free';
+  const growth=s.month<48&&s.month%3===0?'coursework':h.motivation<40?'free':s.month>=24&&phase>=1&&!s.project.conference?'conference':h.language<55?'language':s.temperament.expression>60?'teach':s.temperament.curiosity>60?'analysis':'study';
+  const weeks=academicWeeks(s),plan=[primary,secondary,care,growth];if(weeks.length===5)plan.push(care);
+  for(let i=0;i<plan.length;i++){const c=weekContext(s,i,plan.length);if(c.conference)plan[i]='conference';else if(examWindow(s,i,plan.length))plan[i]=h.trust>=70?'free':'coursework';}
+  if(s.month>=24){const first=plan.indexOf('conference');if(first>=0){let needed=Math.max(0,2-presentationPractice(s));for(let i=0;i<first&&needed>0;i++)if(!examWindow(s,i,plan.length)){plan[i]='language';needed--;}}}return plan;
 }
 function checkAllocation(a,total) {const sum=FACULTY_KEYS.reduce((n,k)=>n+(a?.[k]??0),0);return a&&FACULTY_KEYS.every(k=>Number.isInteger(a[k])&&a[k]>=0&&a[k]<=12)&&(total===undefined?sum>=0&&sum<=12:sum<=total);}
 function checkBudget(b) { return b&&Number.isInteger(b.salary)&&b.salary>=0&&b.salary<=100&&['environment','performance','publicity'].every(k=>Number.isInteger(b[k])&&b[k]>=0&&b[k]<=6); }
@@ -139,13 +147,20 @@ function academicDue(s) {
 }
 export function feedbackEffect(s,type){
  const r=s.lastReport;if(type==='harsh')return {effects:{rapport:-5,trust:-5,confidence:-3,motivation:-2,stress:6},efficiency:.85};if(!r||type==='listen')return {effects:{},efficiency:1};
- const well=(r.progress>0||r.published>0||r.conferences>0)&&r.completion>=.65;
+ const rates=(r.results??[]).filter(w=>Number.isFinite(w.successRate)).map(w=>w.successRate);const quality=rates.length?rates.reduce((a,b)=>a+b,0)/rates.length:1;
+ const well=(r.progress>0||r.published>0||r.conferences>0)&&r.completion>=.65&&quality>=.55;
  const difficulty=!well&&(r.scienceFailures>0||r.completion<.65);
  if(type==='praise')return well?{effects:{stress:-3,rapport:2,trust:1,motivation:4,confidence:3},efficiency:BALANCE.praiseEfficiency}:{effects:{motivation:-3,confidence:-2,rapport:-2,trust:-3,stress:2},efficiency:BALANCE.mismatchedFeedbackEfficiency};
  if(type==='critique')return difficulty?{effects:{research:2,intuition:1,stress:2},efficiency:BALANCE.critiqueEfficiency}:{effects:{motivation:-3,rapport:-3,trust:-3,confidence:-3,stress:3},efficiency:BALANCE.mismatchedFeedbackEfficiency};
  return {effects:{rapport:-5,trust:-5,confidence:-3,motivation:-2,stress:6},efficiency:.85};
 }
-function feedback(s,type){s.behavior[type]++;const effect=feedbackEffect(s,type);shift(s,'hidden',effect.effects);s.monthlyEfficiency=effect.efficiency;}
+function feedback(s,type){s.behavior[type]++;const effect=feedbackEffect(s,type);shift(s,'hidden',effect.effects);s.monthlyEfficiency=effect.efficiency;
+ const habits=s.advising??={lastFeedback:null,streak:0,inattention:0};habits.streak=habits.lastFeedback===type?habits.streak+1:1;habits.lastFeedback=type;
+ habits.inattention=type==='listen'&&s.facultyAction==='routine'&&s.monthlyChanged===0?habits.inattention+1:0;
+ if(habits.inattention>=6){shift(s,'hidden',{rapport:-.2,motivation:-.15});s.monthlyEfficiency*=.97;log(s,{kind:'advising-habit',habit:'inattention'});}
+ if(type==='praise'&&habits.streak>=4){shift(s,'hidden',{diligence:-.15,confidence:.15});s.monthlyEfficiency=Math.min(s.monthlyEfficiency,1.02);log(s,{kind:'advising-habit',habit:'repeated-praise'});}
+ delete s.monthlyChanged;
+}
 function policyMonth(s){
  const p=s.policies??DEFAULT_POLICIES;
  shift(s,'hidden',({free:{stamina:3,stress:-2,autonomy:.7},core:{stamina:1,stress:-1,diligence:.25},regular:{diligence:.6,stamina:-2,stress:.8},intensive:{diligence:.8,stamina:-6,stress:3}})[p.work]);
@@ -161,6 +176,7 @@ function facultyMonth(s) {
   }
   if(s.facultyAction==='funding'){shift(s,'professor',{research:2,admin:3,mentoring:-3});}
   else if(s.facultyAction==='report')shift(s,'professor',{admin:3,research:-1});
+  else if(s.facultyAction==='conversation'){shift(s,'professor',{mentoring:1,research:-.5});shift(s,'hidden',{rapport:4,trust:1,motivation:1,stress:-3,resilience:BALANCE.conversationResilienceRecovery});log(s,{kind:'advising-conversation'});}
   else if(s.facultyAction==='support'){shift(s,'professor',{mentoring:2,research:-1});shift(s,'hidden',{rapport:2,trust:1,motivation:2,stress:-2,resilience:.2});}
   else if(s.facultyAction==='recommend') {
     shift(s,'professor',{mentoring:1,admin:-1});
@@ -179,7 +195,10 @@ function upkeep(s) {
   shift(s,'lab',{equipment:(b.environment-2)*3+(s.professorProfile.labMode==='wet'?1.5:.5)});
   shift(s,'hidden',{outreach:b.publicity*.13});
 }
-const matching=[['study','analysis'],['experiment','study'],['experiment','analysis'],['analysis','experiment'],['paper','language'],['paper','analysis']];
+const matching=[['study','analysis'],['experiment','study'],['experiment','analysis'],['analysis','experiment'],['paper','language','analysis'],['paper','analysis']];
+export function researchGrade(rate){return rate>=.9?'완전성공':rate>=.7?'성공':rate>=.4?'보통':rate>0?'약간실패':'실패';}
+export function presentationPractice(s){return s.history.filter(h=>h.kind==='month'&&h.month>=s.month-(s.weeklyExecuted?2:1)).flatMap(h=>h.results??[]).concat(s.weeklyExecuted??[]).filter(w=>w.actual==='language'&&w.performed).length;}
+function presentationFails(s,abroad){const prepared=presentationPractice(s)>=2;if(random(s)>=(prepared?.04:.7))return false;shift(s,'hidden',{stress:2,confidence:-1});log(s,{kind:'presentation-failure',abroad,prepared});if(!s.pendingQueue.some(p=>p.kind==='presentation-recovery'))queue(s,{kind:'presentation-recovery',abroad});return true;}
 function scienceProgress(s,id,result) {
   if(!['study','experiment','analysis','paper'].includes(id))return;
   const p=s.project,h=scores(s);
@@ -188,13 +207,21 @@ function scienceProgress(s,id,result) {
   const skill=id==='study'?h.learning:id==='paper'?(h.research+h.language)/2:(h.research+h.intuition)/2;
   const environmentSupport=id==='experiment'?(s.professorProfile.labMode==='wet'?s.lab.equipment*.0015+s.lab.budget.environment*.005-.06:s.lab.equipment*.0005+s.lab.budget.environment*.015+.02):s.lab.equipment*.001;
   const growth=developmentalStage(s);const probability=clamp(.55+skill*.003+environmentSupport-growth.errorRate-(h.stress>60?.12:0)+(h.luck-50)*.0006,.3,.96);result.successProbability=probability;
-  if(random(s)>=probability){result.scienceFailures++;result.outcome='inconclusive';result.successRate=0;return;}result.successRate=1;
+  const roll=random(s);result.successRate=roll>=probability?0:clamp(1-Math.pow(roll/probability,4),0,1);if(result.successRate<.4)result.scienceFailures++;result.researchGrade=researchGrade(result.successRate);
   const languageFactor=id==='paper'?.75+h.language/200:1;
   const creativityFactor=.8+h.creativity/250;
-  const emphasis=(s.policies??DEFAULT_POLICIES).study;const policyWeight=id==='study'?(emphasis==='study'?1.2:emphasis==='learn'?1.1:.9):(emphasis==='intensive'?1.2:emphasis==='research'?1.1:.95);const weight=(fit?12:5)*(1+skill/160)*(1+s.lab.budget.performance*.025)*languageFactor*creativityFactor*growth.independence*policyWeight*(s.monthlyEfficiency??1)*(1+(p.eventSupport??0))*BALANCE.projectProgressScale*(4/s.plan.length);result.weight=weight;const amount=weight*result.successRate;
-  p.progress+=amount;result.progress=amount;result.outcome='progress';
+  const emphasis=(s.policies??DEFAULT_POLICIES).study;const policyWeight=id==='study'?(emphasis==='study'?1.2:emphasis==='learn'?1.1:.9):(emphasis==='intensive'?1.2:emphasis==='research'?1.1:.95);const weight=(fit?12:5)*(1+skill/160)*(1+s.lab.budget.performance*.025)*languageFactor*creativityFactor*growth.independence*policyWeight*(s.monthlyEfficiency??1)*(1+(p.eventSupport??0))*BALANCE.projectProgressScale*(4/s.plan.length)*1.25;result.weight=weight;const amount=weight*result.successRate;
+  p.progress+=amount;result.progress=amount;result.outcome=amount>0?'progress':'inconclusive';
+}
+export function autonomousChoice(s,index){
+ const h=scores(s);if(h.stamina<55||h.stress>60)return 'rest';
+ if(examWindow({...s,month:Math.max(0,s.month-1)},index,s.plan.length)&&h.trust>=70)return 'coursework';
+ const n=(Math.imul((s.creationSeed??s.seed)^(s.month*104729)^((index+1)*7919),2654435761)>>>0)/4294967296;
+ const rest=.65+Math.max(0,80-h.stamina)*.01+h.stress*.002,study=.12+s.temperament.curiosity*.002+Math.max(0,h.diligence-60)*.003,travel=.23+Math.max(0,h.social-50)*.003;
+ const draw=n*(rest+study+travel);return draw<rest?'rest':draw<rest+study?'study':'travel';
 }
 function weekly(s,id,index) {
+  if(id==='free'){const selected=autonomousChoice(s,index);shift(s,'hidden',{autonomy:.5});if(selected==='travel'){shift(s,'hidden',{stamina:14,stress:-10,motivation:3,social:2,autonomy:1.5,resilience:.15});return {week:index+1,proposed:'free',actual:'travel',performed:true,outcome:'explored',progress:0,scienceFailures:0,autonomous:selected};}const result=weekly(s,selected,index);result.proposed='free';result.autonomous=selected;return result;}
   const h=scores(s),result={week:index+1,proposed:id,actual:id,performed:true,outcome:'completed',progress:0,scienceFailures:0};
   if(id==='rest') {shift(s,'hidden',{stamina:28,stress:-14,motivation:2,confidence:.3,resilience:BALANCE.restResilienceRecovery});result.outcome='recovered';return result;}
   const probability=clamp(.32+h.stamina*.003+h.motivation*.003+h.rapport*.001+h.trust*.0007+(h.diligence-50)*.0018+(h.luck-50)*.0004+(s.feedback==='harsh'?.13:0)-(h.stress>65?.1:0),.18,.98);
@@ -202,18 +229,19 @@ function weekly(s,id,index) {
   if(id==='coffee')shift(s,'hidden',{rapport:5,trust:.6,motivation:3,stamina:8,stress:-7,social:1.2,resilience:BALANCE.conversationResilienceRecovery});
   else {
     shift(s,'hidden',{stamina:-7*(.8+h.diligence/250)*(1+s.month/(12*160)),stress:2,motivation:-.35,autonomy:.5});
+    if(id==='coursework')shift(s,'hidden',{learning:3.5,intuition:.3,confidence:.5});
     if(id==='study')shift(s,'hidden',{learning:1.5,research:.3,intuition:.6,creativity:.2});
     if(id==='experiment') {shift(s,'hidden',{research:1.4,intuition:.9});shift(s,'lab',{equipment:s.professorProfile.labMode==='wet'?-1.2:-.15});}
     if(id==='analysis')shift(s,'hidden',{research:1.2,learning:.5,intuition:.7});
     if(id==='paper')shift(s,'hidden',{research:.6,language:1.1,autonomy:.7});
     if(id==='language')shift(s,'hidden',{language:3,social:.5});
-    if(id==='industry')shift(s,'hidden',{industry:4.5*(.75+h.social/200),research:.6,autonomy:1,social:1,manners:.4});
+    if(id==='industry')shift(s,'hidden',{enterprise:Math.min(3,Math.max(.15,(h.creativity-60)/8)),industry:4.5*(.75+h.social/200),research:.6,autonomy:1,social:1,manners:.4});
     if(id==='startup')shift(s,'hidden',{enterprise:4.5*(.75+h.social/200),industry:.7,autonomy:1.3,social:1,creativity:.5});
     if(id==='video')shift(s,'hidden',{outreach:4.5,language:1,social:1.3});
     if(id==='teach')shift(s,'hidden',{teaching:4,learning:.5,social:1.4,autonomy:.9,manners:.5});
     if(id==='conference') {
       const currentReady=projectWork(s)>=projectThresholds(s).conference&&!s.project.conference;const earlier=s.history.find(e=>e.kind==='paper'&&!s.history.some(h=>h.kind==='conference'&&h.projectId===e.projectId));const projectId=currentReady?s.project.id:earlier?.projectId;
-      if(s.month>24&&(currentReady||earlier)){if(currentReady)s.project.conference=true;s.career.conferences++;shift(s,'hidden',{social:3,language:2,autonomy:3,motivation:3});result.outcome='presented';log(s,{kind:'conference',projectId});
+      if(s.month>24&&(currentReady||earlier)){if(presentationFails(s,false)){result.outcome='presentation_failed';return result;}if(currentReady)s.project.conference=true;s.career.conferences++;shift(s,'hidden',{social:3,language:2,autonomy:3,motivation:3});result.outcome='presented';log(s,{kind:'conference',projectId});
         if(random(s)<clamp(.01+h.language*.0005+h.social*.0002+(h.luck-50)*.0001,.005,.09)){s.career.awards++;log(s,{kind:'presentation-award',projectId});}
       }
       else {shift(s,'hidden',{social:1,language:.7});result.outcome=s.month<=24?'attended':s.project.conference?'attended':'preparing';}
@@ -315,23 +343,25 @@ export function simulateMonth(state,plan,options={}) {
   const changed=plan.filter((id,index)=>id!==proposal[index]).length;
   const approach=changed===0?'agreed':type==='harsh'?'imposed':'discussed';
   shift(s,'hidden',approach==='agreed'?{trust:.5,rapport:.3,autonomy:.3}:approach==='discussed'?{trust:.8,rapport:.5,manners:.2}:{trust:-3,rapport:-2});
-  feedback(s,type);facultyMonth(s);upkeep(s);policyMonth(s);
+  s.monthlyChanged=changed;feedback(s,type);facultyMonth(s);upkeep(s);policyMonth(s);
   const papers=s.career.papers,conferences=s.career.conferences;
-  const results=plan.map((id,index)=>{const r=weekly(s,id,index);advanceProject(s);return r;});
+  s.weeklyExecuted=[];const results=plan.map((id,index)=>{const r=travel&&index===plan.length-1?{week:index+1,proposed:id,actual:'conference',abroad:true,performed:false,outcome:'preparing',progress:0,scienceFailures:0}:weekly(s,id,index);s.weeklyExecuted.push(r);advanceProject(s);return r;});
   // Reviews advance once per month, never once per week. Newly submitted manuscripts wait.
   advanceProject(s,true);
   if(festival){s.career.festivalAttendance++;log(s,{kind:'conference-festival',calendarMonth:actualMonth,week:3,presented:results[2].outcome==='presented'});}
   if(action==='abstract'){const prepared=s.history.some(h=>h.kind==='paper'&&h.projectId===s.travel.projectId)?projectThresholds(s).conference:projectWork(s);const probability=abstractAcceptance(s,prepared,projectThresholds(s).conference),accepted=random(s)<probability;s.travel.status=accepted?'accepted':'rejected';s.travel.decidedAt=s.month;log(s,{kind:'abstract-decision',accepted,projectId:s.travel.projectId});}
   if(travel) {
     const h=scores(s),joining=action!=='abroad_student';const performed=random(s)<clamp(.4+h.stamina*.002+h.motivation*.003+h.rapport*.001+h.trust*.001+(h.luck-50)*.0004,.2,.98);
-    if(performed){shift(s,'hidden',{language:6,social:5,research:3,learning:2,intuition:2,autonomy:joining?4:6,rapport:joining?3:1,trust:2,confidence:4,motivation:4,stamina:-6});if(!s.history.some(h=>h.kind==='conference'&&h.projectId===s.travel.projectId))s.career.conferences++;if(s.travel.projectId===s.project.id)s.project.conference=true;log(s,{kind:'conference',projectId:s.travel.projectId,abroad:true});s.travel.status='attended';}
+    const presented=performed&&!presentationFails(s,true);
+    if(presented){shift(s,'hidden',{language:6,social:5,research:3,learning:2,intuition:2,autonomy:joining?4:6,rapport:joining?3:1,trust:2,confidence:4,motivation:4,stamina:-6});if(!s.history.some(h=>h.kind==='conference'&&h.projectId===s.travel.projectId))s.career.conferences++;if(s.travel.projectId===s.project.id)s.project.conference=true;log(s,{kind:'conference',projectId:s.travel.projectId,abroad:true});s.travel.status='attended';}
     else shift(s,'hidden',{stress:2});
-    log(s,{kind:'research-travel',calendarMonth:actualMonth,joining,rooms:joining?(action==='abroad_shared'?1:2):1,sharedConsent:action==='abroad_shared',performed,cost:travelCost,projectId:s.travel.projectId});
+    Object.assign(results.at(-1),{performed:presented,outcome:presented?'presented':performed?'presentation_failed':'not_completed'});
+    log(s,{kind:'research-travel',calendarMonth:actualMonth,joining,rooms:joining?(action==='abroad_shared'?1:2):1,sharedConsent:action==='abroad_shared',performed:presented,cost:travelCost,projectId:s.travel.projectId});
   }
   if(s.travel.status==='accepted'&&s.month>=s.travel.conferenceMonth){s.travel.status='expired';log(s,{kind:'abstract-window-closed'});}
-  const performed=results.filter(r=>r.performed).length;
+  delete s.weeklyExecuted;const performed=results.filter(r=>r.performed).length;
   const report={month:s.month,results,completion:performed/results.length,progress:results.reduce((n,r)=>n+r.progress,0),scienceFailures:results.reduce((n,r)=>n+r.scienceFailures,0),published:s.career.papers-papers,conferences:s.career.conferences-conferences,scheduleDiscussion:{changed,approach}};
-  s.lastReport=report;log(s,{kind:'month',plan:[...plan],results,progress:report.progress,papers:report.published});
+  s.lastReport=report;log(s,{kind:'month',plan:[...plan],results,progress:report.progress,papers:report.published,feedback:type,facultyAction:action});
   const mentalLoad=s.month<=24?BALANCE.undergradResilienceDecay:s.month>=48&&s.month<=72?BALANCE.earlyDoctoralResilienceDecay:BALANCE.graduateResilienceDecay;shift(s,'hidden',{motivation:-.5,stress:.4,resilience:-mentalLoad});
   if(s.hidden.stress>70)shift(s,'hidden',{resilience:-1});
   if(s.sabbatical.active&&s.month>=s.sabbatical.until)s.sabbatical.active=false;
@@ -374,9 +404,12 @@ export function decide(state,choice) {
   if(p.kind==='story'){
     if(!['encourage','review'].includes(choice))throw new Error('Invalid story choice.');
     shift(s,'hidden',choice==='encourage'?{rapport:1,motivation:1,stress:-1}:{learning:.5,autonomy:.5});log(s,{kind:'story',id:p.id,choice});
+  } else if(p.kind==='presentation-recovery'){
+    if(!['rehearse','support'].includes(choice))throw new Error('Invalid presentation support.');
+    shift(s,'hidden',choice==='rehearse'?{language:1,confidence:1,stress:-1}:{rapport:1,trust:1,stress:-2});log(s,{kind:'presentation-support',choice,abroad:p.abroad});
   } else if(p.kind==='academic-exam'){
     if(!['support','routine'].includes(choice))throw new Error('Invalid exam choice.');
-    const prepared=s.lastReport.results.filter(r=>r.proposed==='study'&&r.performed).length;
+    const prepared=s.lastReport.results.filter(r=>(r.actual==='coursework'||r.actual==='study')&&r.performed).length;
     if(choice==='support')shift(s,'hidden',{stress:-2,rapport:1});
     shift(s,'hidden',prepared?{learning:p.level==='undergrad'?1:.3,confidence:1}:{stress:p.level==='undergrad'?3:1});log(s,{kind:'academic-exam',level:p.level,examType:p.examType,prepared:prepared>0,choice});
   } else if(p.kind==='thesis'){
@@ -415,7 +448,8 @@ export function decide(state,choice) {
     } else {
       s.career.qualAttempts++;
       const h=scores(s),mastered=h.learning>=45&&h.research>=40&&h.motivation>=25;
-      const passed=mastered&&(h.learning>=65||random(s)<clamp(.9+(h.luck-50)*.0006,.85,.95));
+      const coursework=s.history.filter(h=>h.kind==='month'&&h.month>=s.month-18).flatMap(h=>h.results??[]).filter(r=>r.actual==='coursework'&&r.performed).length;
+      const passed=mastered&&(h.learning>=65||random(s)<clamp(.86+Math.min(.08,coursework*.01)+(h.luck-50)*.0006,.82,.97));
       s.career.qual=passed?'passed':'failed';log(s,{kind:'qual',passed,attempt:s.career.qualAttempts});
       if(passed)shift(s,'hidden',{motivation:5,confidence:5});
       else if(s.career.qualAttempts>=2)return finish(s,'gameover','qual_failure');
@@ -437,8 +471,8 @@ export function decide(state,choice) {
 const plain=o=>o&&typeof o==='object'&&!Array.isArray(o);
 const number=(n,min=0,max=100)=>Number.isFinite(n)&&n>=min&&n<=max;
 const integer=(n,min=0,max=10000)=>Number.isInteger(n)&&n>=min&&n<=max;
-function validPending(p) { if(p?.kind==='story'&&!Object.hasOwn(CHAPTERS,p.id)||p?.kind==='academic-exam'&&(!['undergrad','graduate'].includes(p.level)||!['중간고사','기말고사'].includes(p.examType))||p?.kind==='thesis'&&(!['masters','phd'].includes(p.level)||!THESIS_STEPS.includes(p.step)))return false;return p===null||(plain(p)&&PENDING_KINDS.includes(p.kind)&&(p.kind!=='event'||EVENTS.some(e=>e.id===p.id))&&(p.kind!=='external-admission'||['bachelor','masters'].includes(p.level))); }
-function validWeeklyResult(r,index) { return plain(r)&&r.week===index+1&&knownActivity(r.proposed)&&(knownActivity(r.actual)||r.actual==='unfinished')&&typeof r.performed==='boolean'&&WEEKLY_OUTCOMES.includes(r.outcome)&&number(r.progress,0,1000)&&integer(r.scienceFailures,0,1)&&(r.weight===undefined||number(r.weight,0,1000))&&(r.successRate===undefined||number(r.successRate,0,1))&&(r.successProbability===undefined||number(r.successProbability,0,1)); }
+function validPending(p) { if(p?.kind==='presentation-recovery'&&typeof p.abroad!=='boolean')return false;if(p?.kind==='story'&&!Object.hasOwn(CHAPTERS,p.id)||p?.kind==='academic-exam'&&(!['undergrad','graduate'].includes(p.level)||!['중간고사','기말고사'].includes(p.examType))||p?.kind==='thesis'&&(!['masters','phd'].includes(p.level)||!THESIS_STEPS.includes(p.step)))return false;return p===null||(plain(p)&&PENDING_KINDS.includes(p.kind)&&(p.kind!=='event'||EVENTS.some(e=>e.id===p.id))&&(p.kind!=='external-admission'||['bachelor','masters'].includes(p.level))); }
+function validWeeklyResult(r,index) { return plain(r)&&r.week===index+1&&knownActivity(r.proposed)&&(knownActivity(r.actual)||['unfinished','travel'].includes(r.actual))&&(r.autonomous===undefined||r.proposed==='free'&&['study','coursework','rest','travel'].includes(r.autonomous))&&(r.abroad===undefined||typeof r.abroad==='boolean')&&typeof r.performed==='boolean'&&WEEKLY_OUTCOMES.includes(r.outcome)&&number(r.progress,0,1000)&&integer(r.scienceFailures,0,1)&&(r.researchGrade===undefined||['완전성공','성공','보통','약간실패','실패'].includes(r.researchGrade))&&(r.weight===undefined||number(r.weight,0,1000))&&(r.successRate===undefined||number(r.successRate,0,1))&&(r.successProbability===undefined||number(r.successProbability,0,1)); }
 export function migrateSave(raw) {
   if(!plain(raw)||![3,VERSION].includes(raw.version))return null;
   let s;try{s=structuredClone(raw);}catch{return null;}
@@ -448,13 +482,14 @@ export function migrateSave(raw) {
     if(s.ending==='unfinished'){s.ending='gameover';s.endingReason='graduation_requirements';}
     log(s,{kind:'save-migration',fromVersion:3});
   }
-  s.policies??={...DEFAULT_POLICIES};s.professorName??='지도교수';s.creationSeed??=s.seed;if(!validateSave(s))return null;ensureFunding(s);s.impact??=initialImpact();s.travel??=initialTravel();return s;
+  s.policies??={...DEFAULT_POLICIES};s.professorName??='지도교수';s.creationSeed??=s.seed;if(!validateSave(s))return null;ensureFunding(s);s.impact??=initialImpact();s.travel??=initialTravel();s.plan=s.plan.map(currentActivity);return s;
 }
 export function validateSave(s) {
   if(!plain(s)||s.version!==VERSION||typeof s.name!=='string'||!s.name.trim()||s.name.length>24||!integer(s.month,0,MONTHS)||!integer(s.seed,0,4294967295)||!['male','female','unspecified'].includes(s.gender)||!['male','female','other','unspecified'].includes(s.professorGender)||!['ko','en'].includes(s.locale)||![null,'masters','integrated'].includes(s.route)||typeof s.started!=='boolean'||!(s.ending===null||ENDINGS.includes(s.ending)))return false;
   if(s.policies!==undefined&&!validPolicies(s.policies)||s.professorName!==undefined&&(typeof s.professorName!=='string'||!s.professorName.trim()||s.professorName.length>40))return false;
   const p=s.professorProfile;
   if(!plain(p)||!['male','female','other'].includes(p.gender)||!(p.gender===s.professorGender||p.gender==='other'&&s.professorGender==='unspecified')||!integer(p.age,30,55)||typeof p.fieldId!=='string'||getDiscipline(p.fieldId).id!==p.fieldId||!getDiscipline(p.fieldId).labModes.includes(p.labMode)||!['national','private','institute'].includes(p.institution)||!number(s.professorEnergy)||!(s.endingReason===null||['graduation_requirements','time_limit','qual_failure'].includes(s.endingReason)))return false;
+  if(s.advising!==undefined&&(!plain(s.advising)||!['listen','praise','critique','harsh',null].includes(s.advising.lastFeedback)||!integer(s.advising.streak,0,96)||!integer(s.advising.inattention,0,96)))return false;
   if(s.travel!==undefined&&!validTravel(s.travel,s.month))return false;
   if(s.impact!==undefined&&!validImpact(s.impact,s.career?.papers))return false;if(!validPortfolio(s)||s.lab?.pool!==undefined&&!number(s.lab.pool,0,5000))return false;
   if(!plain(s.hidden)||!HIDDEN_KEYS.every(k=>number(s.hidden[k],...HIDDEN_RANGES[k]))||!plain(s.temperament)||!['curiosity','caution','expression'].every(k=>number(s.temperament[k]))||!plain(s.professor)||!FACULTY_KEYS.every(k=>number(s.professor[k]))||!validateGrants(s.grants))return false;

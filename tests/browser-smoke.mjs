@@ -9,7 +9,7 @@ const base=process.env.GAME_URL||'http://127.0.0.1:4173/';
 const browser=await chromium.launch({headless:true});
 const errors=[],qa='/tmp/professor-maker-qa',saveKey='pm-save-v4',galleryKey='pm-letters-v3';
 await fs.mkdir(qa,{recursive:true});
-const choices={'external-admission':'remain',event:'0',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
+const choices={'presentation-recovery':'rehearse','external-admission':'remain',event:'0',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
 const snapshot=page=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),saveKey);
 async function noOverflow(page,label){await page.evaluate(()=>document.fonts.ready);const size=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));assert.ok(size.scroll<=size.width,`${label}: ${size.scroll}px > ${size.width}px`);}
 async function injectState(page,state,{clearGallery=false}={}){assert.ok(validateSave(state),'Fixture is engine-valid');await page.evaluate(({state,saveKey,galleryKey,clearGallery})=>{localStorage.setItem(saveKey,JSON.stringify(state));localStorage.setItem('pm-fast','true');if(clearGallery)localStorage.removeItem(galleryKey);},{state,saveKey,galleryKey,clearGallery});await page.reload();}
@@ -27,7 +27,7 @@ try{
  assert.equal(await page.locator('#student-name').count(),0);await page.locator('select[name="professorName"]').selectOption('김 교수');assert.equal(await page.locator('select[name="gender"]').count(),0);await page.setViewportSize({width:320,height:900});await noOverflow(page,'320px profile setup');
  await page.locator('#start-form button[type="submit"]').click();await page.locator('[data-week="0"]').waitFor();
  const initial=await snapshot(page);assert.equal(initial.version,VERSION);assert.deepEqual(initial.professorProfile,{gender:'female',age:55,fieldId:'050',labMode:'dry',institution:'institute'});assert.ok(initial.name.length>1);assert.equal(initial.professorName,'김 교수');assert.equal(await page.locator('[data-week]').count(),initial.plan.length);assert.equal(await page.locator('[role="meter"]').count(),4);assert.ok(await page.locator('[data-ui="advance"]').isEnabled());
- for(const [index,activity] of ['study','experiment','rest','coffee'].entries())await page.locator(`[data-week="${index}"]`).selectOption(activity);
+ for(const [index,activity] of ['study','experiment','free','language'].entries())await page.locator(`[data-week="${index}"]`).selectOption(activity);
  await page.locator('[data-ui="advance"]').click();await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)).month===1,saveKey);
  if(await page.locator('[data-ui="decide"]').count())await page.locator('[data-ui="decide"]').first().click();
  await page.locator('#week-2').waitFor();assert.ok(await page.locator('#week-2').isDisabled());assert.equal(await page.locator('#week-2').inputValue(),'conference');

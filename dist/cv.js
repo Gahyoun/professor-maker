@@ -1,3 +1,4 @@
+import {researchText} from './lab-scene.js';
 import {CHAPTERS,THESIS_SCENES} from './main-story.js';
 import {hIndex} from './impact.js';
 import {endingStatistics,validStatistics,renderStatistics} from './statistics.js';
@@ -72,6 +73,7 @@ function memoriesFrom(history,locale) {
       title=event.title[locale];detail=event.options[integer(entry.choice)]?.label[locale]||'';
     } else if(entry.kind==='sabbatical'){title=t('교수의 연구년','An advisor’s sabbatical');detail=entry.mode==='away'?t('해외 연구년 동안 원격 지도를 이어갔다.','Advising continued remotely during an overseas sabbatical.'):t('국내에 머무르며 지도를 이어갔다.','Advising continued while the advisor remained at home.');}
     else if(entry.kind==='qual'&&entry.passed){title=t('자격시험 통과','Qualifying exam passed');detail=t('연구 질문을 자신의 언어로 설명했다.','The research question could now be explained in their own words.');}
+    else if(entry.kind==='advising-conversation'){title=t('연구 밖의 안부를 묻다','A conversation beyond research');detail=t('교수와 학생이 별도의 면담에서 생활과 다음 계획을 의논했다.','The advisor and student discussed life and next steps in a separate meeting.');}
     else if(entry.kind==='research-travel'&&entry.performed){title=t('방학 중 해외학회','An overseas conference during the break');detail=entry.joining?t('교수와 학생이 함께 학회에 다녀왔다.','The advisor and student attended together.'):t('학생이 스스로 학회에 다녀왔다.','The student attended independently.');}
     else if(entry.kind==='presentation-award'){title=t('학술발표 수상','A presentation award');detail=t('연구 발표가 좋은 평가를 받았다.','A research presentation earned recognition.');}
     else if(entry.kind==='recommendation'){title=t('추천서 한 통','A letter of recommendation');detail=t('다음 기회를 위해 추천서를 준비했다.','A recommendation was prepared for the next opportunity.');}
@@ -161,6 +163,6 @@ export function renderCV(model) {
 export function buildEndingCV(state) {
   if(!state||typeof state!=='object'||!state.ending||state.ending==='gameover'||!Object.hasOwn(ENDINGS,state.ending))return null;
   const model=makeModel(state),index=hash(`${Number(state.seed)>>>0}|${state.month}|${state.ending}`)%CV_TEMPLATES.length;
-  model.templateId=CV_TEMPLATES[index].id;
+  model.templateId=CV_TEMPLATES[index].id;for(const p of model.projects){p.title=researchText(p.title,state);p.phase=researchText(p.phase,state);}for(const m of model.memories){m.title=researchText(m.title,state);m.detail=researchText(m.detail,state);}
   return {templateId:model.templateId,html:renderCV(model),model};
 }

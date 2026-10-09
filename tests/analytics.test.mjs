@@ -10,7 +10,7 @@ const req=(path,{method='GET',data,token,origin='http://127.0.0.1:4173'}={})=>ne
 test('record schema rejects identifying fields, invalid ranges and malicious event values',()=>{assert.ok(validRecord(fixture()));for(const bad of [{...fixture(),professorName:'실명'},{...fixture(),student:{...fixture().student,stress:101}},{...fixture(),events:[{id:'<script>',choice:0}]}])assert.equal(validRecord(bad),false);});
 test('SQLite-backed API isolates sessions, deduplicates months, protects admin and deletes revoked records',async()=>{
  const env=environment();try{
- const start={consent:'anonymous-gameplay-v1',version:'4.1.0',fieldId:'050',institution:'national',labMode:'dry'};
+ const start={consent:'anonymous-gameplay-v1',version:'4.4.0',fieldId:'050',institution:'national',labMode:'dry'};
  assert.equal((await analyticsAPI(req('/api/runs',{method:'POST',data:{...start,consent:false}}),env)).status,400);
  assert.equal((await analyticsAPI(req('/api/runs',{method:'POST',data:start,origin:'https://untrusted.example'}),env)).status,403);
  const result=await analyticsAPI(req('/api/runs',{method:'POST',data:start}),env);assert.equal(result.status,201);const session=await result.json();const path='/api/runs/'+session.id;
@@ -23,7 +23,7 @@ test('SQLite-backed API isolates sessions, deduplicates months, protects admin a
  }finally{env.close();}
 });
 test('private administrator can import anonymous exports idempotently without accepting names',async()=>{
- const env=environment();try{const run={id:crypto.randomUUID(),consent:'anonymous-gameplay-v1',profile:{version:'4.1.0',fieldId:'050',institution:'national',labMode:'dry'},records:[fixture(),{...fixture(),month:2,ending:'masters'}]};
+ const env=environment();try{const run={id:crypto.randomUUID(),consent:'anonymous-gameplay-v1',profile:{version:'4.4.0',fieldId:'050',institution:'national',labMode:'dry'},records:[fixture(),{...fixture(),month:2,ending:'masters'}]};
  assert.equal((await analyticsAPI(req('/api/admin/import',{method:'POST',data:run}),env)).status,401);
  for(let i=0;i<2;i++)assert.equal((await analyticsAPI(req('/api/admin/import',{method:'POST',token:env.ADMIN_KEY,data:run}),env)).status,200);
  const result=await (await analyticsAPI(req('/api/admin/summary',{token:env.ADMIN_KEY}),env)).json();assert.equal(result.runs,1);assert.equal(result.monthlyRecords,2);assert.equal(result.endings[0].runs,1);
