@@ -198,4 +198,28 @@ export const EVENTS = [
       option('서로 다른 진로의 사람들과 대화를 연결한다', 'Arrange conversations with people on different paths', { hidden: { social: 3, autonomy: 3, stress: -3, industry: 4 }, professor: { mentoring: 3 } }),
       option('학생이 원하는 일의 조건을 먼저 정리한다', 'First help the student identify what they want from work', { hidden: { autonomy: 5, confidence: 2, rapport: 4 }, professor: { mentoring: 2 } }),
     ], { minMonth: 28, cooldown: 18 }),
+  event('family-career-consultation', '연구와 앞으로의 생활', 'Research and life ahead',
+    '학생이 연구를 계속하면서 결혼이나 육아를 선택한 사람들은 일정을 어떻게 조정하는지 묻는다. 자신에 관한 결정을 말하려는 것은 아니며, 같은 여성 연구자의 경험을 들어 보고 싶다고 한다. 원하는 범위까지만 이야기하기로 한다.',
+    'Your student asks how researchers arrange their work when they choose marriage or parenthood. She is not announcing a personal decision; she would like to hear another woman researcher’s experience. You agree to discuss only what she wants to discuss.', 'ordinary', [
+      option('원하면 경험을 나누고 필요한 제도와 일정을 함께 알아본다', 'If she wishes, share experiences and look at support and scheduling', { hidden: { trust: 4, rapport: 3, autonomy: 2, stress: -4 }, professor: { mentoring: 3, admin: -2 } }),
+      option('개인 계획은 묻지 않고 이번 달 연구 일정만 상담한다', 'Leave personal plans private and discuss this month’s research schedule', { hidden: { trust: 3, autonomy: 2, stress: -2 }, professor: { mentoring: 2, research: 1 } }),
+    ], { minMonth: 30, cooldown: 24, requires: ['female_pair', 'graduate'] }),
+  event('women-stem-consultation', '설명하지 않아도 이해받는 시간', 'A conversation without having to explain everything',
+    '학생이 외부 연구 모임에서 연구 내용보다 성별에 관한 질문을 더 받았다고 말한다. 같은 여성인 교수에게 이 일을 이야기하고 싶지만, 다른 사람에게 전달되지는 않았으면 한다. 지금 원하는 지원이 무엇인지 먼저 묻는다.',
+    'Your student says that an outside research gathering asked more about her gender than her work. She wants to speak with a woman adviser but does not want the story passed on. You first ask what kind of support she wants now.', 'ordinary', [
+      option('경험을 듣고 학생이 원하는 대응과 지원 창구를 함께 검토한다', 'Listen and consider the response and support she wants', { hidden: { trust: 5, rapport: 3, confidence: 3, stress: -4 }, professor: { mentoring: 3, admin: -2 } }),
+      option('지금은 자세히 묻지 않고 발표 준비와 연구 상담으로 전환한다', 'Respect her preference and return to presentation and research advice', { hidden: { trust: 3, language: 2, confidence: 2 }, professor: { mentoring: 2, research: 1 } }),
+    ], { minMonth: 16, cooldown: 24, requires: 'female_pair' }),
+  event('support-without-assumptions', '필요한 도움을 먼저 묻다', 'Asking what support is needed',
+    '학생이 연구실 밖의 일이 일정에 영향을 주고 있다고 말한다. 구체적인 사정은 아직 말하고 싶지 않다. 교수와 학생의 성별에 관계없이, 개인적인 설명보다 필요한 지원부터 이야기할 수 있다.',
+    'Your student says something outside the lab is affecting the schedule but does not want to describe it yet. Whatever your genders, the conversation can start with support rather than personal details.', 'ordinary', [
+      option('사생활은 묻지 않고 마감과 면담 방식을 함께 조정한다', 'Adjust deadlines and meetings together without asking for private details', { hidden: { trust: 4, rapport: 2, stress: -4, resilience: 1 }, professor: { mentoring: 2, research: -1 } }),
+      option('공개된 지원 제도를 알려 주고 학생이 연락할지 결정하게 한다', 'Share available support and let the student decide whether to contact it', { hidden: { trust: 3, autonomy: 3, stress: -2 }, professor: { admin: 2, mentoring: 1 } }),
+    ], { minMonth: 8, cooldown: 18, requires: 'stress' }),
+  event('new-pi-mistake', '견적서에 없던 비용', 'The cost missing from the quote',
+    '연구실을 꾸리며 주문한 장비의 견적에 설치와 유지보수 비용이 빠져 있었다. 실험 일정을 잡아 둔 학생에게, 교수도 운영에서 놓친 부분이 있었다고 설명해야 한다.',
+    'An equipment order for the new lab left installation and maintenance out of the estimate. Your student has already scheduled experiments. You need to acknowledge what you missed in planning the lab.', 'bad', [
+      option('실수를 설명하고 예산을 고쳐 실험 일정을 함께 다시 짠다', 'Explain the mistake, revise the budget and reschedule together', { hidden: { trust: 4, autonomy: 1, stress: -2 }, professor: { admin: 3, research: -2 }, lab: { funds: -5 } }),
+      option('다른 연구실 장비를 빌리고 기존 주문의 조건을 협의한다', 'Arrange shared equipment and renegotiate the original order', { hidden: { research: 2, social: 2, trust: 2 }, professor: { admin: -3, research: 2 }, lab: { equipment: 2, funds: -2 } }, 2),
+    ], { minMonth: 3, maxMonth: 30, once: true, requires: 'young_professor' }),
 ];
