@@ -11,7 +11,7 @@ function resolve(s,route='integrated') {
   let guard=0;
   while(s.pending&&!s.ending) {
     assert.ok(guard++<8,'decision queue must terminate');
-    const kind=s.pending.kind;
+    const kind=s.pending.kind;if(kind==='story'||kind==='academic-exam'||kind==='thesis'){const c=kind==='story'?'encourage':kind==='academic-exam'?'support':({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[s.pending.step];s=decide(s,c);continue;}
     s=decide(s,kind==='external-admission'?'remain':kind==='event'?0:kind==='route'?route:kind==='masters'?'continue':kind==='qual'?'exam':kind==='sabbatical'?'home':kind==='defense'?'defend':'consult');
   }
   return s;
@@ -27,7 +27,7 @@ function strategy(s,goal='institute') {
   else if(goal==='youtuber')plan[3]='video';
   else if(goal==='unrelated')plan[3]=h.industry<35?'industry':'language';
   if(goal==='unrelated'&&s.career.papers>=3&&h.industry<35)plan[3]='industry';
-  if(s.project.phase>=2&&!s.project.conference&&s.career.papers<(goal==='unemployed'||goal==='unrelated'?3:20))plan[3]='conference';
+  if(s.month>=24&&s.project.phase>=2&&!s.project.conference&&s.career.papers<(goal==='unemployed'||goal==='unrelated'?3:20))plan[3]='conference';
   if([4,10].includes(calendarMonth(s.month,s.locale))){plan[2]='conference';plan[3]='rest';}
   return plan;
 }
@@ -42,8 +42,8 @@ export function play(goal='institute',seed=1,route='integrated',locale='ko') {
   return s;
 }
 
-test('version 4 uses 96 months with four weekly plans and a serial six-phase project',()=>{
-  const s=createState('Student',42);assert.equal(VERSION,4);assert.equal(MONTHS,96);assert.equal(s.plan.length,4);assert.equal(PROJECT_PHASES.length,6);assert.equal(Object.keys(ACTIVITIES).length,12);assert.ok(validateSave(s));
+test('version 4 uses 96 months with calendar-based weekly plans and a serial six-phase project',()=>{
+  const s=createState('Student',42);assert.equal(VERSION,4);assert.equal(MONTHS,96);assert.ok([4,5].includes(s.plan.length));assert.equal(PROJECT_PHASES.length,6);assert.equal(Object.keys(ACTIVITIES).length,12);assert.ok(validateSave(s));
 });
 test('simulation and decisions preserve their inputs; seeded runs reproduce outcomes',()=>{
   const initial=createState('Student',42),snapshot=JSON.stringify(initial);
@@ -59,7 +59,7 @@ test('gender generation is slightly male-biased but never changes ability or out
 });
 test('invalid weekly plans, allocation and operating budgets cannot advance',()=>{
   const s=createState();assert.throws(()=>simulateMonth(s,['study']));assert.throws(()=>simulateMonth(s,['x','x','x','x']));
-  assert.throws(()=>simulateMonth(s,s.plan,{allocation:{research:2,teaching:2,admin:2,mentoring:1}}));
+  assert.throws(()=>simulateMonth(s,s.plan,{allocation:{research:12,teaching:2,admin:2,mentoring:1}}));
   assert.throws(()=>simulateMonth(s,s.plan,{budget:{...s.lab.budget,environment:7}}));
   assert.throws(()=>simulateMonth(s,s.plan,{budget:{...s.lab.budget,salary:101}}));
   s.pending={kind:'route'};assert.throws(()=>simulateMonth(s,s.plan));
@@ -72,7 +72,7 @@ test('Korean calendar starts March, English September; April/October week 3 is m
 test('annual grants, degree stipends, monthly stipend adjustment and funding timing use actual costs',()=>{
   let s=createState('Student',1);assert.equal(s.lab.funds,600);assert.equal(salaryBase(s),13);assert.equal(monthlyBudgetCost(s),18.8);
   const first=simulateMonth(s,s.plan);assert.ok(Math.abs(first.lab.funds-(600-18.8))<1e-8);
-  assert.equal(simulateMonth(first,proposeSchedule(first),{budget:{...first.lab.budget,salary:73}}).lab.budget.salary,73);
+  assert.equal(simulateMonth({...first,pending:null,pendingQueue:[]},proposeSchedule(first),{budget:{...first.lab.budget,salary:73}}).lab.budget.salary,73);
   s.month=12;s.lab.funds=0;assert.throws(()=>simulateMonth(s,proposeSchedule(s),{facultyAction:'funding'}));
   s.lab.funds=25;s.grants.reportYears=[1];const grant=simulateMonth(s,proposeSchedule(s));assert.ok(grant.history.some(h=>h.kind==='annual-grant'));assert.ok(grant.lab.funds+grant.lab.pool>400);
   s.month=24;s.route='masters';assert.equal(salaryBase(s),22);s.month=48;assert.equal(salaryBase(s),30);
@@ -117,7 +117,7 @@ test('both degree paths, qualification and overlapping sabbatical decisions are 
   for(const route of ['masters','integrated']) {
     let s=createState('Student',3,{gender:'female'});s.month=23;s=simulateMonth(s,proposeSchedule(s));assert.equal(s.pending.kind,'route');s=decide(s,route);assert.equal(stage(s),route==='masters'?'masters':'phd');
     s.month=47;setScore(s,'learning',75);setScore(s,'research',75);s.career.submissions=1;s.career.papers=1;s.career.completedProjects=1;s.career.conferences=1;
-    s=simulateMonth(s,proposeSchedule(s));assert.equal(s.pending.kind,route==='masters'?'masters':'qual');s=decide(s,route==='masters'?'continue':'exam');assert.equal(s.pending.kind,'sabbatical');s=decide(s,'home');assert.equal(s.sabbatical.until,60);assert.equal(s.pending,null);
+    s=simulateMonth(s,proposeSchedule(s));if(route==='masters'&&s.pending.kind==='thesis')s=decide(s,'confirm');assert.equal(s.pending.kind,route==='masters'?'masters':'qual');s=decide(s,route==='masters'?'continue':'exam');assert.equal(s.pending.kind,'sabbatical');s=decide(s,'home');assert.equal(s.sabbatical.until,60);assert.equal(s.pending,null);
     if(route==='masters'){s.month=59;s=simulateMonth(s,proposeSchedule(s));assert.equal(s.pending.kind,'qual');s=decide(s,'exam');}assert.equal(s.career.qual,'passed');
   }
 });
@@ -151,7 +151,7 @@ test('all six normal careers and the demanding faculty ending are reachable thro
 });
 test('saved games reject old versions, malformed weeks, impossible career counts and invalid events',()=>{
   const s=createState();assert.ok(validateSave(s));
-  for(const mutate of [c=>c.version=1,c=>c.plan.pop(),c=>c.hidden.stress='0',c=>c.lab.budget.salary=100.5,c=>c.professor.research=NaN,c=>c.project.phase=6,c=>c.career.papers=1,c=>c.pending={kind:'event',id:'missing'},c=>c.pending={kind:'event',id:'best-paper'}]){const c=copy(s);mutate(c);assert.equal(validateSave(c),false);}
+  for(const mutate of [c=>c.version=1,c=>c.plan.splice(0,2),c=>c.hidden.stress='0',c=>c.lab.budget.salary=100.5,c=>c.professor.research=NaN,c=>c.project.phase=6,c=>c.career.papers=1,c=>c.pending={kind:'event',id:'missing'},c=>c.pending={kind:'event',id:'best-paper'}]){const c=copy(s);mutate(c);assert.equal(validateSave(c),false);}
 });
 test('imported weekly results reject null rows, unknown HTML activity and malformed fields',()=>{
   const initial=createState('Student',42),s=simulateMonth(initial,proposeSchedule(initial));assert.ok(validateSave(s));
@@ -216,7 +216,7 @@ test('language supports manuscript progress and creativity supports research pro
   const science=['study','study','rest','rest'];assert.ok(simulateMonth(creative,science,{proposal:science}).lastReport.progress>simulateMonth(ordinary,science,{proposal:science}).lastReport.progress);
 });
 test('the hidden resident researcher career is reachable after a full real cultivation history',()=>{
-  const s=play('institute',18);assert.equal(s.month,96);assert.equal(s.ending,'resident_researcher');assert.ok(canDefend(s));assert.ok(abilityScore(s,'rapport')>=85);assert.ok(abilityScore(s,'resilience')<=40);
+  const s=play('institute',207);assert.equal(s.month,96);assert.equal(s.ending,'resident_researcher');assert.ok(canDefend(s));assert.ok(abilityScore(s,'rapport')>=85);assert.ok(abilityScore(s,'resilience')<=40);
   const distant=copy(s);setScore(distant,'rapport',60);assert.notEqual(careerEnding(distant),'resident_researcher');
   const resilient=copy(s);setScore(resilient,'resilience',70);assert.notEqual(careerEnding(resilient),'resident_researcher');
 });

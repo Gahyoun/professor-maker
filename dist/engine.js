@@ -1,3 +1,5 @@
+import {academicWeeks,weekContext} from './academic-calendar.js';
+import {CHAPTERS,THESIS_STEPS} from './main-story.js';
 import {initialTravel,validTravel,abstractAcceptance,canTravel} from './travel.js';
 import {facultyCapacity,allocateCredits} from './workload.js';
 import {initialImpact,advanceImpact,validImpact,externalAdmissionEligible} from './impact.js';
@@ -66,7 +68,7 @@ const WEEKLY_OUTCOMES = ['completed','recovered','not_completed','inconclusive',
 const knownActivity = id => typeof id==='string'&&Object.hasOwn(ACTIVITIES,id);
 const FACULTY_ACTIONS = ['routine','funding','recommend','support','report','abroad_student','abroad_together','abroad_shared','abstract'];
 const ENDINGS = ['bachelor','masters','true','institute','corporate','unrelated','startup','unemployed','youtuber','resident_researcher','leave','dropout','unfinished','gameover','external_masters','external_phd'];
-const PENDING_KINDS = ['route','masters','qual','sabbatical','service','service-review','defense','event','external-admission'];
+const PENDING_KINDS = ['route','masters','qual','sabbatical','service','service-review','defense','event','external-admission','story','academic-exam','thesis'];
 const clamp = (n,lo=0,hi=100) => Math.max(lo,Math.min(hi,n));
 function random(s) { s.seed=(Math.imul(1664525,s.seed)+1013904223)>>>0; return s.seed/4294967296; }
 function gaussian(s,mean,deviation,min=0,max=100) {
@@ -109,14 +111,22 @@ export function proposeSchedule(s) {
   const secondary=phase===0?'study':phase===1?'study':phase===2?'analysis':primary;
   const h=scores(s);
   const care=h.stamina<60||h.stress>45?'rest':h.rapport<45?'coffee':'rest';
-  const growth=h.motivation<40?'coffee':phase>=1&&!s.project.conference?'conference':h.language<55?'language':s.temperament.expression>60?'teach':s.temperament.curiosity>60?'analysis':'study';
-  return [primary,secondary,[4,10].includes(calendarMonth(s.month,s.locale))?'conference':care,[4,10].includes(calendarMonth(s.month,s.locale))?'rest':growth];
+  const growth=h.motivation<40?'coffee':s.month>=24&&phase>=1&&!s.project.conference?'conference':h.language<55?'language':s.temperament.expression>60?'teach':s.temperament.curiosity>60?'analysis':'study';
+  const weeks=academicWeeks(s),plan=[primary,secondary,care,growth];if(weeks.length===5)plan.push(care);for(let i=0;i<plan.length;i++){const c=weekContext(s,i,plan.length);if(c.conference)plan[i]='conference';else if(c.important)plan[i]='study';}return plan;
 }
-function checkAllocation(a,total) {const sum=FACULTY_KEYS.reduce((n,k)=>n+(a?.[k]??0),0);return a&&FACULTY_KEYS.every(k=>Number.isInteger(a[k])&&a[k]>=0&&a[k]<=12)&&(total===undefined?sum>=7&&sum<=12:sum===total);}
+function checkAllocation(a,total) {const sum=FACULTY_KEYS.reduce((n,k)=>n+(a?.[k]??0),0);return a&&FACULTY_KEYS.every(k=>Number.isInteger(a[k])&&a[k]>=0&&a[k]<=12)&&(total===undefined?sum>=0&&sum<=12:sum<=total);}
 function checkBudget(b) { return b&&Number.isInteger(b.salary)&&b.salary>=0&&b.salary<=100&&['environment','performance','publicity'].every(k=>Number.isInteger(b[k])&&b[k]>=0&&b[k]<=6); }
 function queue(s,p) { s.pendingQueue.push(p); }
 function nextPending(s) { s.pending=s.pendingQueue.shift()||null; }
 function academicDue(s) {
+  const chapter=({1:'contact',12:'firstyear',25:'graduate',42:'uncertainty',72:'independence',85:'lastyear'})[s.month];if(chapter)queue(s,{kind:'story',id:chapter});
+
+  if(s.route==='masters'&&s.month===s.mastersReviewAt-3)queue(s,{kind:'thesis',level:'masters',step:'draft'});
+  if(s.route==='masters'&&s.month===s.mastersReviewAt-1)queue(s,{kind:'thesis',level:'masters',step:'presentation'});
+  if(s.route==='masters'&&s.month===s.mastersReviewAt)queue(s,{kind:'thesis',level:'masters',step:'verdict'});
+  if(s.month===93)queue(s,{kind:'thesis',level:'phd',step:'draft'});
+  if(s.month===95)queue(s,{kind:'thesis',level:'phd',step:'presentation'});
+  if(s.month===96)queue(s,{kind:'thesis',level:'phd',step:'verdict'});
   if(s.month===20)queue(s,{kind:'event',id:'undergraduate-contest'});
   if(s.month===24){if(externalAdmissionEligible(s,'bachelor')&&canContinue(s))queue(s,{kind:'external-admission',level:'bachelor'});queue(s,{kind:'route'});}
   if(s.month===36&&s.locale==='ko'&&s.gender==='male')queue(s,{kind:'service'});
@@ -125,6 +135,7 @@ function academicDue(s) {
   if(s.month===48)queue(s,{kind:'sabbatical'});
   if(s.month===84&&s.locale==='ko'&&s.gender==='male'&&s.service.status==='planning')queue(s,{kind:'service-review'});
   if(s.month===MONTHS)queue(s,{kind:'defense'});
+  const exam=weekContext({...s,month:s.month-1},s.lastReport.results.length-1,s.lastReport.results.length);const finalExam=[6,12].includes(calendarMonth(s.month-1,s.locale));if(s.month<=48&&(exam.exam||finalExam))queue(s,{kind:'academic-exam',level:s.month<=24?'undergrad':'graduate',examType:finalExam?'기말고사':'중간고사'});
 }
 export function feedbackEffect(s,type){
  const r=s.lastReport;if(type==='harsh')return {effects:{rapport:-5,trust:-5,confidence:-3,motivation:-2,stress:6},efficiency:.85};if(!r||type==='listen')return {effects:{},efficiency:1};
@@ -180,7 +191,7 @@ function scienceProgress(s,id,result) {
   if(random(s)>=probability){result.scienceFailures++;result.outcome='inconclusive';result.successRate=0;return;}result.successRate=1;
   const languageFactor=id==='paper'?.75+h.language/200:1;
   const creativityFactor=.8+h.creativity/250;
-  const emphasis=(s.policies??DEFAULT_POLICIES).study;const policyWeight=id==='study'?(emphasis==='study'?1.2:emphasis==='learn'?1.1:.9):(emphasis==='intensive'?1.2:emphasis==='research'?1.1:.95);const weight=(fit?12:5)*(1+skill/160)*(1+s.lab.budget.performance*.025)*languageFactor*creativityFactor*growth.independence*policyWeight*(s.monthlyEfficiency??1)*(1+(p.eventSupport??0))*BALANCE.projectProgressScale;result.weight=weight;const amount=weight*result.successRate;
+  const emphasis=(s.policies??DEFAULT_POLICIES).study;const policyWeight=id==='study'?(emphasis==='study'?1.2:emphasis==='learn'?1.1:.9):(emphasis==='intensive'?1.2:emphasis==='research'?1.1:.95);const weight=(fit?12:5)*(1+skill/160)*(1+s.lab.budget.performance*.025)*languageFactor*creativityFactor*growth.independence*policyWeight*(s.monthlyEfficiency??1)*(1+(p.eventSupport??0))*BALANCE.projectProgressScale*(4/s.plan.length);result.weight=weight;const amount=weight*result.successRate;
   p.progress+=amount;result.progress=amount;result.outcome='progress';
 }
 function weekly(s,id,index) {
@@ -264,15 +275,16 @@ export function simulateMonth(state,plan,options={}) {
   if(!validateSave(state))throw new Error('Invalid saved game.');
   if(state.ending||state.pending)throw new Error('Resolve the pending decision first.');
   if(state.month>=MONTHS)return finish(structuredClone(state),'gameover','time_limit');
-  if(!Array.isArray(plan)||plan.length!==4||!plan.every(knownActivity))throw new Error('Choose four weekly activities.');
-  const proposal=options.proposal??proposeSchedule(state);
-  if(!Array.isArray(proposal)||proposal.length!==4||!proposal.every(knownActivity))throw new Error('Invalid student proposal.');
+  if(!Array.isArray(plan)||![4,5].includes(plan.length)||!plan.every(knownActivity))throw new Error('Choose four or five weekly activities.');
+  const offered=proposeSchedule(state),proposal=options.proposal??(offered.length===plan.length?offered:plan);
+  if(!Array.isArray(proposal)||proposal.length!==plan.length||!proposal.every(knownActivity))throw new Error('Invalid student proposal.');
   const capacity=facultyCapacity(state);const allocation=options.allocation??allocateCredits(state.allocation,capacity.credits),budget=options.budget??state.lab.budget,type=options.feedback??state.feedback,action=options.facultyAction??state.facultyAction;
   if(!checkAllocation(allocation,capacity.credits))throw new Error('Allocate the available faculty workload credits.');
   if(!checkBudget(budget))throw new Error('Invalid stipend percentage or operating budget.');
   const policies=options.policies??state.policies??DEFAULT_POLICIES;if(!validPolicies(policies))throw new Error('Invalid monthly advising policy.');
   const application=options.grantApplication??{role:'pi',years:3};if(!validApplication(application))throw new Error('Invalid grant application.');if(action==='funding'&&!canApplyGrant(state,application.role))throw new Error('Research participation limit reached.');
   const actualMonth=calendarMonth(state.month,state.locale),festival=[4,10].includes(actualMonth);
+  if(state.month<24&&plan.some((id,index)=>id==='conference'&&!(festival&&index===2)))throw new Error('Undergraduate conference observation is limited to conference week.');
   if(festival&&plan[2]!=='conference')throw new Error('The third week is the April/October conference festival.');
   const travel=action.startsWith('abroad_');
   if(action==='abstract'&&(![7,1].includes(actualMonth)||state.month<24))throw new Error('Abstract submission opens at the start of graduate vacation.');
@@ -318,7 +330,7 @@ export function simulateMonth(state,plan,options={}) {
   }
   if(s.travel.status==='accepted'&&s.month>=s.travel.conferenceMonth){s.travel.status='expired';log(s,{kind:'abstract-window-closed'});}
   const performed=results.filter(r=>r.performed).length;
-  const report={month:s.month,results,completion:performed/4,progress:results.reduce((n,r)=>n+r.progress,0),scienceFailures:results.reduce((n,r)=>n+r.scienceFailures,0),published:s.career.papers-papers,conferences:s.career.conferences-conferences,scheduleDiscussion:{changed,approach}};
+  const report={month:s.month,results,completion:performed/results.length,progress:results.reduce((n,r)=>n+r.progress,0),scienceFailures:results.reduce((n,r)=>n+r.scienceFailures,0),published:s.career.papers-papers,conferences:s.career.conferences-conferences,scheduleDiscussion:{changed,approach}};
   s.lastReport=report;log(s,{kind:'month',plan:[...plan],results,progress:report.progress,papers:report.published});
   const mentalLoad=s.month<=24?BALANCE.undergradResilienceDecay:s.month>=48&&s.month<=72?BALANCE.earlyDoctoralResilienceDecay:BALANCE.graduateResilienceDecay;shift(s,'hidden',{motivation:-.5,stress:.4,resilience:-mentalLoad});
   if(s.hidden.stress>70)shift(s,'hidden',{resilience:-1});
@@ -359,7 +371,26 @@ function applyEvent(s,o,event) {
 export function decide(state,choice) {
   if(!validateSave(state))throw new Error('Invalid saved game.');
   const s=structuredClone(state),p=s.pending;if(!p||s.ending)throw new Error('No pending decision.');
-  if(p.kind==='event') {
+  if(p.kind==='story'){
+    if(!['encourage','review'].includes(choice))throw new Error('Invalid story choice.');
+    shift(s,'hidden',choice==='encourage'?{rapport:1,motivation:1,stress:-1}:{learning:.5,autonomy:.5});log(s,{kind:'story',id:p.id,choice});
+  } else if(p.kind==='academic-exam'){
+    if(!['support','routine'].includes(choice))throw new Error('Invalid exam choice.');
+    const prepared=s.lastReport.results.filter(r=>r.proposed==='study'&&r.performed).length;
+    if(choice==='support')shift(s,'hidden',{stress:-2,rapport:1});
+    shift(s,'hidden',prepared?{learning:p.level==='undergrad'?1:.3,confidence:1}:{stress:p.level==='undergrad'?3:1});log(s,{kind:'academic-exam',level:p.level,examType:p.examType,prepared:prepared>0,choice});
+  } else if(p.kind==='thesis'){
+    const expected=({draft:['outline','rehearse'],presentation:['present'],questions:['answer'],revision:['revise'],verdict:['confirm']})[p.step];if(!expected.includes(choice))throw new Error('Invalid thesis choice.');
+    if(p.level==='masters'&&s.route!=='masters')throw new Error('Integrated programs have no separate master defense.');
+    if(p.step==='draft')shift(s,'hidden',choice==='outline'?{research:1,language:1}:{language:1,confidence:1});
+    if(p.step==='questions')shift(s,'hidden',{autonomy:1,language:.5});
+    if(p.step==='revision')shift(s,'hidden',{language:.5});
+    const ready=p.level==='masters'?requirementsMet(s,'masters'):canDefend(s);
+    log(s,{kind:'thesis',level:p.level,step:p.step,choice,...(p.step==='revision'?{revision:abilityScore(s,'research')>=60&&abilityScore(s,'language')>=50?'minor':'major'}:{}),...(p.step==='verdict'?{passed:ready}:{})});
+    if(p.step==='presentation')s.pendingQueue.unshift({kind:'thesis',level:p.level,step:'questions'});
+    if(p.step==='questions')s.pendingQueue.unshift({kind:'thesis',level:p.level,step:'revision'});
+    if(p.step==='verdict'&&!ready)return finish(s,'gameover','graduation_requirements');
+  } else if(p.kind==='event') {
     const e=EVENTS.find(e=>e.id===p.id),o=e?.options[choice];if(!Number.isInteger(choice)||!o)throw new Error('Invalid event choice.');
     applyEvent(s,o,e);const old=s.eventFlags[e.id];s.eventFlags[e.id]={lastMonth:s.month,count:(old?.count||0)+1};log(s,{kind:'event',id:e.id,choice});
   } else if(p.kind==='external-admission'){
@@ -406,7 +437,7 @@ export function decide(state,choice) {
 const plain=o=>o&&typeof o==='object'&&!Array.isArray(o);
 const number=(n,min=0,max=100)=>Number.isFinite(n)&&n>=min&&n<=max;
 const integer=(n,min=0,max=10000)=>Number.isInteger(n)&&n>=min&&n<=max;
-function validPending(p) { return p===null||(plain(p)&&PENDING_KINDS.includes(p.kind)&&(p.kind!=='event'||EVENTS.some(e=>e.id===p.id))&&(p.kind!=='external-admission'||['bachelor','masters'].includes(p.level))); }
+function validPending(p) { if(p?.kind==='story'&&!Object.hasOwn(CHAPTERS,p.id)||p?.kind==='academic-exam'&&(!['undergrad','graduate'].includes(p.level)||!['중간고사','기말고사'].includes(p.examType))||p?.kind==='thesis'&&(!['masters','phd'].includes(p.level)||!THESIS_STEPS.includes(p.step)))return false;return p===null||(plain(p)&&PENDING_KINDS.includes(p.kind)&&(p.kind!=='event'||EVENTS.some(e=>e.id===p.id))&&(p.kind!=='external-admission'||['bachelor','masters'].includes(p.level))); }
 function validWeeklyResult(r,index) { return plain(r)&&r.week===index+1&&knownActivity(r.proposed)&&(knownActivity(r.actual)||r.actual==='unfinished')&&typeof r.performed==='boolean'&&WEEKLY_OUTCOMES.includes(r.outcome)&&number(r.progress,0,1000)&&integer(r.scienceFailures,0,1)&&(r.weight===undefined||number(r.weight,0,1000))&&(r.successRate===undefined||number(r.successRate,0,1))&&(r.successProbability===undefined||number(r.successProbability,0,1)); }
 export function migrateSave(raw) {
   if(!plain(raw)||![3,VERSION].includes(raw.version))return null;
@@ -431,11 +462,11 @@ export function validateSave(s) {
   if(!plain(s.lab)||!number(s.lab.funds,0,5000)||!number(s.lab.equipment)||!checkBudget(s.lab.budget)||!checkAllocation(s.allocation)||!FEEDBACK.includes(s.feedback)||!FACULTY_ACTIONS.includes(s.facultyAction))return false;
   if(!plain(s.career)||!['submissions','papers','conferences','festivalAttendance','recommendations','awards','topPapers','completedProjects','qualAttempts'].every(k=>integer(s.career[k]))||!['not_due','due','preparing','passed','failed'].includes(s.career.qual)||s.career.papers>s.career.submissions||s.career.topPapers>s.career.papers||s.career.awards>s.career.papers+s.career.conferences||s.career.completedProjects!==s.career.papers||s.career.qualAttempts>2)return false;
   if(!plain(s.project)||s.project.eventSupport!==undefined&&!number(s.project.eventSupport,-.25,.25)||!integer(s.project.id,1)||!integer(s.project.titleIndex,0,PROJECT_TITLES.length-1)||!integer(s.project.phase,0,5)||!number(s.project.progress,0,1000)||typeof s.project.conference!=='boolean'||typeof s.project.submitted!=='boolean'||!integer(s.project.reviewMonths)||!integer(s.project.revisions)||!(s.project.submittedAt===null||integer(s.project.submittedAt,1,s.month))||s.project.submitted&&(s.project.phase!==5||s.project.submittedAt===null))return false;
-  if(!Array.isArray(s.plan)||s.plan.length!==4||!s.plan.every(knownActivity)||!Array.isArray(s.history)||s.history.length>3000||s.history.some(h=>!plain(h)||!integer(h.month,0,s.month)||typeof h.kind!=='string'))return false;
+  if(!Array.isArray(s.plan)||![4,5].includes(s.plan.length)||!s.plan.every(knownActivity)||!Array.isArray(s.history)||s.history.length>3000||s.history.some(h=>!plain(h)||!integer(h.month,0,s.month)||typeof h.kind!=='string'))return false;
   if(!validPending(s.pending)||!Array.isArray(s.pendingQueue)||s.pendingQueue.length>8||!s.pendingQueue.every(p=>p!==null&&validPending(p))||s.ending&&(s.pending||s.pendingQueue.length)||s.pending?.kind==='event'&&!eventEligible(s,EVENTS.find(e=>e.id===s.pending.id)))return false;
   if(!plain(s.behavior)||!FEEDBACK.every(k=>integer(s.behavior[k]))||!integer(s.crisis,0,MONTHS)||!plain(s.eventFlags)||Object.entries(s.eventFlags).some(([id,f])=>!EVENTS.some(e=>e.id===id)||!plain(f)||!integer(f.lastMonth,0,s.month)||!integer(f.count,1)))return false;
   if(!plain(s.sabbatical)||typeof s.sabbatical.active!=='boolean'||!integer(s.sabbatical.until,0,MONTHS)||!['home','away'].includes(s.sabbatical.mode)||!plain(s.service)||!['none','planning','consulted','not_requested'].includes(s.service.status))return false;
   if(!(s.qualDeferredAt===null||integer(s.qualDeferredAt,s.month,MONTHS))||!integer(s.qualPreparations,0,2)||![48,54].includes(s.mastersReviewAt)||typeof s.mastersExtended!=='boolean'||!integer(s.lastRecommendationMonth,-12,MONTHS)||!(s.lastAcademicWarning===null||integer(s.lastAcademicWarning,0,s.month)))return false;
-  if(s.lastReport!==null&&(!plain(s.lastReport)||!integer(s.lastReport.month,1,s.month)||!number(s.lastReport.completion,0,1)||!Array.isArray(s.lastReport.results)||s.lastReport.results.length!==4||!s.lastReport.results.every(validWeeklyResult)||!number(s.lastReport.progress,0,1000)||!integer(s.lastReport.scienceFailures,0,4)||!integer(s.lastReport.published)||!integer(s.lastReport.conferences)))return false;
+  if(s.lastReport!==null&&(!plain(s.lastReport)||!integer(s.lastReport.month,1,s.month)||!number(s.lastReport.completion,0,1)||!Array.isArray(s.lastReport.results)||![4,5].includes(s.lastReport.results.length)||!s.lastReport.results.every(validWeeklyResult)||!number(s.lastReport.progress,0,1000)||!integer(s.lastReport.scienceFailures,0,5)||!integer(s.lastReport.published)||!integer(s.lastReport.conferences)))return false;
   return true;
 }

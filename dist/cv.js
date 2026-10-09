@@ -1,3 +1,4 @@
+import {CHAPTERS,THESIS_SCENES} from './main-story.js';
 import {hIndex} from './impact.js';
 import {endingStatistics,validStatistics,renderStatistics} from './statistics.js';
 import {PROJECT_TITLES, PROJECT_PHASES, EVENTS} from './engine.js';
@@ -66,7 +67,7 @@ function memoriesFrom(history,locale) {
   const t=(ko,en)=>tx(locale,ko,en),candidates=[];
   for(const entry of history) {
     let title='',detail='';
-    if(entry.kind==='event') {
+    if(entry.kind==='story'&&CHAPTERS[entry.id]){title=CHAPTERS[entry.id].title;detail=CHAPTERS[entry.id].options[entry.choice==='encourage'?0:1];}else if(entry.kind==='thesis'&&THESIS_SCENES[entry.step]){title=`${entry.level==='masters'?'석사':'박사'} · ${THESIS_SCENES[entry.step].title}`;detail=entry.step==='verdict'?(entry.passed?'심사를 마치고 다음 길을 준비했다.':'남은 준비와 다음 길을 함께 의논했다.'):'논문과 발표를 자신의 언어로 정리했다.';}else if(entry.kind==='event') {
       const event=EVENTS.find(event=>event.id===entry.id);if(!event)continue;
       title=event.title[locale];detail=event.options[integer(entry.choice)]?.label[locale]||'';
     } else if(entry.kind==='sabbatical'){title=t('교수의 연구년','An advisor’s sabbatical');detail=entry.mode==='away'?t('해외 연구년 동안 원격 지도를 이어갔다.','Advising continued remotely during an overseas sabbatical.'):t('국내에 머무르며 지도를 이어갔다.','Advising continued while the advisor remained at home.');}

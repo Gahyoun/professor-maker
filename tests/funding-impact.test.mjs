@@ -29,7 +29,7 @@ test('pooled stipend survives ended projects, pays first and cannot fund operati
 test('external admission is offered at undergraduate and master transitions and advice has distinct outcomes',()=>{
  for(const level of ['bachelor','masters']){
   const s=createState('',8);s.month=level==='bachelor'?23:47;s.route=level==='bachelor'?null:'masters';s.career.papers=2;s.career.completedProjects=2;s.career.submissions=2;s.career.conferences=2;s.impact={citations:[4,4],hIndex:2};
-  const next=simulateMonth(s,proposeSchedule(s));assert.equal(next.pending.kind,'external-admission');assert.equal(next.pending.level,level);
+  let next=simulateMonth(s,proposeSchedule(s));if(next.pending.kind==='thesis')next=decide(next,'confirm');assert.equal(next.pending.kind,'external-admission');assert.equal(next.pending.level,level);
   const stayed=decide(next,'remain');assert.equal(stayed.ending,null);assert.equal(stayed.pending.kind,level==='bachelor'?'route':'masters');
   const left=decide(next,'encourage');assert.equal(left.ending,level==='bachelor'?'external_masters':'external_phd');assert.ok(validateSave(left));const cv=buildEndingCV(left);assert.ok(cv);assert.equal(cv.model.months,level==='bachelor'?24:48);assert.ok(!cv.model.education.some(e=>e.degree==='doctorate'));if(level==='masters')assert.ok(cv.model.education.some(e=>e.degree==='masters'));
  }
