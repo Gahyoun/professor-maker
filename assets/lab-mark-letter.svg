@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Professor Maker — A letter, years later</title>
+  <desc id="desc">An original open envelope with a single letter, recalling the student's message after graduation.</desc>
+  <path d="m19 59 45-29 45 29v43H19V59Z" fill="#E8F6FC" stroke="#18364A" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M37 68V22h54v46" fill="white" stroke="#0069B4" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M50 38h28M50 48h20" stroke="#009EDB" stroke-width="5" stroke-linecap="round"/>
+  <path d="m19 59 45 31 45-31M19 102l29-24m61 24L80 78" stroke="#18364A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="83" cy="19" r="7" fill="#009EDB"/>
+</svg>

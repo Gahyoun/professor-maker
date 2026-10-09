@@ -1,0 +1,201 @@
+// Original fictional situations. Numeric effects are game balance, not empirical rates.
+const p = (ko, en) => ({ ko, en });
+const option = (ko, en, effects, progress = 0) => ({ label: p(ko, en), effects, ...(progress ? { progress } : {}) });
+const event = (id, ko, en, bodyKo, bodyEn, kind, options, extra = {}) => ({
+  id, title: p(ko, en), body: p(bodyKo, bodyEn), kind,
+  minMonth: 1, maxMonth: 95, cooldown: 12, once: false, options, ...extra,
+});
+export const EVENTS = [
+  event('best-paper', '우수논문 선정', 'A paper earns recognition',
+    '이미 출판한 논문이 학회의 우수논문으로 선정되었다. 학생은 축하 메일을 열었다 닫았다 한다. “다음 논문도 이만큼 해야 하나요?”',
+    'An already published paper has been selected for a society award. Your student keeps reopening the email. “Does my next paper have to be this good too?”', 'good', [
+      option('공동연구자의 기여까지 함께 축하한다', 'Celebrate everyone who contributed', { hidden: { motivation: 8, rapport: 6, confidence: 7 }, professor: { mentoring: 2 }, career: { awards: 1 } }),
+      option('수상 발표를 학생이 직접 준비하도록 돕는다', 'Help the student prepare the award talk', { hidden: { autonomy: 6, language: 3, confidence: 5, stress: 3 }, professor: { research: 3 }, career: { awards: 1 } }),
+    ], { minMonth: 24, requires: 'paper', once: true }),
+  event('top-journal', '상위 저널에 실린 논문', 'A paper in a leading journal',
+    '막 출판을 마친 논문이 분야의 상위 저널에 실렸다. 학생은 온라인에서 자기 이름을 확인하고서야 웃는다. 기쁜 일과 다음 연구의 부담이 함께 찾아왔다.',
+    'The paper that just completed publication appears in a leading journal in the field. Your student smiles only after finding their name online. The joy comes with pressure about what follows.', 'good', [
+      option('성과를 축하하고 다음 목표는 잠시 미룬다', 'Celebrate the achievement and give the next goal a little space', { hidden: { motivation: 7, stamina: 4, confidence: 5 }, professor: { research: 2 }, career: { topPapers: 1 } }),
+      option('기여와 한계를 정리해 후속 연구를 논의한다', 'Discuss the contribution, its limits, and possible next questions', { hidden: { language: 3, autonomy: 4, confidence: 4 }, professor: { research: 3 }, career: { topPapers: 1 } }, 4),
+    ], { minMonth: 36, requires: 'paper', once: true }),
+  event('best-presentation', '첫 우수발표상', 'A first presentation award',
+    '마친 학술발표의 심사 결과가 도착했다. 우수발표상이다. 학생은 상장보다 질의응답 때 받아 적은 메모를 먼저 보여 준다.',
+    'The results of the completed conference presentation arrive: a presentation award. Your student shows the questions they wrote down before showing the certificate.', 'good', [
+      option('발표와 질문에 답한 과정을 구체적으로 칭찬한다', 'Praise specific choices in the talk and discussion', { hidden: { confidence: 8, rapport: 5, motivation: 7 }, career: { awards: 1 } }),
+      option('연구실에서 짧은 발표 워크숍을 맡긴다', 'Let the student lead a short presentation workshop', { hidden: { social: 4, language: 3, autonomy: 4, stamina: -3 }, professor: { teaching: 3 }, career: { awards: 1 } }),
+    ], { minMonth: 18, requires: 'conference', once: true }),
+  event('funding-cut', 'R&D 예산 조정', 'A research budget is cut',
+    '지원기관이 다음 분기 연구비를 줄인다고 통보했다. 이미 약속한 학생 인건비와 예정된 장비 구매를 동시에 지킬 수는 없다.',
+    'The funding agency announces a reduction for the next quarter. The lab cannot keep both its promised stipend and its planned equipment purchase.', 'bad', [
+      option('인건비를 우선 확보하고 장비 구매를 연기한다', 'Protect the stipend and postpone the purchase', { lab: { funds: -12, equipment: -3 }, hidden: { rapport: 6, motivation: 2 }, professor: { admin: -3 } }),
+      option('학생과 계획을 공유하고 공동 장비 사용을 신청한다', 'Explain the plan and apply for shared equipment', { lab: { funds: -8 }, hidden: { rapport: 4, autonomy: 2, stress: 3 }, professor: { admin: -6, research: -2 } }),
+    ], { minMonth: 16, cooldown: 24 }),
+  event('stipend-delay', '입금일이 지나갔다', 'The stipend is late',
+    '서류 처리 오류로 인건비 지급이 늦어졌다. 학생이 조심스럽게 묻는다. “이번 달 월세 때문에, 날짜를 알 수 있을까요?”',
+    'A paperwork error delays the stipend. Your student asks quietly, “Could we confirm a date? My rent is due this month.”', 'bad', [
+      option('지급 상황을 확인하고 임시 지원을 연결한다', 'Confirm payment status and arrange bridge support', { lab: { funds: -4 }, hidden: { rapport: 6, stress: -6 }, professor: { admin: -5 } }),
+      option('학생에게 확정 일정과 진행 상황을 직접 알린다', 'Personally give a confirmed timeline and updates', { hidden: { rapport: 3, stress: -2 }, professor: { admin: -3, mentoring: 2 } }),
+    ], { minMonth: 7, cooldown: 18 }),
+  event('equipment', '장비가 멈춘 오후', 'The machine stops again',
+    '측정 장비에서 평소와 다른 소리가 났다. 학생은 자기 실수인지 먼저 묻는다. 점검 기록에는 오래된 부품의 교체 권고가 남아 있다.',
+    'The instrument makes an unfamiliar sound. Your student first asks if it was their fault. The maintenance log already recommended replacing an aging part.', 'bad', [
+      option('수리를 예약하고 계산·분석 주간으로 바꾼다', 'Book repairs and switch to analysis for the week', { lab: { funds: -7, equipment: 7 }, hidden: { learning: 3, stress: -2 }, professor: { admin: -2 } }),
+      option('공동기기실 사용 교육을 함께 받는다', 'Take training at the shared instrument facility', { lab: { funds: -3 }, hidden: { research: 3, rapport: 3, stamina: -3 }, professor: { mentoring: -2 } }, 3),
+    ], { minMonth: 4 }),
+  event('reviewer-two', '답변서의 첫 문장', 'The first line of a response',
+    '투고한 원고에 수정 요청이 왔다. 학생은 비판을 읽다가 노트북을 덮었다. 어떤 지적은 타당하고, 어떤 지적은 설명을 더 요구한다.',
+    'The submitted manuscript returns with revision requests. Your student closes the laptop halfway through. Some comments are valid; others need a clearer explanation.', 'bad', [
+      option('지적을 하나씩 검토해 답변 계획을 세운다', 'Review each comment and make a response plan', { hidden: { learning: 3, confidence: 3, rapport: 4, stress: -4 }, professor: { research: -2, mentoring: 3 } }, 5),
+      option('학생이 답변 초안을 쓰고 함께 고친다', 'Let the student draft the response, then revise it together', { hidden: { autonomy: 5, language: 3, stress: 4 }, professor: { research: 2 } }, 7),
+    ], { minMonth: 12, requires: 'submission', cooldown: 10 }),
+  event('data-loss', '열리지 않는 폴더', 'A folder will not open',
+    '분석 파일 일부가 손상됐다. 원자료는 남아 있지만 지난주 처리 과정은 다시 따라가야 한다. 학생은 백업 규칙을 적다 말고 한숨을 쉰다.',
+    'Some analysis files are corrupted. The raw data survives, but last week’s processing must be repeated. Your student sighs halfway through writing a backup plan.', 'bad', [
+      option('복구를 돕고 연구실 전체 백업 체계를 고친다', 'Help recover the files and improve lab-wide backups', { lab: { funds: -4, equipment: 2 }, hidden: { research: 3, rapport: 4, stress: -3 }, professor: { admin: -3 } }, -5),
+      option('재현 가능한 분석 절차를 함께 다시 만든다', 'Rebuild a reproducible analysis workflow together', { hidden: { learning: 4, research: 2, stamina: -5 }, professor: { mentoring: -2 } }, -3),
+    ], { minMonth: 8, cooldown: 24 }),
+  event('caregiving', '개인적인 사정', 'Something outside the lab',
+    '학생이 가족을 돌볼 일이 생겼다며 일정을 조정하고 싶다고 한다. 자세한 사정은 말하지 않는다. 필요한 것은 설명의 양보다 예측 가능한 지원이다.',
+    'Your student asks to adjust the schedule for family care and does not share the details. What they need is predictable support, rather than a longer explanation.', 'bad', [
+      option('상세 설명을 요구하지 않고 마감을 조정한다', 'Adjust deadlines without demanding private details', { hidden: { rapport: 7, stress: -9, stamina: 4 }, professor: { mentoring: 3 }, lab: { funds: -2 } }, -4),
+      option('학생이 가능한 일정과 원격 작업을 먼저 정한다', 'Let the student define workable hours and remote tasks', { hidden: { autonomy: 5, rapport: 5, stress: -5 }, professor: { admin: -2 } }, -2),
+    ], { minMonth: 9, cooldown: 24 }),
+  event('illness', '이번 주는 회복부터', 'Recovery comes first this week',
+    '학생이 몸이 좋지 않아 실험을 쉬겠다고 연락했다. 면담도 미루고 싶다고 한다. 다음 측정 예약은 다시 잡을 수 있다.',
+    'Your student says they are unwell and need to miss experiments and the meeting. The next instrument booking can be rescheduled.', 'bad', [
+      option('휴식을 보장하고 실험 예약을 대신 변경한다', 'Protect recovery time and reschedule the booking', { hidden: { stamina: 12, stress: -8, rapport: 5 }, professor: { admin: -3 } }, -3),
+      option('당장 할 일은 비워 두고 다음 주에 계획을 다시 세운다', 'Clear immediate tasks and revisit the plan next week', { hidden: { stamina: 9, motivation: 3, rapport: 4 }, professor: { mentoring: -2 } }, -2),
+    ], { minMonth: 3, cooldown: 18 }),
+  event('teaching', '첫 수업의 칠판', 'A first turn at the board',
+    '학생이 연습문제 풀이를 맡아 달라는 요청을 받았다. 준비하면 전공을 다시 이해할 기회가 되고, 실험 시간은 줄어든다.',
+    'Your student is asked to lead a problem session. Preparing it could deepen their understanding, but it will take time away from experiments.', 'ordinary', [
+      option('짧은 수업을 준비하고 함께 리허설한다', 'Prepare a short session and rehearse together', { hidden: { learning: 3, language: 2, confidence: 3, stamina: -3 }, professor: { teaching: 7, mentoring: -2 } }),
+      option('이번에는 교수가 맡고 학생은 수업을 참관한다', 'Teach it yourself and let the student observe', { hidden: { learning: 2, stamina: 2 }, professor: { teaching: 5, research: -4 } }),
+    ], { minMonth: 8, cooldown: 10 }),
+  event('grading', '시험지와 실험 노트', 'Exam scripts and lab notes',
+    '학기 말 채점 기간이 연구 마감과 겹쳤다. 학생은 조교 업무를 어디까지 맡아야 할지 묻는다.',
+    'End-of-semester grading overlaps with a research deadline. Your student asks how much teaching-assistant work they should take on.', 'ordinary', [
+      option('업무 시간을 정하고 연구 마감을 조정한다', 'Set a time limit and adjust the research deadline', { hidden: { rapport: 4, stress: -3 }, professor: { teaching: 6, research: -3 } }, -2),
+      option('채점을 교수가 더 맡고 학생 연구 시간을 지킨다', 'Take more grading yourself and protect research time', { hidden: { motivation: 4, stamina: 2 }, professor: { teaching: 4, mentoring: 2, admin: -4 } }),
+    ], { minMonth: 10 }),
+  event('committee', '또 하나의 위원회', 'One more committee',
+    '학과에서 위원회 업무를 부탁했다. 회의가 늘어나면 면담 시간을 다시 확보해야 한다. 학생은 이미 다음 미팅 날짜를 적어 두었다.',
+    'The department asks you to join a committee. More meetings mean finding another protected time for supervision. Your student has already written down the next meeting date.', 'ordinary', [
+      option('위원회를 맡고 면담 시간을 미리 고정한다', 'Join and protect a fixed advising appointment', { professor: { admin: 7, research: -4, mentoring: -2 }, hidden: { rapport: 2 } }),
+      option('이번 역할을 줄이고 수업·지도에 집중한다', 'Negotiate a smaller role and prioritize teaching and advising', { professor: { admin: -4, teaching: 3, mentoring: 4 }, hidden: { rapport: 3 } }),
+    ], { minMonth: 5 }),
+  event('authorship', '이름보다 먼저 기여를', 'Contributions before names',
+    '공동연구 원고의 저자 순서를 놓고 의견이 달라졌다. 학생은 자신이 맡은 분석과 원고 작업을 정리해 왔다. 말하기까지 오래 고민한 것 같다.',
+    'The collaborators disagree about authorship order. Your student brings a record of their analysis and writing contributions. They seem to have thought for a long time before raising it.', 'ordinary', [
+      option('기여 내역과 해당 학술지 기준으로 함께 합의한다', 'Agree together using contribution records and the journal’s criteria', { hidden: { rapport: 7, autonomy: 4, confidence: 3 }, professor: { admin: -3, mentoring: 3 } }),
+      option('투고를 잠시 멈추고 공동연구자 모두와 조율한다', 'Pause submission and discuss with every collaborator', { hidden: { rapport: 5, stress: -3 }, professor: { research: -3, admin: -4 } }, -3),
+    ], { minMonth: 15, requires: 'submission', cooldown: 18 }),
+  event('poster-travel', '포스터 통과, 출장비 고민', 'Poster accepted, travel uncertain',
+    '초록은 채택됐지만 출장 예산은 빠듯하다. 학생은 교통편을 찾아 놓고도 신청 버튼을 누르지 못했다.',
+    'The abstract is accepted, but the travel budget is tight. Your student has found a route but has not clicked the registration button.', 'ordinary', [
+      option('참가 지원을 신청하고 함께 발표를 준비한다', 'Apply for travel support and prepare the presentation', { lab: { funds: -4 }, hidden: { language: 3, motivation: 4 }, professor: { admin: -3 } }),
+      option('온라인 발표와 후속 연구 교류를 알아본다', 'Explore remote presentation and follow-up discussions', { hidden: { language: 2, social: 3, autonomy: 2 }, professor: { research: 2, admin: -2 } }),
+    ], { minMonth: 8, cooldown: 10 }),
+  event('grant-renewal', '연구비 갱신의 계절', 'Renewal season',
+    '다음 연구비의 중간 보고서를 제출할 때다. 학생의 연구 결과를 과장하지 않고도, 무엇을 배웠는지 설명해야 한다.',
+    'The interim report for the next funding period is due. You need to explain what was learned without overstating the student’s results.', 'ordinary', [
+      option('교수가 보고서를 맡고 학생은 핵심 그림을 점검한다', 'Write the report yourself and ask the student to check key figures', { lab: { funds: 9 }, professor: { admin: 5, research: -4 }, hidden: { research: 2 } }),
+      option('연구의 범위와 다음 목표를 함께 정리한다', 'Review scope and next steps together', { lab: { funds: 7 }, hidden: { learning: 3, autonomy: 3, stamina: -3 }, professor: { admin: 3, mentoring: -2 } }),
+    ], { minMonth: 10, cooldown: 15 }),
+  event('safety', '실험 전에 확인할 것', 'Before the next experiment',
+    '연구실 안전 점검에서 오래된 절차서가 발견됐다. 누구도 다치지는 않았지만 새 학생이 읽기에는 설명이 부족하다.',
+    'A safety inspection finds an outdated procedure. No one was hurt, but the instructions are not clear enough for a new student.', 'ordinary', [
+      option('실험을 잠시 멈추고 절차서를 함께 갱신한다', 'Pause experiments and update the procedure together', { lab: { funds: -3, equipment: 3 }, hidden: { research: 3, rapport: 3 }, professor: { admin: 4 } }, -2),
+      option('전문 교육을 예약하고 교수가 절차를 점검한다', 'Book specialist training and review the procedure yourself', { lab: { funds: -5 }, hidden: { learning: 3, stamina: 2 }, professor: { admin: 3, research: -3 } }),
+    ], { minMonth: 2, cooldown: 18 }),
+  event('sabbatical-contact', '연구년의 시차', 'Advising across time zones',
+    '교수의 방문 연구 일정을 준비하며 원격 면담을 논의한다. 학생은 “메일로는 작은 질문이 자꾸 뒤로 밀려요”라고 한다.',
+    'As you plan a research visit, you discuss remote supervision. “Small questions keep getting pushed back when everything is email,” your student says.', 'ordinary', [
+      option('정기 영상 면담과 짧은 질문 시간을 따로 둔다', 'Set regular video meetings and a separate quick-question slot', { hidden: { rapport: 5, motivation: 3 }, professor: { research: -3, mentoring: 5 } }),
+      option('공동 지도자와 답변 기한을 학생과 합의한다', 'Agree on a co-mentor and response expectations', { hidden: { autonomy: 4, social: 2, rapport: 3 }, professor: { admin: -3, research: 3 } }),
+    ], { minMonth: 42, maxMonth: 72, once: true }),
+  event('peer-conflict', '같은 장비, 다른 시간표', 'One instrument, two schedules',
+    '장비 예약이 겹쳐 연구실 동료 사이에 말이 날카로워졌다. 학생은 누구의 잘못인지보다 다음에도 반복될지가 걱정이라고 한다.',
+    'An instrument-booking conflict strains relations between labmates. Your student worries less about blame than whether it will happen again.', 'ordinary', [
+      option('예약 규칙을 모두와 정하고 충돌을 조율한다', 'Agree on booking rules and mediate the conflict', { hidden: { social: 3, rapport: 4, stress: -4 }, professor: { admin: 3, mentoring: -2 } }),
+      option('둘이 일정 대안을 만들게 하고 합의를 확인한다', 'Let them propose alternatives, then check the agreement', { hidden: { autonomy: 3, social: 4, stress: 2 }, professor: { mentoring: 2 } }),
+    ], { minMonth: 7, cooldown: 15 }),
+  event('negative-result', '예상과 다른 결과', 'A result against the hypothesis',
+    '반복 측정이 가설과 다른 쪽을 가리킨다. 학생은 실험을 더 할지, 질문을 바꿀지 고민한다. 원하는 결과가 없다는 것과 결과가 없다는 것은 다르다.',
+    'Repeated measurements point away from the hypothesis. Your student wonders whether to run more tests or change the question. An unwanted result is still a result.', 'ordinary', [
+      option('대조군과 측정 조건을 점검한다', 'Check controls and measurement conditions', { hidden: { research: 4, learning: 2, stamina: -3 }, lab: { funds: -2 } }, 4),
+      option('가설을 수정하고 새 실험을 작게 설계한다', 'Revise the hypothesis and design a small test', { hidden: { autonomy: 4, confidence: 2, motivation: 3 }, professor: { research: 2 } }, 3),
+    ], { minMonth: 6, cooldown: 10 }),
+  event('language', '질문을 놓친 이유', 'The question that got away',
+    '영어 세미나 뒤 학생이 묻는다. “내용은 준비했는데, 질문을 못 알아들으면 어떻게 해야 하죠?” 문장보다 긴장부터 풀 필요가 있다.',
+    'After an English-language seminar, your student asks, “I prepared the research, but what if I cannot follow a question?” The first thing to work on may be nerves.', 'ordinary', [
+      option('다시 묻는 표현과 짧은 답변을 연습한다', 'Practice clarification phrases and short answers', { hidden: { language: 5, confidence: 3 }, professor: { teaching: 2, mentoring: -2 } }),
+      option('소규모 교류 시간에 학생이 질문하도록 돕는다', 'Help the student ask questions in a smaller discussion', { hidden: { language: 3, social: 3, autonomy: 2, stress: 2 }, professor: { mentoring: 2 } }),
+    ], { minMonth: 9 }),
+  event('burnout', '계획표의 빈칸', 'An empty square in the plan',
+    '계획표는 꽉 차 있는데 수행 기록은 비어 있다. 학생은 “다 하려고 앉으면 아무것도 시작을 못 해요”라고 말한다.',
+    'The plan is full, but the execution log is empty. “When I sit down to do everything, I cannot start anything,” your student says.', 'bad', [
+      option('이번 주 목표를 하나로 줄이고 휴식을 넣는다', 'Reduce the week to one goal and add rest', { hidden: { stamina: 10, motivation: 7, stress: -12, rapport: 4 } }, -2),
+      option('가장 작은 작업부터 함께 시작하고 범위를 줄인다', 'Start the smallest task together and narrow the scope', { hidden: { confidence: 5, motivation: 5, stress: -8 }, professor: { mentoring: -3 } }, 2),
+    ], { minMonth: 6, requires: 'stress', cooldown: 10 }),
+  event('motivation', '계속할 이유를 묻다', 'Asking why to continue',
+    '학생이 다음 학기를 앞두고 망설인다. 연구가 재미없는 것인지, 지금의 생활이 버거운 것인지 아직 구분하지 못한 표정이다.',
+    'Your student hesitates before the next semester. They are not sure whether the research has lost its appeal or whether daily life has become too heavy.', 'bad', [
+      option('진학·취업을 모두 놓고 학생의 희망을 듣는다', 'Discuss both further study and work, and listen to their wishes', { hidden: { rapport: 8, autonomy: 4, motivation: 6, stress: -5 }, professor: { mentoring: 3 } }),
+      option('작은 연구 질문을 학생이 골라 시험해 본다', 'Let the student choose a small question to test', { hidden: { learning: 3, confidence: 4, motivation: 8 }, lab: { funds: -2 } }, 2),
+    ], { minMonth: 8, requires: 'low_motivation', cooldown: 12 }),
+  event('collaboration', '다른 연구실의 답장', 'A reply from another lab',
+    '다른 연구실에서 분석 방법을 같이 비교하자고 답장이 왔다. 학생은 처음으로 자기 이름이 수신자 맨 앞에 있는 메일을 받았다.',
+    'Another lab replies with an offer to compare methods. For the first time, your student’s name appears first on the recipient list.', 'good', [
+      option('학생이 미팅을 이끌고 교수가 옆에서 돕는다', 'Let the student lead the meeting with you alongside', { hidden: { autonomy: 5, social: 3, confidence: 3 }, professor: { research: 3 } }, 4),
+      option('검증할 질문을 정리해 작은 공동 실험을 시작한다', 'Define a testable question and start a small joint experiment', { hidden: { research: 4, motivation: 4 }, lab: { funds: -3 }, professor: { research: 2 } }, 6),
+    ], { minMonth: 14 }),
+  event('seminar', '연구실 문밖의 질문', 'A question beyond the lab',
+    '초청 세미나 뒤 연사가 학생의 질문을 기억하고 찾아왔다. 학생은 그저 궁금해서 물어봤다며 어색하게 웃는다.',
+    'After an invited seminar, the speaker comes over, remembering your student’s question. The student smiles awkwardly: they had simply wanted to know.', 'good', [
+      option('짧은 대화에 함께 들어가 학생의 질문을 이어 준다', 'Join briefly and help the student continue the discussion', { hidden: { social: 3, language: 2, confidence: 4 }, professor: { research: 2 } }),
+      option('학생에게 맡기고 나중에 배운 것을 듣는다', 'Give them space and ask what they learned afterward', { hidden: { autonomy: 4, social: 4, motivation: 3 }, professor: { mentoring: 2 } }),
+    ], { minMonth: 3 }),
+  event('press', '연구를 한 문장으로', 'The work in one sentence',
+    '학교 홍보팀에서 연구 소개를 요청했다. 학생이 만든 첫 문장은 정확하지만 길다. 잘 알려지는 것과 과장되는 것 사이에 줄을 그어야 한다.',
+    'The campus communications team requests a research summary. The student’s first sentence is accurate but long. Visibility needs a clear boundary against overstatement.', 'ordinary', [
+      option('한계와 성과를 함께 설명하는 글을 쓴다', 'Write a summary that explains both findings and limits', { hidden: { language: 3, confidence: 2, outreach: 6 }, professor: { admin: 2 } }),
+      option('학생의 짧은 설명 영상을 함께 만든다', 'Make a short explanatory video with the student', { hidden: { language: 2, social: 3, stamina: -3, outreach: 9 }, lab: { funds: -2 } }),
+    ], { minMonth: 18, requires: 'paper' }),
+  event('internship', '연구를 쓰는 자리', 'A place to use the research',
+    '기업 연구팀이 단기 협업을 제안했다. 학생은 현실의 문제를 다뤄 보고 싶지만 학위 연구가 늦어질까 걱정한다.',
+    'An industry research team proposes a short collaboration. Your student wants to try a practical problem but worries about delaying degree work.', 'ordinary', [
+      option('학위 주제와 맞는 작은 과제로 범위를 정한다', 'Define a small task aligned with the degree project', { hidden: { research: 3, autonomy: 3, industry: 7 }, professor: { admin: -2 } }, 3),
+      option('방학에 짧은 현장 경험을 계획한다', 'Plan a brief experience during the break', { hidden: { social: 3, motivation: 3, stamina: -3, industry: 9 }, professor: { research: -2 } }, -2),
+    ], { minMonth: 20 }),
+  event('prototype', '사용해 보고 싶다는 사람', 'Someone wants to try it',
+    '연구 결과를 본 사람이 작은 시제품을 써 보고 싶다고 했다. 학생은 논문 밖에서도 질문이 이어질 수 있다는 사실에 흥미를 보인다.',
+    'Someone who saw the research asks to try a small prototype. Your student is intrigued that a question can continue beyond the paper.', 'good', [
+      option('작은 사용자 검증을 허용하고 연구 시간을 정한다', 'Allow a small user test with clear research-time limits', { hidden: { autonomy: 4, social: 3, enterprise: 8 }, lab: { funds: -4 } }),
+      option('기술의 한계와 지원 제도를 함께 검토한다', 'Review technical limits and available support together', { hidden: { learning: 3, confidence: 2, enterprise: 5 }, professor: { admin: -2 } }),
+    ], { minMonth: 26 }),
+  event('first-year-helper', '이제 누군가의 선배', 'Now someone’s senior',
+    '새 학부연구생이 학생에게 실험 노트 작성법을 물었다. 학생은 예전 자기 노트를 꺼냈다가 첫 장을 슬쩍 가린다.',
+    'A new undergraduate asks your student how to keep a lab notebook. The student opens their old notebook, then quietly covers its first page.', 'ordinary', [
+      option('짧은 멘토링 시간을 맡기고 업무량을 조정한다', 'Assign a short mentoring slot and adjust the workload', { hidden: { social: 3, confidence: 4, stamina: -2 }, professor: { teaching: 4, mentoring: 2 } }),
+      option('교수와 학생이 함께 처음 실험을 안내한다', 'Guide the first experiment together', { hidden: { research: 2, rapport: 3 }, professor: { teaching: 3, mentoring: -2 } }),
+    ], { minMonth: 30, stages: ['masters', 'phd'] }),
+  event('rejection', '선정되지 않았다는 메일', 'The proposal was not selected',
+    '작은 연구 지원에 지원했지만 선정되지 않았다. 학생은 평가 의견을 읽고 계획서 파일 이름에서 최종이라는 말을 지운다.',
+    'A small research-support application was not selected. After reading the feedback, your student removes “final” from the proposal’s filename.', 'bad', [
+      option('평가 의견을 검토하고 다음 신청을 준비한다', 'Review the feedback and prepare another application', { hidden: { learning: 3, autonomy: 2, motivation: 3 }, professor: { admin: -2 } }),
+      option('당장 가능한 규모로 질문을 줄여 계속한다', 'Scale down to a question the lab can pursue now', { hidden: { research: 3, confidence: 2, stress: -3 }, lab: { funds: -2 } }, 3),
+    ], { minMonth: 14, cooldown: 18 }),
+  event('open-science', '코드를 함께 열다', 'Opening the workflow',
+    '학생이 분석 코드와 설명서를 공개하고 싶다고 한다. 공동연구 자료의 공개 범위와 익명화 조건을 먼저 확인해야 한다.',
+    'Your student wants to share analysis code and documentation. First, the team needs to check permissions and anonymization requirements for collaborative data.', 'ordinary', [
+      option('공개 가능한 코드와 재현 예제를 정리한다', 'Prepare shareable code and a reproducible example', { hidden: { research: 3, language: 2, outreach: 4 }, professor: { admin: -2 } }, 2),
+      option('민감한 자료를 제외하고 방법 설명부터 공유한다', 'Start with a methods note and exclude restricted material', { hidden: { learning: 3, confidence: 2, outreach: 3 }, professor: { research: 2 } }),
+    ], { minMonth: 16, requires: 'paper' }),
+  event('career-talk', '졸업 뒤의 명함', 'A business card after graduation',
+    '졸업생이 연구실에 들러 회사와 연구소의 일을 들려줬다. 학생은 학계 말고 다른 길의 하루도 궁금해졌다고 한다.',
+    'An alumnus visits and describes work in industry and research institutes. Your student wants to know what an ordinary day on those paths looks like.', 'ordinary', [
+      option('서로 다른 진로의 사람들과 대화를 연결한다', 'Arrange conversations with people on different paths', { hidden: { social: 3, autonomy: 3, stress: -3, industry: 4 }, professor: { mentoring: 3 } }),
+      option('학생이 원하는 일의 조건을 먼저 정리한다', 'First help the student identify what they want from work', { hidden: { autonomy: 5, confidence: 2, rapport: 4 }, professor: { mentoring: 2 } }),
+    ], { minMonth: 28, cooldown: 18 }),
+];
