@@ -195,12 +195,12 @@ function upkeep(s) {
   shift(s,'lab',{equipment:(b.environment-2)*3+(s.professorProfile.labMode==='wet'?1.5:.5)});
   shift(s,'hidden',{outreach:b.publicity*.13});
 }
-const matching=[['study','analysis'],['experiment','study'],['experiment','analysis'],['analysis','experiment'],['paper','language','analysis'],['paper','analysis']];
+const matching=[['study','analysis'],['experiment','study','industry'],['experiment','analysis','industry'],['analysis','experiment'],['paper','language','analysis'],['paper','analysis']];
 export function researchGrade(rate){return rate>=.9?'완전성공':rate>=.7?'성공':rate>=.4?'보통':rate>0?'약간실패':'실패';}
 export function presentationPractice(s){return s.history.filter(h=>h.kind==='month'&&h.month>=s.month-(s.weeklyExecuted?2:1)).flatMap(h=>h.results??[]).concat(s.weeklyExecuted??[]).filter(w=>w.actual==='language'&&w.performed).length;}
 function presentationFails(s,abroad){const prepared=presentationPractice(s)>=2;if(random(s)>=(prepared?.04:.7))return false;shift(s,'hidden',{stress:2,confidence:-1});log(s,{kind:'presentation-failure',abroad,prepared});if(!s.pendingQueue.some(p=>p.kind==='presentation-recovery'))queue(s,{kind:'presentation-recovery',abroad});return true;}
 function scienceProgress(s,id,result) {
-  if(!['study','experiment','analysis','paper'].includes(id))return;
+  if(!['study','experiment','analysis','paper','industry'].includes(id))return;
   const p=s.project,h=scores(s);
   if(p.phase===5&&p.submitted)return; // Peer review proceeds asynchronously.
   const fit=matching[p.phase].includes(id);
