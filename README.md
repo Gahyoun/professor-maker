@@ -36,7 +36,7 @@ python3 -m http.server 4173 --directory dist
 node tests/browser-smoke.mjs
 ```
 
-다른 패키지 경로를 쓰면 `PLAYWRIGHT_MODULE`에 Playwright 모듈 경로를, 다른 주소를 쓰면 `GAME_URL`에 게임 루트 URL을 지정합니다. 엔진·콘텐츠 테스트는 Node 내장 테스트 러너만 사용합니다. GitHub Actions는 테스트 통과 후 `dist/`를 Pages에 배포합니다.
+다른 패키지 경로를 쓰면 `PLAYWRIGHT_MODULE`에 Playwright 모듈 경로를, 다른 주소를 쓰면 `GAME_URL`에 게임 루트 URL을 지정합니다. 엔진·콘텐츠 테스트는 Node 내장 테스트 러너만 사용합니다. 현재 배포는 `dist/`를 담은 `gh-pages` 브랜치를 사용합니다. Actions를 사용하려면 [워크플로 예시](docs/pages-workflow.example.yml)를 `.github/workflows/pages.yml`로 복사하고 필요한 workflow 권한을 부여합니다.
 
 저장은 브라우저·기기별로 따로 보관합니다. VERSION 3은 이전 월간 프로토타입 저장과 호환되지 않습니다. 잘못된 배분 입력을 수정하는 동안에는 마지막 유효한 저장을 보존합니다. 클라우드 계정·랭킹·서버 동기화는 구현 범위에 포함하지 않았습니다.
 
