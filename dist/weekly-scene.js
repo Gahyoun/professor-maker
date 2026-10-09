@@ -1,0 +1,10 @@
+import {studentAppearance,renderPortrait} from './appearance.js';
+const labels={study:'공부',experiment:'연구',analysis:'데이터 분석',paper:'논문 쓰기',conference:'학회에서 배우기',coffee:'면담과 휴식',rest:'휴식',language:'읽고 말하기',industry:'현장 경험',startup:'아이디어 구상',video:'과학 콘텐츠',teach:'교육 경험',unfinished:'계획 다시 살피기'};
+const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export function weeklyScene(state,result,index){
+ const id=result.actual,scientific=Number.isFinite(result.successRate),success=scientific?result.successRate===1:result.performed;
+ const status=!result.performed?'계획을 다 마치지는 못했어요':result.outcome==='inconclusive'?'이번 시도에서는 결과를 얻지 못했어요':id==='rest'?'충분히 쉬었어요':id==='conference'?(result.outcome==='presented'?'연구를 발표했어요':'현장에서 배웠어요'):'이번 주 계획을 수행했어요';
+ const progress=result.progress>0?`연구 진척 +${result.progress.toFixed(1)}`:scientific?'연구 진척 0 · 시도도 기록에 남습니다.':id==='rest'?'다음 주를 위한 여유':'배운 것을 기록했습니다.';
+ const furniture=id==='rest'?'<div class="pixel-bed"></div>':id==='conference'?'<div class="pixel-podium"></div><div class="pixel-slide">?</div>':id==='coffee'?'<div class="pixel-coffee">☕</div>':'<div class="pixel-table"></div><div class="pixel-monitor">'+(id==='experiment'&&state.professorProfile.labMode==='wet'?'⚗':'▁▃▅▂')+'</div>';
+ return `<div class="weekly-stage ${success?'week-success':'week-trying'} task-${id}" aria-label="${index+1}주차 수행 결과"><div class="week-scene-header"><span>${index+1}주차 / 4</span><strong>${labels[id]||labels[result.proposed]}</strong></div><div class="pixel-room"><div class="pixel-window"></div>${furniture}<div class="pixel-student">${renderPortrait(studentAppearance(state.creationSeed??state.seed,state.gender))}</div><div class="pixel-spark" aria-hidden="true">${success?'✦':'…'}</div></div><div class="week-outcome"><strong>${escape(status)}</strong><p>${escape(progress)}</p><ol class="week-dots" aria-label="주별 진행">${Array.from({length:4},(_,i)=>`<li class="${i<index?'done':i===index?'current':''}">${i+1}주</li>`).join('')}</ol></div></div>`;
+}

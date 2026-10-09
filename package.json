@@ -1,11 +1,12 @@
 {
   "name": "professor-maker",
-  "version": "4.0.1",
+  "version": "4.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "start": "python3 -m http.server 4173 --directory dist"
+    "start": "python3 -m http.server 4173 --directory dist",
+    "build:hosted": "node scripts/build-hosted.mjs"
   },
   "license": "GPL-3.0-only"
 }

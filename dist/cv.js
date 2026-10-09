@@ -1,3 +1,5 @@
+import {hIndex} from './impact.js';
+import {endingStatistics,validStatistics,renderStatistics} from './statistics.js';
 import {PROJECT_TITLES, PROJECT_PHASES, EVENTS} from './engine.js';
 import {ENDINGS} from './stories.js';
 import {getDiscipline} from './disciplines.js';
@@ -28,14 +30,14 @@ function durationLabel(months,locale) {
 }
 function educationFrom(state,history,locale,months) {
   const t=(ko,en)=>tx(locale,ko,en),entries=[];
-  const awardedBachelor=state.ending==='bachelor'||(state.route!==null&&state.route!==undefined&&months>=24)||history.some(entry=>entry.kind==='route'&&entry.month>=24);
+  const awardedBachelor=['bachelor','external_masters'].includes(state.ending)||(state.route!==null&&state.route!==undefined&&months>=24)||history.some(entry=>entry.kind==='route'&&entry.month>=24);
   entries.push({id:'undergraduate',title:t('학부연구생','Undergraduate researcher'),start:0,end:Math.min(months,24),status:awardedBachelor?t('학사 졸업','Bachelor’s degree completed'):t('연구실 활동 기록','Research experience'),awarded:awardedBachelor,degree:awardedBachelor?'bachelor':null});
   if(months<24||!['masters','integrated'].includes(state.route))return entries;
   const promotion=history.find(entry=>entry.kind==='promotion');
-  const masterEnd=promotion?Math.min(months,integer(promotion.month)):state.ending==='masters'?months:Math.min(months,integer(state.mastersReviewAt)||48);
+  const masterEnd=promotion?Math.min(months,integer(promotion.month)):['masters','external_phd'].includes(state.ending)?months:Math.min(months,integer(state.mastersReviewAt)||48);
   const doctorateComplete=doctorateEndings.has(state.ending)&&months>=96&&state.career?.qual==='passed';
   if(state.route==='masters') {
-    const awardedMaster=state.ending==='masters'||Boolean(promotion);
+    const awardedMaster=['masters','external_phd'].includes(state.ending)||Boolean(promotion);
     entries.push({id:'masters',title:t('석사과정','Master’s program'),start:24,end:masterEnd,status:awardedMaster?t('석사학위 취득','Master’s degree completed'):t('학위 미완료','Degree not completed'),awarded:awardedMaster,degree:awardedMaster?'masters':null});
     // The promotion entry, rather than the calendar alone, proves PhD admission.
     if(promotion)entries.push({id:'doctorate',title:t('박사과정','Doctoral program'),start:integer(promotion.month),end:months,status:doctorateComplete?t('박사학위 취득','Doctorate completed'):t('학위 미완료','Degree not completed'),awarded:doctorateComplete,degree:doctorateComplete?'doctorate':null});
@@ -90,7 +92,7 @@ function makeModel(state) {
   const history=Array.isArray(state.history)?state.history.filter(entry=>entry&&typeof entry==='object'&&integer(entry.month)<=months):[];
   const education=educationFrom(state,history,locale,months).map(entry=>({...entry,period:entry.period||periodLabel(entry.start,entry.end,locale)}));
   const career=state.career||{};
-  return {version:1,locale,name:String(state.name??''),ending:state.ending,careerPath:ENDINGS[state.ending]?.career[locale]||tx(locale,'다음 길을 준비 중','Preparing the next chapter'),field:getDiscipline(state.professorProfile?.fieldId).label,months,duration:durationLabel(months,locale),period:periodLabel(0,months,locale),education,outputs:{completedProjects:integer(career.completedProjects),acceptedPapers:integer(career.papers),submissions:integer(career.submissions),conferences:integer(career.conferences),awards:integer(career.awards),recommendations:integer(career.recommendations)},projects:projectsFrom(state,history,locale),memories:memoriesFrom(history,locale),qual:career.qual==='passed'?tx(locale,'자격시험 통과','Qualifying exam passed'):null};
+  return {version:2,advisor:{name:state.professorName||'지도교수',gender:state.professorProfile.gender,age:state.professorProfile.age,institution:state.professorProfile.institution},statistics:endingStatistics(state),impact:{hIndex:state.impact?.hIndex??0,citations:[...(state.impact?.citations??[])]},locale,name:String(state.name??''),ending:state.ending,careerPath:ENDINGS[state.ending]?.career[locale]||tx(locale,'다음 길을 준비 중','Preparing the next chapter'),field:getDiscipline(state.professorProfile?.fieldId).label,months,duration:durationLabel(months,locale),period:periodLabel(0,months,locale),education,outputs:{completedProjects:integer(career.completedProjects),acceptedPapers:integer(career.papers),submissions:integer(career.submissions),conferences:integer(career.conferences),awards:integer(career.awards),recommendations:integer(career.recommendations)},projects:projectsFrom(state,history,locale),memories:memoriesFrom(history,locale),qual:career.qual==='passed'?tx(locale,'자격시험 통과','Qualifying exam passed'):null};
 }
 function renderParts(model) {
   const t=(ko,en)=>tx(model.locale,ko,en),e=escapeHTML;
@@ -101,12 +103,12 @@ function renderParts(model) {
   const metricHTML=items.map(([key,label])=>`<div><dt>${e(label)}</dt><dd>${model.outputs[key]}</dd></div>`).join('');
   const publications=model.projects.filter(project=>project.status==='accepted').map(project=>`<li><time>${e(monthLabel(project.acceptedMonth??project.lastMonth,model.locale))}</time><div><h3>${e(project.title)}</h3><p>${e(model.name)} · ${e(t('게재 확정','Accepted'))}</p></div></li>`).join('');
   return {e,t,education,projects,memories,metricHTML,
-    title:`<p class="cv-kicker">PROFESSOR MAKER · ${e(t('연구실 활동 기록','Research record'))}</p><h1>${e(model.name)}</h1><p class="cv-career">${e(ENDINGS[model.ending].career[model.locale])}</p><p class="cv-field">${e(model.field)}</p>`,
+    title:`<p class="cv-kicker">PROFESSOR MAKER · ${e(t('연구실 활동 기록','Research record'))}</p><h1>${e(model.name)}</h1><p class="cv-career">${e(ENDINGS[model.ending].career[model.locale])}</p><p class="cv-field">${e(model.field)}</p>${model.advisor?`<p class="cv-advisor">지도교수: ${e(model.advisor.name)} · ${e(({national:'국립대',private:'사립대',institute:'과학기술원'})[model.advisor.institution])}</p>`:''}<p class="cv-fiction-notice">게임에서 생성한 가상의 활동 기록 · 실제 학위·경력 증명서가 아닙니다.</p>`,
     period:`<p class="cv-period"><strong>${e(model.duration)}</strong><span>${e(model.period)}</span></p>`,
     educationSection:`<section class="cv-section"><h2>${e(t('학력과 연구 경험','Education & research experience'))}</h2><ol class="cv-education">${education}</ol></section>`,
     projectSection:`${publications?`<section class="cv-section"><h2>${e(t('연구 논문','Publications'))}</h2><ol class="cv-memories cv-publications">${publications}</ol></section>`:''}<section class="cv-section"><h2>${e(t('연구 프로젝트','Research projects'))}</h2><ol class="cv-projects">${projects}</ol></section>`,
     memorySection:`<section class="cv-section"><h2>${e(t('연구실에서 남긴 장면','Moments from the lab'))}</h2><ol class="cv-memories">${memories}</ol></section>`,
-    footer:`<footer class="cv-footer"><span>Professor Maker</span><span>${e(t('지도 종료 시점의 활동 기록','Activity record at the end of advising'))}</span></footer>`,
+    footer:`<footer class="cv-footer"><span>Professor Maker · GAME RECORD</span><span>${e(t('지도 종료 시점의 활동 기록','Activity record at the end of advising'))}</span></footer>`,
   };
 }
 const renderers={
@@ -124,9 +126,12 @@ const allowedKeys=(value,keys)=>Object.keys(value).every(key=>keys.includes(key)
 
 /** Imported snapshots are data, never a source of trusted HTML. */
 export function validateCVModel(model) {
-  if(!plain(model)||!allowedKeys(model,['version','templateId','locale','name','ending','careerPath','field','months','duration','period','education','outputs','projects','memories','qual']))return false;
-  if(model.version!==1||!CV_TEMPLATES.some(template=>template.id===model.templateId)||!['ko','en'].includes(model.locale)||!boundedText(model.name,128)||!model.name.trim()||!Object.hasOwn(ENDINGS,model.ending)||model.ending==='gameover')return false;
+  if(!plain(model)||!allowedKeys(model,['version','templateId','locale','name','ending','careerPath','field','months','duration','period','education','outputs','projects','memories','qual','advisor','statistics','impact']))return false;
+  if(![1,2].includes(model.version)||!CV_TEMPLATES.some(template=>template.id===model.templateId)||!['ko','en'].includes(model.locale)||!boundedText(model.name,128)||!model.name.trim()||!Object.hasOwn(ENDINGS,model.ending)||model.ending==='gameover')return false;
   if(!boundedInteger(model.months,96)||!boundedText(model.careerPath,200)||!boundedText(model.field,100)||!boundedText(model.duration,80)||!boundedText(model.period,120)||!(model.qual===null||boundedText(model.qual,100)))return false;
+  if(model.impact!==undefined&&(!plain(model.impact)||!allowedKeys(model.impact,['hIndex','citations'])||!boundedInteger(model.impact.hIndex,model.outputs?.acceptedPapers??0)||!Array.isArray(model.impact.citations)||model.impact.citations.length>(model.outputs?.acceptedPapers??0)||!model.impact.citations.every(n=>boundedInteger(n,100000))||model.impact.hIndex!==hIndex(model.impact.citations)))return false;
+  if(model.version===1&&(Object.hasOwn(model,'advisor')||Object.hasOwn(model,'statistics')||Object.hasOwn(model,'impact')))return false;
+  if(model.version===2&&(!plain(model.advisor)||!allowedKeys(model.advisor,['name','gender','age','institution'])||!boundedText(model.advisor.name,40)||!model.advisor.name.trim()||!['male','female','other'].includes(model.advisor.gender)||!Number.isInteger(model.advisor.age)||model.advisor.age<30||model.advisor.age>55||!['national','private','institute'].includes(model.advisor.institution)||!validStatistics(model.statistics)))return false;
   const outputKeys=['completedProjects','acceptedPapers','submissions','conferences','awards','recommendations'];
   if(!plain(model.outputs)||!allowedKeys(model.outputs,outputKeys)||!outputKeys.every(key=>boundedInteger(model.outputs[key])))return false;
   if(!Array.isArray(model.education)||model.education.length<1||model.education.length>3)return false;
@@ -148,10 +153,10 @@ export function validateCVModel(model) {
 export function renderCV(model) {
   if(!validateCVModel(model))throw new Error('Invalid CV snapshot.');
   const parts=renderParts(model);
-  return `<article class="cv-document cv-${model.templateId}" lang="${model.locale}" aria-label="${escapeHTML(tx(model.locale,`${model.name}의 경력 기록`,`${model.name}’s career record`))}">${renderers[model.templateId](model,parts)}</article>`;
+  return `<article class="cv-document cv-${model.templateId}" lang="${model.locale}" aria-label="${escapeHTML(tx(model.locale,`${model.name}의 경력 기록`,`${model.name}’s career record`))}"><span class="cv-watermark" aria-hidden="true">PROFESSOR MAKER · GAME RECORD</span>${renderers[model.templateId](model,parts)}${model.impact?`<p class="cv-impact">h-index ${model.impact.hIndex} · 가상 학술 인용 ${model.impact.citations.reduce((a,b)=>a+b,0)}회</p>`:''}${model.statistics?renderStatistics(model.statistics):''}</article>`;
 }
 
-/** Render an immutable career snapshot for a completed run. Hidden stats never enter the model. */
+/** Render an immutable career snapshot for a completed run. Parameter snapshots are included only after advising has ended. */
 export function buildEndingCV(state) {
   if(!state||typeof state!=='object'||!state.ending||state.ending==='gameover'||!Object.hasOwn(ENDINGS,state.ending))return null;
   const model=makeModel(state),index=hash(`${Number(state.seed)>>>0}|${state.month}|${state.ending}`)%CV_TEMPLATES.length;

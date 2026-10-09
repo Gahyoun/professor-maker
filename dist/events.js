@@ -6,6 +6,44 @@ const event = (id, ko, en, bodyKo, bodyEn, kind, options, extra = {}) => ({
   minMonth: 1, maxMonth: 95, cooldown: 12, once: false, options, ...extra,
 });
 export const EVENTS = [
+  event('undergraduate-contest','학부생 연구 발표대회','Undergraduate research showcase','2년차 10월, 학부생을 위한 연구 발표대회가 열린다. 학생이 그동안의 시행착오를 작은 포스터로 정리해 보고 싶다고 한다.','An undergraduate showcase offers a first chance to explain the work.', 'academic', [option('작은 포스터로 발표를 응원한다','Support a small poster',{language:3,confidence:3,autonomy:2,stress:1}),option('현장에서 배우고 다음 발표를 준비한다','Observe and prepare for later',{learning:2,social:1,stress:-1})],{minMonth:20,maxMonth:20,stages:['undergrad'],once:true}),
+
+  event('ordinary-meaning','실적표 밖의 한 주','A week beyond the output sheet',
+    '학생이 동료들과 산책을 다녀왔다. 논문 이야기 없이 걸었던 시간이 뜻밖에 좋았다고 한다. “다음 주에도 한 번은 시간을 비워 두고 싶어요.”',
+    'Your student enjoyed a walk with colleagues without discussing papers and asks to protect another evening next week.', 'ordinary',[
+      option('연구 밖의 시간을 일정에 남겨 둔다','Protect time outside research',{hidden:{resilience:2,stamina:4,stress:-5,social:1,autonomy:2},professor:{mentoring:1}}),
+      option('학생이 고른 취미와 모임 시간을 존중한다','Respect the student’s chosen hobby and community',{hidden:{resilience:2,confidence:2,stress:-4,rapport:2},professor:{mentoring:1}}),
+    ],{minMonth:12,cooldown:10}),
+  event('third-year-question','다음 결과만 기다리던 시간','Waiting for the next result',
+    '대학원에 온 지 몇 해가 지나, 학생이 결과가 나와도 기쁨이 오래 가지 않는다고 말한다. 당장 이유를 설명하거나 새로운 목표를 정하고 싶지는 않다. 지금 필요한 시간을 함께 살펴본다.',
+    'A few years into graduate school, the student says satisfaction from a result does not last. They do not want to explain why or set another target immediately.', 'ordinary',[
+      option('성과와 관계없는 휴식과 일상을 확보한다','Make room for rest and everyday life',{hidden:{resilience:3,stress:-6,stamina:5,rapport:2},professor:{mentoring:2,research:-1}}),
+      option('원하는 지원을 묻고 다음 계획은 나중에 의논한다','Ask what support they want and revisit plans later',{hidden:{resilience:2,stress:-5,trust:3,autonomy:2},professor:{mentoring:2,admin:-1}}),
+    ],{minMonth:48,maxMonth:72,requires:'graduate',once:true}),
+  event('undergrad-record','첫 기록의 시행착오','Learning to keep a record',
+    '학생이 원자료와 분석본을 같은 이름으로 저장해 어디서부터 계산했는지 헷갈려 한다. 원자료는 남아 있다. “제가 다시 따라 해 볼 테니, 처음 단계만 같이 확인해 주실 수 있을까요?”',
+    'The undergraduate mixed up raw and processed filenames. The original data survives. They ask to check the first step together before trying again.', 'ordinary',[
+      option('원자료를 보존하고 파일·노트 규칙을 함께 정한다','Preserve raw data and agree on recordkeeping',{hidden:{learning:3,research:2,trust:3},professor:{mentoring:-2}}),
+      option('작은 예제로 다시 수행하게 하고 중간에 확인한다','Try a small example with a check-in',{hidden:{learning:2,autonomy:2,confidence:2},professor:{teaching:2,mentoring:-1}}),
+    ],{maxMonth:23,stages:['undergrad'],cooldown:8}),
+  event('master-scope','계획서의 범위를 줄이다','Finding a manageable scope',
+    '학생은 기본 분석을 혼자 마쳤지만, 하고 싶은 후속 실험을 모두 계획서에 넣었다. 졸업까지의 시간과 장비 예약을 함께 놓고 보자고 한다.',
+    'The master’s student completed the basic analysis independently, but proposed too many follow-ups. They ask to compare the scope with available time and equipment.', 'ordinary',[
+      option('핵심 질문과 보류할 질문을 함께 나눈다','Separate core and deferred questions',{hidden:{research:3,intuition:2,stress:-2},professor:{research:2,mentoring:-2}}),
+      option('작은 검증부터 맡기고 다음 면담에서 범위를 정한다','Begin with a small validation',{hidden:{autonomy:3,research:2,confidence:2},professor:{mentoring:2}}),
+    ],{minMonth:24,requires:'early_graduate',cooldown:10}),
+  event('doctoral-lead','학생이 정한 다음 질문','A question the student chose',
+    '학생이 결과의 한계와 다음 실험의 비용을 정리해 왔다. 공동연구 회의도 자신이 진행하겠다고 한다. 교수에게는 아직 확인하지 못한 가정 하나를 검토해 달라고 부탁한다.',
+    'The doctoral student brings limitations and cost estimates, offers to lead the collaboration meeting, and asks you to review one assumption.', 'good',[
+      option('회의를 맡기고 요청한 가정을 함께 검토한다','Let the student lead and review the assumption',{hidden:{autonomy:4,language:2,confidence:3},professor:{research:2,mentoring:1}}),
+      option('학생의 독립 계획을 듣고 필요한 자원을 연결한다','Support the independent plan with resources',{hidden:{research:3,trust:2,autonomy:3},professor:{admin:-2,research:2}}),
+    ],{minMonth:54,stages:['phd'],cooldown:12}),
+  event('shared-booking','겹친 장비 예약','A shared-resource booking conflict',
+    '공동 장비의 예약이 겹쳐 이번 주 측정을 다시 잡아야 한다. 학생은 다른 팀과 말하기 전에 사용 기록과 가능한 시간을 정리해 왔다.',
+    'A shared instrument has overlapping bookings. Your student has collected usage records and alternative times before speaking with the other team.', 'ordinary',[
+      option('공개 예약표와 우선순위를 함께 합의한다','Agree on a visible booking schedule',{hidden:{social:2,trust:3,stress:-2},professor:{admin:-3}}),
+      option('이번 주는 분석으로 바꾸고 다음 측정을 예약한다','Use this week for analysis and rebook',{hidden:{learning:2,autonomy:2},professor:{research:1,admin:-2}}),
+    ],{minMonth:5,cooldown:12}),
   event('best-paper', '우수논문 선정', 'A paper earns recognition',
     '이미 출판한 논문이 학회의 우수논문으로 선정되었다. 학생은 축하 메일을 열었다 닫았다 한다. “다음 논문도 이만큼 해야 하나요?”',
     'An already published paper has been selected for a society award. Your student keeps reopening the email. “Does my next paper have to be this good too?”', 'good', [

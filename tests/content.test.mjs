@@ -6,7 +6,7 @@ import {EVENTS,createState,HIDDEN_RANGES,validateSave,decide} from '../dist/engi
 import {generateKoreanName,generateNameRecord,KOREAN_NAME_POOLS} from '../dist/names.js';
 
 test('content covers the engine outcomes and both fields of each original letter',()=>{
-  for(const id of ['true','institute','corporate','unrelated','startup','unemployed','youtuber','resident_researcher','leave','bachelor','masters','dropout','unfinished','gameover']) {
+  for(const id of ['true','institute','corporate','unrelated','startup','unemployed','youtuber','resident_researcher','leave','bachelor','masters','dropout','unfinished','gameover','external_masters','external_phd']) {
     const story=ENDINGS[id];assert.ok(story,`Missing epilogue: ${id}`);
     for(const field of [story.title,story.career,story.time,...story.pages])for(const lang of ['ko','en'])assert.ok(typeof field[lang]==='string'&&field[lang].trim());
   }

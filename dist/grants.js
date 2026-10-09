@@ -1,9 +1,9 @@
 // Fictional management model inspired by Korean grant administration.
 // Amounts, timing and selection rules are game balance, not current grant rules.
 export const GRANT_TITLES = [
-  '복잡계 네트워크의 구조와 집단동역학',
-  '다층 네트워크에서의 확산과 회복력',
-  '지식생산 네트워크와 지역 연구생태계',
+  '기초 현상의 구조와 동역학',
+  '복합 시스템의 변화와 회복력',
+  '연구 방법의 확장과 학술 생태계',
 ];
 export const GRANT_SOURCE = 'https://webzine.nrf.re.kr/magazine/2604/sub1.php';
 export function initialGrants() {

@@ -9,13 +9,13 @@ function completed(seed=123) {
   state.career={...state.career,submissions:4,papers:3,completedProjects:3,conferences:3,awards:1,recommendations:2,qual:'passed'};
   state.project={...state.project,id:4,titleIndex:3,phase:3,progress:10};return state;
 }
-test('CV generation is pure, deterministic and excludes hidden student information',()=>{
+test('CV generation is pure and deterministic; completed-run statistics reveal all parameters',()=>{
   const state=completed(),before=structuredClone(state),first=buildEndingCV(state),second=buildEndingCV(state);
   assert.deepEqual(first,second);assert.deepEqual(state,before);assert.equal(first.model.months,96);assert.equal(first.model.duration,'8년');
   assert.equal(first.model.outputs.acceptedPapers,3);assert.equal(first.model.outputs.submissions,4);
   assert.deepEqual(first.model.education.map(x=>x.degree),['bachelor','masters','doctorate']);
   assert.ok(first.model.memories.some(x=>x.kind==='sabbatical'));
-  for(const key of ['hidden','temperament','rapport','stamina','resilience','learning'])assert.ok(!Object.hasOwn(first.model,key));
+  assert.deepEqual(first.model.statistics.student,state.hidden);assert.deepEqual(first.model.statistics.temperament,state.temperament);assert.ok(!Object.hasOwn(first.model,'hidden'));assert.ok(first.html.includes('GAME RECORD'));assert.ok(first.html.includes('실제 학위'));assert.ok(first.html.includes('<svg'));
   assert.ok(!first.html.includes('DOI'));assert.ok(!first.html.includes('doi.org'));
 });
 test('game over and active games have no career snapshot',()=>{
