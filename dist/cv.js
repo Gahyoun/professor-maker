@@ -81,7 +81,9 @@ function memoriesFrom(history,locale) {
   for(const item of candidates.length?[candidates[0],...candidates.slice(1).reverse()]:[]) {
     const key=`${item.kind}:${item.title}`;if(seen.has(key))continue;seen.add(key);picked.push(item);if(picked.length===6)break;
   }
-  return picked.sort((a,b)=>a.month-b.month).map(memory=>({...memory,date:monthLabel(memory.month,locale)}));
+  // Academic decisions are made at the opening of the next month; research
+  // outcomes are logged for the month that has just finished.
+  return picked.sort((a,b)=>a.month-b.month).map(memory=>({...memory,date:monthLabel(memory.month+(['sabbatical','qual'].includes(memory.kind)?1:0),locale)}));
 }
 function makeModel(state) {
   const locale=state.locale==='en'?'en':'ko',months=Math.min(96,integer(state.month));
@@ -97,11 +99,12 @@ function renderParts(model) {
   const projects=model.projects.map(project=>`<li><span class="cv-project-number">${String(project.id).padStart(2,'0')}</span><div><h3>${e(project.title)}</h3><p>${e(project.statusLabel)}${project.presentations?` · ${e(t(`학술발표 ${project.presentations}회`,`${project.presentations} presentation${project.presentations===1?'':'s'}`))}`:''}${project.revisions?` · ${e(t(`수정 ${project.revisions}회`,`${project.revisions} revision${project.revisions===1?'':'s'}`))}`:''}</p></div></li>`).join('');
   const memories=model.memories.length?model.memories.map(memory=>`<li><time>${e(memory.date)}</time><div><h3>${e(memory.title)}</h3><p>${e(memory.detail)}</p></div></li>`).join(''):`<li class="cv-empty">${e(t('첫 기록을 남긴 시간도 이 이력의 일부다.','The beginning belongs in this record, too.'))}</li>`;
   const metricHTML=items.map(([key,label])=>`<div><dt>${e(label)}</dt><dd>${model.outputs[key]}</dd></div>`).join('');
+  const publications=model.projects.filter(project=>project.status==='accepted').map(project=>`<li><time>${e(monthLabel(project.acceptedMonth??project.lastMonth,model.locale))}</time><div><h3>${e(project.title)}</h3><p>${e(model.name)} · ${e(t('게재 확정','Accepted'))}</p></div></li>`).join('');
   return {e,t,education,projects,memories,metricHTML,
     title:`<p class="cv-kicker">PROFESSOR MAKER · ${e(t('연구실 활동 기록','Research record'))}</p><h1>${e(model.name)}</h1><p class="cv-career">${e(model.careerPath)}</p><p class="cv-field">${e(model.field)}</p>`,
     period:`<p class="cv-period"><strong>${e(model.duration)}</strong><span>${e(model.period)}</span></p>`,
     educationSection:`<section class="cv-section"><h2>${e(t('학력과 연구 경험','Education & research experience'))}</h2><ol class="cv-education">${education}</ol></section>`,
-    projectSection:`<section class="cv-section"><h2>${e(t('연구 프로젝트','Research projects'))}</h2><ol class="cv-projects">${projects}</ol><p class="cv-note">${e(t('투고와 게재 확정은 별도 기록이다. 프로젝트명은 게임 속 가상 연구 제목이다.','Submissions and acceptances are counted separately. Project titles describe fictional research in the game.'))}</p></section>`,
+    projectSection:`${publications?`<section class="cv-section"><h2>${e(t('연구 논문','Publications'))}</h2><ol class="cv-memories cv-publications">${publications}</ol></section>`:''}<section class="cv-section"><h2>${e(t('연구 프로젝트','Research projects'))}</h2><ol class="cv-projects">${projects}</ol></section>`,
     memorySection:`<section class="cv-section"><h2>${e(t('연구실에서 남긴 장면','Moments from the lab'))}</h2><ol class="cv-memories">${memories}</ol></section>`,
     footer:`<footer class="cv-footer"><span>Professor Maker</span><span>${e(t('지도 종료 시점의 활동 기록','Activity record at the end of advising'))}</span></footer>`,
   };

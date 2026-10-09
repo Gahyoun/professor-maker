@@ -1,105 +1,60 @@
-// Optional browser QA. Set PLAYWRIGHT_MODULE to an installed Playwright package.
+// Optional end-to-end QA: PLAYWRIGHT_MODULE points to an installed package.
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
+import {createState,VERSION,validateSave} from '../dist/engine.js';
+import {DISCIPLINES} from '../dist/disciplines.js';
+import {buildEndingCV,CV_TEMPLATES} from '../dist/cv.js';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const base=process.env.GAME_URL||'http://127.0.0.1:4173/';
 const browser=await chromium.launch({headless:true});
-const errors=[];
-await fs.mkdir('/tmp/professor-maker-qa',{recursive:true});
-try {
-  const context=await browser.newContext({viewport:{width:1360,height:900}});
-  const page=await context.newPage();
-  page.on('pageerror',e=>errors.push(e.message));
-  await page.addInitScript(()=>localStorage.setItem('pm-fast','true'));
-  await page.goto(base);
-  await page.locator('#start-form').waitFor();
-  assert.equal(await page.locator('[data-ui="language"]').count(),0,'Korean is the current release');
-  await page.locator('#student-name').fill('검증학생');
-  await page.locator('select[name="gender"]').selectOption('female');
-  await page.locator('#start-form button[type="submit"]').click();
-  await page.locator('[data-week="0"]').waitFor();
-  assert.equal(await page.locator('[data-week]').count(),4);
-  assert.equal(await page.locator('[role="meter"]').count(),4,'Only faculty stats are numeric meters');
-  assert.ok(await page.locator('[data-ui="advance"]').isEnabled(),'Valid default month is playable');
-  await page.locator('[data-week="0"]').selectOption('study');
-  await page.locator('[data-week="1"]').selectOption('experiment');
-  await page.locator('[data-week="2"]').selectOption('rest');
-  await page.locator('[data-week="3"]').selectOption('coffee');
-  await page.locator('[data-ui="advance"]').click();
-  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('pm-save-v3')).month===1);
-  // Random events pause the month; resolve rather than assuming there is no event.
-  if(await page.locator('[data-ui="decide"]').count())await page.locator('[data-ui="decide"]').first().click();
-  await page.locator('#week-2').waitFor();
-  assert.ok(await page.locator('[data-ui="advance"]').isEnabled(),'Resolving an event resumes month controls');
-  assert.ok(await page.locator('#week-2').isDisabled(),'April week 3 is a fixed conference');
-  assert.equal(await page.locator('#week-2').inputValue(),'conference');
-  await page.locator('.month-report summary').click();
-  assert.ok(!(await page.locator('.month-report').innerText()).includes('undefined'));
-  await page.locator('.management-controls summary').click();
-  await page.locator('[data-allocation="research"]').fill('3');
-  assert.ok(await page.locator('[data-ui="advance"]').isDisabled());
-  await page.reload();
-  assert.equal(await page.locator('.term-count').innerText(),'1 / 96 개월','Invalid drafts do not corrupt the last valid save');
-  await page.locator('.management-controls summary').click();
-  for(const width of [320,390,768,1360]) {
-    await page.setViewportSize({width,height:900});
-    await page.evaluate(()=>document.fonts.ready);
-    const overflow=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));
-    assert.ok(overflow.scroll<=width,`Overflow at ${width}px: ${overflow.scroll}`);
-    await page.screenshot({path:`/tmp/professor-maker-qa/lab-${width}.png`,fullPage:true});
-  }
-  await page.locator('[data-ui="settings"]').click();
-  await page.locator('[data-ui="export"]').click();
-  await page.locator('[data-ui="close"]').click();
-  await page.goto(base+'#design');
-  assert.ok((await page.locator('main').innerText()).includes('통계'));
-  await page.goto(base+'logos.html');
-  assert.equal(await page.title(),'연구실 로고 시안 · Professor Maker');
-  // A complete UI/Worker run verifies queued degree decisions and the epilogue reader.
-  await page.goto(base);
-  await page.evaluate(async()=>{
-    const {createState}=await import('./engine.js');
-    const s=createState('이준영',6,{gender:'male',professorGender:'male',locale:'ko'});s.started=true;
-    localStorage.setItem('pm-save-v3',JSON.stringify(s));
-    localStorage.setItem('pm-fast','true');
-  });
-  await page.reload();
-  for(let guard=0;guard<160;guard++) {
-    const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('pm-save-v3')));
-    if(state.ending)break;
-    if(state.pending) {
-      if(state.pending.kind==='route')assert.equal(await page.locator('.student-id p').innerText(),'학부연구생','Admission should not display a PhD before a route is selected');
-      if(state.pending.kind==='masters')assert.equal(await page.locator('.student-id p').innerText(),'석사과정');
-      const values={event:'0',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
-      const before=JSON.stringify(state);
-      await page.locator(`[data-ui="decide"][data-choice="${values[state.pending.kind]}"]`).click();
-      await page.waitForFunction(prev=>localStorage.getItem('pm-save-v3')!==prev,before);
-    } else {
-      assert.ok(await page.locator('[data-ui="advance"]').isEnabled(),`Disabled after month ${state.month}`);
-      await page.locator('[data-ui="advance"]').click();
-      await page.waitForFunction(m=>JSON.parse(localStorage.getItem('pm-save-v3')).month>m,state.month);
-    }
-  }
-  const final=await page.evaluate(()=>JSON.parse(localStorage.getItem('pm-save-v3')));
-  assert.equal(final.month,96);
-  assert.ok(final.ending&&final.ending!=='unfinished');
-  await page.locator('.letter-reader').waitFor();
-  assert.ok(!(await page.locator('.letter-reader').innerText()).includes('{name}'));
-  await page.locator('[data-ui="close"]').click();
-  await page.evaluate(()=>navigator.serviceWorker.ready);
-  await page.reload();
-  await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
-  await context.setOffline(true);
-  await page.reload();
-  await page.locator('.ending-summary').waitFor();
-  // Start a fresh offline game and calculate a month inside an offline module Worker.
-  await page.locator('[data-ui="new"]').click();
-  await page.locator('[data-ui="confirm-new"]').click();
-  await page.locator('#start-form button[type="submit"]').click();
-  await page.locator('[data-ui="advance"]').click();
-  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('pm-save-v3')).month===1);
-  await context.setOffline(false);
-  await context.close();
-  assert.deepEqual(errors,[]);
-  console.log('Browser smoke passed: 96-month UI/Worker run, degree decisions, letter, offline month, fixed conference, valid autosave, 320–1360px, dialogs, logos.');
-} finally {await browser.close();}
+const errors=[],qa='/tmp/professor-maker-qa',saveKey='pm-save-v4',galleryKey='pm-letters-v3';
+await fs.mkdir(qa,{recursive:true});
+const choices={event:'0',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
+const snapshot=page=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),saveKey);
+async function noOverflow(page,label){await page.evaluate(()=>document.fonts.ready);const size=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));assert.ok(size.scroll<=size.width,`${label}: ${size.scroll}px > ${size.width}px`);}
+async function injectState(page,state,{clearGallery=false}={}){assert.ok(validateSave(state),'Fixture is engine-valid');await page.evaluate(({state,saveKey,galleryKey,clearGallery})=>{localStorage.setItem(saveKey,JSON.stringify(state));localStorage.setItem('pm-fast','true');if(clearGallery)localStorage.removeItem(galleryKey);},{state,saveKey,galleryKey,clearGallery});await page.reload();}
+function finalFixture(seed){const s=createState('김하늘',seed,{gender:'female',professorGender:'female'});s.started=true;s.month=96;s.route='integrated';s.ending='institute';s.career={...s.career,papers:3,completedProjects:3,submissions:4,conferences:4,awards:1,qual:'passed',qualAttempts:1};s.project={...s.project,id:4,titleIndex:3,phase:2,progress:9};s.history=[{month:24,kind:'route',route:'integrated'},{month:38,kind:'conference',projectId:1},{month:42,kind:'submission',projectId:1},{month:44,kind:'paper',projectId:1},{month:48,kind:'sabbatical',mode:'away'},{month:60,kind:'qual',passed:true,attempt:1},{month:82,kind:'recommendation'},{month:96,kind:'ending',ending:'institute'}];return s;}
+try{
+ const context=await browser.newContext({viewport:{width:1360,height:900},acceptDownloads:true});
+ const page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));await page.addInitScript(()=>localStorage.setItem('pm-fast','true'));
+ await page.goto(base);await page.locator('#start-form').waitFor();
+ assert.equal(await page.locator('[data-ui="language"]').count(),0);assert.equal(await page.locator('a[href="#design"]').count(),0);assert.equal(await page.locator('.section-nav a').count(),3);
+ assert.ok(!/게임 설계|통계와 설계|55%|45%/.test(await page.locator('#app').innerText()),'Developer design and ratios stay out of play');
+ const age=page.locator('input[name="professorAge"]');assert.equal(await age.getAttribute('min'),'30');assert.equal(await age.getAttribute('max'),'55');
+ for(const [value,valid] of [['29',false],['56',false],['30',true],['55',true]]){await age.fill(value);assert.equal(await age.evaluate(input=>input.checkValidity()),valid);}
+ for(const mode of ['dry','wet']){const field=DISCIPLINES.find(field=>field.labModes.length===1&&field.labModes[0]===mode);assert.ok(field);await page.locator('#field-id').selectOption(field.id);assert.deepEqual(await page.locator('#lab-mode option').evaluateAll(options=>options.map(option=>option.value)),[mode]);}
+ await page.locator('#field-id').selectOption('050');await page.locator('#lab-mode').selectOption('dry');await page.locator('select[name="professorGender"]').selectOption('female');
+ for(const institution of ['national','private','institute']){await page.locator('select[name="institution"]').selectOption(institution);assert.ok((await page.locator('#profile-hint').innerText()).length>5);}
+ await page.locator('#student-name').fill('검증학생');await page.locator('select[name="gender"]').selectOption('female');await page.setViewportSize({width:320,height:900});await noOverflow(page,'320px profile setup');
+ await page.locator('#start-form button[type="submit"]').click();await page.locator('[data-week="0"]').waitFor();
+ const initial=await snapshot(page);assert.equal(initial.version,VERSION);assert.deepEqual(initial.professorProfile,{gender:'female',age:55,fieldId:'050',labMode:'dry',institution:'institute'});assert.equal(initial.name,'검증학생');assert.equal(await page.locator('[data-week]').count(),4);assert.equal(await page.locator('[role="meter"]').count(),4);assert.ok(await page.locator('[data-ui="advance"]').isEnabled());
+ for(const [index,activity] of ['study','experiment','rest','coffee'].entries())await page.locator(`[data-week="${index}"]`).selectOption(activity);
+ await page.locator('[data-ui="advance"]').click();await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)).month===1,saveKey);
+ if(await page.locator('[data-ui="decide"]').count())await page.locator('[data-ui="decide"]').first().click();
+ await page.locator('#week-2').waitFor();assert.ok(await page.locator('#week-2').isDisabled());assert.equal(await page.locator('#week-2').inputValue(),'conference');
+ await page.locator('.month-report summary').click();assert.ok(!(await page.locator('.month-report').innerText()).includes('undefined'));
+ await page.locator('.management-controls summary').click();await page.locator('[data-allocation="research"]').fill('3');assert.ok(await page.locator('[data-ui="advance"]').isDisabled());
+ await page.reload();assert.equal(await page.locator('.term-count').innerText(),'1 / 96 개월');await page.locator('.management-controls summary').click();
+ for(const width of [320,1360]){await page.setViewportSize({width,height:900});await noOverflow(page,`${width}px lab`);await page.screenshot({path:`${qa}/lab-${width}.png`,fullPage:true});}
+ const saved=await snapshot(page);
+ for(const institution of ['national','private','institute']){const fixture=createState('소속검증',42,{professorProfile:{gender:'male',age:30,fieldId:'050',labMode:'dry',institution}});fixture.started=true;await injectState(page,fixture);assert.equal((await snapshot(page)).professorProfile.institution,institution);}
+ await injectState(page,saved);await page.locator('[data-ui="settings"]').click();const exportPromise=page.waitForEvent('download');await page.locator('[data-ui="export"]').click();const exported=await exportPromise,exportData=JSON.parse(await fs.readFile(await exported.path(),'utf8'));assert.equal(exportData.version,VERSION);await page.locator('[data-ui="close"]').click();
+ await page.goto(base+'#design');assert.ok(!/게임 설계|통계와 설계/.test(await page.locator('#app').innerText()));assert.equal(await page.locator('.page-title h1').innerText(),'학생 지도');await page.goto(base+'logos.html');assert.equal(await page.title(),'연구실 로고 시안 · Professor Maker');await page.goto(base);
+ // Genuine 96-month UI run through module Worker, decisions, letters and CV archival.
+ const run=createState('이준영',6,{gender:'female',professorProfile:{gender:'male',age:38,fieldId:'050',labMode:'dry',institution:'national'}});run.started=true;await injectState(page,run,{clearGallery:true});
+ for(let guard=0;guard<180;guard++){const state=await snapshot(page);if(state.ending)break;if(state.pending){if(state.pending.kind==='route')assert.equal(await page.locator('.student-id p').innerText(),'학부연구생');const before=JSON.stringify(state);await page.locator(`[data-ui="decide"][data-choice="${choices[state.pending.kind]}"]`).click();await page.waitForFunction(({saveKey,before})=>localStorage.getItem(saveKey)!==before,{saveKey,before});}else{assert.ok(await page.locator('[data-ui="advance"]').isEnabled(),`Month ${state.month} playable`);await page.locator('[data-ui="advance"]').click();await page.waitForFunction(({saveKey,month})=>JSON.parse(localStorage.getItem(saveKey)).month>month,{saveKey,month:state.month});}}
+ const final=await snapshot(page);assert.equal(final.month,96);assert.notEqual(final.ending,'gameover');assert.equal(final.career.qual,'passed');assert.ok(final.career.papers>=3);
+ await page.locator('.letter-reader').waitFor();assert.ok(!(await page.locator('.letter-reader').innerText()).includes('{name}'));await page.locator('[data-ui="close"]').click();await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)||'[]').some(entry=>entry.cv),galleryKey);
+ const archived=await page.evaluate(key=>JSON.parse(localStorage.getItem(key))[0].cv,galleryKey);assert.equal(archived.months,96);assert.ok(!Object.hasOwn(archived,'hidden'));await page.reload();assert.deepEqual(await page.evaluate(key=>JSON.parse(localStorage.getItem(key))[0].cv,galleryKey),archived);
+ await page.locator('[data-ui="view-current-cv"]').click();await page.locator('.cv-document').waitFor();const downloadPromise=page.waitForEvent('download');await page.locator('[data-ui="download-cv"]').click();const download=await downloadPromise,html=await fs.readFile(await download.path(),'utf8');assert.ok(html.startsWith('<!doctype html>'));assert.ok(html.includes('<style>'));assert.ok(html.includes('.cv-document'));assert.ok(html.includes('@media print'));assert.ok(!html.includes('doi.org'));await download.saveAs(`${qa}/ending-cv.html`);
+ for(const width of [320,1360]){await page.setViewportSize({width,height:900});await noOverflow(page,`${width}px CV dialog`);}await page.emulateMedia({media:'print'});await page.pdf({path:`${qa}/ending-cv.pdf`,format:'A4',printBackground:true});await page.emulateMedia({media:'screen'});await page.locator('[data-ui="close"]').click();
+ const invalidImport={...exportData,state:final,gallery:await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),galleryKey)};invalidImport.gallery[0].cv.templateId='"><img src=x onerror="window.__cvXss=1">';
+ await page.locator('[data-ui="settings"]').click();await page.locator('#import-file').setInputFiles({name:'invalid-cv.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(invalidImport))});await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('유효한'));assert.equal(await page.locator('#confirm-import').count(),0);assert.equal(await page.evaluate(()=>window.__cvXss),undefined);assert.equal((await snapshot(page)).ending,final.ending);await page.locator('[data-ui="close"]').click();
+ const over=createState('운영종료',123);over.started=true;over.month=7;over.ending='gameover';over.professor.admin=0;over.history=[{month:7,kind:'ending',ending:'gameover'}];await injectState(page,over,{clearGallery:true});await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)||'[]').length===1,galleryKey);assert.equal(await page.locator('[data-ui="view-current-cv"]').count(),0);assert.equal(await page.evaluate(key=>JSON.parse(localStorage.getItem(key))[0].cv,galleryKey),undefined);
+ // Each actual template is independently checked at phone/desktop widths and in print.
+ const fixtures=new Map();for(let seed=0;seed<500&&fixtures.size<5;seed++){const cv=buildEndingCV(finalFixture(seed));fixtures.set(cv.templateId,cv);}assert.equal(fixtures.size,CV_TEMPLATES.length);
+ const cvPage=await context.newPage();cvPage.on('pageerror',error=>errors.push(error.message));const css=await fs.readFile(new URL('../dist/cv.css',import.meta.url),'utf8');
+ for(const [id,cv] of fixtures){await cvPage.setContent(`<!doctype html><html lang="ko"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:8px}${css}</style><body>${cv.html}</body></html>`);for(const width of [320,1360]){await cvPage.setViewportSize({width,height:900});await noOverflow(cvPage,`${id} CV ${width}px`);await cvPage.screenshot({path:`${qa}/cv-${id}-${width}.png`,fullPage:true});}await cvPage.emulateMedia({media:'print'});await cvPage.pdf({path:`${qa}/cv-${id}.pdf`,format:'A4',printBackground:true});await cvPage.emulateMedia({media:'screen'});}await cvPage.close();
+ await page.goto(base);await page.evaluate(()=>navigator.serviceWorker.ready);await page.reload();await page.waitForFunction(()=>!!navigator.serviceWorker.controller);await context.setOffline(true);await page.reload();await page.locator('.ending-summary').waitFor();await page.locator('[data-ui="new"]').click();await page.locator('[data-ui="confirm-new"]').click();await page.locator('#start-form button[type="submit"]').click();await page.locator('[data-ui="advance"]').click();await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)).month===1,saveKey);await context.setOffline(false);
+ await context.close();assert.deepEqual(errors,[]);console.log('Browser smoke passed: profiles, 96-month Worker run, five CV layouts at 320/1360px, archival, standalone HTML/PDF, malicious import rejection, no game-over CV, offline month.');
+}finally{await browser.close();}

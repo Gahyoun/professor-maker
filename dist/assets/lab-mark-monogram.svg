@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="title">
+  <title id="title">Professor Maker PM monogram</title>
+  <rect x="9" y="9" width="102" height="102" rx="20" fill="#fff" stroke="#243c4b" stroke-width="4"/>
+  <path d="M27 84V36h17c23 0 23 29 0 29H27M64 84V36l14 24 14-24v48" fill="none" stroke="#0069b4" stroke-width="7" stroke-linejoin="round"/>
+</svg>
