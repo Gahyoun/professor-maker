@@ -77,15 +77,11 @@ test('annual grants, degree stipends, monthly stipend adjustment and funding tim
   s.lab.funds=25;s.grants.reportYears=[1];const grant=simulateMonth(s,proposeSchedule(s));assert.ok(grant.history.some(h=>h.kind==='annual-grant'));assert.ok(grant.lab.funds+grant.lab.pool>400);
   s.month=24;s.route='masters';assert.equal(salaryBase(s),22);s.month=48;assert.equal(salaryBase(s),30);
 });
-test('vacation travel checks cost, room count and affirmative same-gender consent',()=>{
-  const s=createState('Student',1,{gender:'female',professorGender:'male'});
-  assert.throws(()=>simulateMonth(s,s.plan,{facultyAction:'abroad_student'}));
-  s.month=29;s.route='integrated';s.travel={status:'accepted',submittedAt:28,decidedAt:29,conferenceMonth:30,projectId:1};assert.equal(calendarMonth(s.month),8);
-  assert.throws(()=>simulateMonth(s,proposeSchedule(s),{facultyAction:'abroad_shared',travelConsent:true}));
-  const trip=simulateMonth(s,proposeSchedule(s),{facultyAction:'abroad_together'});const entry=trip.history.find(h=>h.kind==='research-travel');assert.equal(entry.rooms,2);assert.equal(entry.cost,34);assert.equal(entry.joining,true);
-  s.professorGender='female';s.professorProfile.gender='female';assert.throws(()=>simulateMonth(s,proposeSchedule(s),{facultyAction:'abroad_shared'}));
-  assert.equal(simulateMonth(s,proposeSchedule(s),{facultyAction:'abroad_shared',travelConsent:true}).history.find(h=>h.kind==='research-travel').rooms,1);
-  s.gender='unspecified';s.professorGender='unspecified';s.professorProfile.gender='other';assert.throws(()=>simulateMonth(s,proposeSchedule(s),{facultyAction:'abroad_shared',travelConsent:true}));
+test('overseas travel uses per-person costs without lodging discounts',()=>{
+ const s=createState('Student',1,{gender:'female',professorGender:'male'});s.month=29;s.route='integrated';s.travel={status:'accepted',submittedAt:28,decidedAt:29,conferenceMonth:30,projectId:1};
+ const trip=simulateMonth(s,proposeSchedule(s),{attendance:{domestic:'together',overseas:'together'}}),entry=trip.history.find(h=>h.kind==='research-travel');assert.equal(entry.rooms,2);assert.equal(entry.cost,80);assert.equal(entry.joining,true);
+ s.professorGender='female';s.professorProfile.gender='female';const same=simulateMonth(s,proposeSchedule(s),{attendance:{domestic:'together',overseas:'together'}}).history.find(h=>h.kind==='research-travel');assert.equal(same.cost,80);assert.equal(same.rooms,2);
+ const legacy=simulateMonth(s,proposeSchedule(s),{facultyAction:'abroad_shared',travelConsent:true}).history.find(h=>h.kind==='research-travel');assert.equal(legacy.cost,80);assert.equal(legacy.rooms,2);
 });
 test('performance feedback depends on evidence; harshness has a relationship cost',()=>{
   const base=createState('Student',1);const report={month:1,results:Array.from({length:4},(_,index)=>({week:index+1,proposed:'study',actual:'study',performed:true,outcome:'completed',progress:5,scienceFailures:0})),completion:1,progress:20,scienceFailures:0,published:0,conferences:0};base.month=2;base.lastReport=report;
@@ -97,7 +93,7 @@ test('performance feedback depends on evidence; harshness has a relationship cos
 test('rest recovers fatigue; low wellbeing warns then causes departure, faculty zero is immediate',()=>{
   const s=createState('Student',1);setScore(s,'stamina',20);s.hidden.stress=80;
   const recovered=simulateMonth(s,['rest','rest','coffee','rest']);assert.ok(recovered.hidden.stamina>s.hidden.stamina);assert.ok(recovered.hidden.stress<s.hidden.stress);
-  setScore(s,'rapport',0);setScore(s,'trust',0);setScore(s,'resilience',20);s.hidden.stress=90;s.hidden.motivation=0;let first=simulateMonth(s,['experiment','experiment','experiment','experiment'],{feedback:'harsh'});assert.equal(first.crisis,1);assert.equal(first.ending,null);assert.ok(first.history.some(h=>h.kind==='warning'));
+  setScore(s,'rapport',0);setScore(s,'rapport',0);setScore(s,'resilience',20);s.hidden.stress=90;s.hidden.motivation=0;let first=simulateMonth(s,['experiment','experiment','experiment','experiment'],{feedback:'harsh'});assert.equal(first.crisis,1);assert.equal(first.ending,null);assert.ok(first.history.some(h=>h.kind==='warning'));
   first=resolve(first);const second=simulateMonth(first,['experiment','experiment','conference','experiment'],{feedback:'harsh'});assert.equal(second.ending,'dropout');
   const p=createState();p.professor.admin=0;assert.equal(simulateMonth(p,p.plan).ending,'gameover');
   const neglected=createState();neglected.professor.admin=3;assert.equal(simulateMonth(neglected,neglected.plan,{allocation:allocateCredits({research:4,teaching:2,admin:0,mentoring:2},facultyCapacity(neglected).credits)}).ending,'gameover');
@@ -189,7 +185,7 @@ test('diligence improves execution while trading away stamina; resilience buffer
   const plan=['experiment','experiment','experiment','experiment'];
   for(let seed=1;seed<=60;seed++){
     const low=createState('Student',seed),high=copy(low);low.month=2;high.month=2;
-    for(const s of [low,high])for(const key of ['stamina','motivation','rapport','trust'])setScore(s,key,50);
+    for(const s of [low,high])for(const key of ['stamina','motivation','rapport','rapport'])setScore(s,key,50);
     setScore(low,'diligence',0);setScore(high,'diligence',100);
     const a=simulateMonth(low,plan,{proposal:plan}),b=simulateMonth(high,plan,{proposal:plan});
     lowCompleted+=a.lastReport.completion;highCompleted+=b.lastReport.completion;lowStamina+=abilityScore(a,'stamina');highStamina+=abilityScore(b,'stamina');
@@ -198,10 +194,10 @@ test('diligence improves execution while trading away stamina; resilience buffer
   const frail=createState('Student',2),resilient=copy(frail);frail.month=2;resilient.month=2;setScore(frail,'resilience',25);setScore(resilient,'resilience',90);
   assert.ok(simulateMonth(resilient,plan,{proposal:plan}).hidden.stress<simulateMonth(frail,plan,{proposal:plan}).hidden.stress);
 });
-test('schedule discussion changes trust independently from rapport and preserves proposal data',()=>{
+test('schedule discussion changes the unified relationship and preserves proposal data',()=>{
   const s=createState('Student',6),proposal=['study','study','rest','language'],plan=['experiment','analysis','rest','coffee'];s.month=2;
   const discussed=simulateMonth(s,plan,{proposal,feedback:'listen'}),imposed=simulateMonth(s,plan,{proposal,feedback:'harsh'});
-  assert.equal(discussed.lastReport.scheduleDiscussion.approach,'discussed');assert.equal(discussed.lastReport.scheduleDiscussion.changed,3);assert.equal(imposed.lastReport.scheduleDiscussion.approach,'imposed');assert.ok(discussed.hidden.trust>imposed.hidden.trust);
+  assert.equal(discussed.lastReport.scheduleDiscussion.approach,'discussed');assert.equal(discussed.lastReport.scheduleDiscussion.changed,3);assert.equal(imposed.lastReport.scheduleDiscussion.approach,'imposed');assert.ok(discussed.hidden.rapport>imposed.hidden.rapport);
   assert.deepEqual(proposal,['study','study','rest','language']);assert.throws(()=>simulateMonth(s,plan,{proposal:['study']}));
 });
 test('language supports manuscript progress and creativity supports research productivity',()=>{
@@ -227,7 +223,7 @@ test('sustained overwork causes leave while sustained relationship damage causes
     if([4,10].includes(calendarMonth(s.month,s.locale)))plan[2]='conference';
     s=resolve(simulateMonth(s,plan,{proposal:plan,feedback:'listen',policies:{work:'intensive',study:'research'}}));
   }
-  assert.equal(s.ending,'leave');assert.ok(s.history.some(h=>h.kind==='warning'&&h.reason==='health'));assert.ok(abilityScore(s,'rapport')>12);assert.ok(abilityScore(s,'trust')>12);
+  assert.equal(s.ending,'leave');assert.ok(s.history.some(h=>h.kind==='warning'&&h.reason==='health'));assert.ok(abilityScore(s,'rapport')>12);assert.ok(abilityScore(s,'rapport')>12);
 });
 test('grant reporting, three-year renewal history and save validation integrate with monthly play',()=>{
   const s=play('institute',6);assert.ok(s.history.some(h=>h.kind==='grant-report'));assert.equal(s.history.filter(h=>h.kind==='grant-selection').length,2);assert.ok(s.grants.reportYears.includes(8));assert.ok(validateSave(s));
@@ -240,7 +236,7 @@ test('social skills gently weight exchange opportunities and ease the selected c
   assert.equal(eventWeight(low,'equipment'),1);assert.equal(eventWeight(high,'equipment'),1);
   const opportunityIds=new Set(['collaboration','seminar','internship']),plan=['rest','rest','rest','rest'];let lowEvents=0,highEvents=0,lowOpportunities=0,highOpportunities=0;
   for(let seed=1;seed<=2000;seed++){
-    const a=createState('Student',seed*7919),b=copy(a);a.month=14;b.month=14;setScore(a,'social',0);setScore(b,'social',100);
+    const a=createState('Student',seed*7919),b=copy(a);a.month=14;b.month=14;a.history.push({month:12,kind:'event',id:'counsel-small-question',choice:0});b.history=copy(a.history);setScore(a,'social',0);setScore(b,'social',100);
     const first=simulateMonth(a,plan,{proposal:plan}),second=simulateMonth(b,plan,{proposal:plan});
     lowEvents+=first.pending?.kind==='event';highEvents+=second.pending?.kind==='event';
     lowOpportunities+=opportunityIds.has(first.pending?.id);highOpportunities+=opportunityIds.has(second.pending?.id);
@@ -297,7 +293,7 @@ test('failed defense and attempts to exceed eight years use explicit game-over r
   s.pending=null;const over=simulateMonth(s,s.plan);assert.equal(over.ending,'gameover');assert.equal(over.endingReason,'time_limit');assert.equal(over.month,96);assert.ok(validateSave(over));
 });
 test('dropout requires low rapport, severe stress and low resilience together',()=>{
-  const baseline=createState('Student',6);baseline.month=2;setScore(baseline,'rapport',0);setScore(baseline,'trust',0);setScore(baseline,'resilience',20);baseline.hidden.stress=90;baseline.crisis=1;
+  const baseline=createState('Student',6);baseline.month=2;setScore(baseline,'rapport',0);setScore(baseline,'rapport',0);setScore(baseline,'resilience',20);baseline.hidden.stress=90;baseline.crisis=1;
   const plan=['paper','paper','paper','paper'];assert.equal(simulateMonth(baseline,plan,{proposal:plan,feedback:'harsh'}).ending,'dropout');
   for(const [key,value] of [['rapport',50],['stress',10],['resilience',80]]){const s=copy(baseline);setScore(s,key,value);assert.notEqual(simulateMonth(s,plan,{proposal:plan,feedback:'harsh'}).ending,'dropout',key);}
 });
@@ -308,7 +304,7 @@ test('wet supplies and instrument wear differ from dry compute-environment suppo
   let dryEquipmentLoss=0,wetEquipmentLoss=0,dryManaged=0,dryNeglected=0;
   for(let seed=1;seed<=300;seed++)for(const mode of ['dry','wet']){
     const prepared=createState('Student',seed*7919,{labMode:mode});prepared.month=2;prepared.project.phase=1;
-    for(const key of ['stamina','motivation','rapport','trust'])setScore(prepared,key,100);
+    for(const key of ['stamina','motivation','rapport','rapport'])setScore(prepared,key,100);
     const worn=copy(prepared);worn.lab.equipment=0;
     const ready=simulateMonth(prepared,plan,{proposal:plan}),damaged=simulateMonth(worn,plan,{proposal:plan});
     if(mode==='wet')wetEquipmentLoss+=ready.lastReport.progress-damaged.lastReport.progress;

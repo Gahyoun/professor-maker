@@ -1,3 +1,4 @@
+import {counselingFollowup} from './counseling.js';
 import {examWindow,academicWeeks} from './academic-calendar.js';
 // Original bilingual student voices. Abilities never appear as numeric dialogue.
 const lines = text => text.trim().split('\n').map(row => { const [ko, en] = row.trim().split(' | '); return { ko, en }; });
@@ -356,14 +357,15 @@ function hash(text) {
 function value(source, key, fallback = 50) { const n = source?.[key]; return Number.isFinite(n) ? n : fallback; }
 // Pure and deterministic: rendering, switching locale and reloading never consume RNG.
 export function studentLine(s, lang = 'ko') {
-  if(s.started&&s.hidden?.trust>=40&&academicWeeks(s).some((_,i)=>examWindow(s,i)))return lang==='ko'?'교수님, 시험 주와 그 전주에는 자율 시간을 주실 수 있을까요? 제가 공부 계획을 세워 볼게요.':'Could I plan my own time for exam week and the week before?';
+  if(s.started&&s.hidden?.rapport>=40&&academicWeeks(s).some((_,i)=>examWindow(s,i)))return lang==='ko'?'교수님, 시험 주와 그 전주에는 자율 시간을 주실 수 있을까요? 제가 공부 계획을 세워 볼게요.':'Could I plan my own time for exam week and the week before?';
   if(s.advising?.inattention>=6)return lang==='ko'?'제가 제대로 가고 있는지, 구체적으로 한 번 봐 주실 수 있을까요?':'Could we look more closely at how I am doing?';
   if(s.advising?.lastFeedback==='praise'&&s.advising.streak>=4)return lang==='ko'?'좋다고 해 주셔서 감사해요. 어떤 부분을 더 다듬으면 좋을지도 알고 싶어요.':'Thank you. I would also like to know what I can improve.';
+  const followup=counselingFollowup(s,lang);if(followup)return followup;
   const month = value(s, 'month', 0), h = s.hidden || {}, t = s.temperament || {}, b = s.behavior || {};
   const report = s.lastReport || {}, phase = s.project?.phase;
   let performance = report.completion ?? report.performance;
   if (typeof performance === 'number' && performance > 1) performance /= 100;
-  const rapport = value(h, 'rapport', 0), trust = value(h, 'trust', 0), stress = value(h, 'stress', 0), motivation = value(h, 'motivation');
+  const rapport = value(h, 'rapport', 0), stress = value(h, 'stress', 0), motivation = value(h, 'motivation');
   const stamina = value(h, 'stamina', 500), confidence = value(h, 'confidence'), autonomy = value(h, 'autonomy');
   const resilience = value(h, 'resilience', 500), manners = value(h, 'manners', 500);
   const creativity = value(h, 'creativity', 0), diligence = value(h, 'diligence', 0), social = value(h, 'social', 0);
@@ -377,7 +379,7 @@ export function studentLine(s, lang = 'ko') {
     if (social < -20 || expression < 40 || caution > 65) groups.push('firstContactQuiet');
     if (social > 25 && expression > 45) groups.push('firstContactOutgoing');
   }
-  else if (trust < -46) groups = ['lowTrust', ...(harsh > listen ? ['guarded'] : []), ...(rapport > 25 ? ['closeUncertain'] : [])];
+  else if (rapport < 10) groups = ['lowTrust', ...(harsh > listen ? ['guarded'] : []), ...(stress > 65 ? ['anxious'] : [])];
   else if (stamina < 250) groups = ['tired', ...(diligence > 40 ? ['overworking'] : [])];
   else {
     if (stamina < 480) groups.push('tired');
@@ -391,15 +393,13 @@ export function studentLine(s, lang = 'ko') {
     if (social > 24 && expression > 42 && rapport > -10) groups.push('social');
     if (social < -35) groups.push('introvert');
     if (manners > 700) groups.push('polite');
-    if (manners < 320 && trust > -30) groups.push('direct');
+    if (manners < 320 && rapport > -30) groups.push('direct');
     if (resilience > 650 && (report.scienceFailures > 0 || performance < 0.65)) groups.push('resilient');
     if (resilience < 340 && stress > 45) groups.push('vulnerable');
     if (creativity > 35 && motivation > 40) groups.push('inventive');
     if (diligence > 35 && stamina >= 480) groups.push('disciplined');
     if (diligence > 40 && stamina < 480) groups.push('overworking');
     if (diligence < -30 && autonomy > 45) groups.push('selfManaging');
-    if (trust > 35 && rapport < -15) groups.push('distantTrust');
-    if (rapport > 30 && trust < 5) groups.push('closeUncertain');
     if (value(h, 'luck', 0) > 40 && performance >= 0.65) groups.push('fortunate');
     if (value(h, 'luck', 0) < -40 && report.scienceFailures > 0) groups.push('unfortunate');
     if (phase === 'draft' || phase === 'review' || phase === 4 || phase === 5 || report.published > 0) groups.push('paper');
@@ -408,10 +408,10 @@ export function studentLine(s, lang = 'ko') {
     if (month > 84 || mastersReview) groups.push('graduate');
     if ((s.sabbatical?.active && s.sabbatical.mode === 'away') || s.sabbaticalActive || s.onSabbatical) groups.push('sabbatical');
     if (['caregiving', 'illness', 'stipend-delay'].includes(s.lastEventId || report.eventId)) groups.push('personal');
-    if (harsh >= 3 && harsh > listen && trust < 14) groups.push('guarded', 'guarded');
-    if (listen >= 3 && trust > -10) groups.push('recoveringTrust');
+    if (harsh >= 3 && harsh > listen && rapport < 14) groups.push('guarded', 'guarded');
+    if (listen >= 3 && rapport > -10) groups.push('recoveringTrust');
     if (praise > critique && confidence > 62 && motivation > 55) groups.push('success');
-    if (critique > 2 && value(h, 'research', 500) > 550 && trust > -10) groups.push('methodical');
+    if (critique > 2 && value(h, 'research', 500) > 550 && rapport > -10) groups.push('methodical');
   }
   const key = groups[hash(`${s.seed}:${month}:voice`) % groups.length];
   const pool = DIALOGUES[key];

@@ -3,7 +3,7 @@ import {DEFAULT_POLICIES} from './engine.js';
 let enabled=false,session=null,status='기기 내 저장만 사용 중',pending=Promise.resolve(),sessions={};
 try{enabled=localStorage.getItem('pm-analysis-consent')==='anonymous-gameplay-v1';session=JSON.parse(localStorage.getItem('pm-analysis-session')||'null');}catch{}
 try{sessions=JSON.parse(localStorage.getItem('pm-analysis-sessions')||'{}');if(session?.runKey)sessions[session.runKey]=session;}catch{}
-const hosted=location.hostname==='professor-maker.gahyoun.chatgpt.site';
+const hosted=typeof location!=='undefined'&&location.hostname==='professor-maker.gahyoun.chatgpt.site';
 export const analyticsStatus=()=>status;
 export const analyticsConsent=()=>enabled;
 const database=()=>new Promise((resolve,reject)=>{const request=indexedDB.open('pm-anonymous-analysis',1);request.onupgradeneeded=()=>request.result.createObjectStore('months',{keyPath:'key'});request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
@@ -23,7 +23,7 @@ export async function setAnalyticsConsent(value){
 }
 export function recordAnalytics(state){
  if(!enabled||!state.started)return Promise.resolve();
- const runKey=String(state.creationSeed??state.seed),profile={version:'4.4.0',fieldId:state.professorProfile.fieldId,institution:state.professorProfile.institution,labMode:state.professorProfile.labMode},record=analysisRecord(state);
+ const runKey=String(state.creationSeed??state.seed),profile={version:'4.5.0',fieldId:state.professorProfile.fieldId,institution:state.professorProfile.institution,labMode:state.professorProfile.labMode},record=analysisRecord(state);
  pending=pending.then(async()=>{
   if(!enabled)return;
   try{let localId=localStorage.getItem('pm-analysis-id-'+runKey);if(!localId){localId=crypto.randomUUID();localStorage.setItem('pm-analysis-id-'+runKey,localId);}

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createState,simulateMonth,validateSave} from '../dist/engine.js';
 import {abstractAcceptance,canTravel} from '../dist/travel.js';
 const rest=['rest','rest','rest','rest'];
-function vacation(seed=1){const s=createState('학생',seed);s.month=28;s.route='integrated';s.project.phase=2;s.hidden.stamina=800;s.hidden.motivation=85;s.hidden.rapport=70;s.hidden.trust=70;return s;}
+function vacation(seed=1){const s=createState('학생',seed);s.month=28;s.route='integrated';s.project.phase=2;s.hidden.stamina=800;s.hidden.motivation=85;s.hidden.rapport=70;s.hidden.rapport=70;return s;}
 function accepted(){for(let seed=1;seed<100;seed++){const s=simulateMonth(vacation(seed),rest,{facultyAction:'abstract'});if(canTravel(s)){s.pending=null;s.pendingQueue=[];return s;}}throw Error('No accepted fixture');}
 
 test('abstracts open only in graduate vacation; deterministic results precede the travel month',()=>{
@@ -31,7 +31,7 @@ test('accepted abstracts require operating funds; attendance boosts learning mor
   const baseline=simulateMonth(s,rest,{facultyAction:'routine'});
   assert.ok(trip.hidden.language-baseline.hidden.language>2*9.99);assert.ok(trip.hidden.social-baseline.hidden.social>3*2);
   assert.ok(trip.hidden.autonomy>baseline.hidden.autonomy);assert.ok(trip.hidden.research>baseline.hidden.research);
-  assert.equal(trip.history.find(h=>h.kind==='research-travel').cost,18);
+  assert.equal(trip.history.find(h=>h.kind==='research-travel').cost,40);
   assert.equal(trip.history.find(h=>h.kind==='conference').abroad,true);
 });
 test('rejected or missed abstracts cannot travel; repeated presentations do not duplicate degree credit',()=>{

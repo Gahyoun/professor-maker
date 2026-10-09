@@ -1,8 +1,9 @@
+import {JOURNALS,CONFERENCE_TIERS} from './venues.js';
 import {researchText} from './lab-scene.js';
 import {CHAPTERS,THESIS_SCENES} from './main-story.js';
 import {hIndex} from './impact.js';
 import {endingStatistics,validStatistics,renderStatistics} from './statistics.js';
-import {PROJECT_TITLES, PROJECT_PHASES, EVENTS} from './engine.js';
+import {projectTitle, PROJECT_TITLES, PROJECT_PHASES, EVENTS} from './engine.js';
 import {ENDINGS} from './stories.js';
 import {getDiscipline} from './disciplines.js';
 
@@ -50,17 +51,17 @@ function projectsFrom(state,history,locale) {
   const records=new Map(),t=(ko,en)=>tx(locale,ko,en);
   for(const entry of history) {
     const id=integer(entry.projectId);if(!id)continue;
-    if(!records.has(id))records.set(id,{id,title:PROJECT_TITLES[(id-1)%PROJECT_TITLES.length][locale],firstMonth:integer(entry.month),lastMonth:integer(entry.month),status:'ongoing',submissions:0,presentations:0,revisions:0});
+    if(!records.has(id))records.set(id,{id,title:projectTitle(state,id,locale),firstMonth:integer(entry.month),lastMonth:integer(entry.month),status:'ongoing',submissions:0,presentations:0,revisions:0});
     const record=records.get(id);record.lastMonth=Math.max(record.lastMonth,integer(entry.month));
     if(entry.kind==='submission'){record.submissions++;record.status='submitted';}
-    if(entry.kind==='conference')record.presentations++;
+    if(entry.kind==='conference'){record.presentations++;if(Object.hasOwn(CONFERENCE_TIERS,entry.tier))record.conferenceTier=entry.tier;}
     if(entry.kind==='revision')record.revisions++;
-    if(entry.kind==='paper'){record.status='accepted';record.acceptedMonth=integer(entry.month);}
+    if(entry.kind==='paper'){record.status='accepted';record.acceptedMonth=integer(entry.month);if(Object.hasOwn(JOURNALS,entry.journal)){record.journal=entry.journal;record.impactFactor=JOURNALS[entry.journal].impactFactor;}}
   }
   const current=state.project,id=integer(current?.id);
   if(id&&!records.has(id)&&(integer(current.phase)>0||Number(current.progress)>0||!records.size)) {
     const index=integer(current.titleIndex)%PROJECT_TITLES.length;
-    records.set(id,{id,title:PROJECT_TITLES[index][locale],firstMonth:records.size?integer(state.month):0,lastMonth:integer(state.month),status:current.submitted?'submitted':'ongoing',submissions:current.submitted?1:0,presentations:current.conference?1:0,revisions:integer(current.revisions)});
+    records.set(id,{id,title:projectTitle(state,id,locale),firstMonth:records.size?integer(state.month):0,lastMonth:integer(state.month),status:current.submitted?'submitted':'ongoing',submissions:current.submitted?1:0,presentations:current.conference?1:0,revisions:integer(current.revisions)});
   }
   return [...records.values()].sort((a,b)=>a.id-b.id).map(record=>({...record,statusLabel:record.status==='accepted'?t('게재 확정','Accepted'):record.status==='submitted'?t('투고 · 심사 기록','Submitted / reviewed'):t('진행 중인 연구','Research in progress'),phase:record.id===id?PROJECT_PHASES[integer(current.phase)]?.[locale]||'':t('연구 완료','Completed')}));
 }
@@ -74,7 +75,7 @@ function memoriesFrom(history,locale) {
     } else if(entry.kind==='sabbatical'){title=t('교수의 연구년','An advisor’s sabbatical');detail=entry.mode==='away'?t('해외 연구년 동안 원격 지도를 이어갔다.','Advising continued remotely during an overseas sabbatical.'):t('국내에 머무르며 지도를 이어갔다.','Advising continued while the advisor remained at home.');}
     else if(entry.kind==='qual'&&entry.passed){title=t('자격시험 통과','Qualifying exam passed');detail=t('연구 질문을 자신의 언어로 설명했다.','The research question could now be explained in their own words.');}
     else if(entry.kind==='advising-conversation'){title=t('연구 밖의 안부를 묻다','A conversation beyond research');detail=t('교수와 학생이 별도의 면담에서 생활과 다음 계획을 의논했다.','The advisor and student discussed life and next steps in a separate meeting.');}
-    else if(entry.kind==='research-travel'&&entry.performed){title=t('방학 중 해외학회','An overseas conference during the break');detail=entry.joining?t('교수와 학생이 함께 학회에 다녀왔다.','The advisor and student attended together.'):t('학생이 스스로 학회에 다녀왔다.','The student attended independently.');}
+    else if(entry.kind==='research-travel'&&entry.performed&&entry.attendance!=='professor'){title=t('방학 중 해외학회','An overseas conference during the break');detail=entry.joining?t('교수와 학생이 함께 학회에 다녀왔다.','The advisor and student attended together.'):t('학생이 스스로 학회에 다녀왔다.','The student attended independently.');}
     else if(entry.kind==='presentation-award'){title=t('학술발표 수상','A presentation award');detail=t('연구 발표가 좋은 평가를 받았다.','A research presentation earned recognition.');}
     else if(entry.kind==='recommendation'){title=t('추천서 한 통','A letter of recommendation');detail=t('다음 기회를 위해 추천서를 준비했다.','A recommendation was prepared for the next opportunity.');}
     else if(entry.kind==='paper'){title=t('논문 게재 확정','A paper accepted');detail=t(`프로젝트 ${integer(entry.projectId)}의 연구가 하나의 기록이 되었다.`,`Project ${integer(entry.projectId)} became part of the research record.`);}
@@ -101,10 +102,10 @@ function renderParts(model) {
   const t=(ko,en)=>tx(model.locale,ko,en),e=escapeHTML;
   const items=[['completedProjects',t('완료 프로젝트','Completed projects')],['acceptedPapers',t('게재 논문','Accepted papers')],['submissions',t('논문 투고','Submissions')],['conferences',t('학술발표','Presentations')],['awards',t('수상','Awards')],['recommendations',t('추천서','Recommendations')]];
   const education=model.education.map(entry=>`<li><time>${e(entry.period)}</time><div><h3>${e(entry.title)}</h3><p>${e(entry.status)}</p></div><span class="cv-degree-status ${entry.awarded?'cv-awarded':''}">${entry.awarded?'✓':'—'}</span></li>`).join('');
-  const projects=model.projects.map(project=>`<li><span class="cv-project-number">${String(project.id).padStart(2,'0')}</span><div><h3>${e(project.title)}</h3><p>${e(project.statusLabel)}${project.presentations?` · ${e(t(`학술발표 ${project.presentations}회`,`${project.presentations} presentation${project.presentations===1?'':'s'}`))}`:''}${project.revisions?` · ${e(t(`수정 ${project.revisions}회`,`${project.revisions} revision${project.revisions===1?'':'s'}`))}`:''}</p></div></li>`).join('');
+  const projects=model.projects.map(project=>`<li><span class="cv-project-number">${String(project.id).padStart(2,'0')}</span><div><h3>${e(project.title)}</h3><p>${e(project.statusLabel)}${project.journal?` · ${e(JOURNALS[project.journal].label)} (가상 IF ${project.impactFactor})`:''}${project.conferenceTier?` · ${e(CONFERENCE_TIERS[project.conferenceTier].label)}`:''}${project.presentations?` · ${e(t(`학술발표 ${project.presentations}회`,`${project.presentations} presentation${project.presentations===1?'':'s'}`))}`:''}${project.revisions?` · ${e(t(`수정 ${project.revisions}회`,`${project.revisions} revision${project.revisions===1?'':'s'}`))}`:''}</p></div></li>`).join('');
   const memories=model.memories.length?model.memories.map(memory=>`<li><time>${e(memory.date)}</time><div><h3>${e(memory.title)}</h3><p>${e(memory.detail)}</p></div></li>`).join(''):`<li class="cv-empty">${e(t('첫 기록을 남긴 시간도 이 이력의 일부다.','The beginning belongs in this record, too.'))}</li>`;
   const metricHTML=items.map(([key,label])=>`<div><dt>${e(label)}</dt><dd>${model.outputs[key]}</dd></div>`).join('');
-  const publications=model.projects.filter(project=>project.status==='accepted').map(project=>`<li><time>${e(monthLabel(project.acceptedMonth??project.lastMonth,model.locale))}</time><div><h3>${e(project.title)}</h3><p>${e(model.name)} · ${e(t('게재 확정','Accepted'))}</p></div></li>`).join('');
+  const publications=model.projects.filter(project=>project.status==='accepted').map(project=>`<li><time>${e(monthLabel(project.acceptedMonth??project.lastMonth,model.locale))}</time><div><h3>${e(project.title)}</h3><p>${e(model.name)} · ${e(t('게재 확정','Accepted'))}${project.journal?` · ${e(JOURNALS[project.journal].label)} · 가상 IF ${project.impactFactor}`:''}</p></div></li>`).join('');
   return {e,t,education,projects,memories,metricHTML,
     title:`<p class="cv-kicker">PROFESSOR MAKER · ${e(t('연구실 활동 기록','Research record'))}</p><h1>${e(model.name)}</h1><p class="cv-career">${e(ENDINGS[model.ending].career[model.locale])}</p><p class="cv-field">${e(model.field)}</p>${model.advisor?`<p class="cv-advisor">지도교수: ${e(model.advisor.name)} · ${e(({national:'국립대',private:'사립대',institute:'과학기술원'})[model.advisor.institution])}</p>`:''}<p class="cv-fiction-notice">게임에서 생성한 가상의 활동 기록 · 실제 학위·경력 증명서가 아닙니다.</p>`,
     period:`<p class="cv-period"><strong>${e(model.duration)}</strong><span>${e(model.period)}</span></p>`,
@@ -145,7 +146,8 @@ export function validateCVModel(model) {
   }
   if(!Array.isArray(model.projects)||model.projects.length>100)return false;
   for(const project of model.projects) {
-    if(!plain(project)||!allowedKeys(project,['id','title','firstMonth','lastMonth','status','submissions','presentations','revisions','acceptedMonth','statusLabel','phase'])||!boundedInteger(project.id,1000)||project.id===0||!boundedText(project.title,200)||!boundedInteger(project.firstMonth,model.months)||!boundedInteger(project.lastMonth,model.months)||project.firstMonth>project.lastMonth||!['ongoing','submitted','accepted'].includes(project.status)||!['submissions','presentations','revisions'].every(key=>boundedInteger(project[key]))||!boundedText(project.statusLabel,160)||!boundedText(project.phase,100)||!(project.acceptedMonth===undefined||boundedInteger(project.acceptedMonth,model.months)))return false;
+    if(project.journal!==undefined&&!Object.hasOwn(JOURNALS,project.journal)||project.impactFactor!==undefined&&(!Number.isFinite(project.impactFactor)||project.impactFactor<0||project.impactFactor>100)||project.conferenceTier!==undefined&&!Object.hasOwn(CONFERENCE_TIERS,project.conferenceTier))return false;
+    if(!plain(project)||!allowedKeys(project,['id','title','firstMonth','lastMonth','status','submissions','presentations','revisions','acceptedMonth','statusLabel','phase','journal','impactFactor','conferenceTier'])||!boundedInteger(project.id,1000)||project.id===0||!boundedText(project.title,200)||!boundedInteger(project.firstMonth,model.months)||!boundedInteger(project.lastMonth,model.months)||project.firstMonth>project.lastMonth||!['ongoing','submitted','accepted'].includes(project.status)||!['submissions','presentations','revisions'].every(key=>boundedInteger(project[key]))||!boundedText(project.statusLabel,160)||!boundedText(project.phase,100)||!(project.acceptedMonth===undefined||boundedInteger(project.acceptedMonth,model.months)))return false;
   }
   if(!Array.isArray(model.memories)||model.memories.length>6)return false;
   for(const memory of model.memories)if(!plain(memory)||!allowedKeys(memory,['month','title','detail','kind','date'])||!boundedInteger(memory.month,model.months)||!boundedText(memory.title,200)||!boundedText(memory.detail,800)||!boundedText(memory.kind,80)||!boundedText(memory.date,100))return false;

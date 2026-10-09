@@ -8,7 +8,7 @@ export function advanceImpact(s){
  for(let i=0;i<s.impact.citations.length;i++){
   // An independent hash avoids changing academic-event RNG when citations are updated.
   const draw=((Math.imul((s.creationSeed??s.seed)^(s.month*7919)^(i*104729),2654435761)>>>0)/4294967296);
-  const weight=.75*performance+.25*luck;
+  const paper=s.history.filter(h=>h.kind==='paper')[i],visibility=Number.isFinite(paper?.impactFactor)?Math.min(.12,paper.impactFactor*.015):0;const weight=Math.min(1,.75*performance+.25*luck+visibility);
   if(draw<.15+.5*weight)s.impact.citations[i]=Math.min(100000,s.impact.citations[i]+1+(draw<.08*weight?1:0));
  }
  s.impact.hIndex=hIndex(s.impact.citations);

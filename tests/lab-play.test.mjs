@@ -8,10 +8,10 @@ import {studentLine} from '../dist/dialogue.js';
 const set=(s,k,v)=>{const [lo,hi]=HIDDEN_RANGES[k];s.hidden[k]=lo+(hi-lo)*v/100;};
 
 test('trusted students ask for self-directed exam preparation in the exam week and the previous week',()=>{
- const s=createState('',6);s.started=true;s.month=3;set(s,'trust',80);const plan=proposeSchedule(s);
+ const s=createState('',6);s.started=true;s.month=3;set(s,'rapport',80);const plan=proposeSchedule(s);
  for(let i=0;i<plan.length;i++)if(examWindow(s,i,plan.length))assert.equal(plan[i],'free');
- assert.match(studentLine(s),/시험 주와 그 전주/);set(s,'trust',30);const supported=proposeSchedule(s);for(let i=0;i<supported.length;i++)if(examWindow(s,i,supported.length))assert.equal(supported[i],'coursework');
- set(s,'trust',80);set(s,'stamina',90);const n=simulateMonth(s,plan,{proposal:plan});assert.ok(n.lastReport.results.some(w=>w.autonomous==='coursework'));assert.ok(validateSave(n));
+ assert.match(studentLine(s),/시험 주와 그 전주/);set(s,'rapport',30);const supported=proposeSchedule(s);for(let i=0;i<supported.length;i++)if(examWindow(s,i,supported.length))assert.equal(supported[i],'coursework');
+ set(s,'rapport',80);set(s,'stamina',90);const n=simulateMonth(s,plan,{proposal:plan});assert.ok(n.lastReport.results.some(w=>w.autonomous==='coursework'));assert.ok(validateSave(n));
 });
 test('course work develops qualification knowledge without generating research output',()=>{
  const s=createState('',6);s.month=2;set(s,'stamina',99);set(s,'motivation',99);const plan=Array(proposeSchedule(s).length).fill('coursework');const n=simulateMonth(s,plan,{proposal:plan});assert.ok(n.hidden.learning>s.hidden.learning);assert.equal(n.lastReport.progress,0);assert.ok(n.lastReport.results.some(w=>w.actual==='coursework'&&w.performed));
@@ -21,7 +21,7 @@ test('research rates span five grades continuously, and project progress is the 
  assert.equal(grades.size,5);assert.ok(rates.size>100);
 });
 test('actual rehearsal makes failed conference presentations less frequent and failure never awards a presentation',()=>{
- let bare=0,rehearsed=0;for(let seed=1;seed<=120;seed++){const s=createState('',seed*7919);s.month=26;s.route='integrated';s.project.phase=3;set(s,'stamina',95);set(s,'motivation',95);set(s,'rapport',90);set(s,'trust',90);
+ let bare=0,rehearsed=0;for(let seed=1;seed<=120;seed++){const s=createState('',seed*7919);s.month=26;s.route='integrated';s.project.phase=3;set(s,'stamina',95);set(s,'motivation',95);set(s,'rapport',90);set(s,'rapport',90);
   for(const prepared of [false,true]){const n=simulateMonth(s,prepared?['language','language','conference','free']:['free','free','conference','free']);const failed=n.history.some(h=>h.kind==='presentation-failure');if(failed){if(prepared)rehearsed++;else bare++;assert.equal(n.career.conferences,0);assert.ok([n.pending,...n.pendingQueue].some(p=>p.kind==='presentation-recovery'));while(n.pending&&n.pending.kind!=='presentation-recovery')n.pending=n.pendingQueue.shift()??null;const supported=decide(n,'rehearse');assert.ok(validateSave(supported));}}
  }assert.ok(bare>30);assert.ok(rehearsed<bare/2,`${rehearsed} vs ${bare}`);
 });

@@ -30,3 +30,10 @@ test('private administrator can import anonymous exports idempotently without ac
  assert.equal((await analyticsAPI(req('/api/admin/import',{method:'POST',token:env.ADMIN_KEY,data:{...run,name:'실명'}}),env)).status,400);
  }finally{env.close();}
 });
+test('legacy relationship records normalize once in SQLite while current-version runs keep one relationship and exclude surnames',async()=>{
+ const env=environment();try{
+ const result=await analyticsAPI(req('/api/runs',{method:'POST',data:{consent:'anonymous-gameplay-v1',version:'4.5.0',fieldId:'050',institution:'national',labMode:'dry'}}),env);assert.equal(result.status,201);const session=await result.json(),record=fixture();record.student={...record.student,rapport:20,trust:80};
+ assert.equal((await analyticsAPI(req('/api/runs/'+session.id,{method:'POST',data:record,token:session.token}),env)).status,200);const rows=await (await analyticsAPI(req('/api/admin/export',{token:env.ADMIN_KEY}),env)).json(),stored=JSON.parse(rows.records[0].record);assert.equal(stored.student.rapport,50);assert.equal(Object.hasOwn(stored.student,'trust'),false);
+ assert.equal((await analyticsAPI(req('/api/runs/'+session.id,{method:'POST',data:{...record,professorSurname:'남궁'},token:session.token}),env)).status,400);
+ }finally{env.close();}
+});
