@@ -86,3 +86,78 @@ export const ENDINGS={
     p('나는 면담 일정에 새 제목을 적었다.\n\n다음 계획.\n\n8년 안에 쓰지 못한 문장이었다.','I wrote a new title in the meeting calendar.\n\nThe next plan.\n\nA sentence we had not written in those eight years.')
   ]}
 };
+
+// Rapport controls the distance in the letter, separately from the career outcome.
+// Numbers here are raw signed rapport, not the normalized 0–100 ability score.
+export function endingRelationship(relationship, id) {
+  if (['close', 'reserved', 'distant'].includes(relationship)) return relationship;
+  const raw = typeof relationship === 'number' ? relationship : relationship?.rapport;
+  if (Number.isFinite(raw)) return raw >= 40 ? 'close' : raw <= -30 ? 'distant' : 'reserved';
+  return id === 'true' ? 'close' : 'reserved';
+}
+
+const relationshipNotes = {
+  close: p('다음에는 일 이야기만 하지 않고, 교수님은 어떻게 지내시는지도 듣고 싶습니다. 괜찮은 날을 알려 주세요.', 'Next time, I would like to hear how you are doing as well as talk about work. Please let me know a good day.'),
+  reserved: p('긴 안부를 쓰는 일은 아직 조금 어색합니다. 그래도 이 소식은 직접 전하고 싶었습니다.', 'A long personal letter still feels a little awkward. Even so, I wanted you to hear this news from me.'),
+  distant: p('오랜만에 소식을 전합니다. 당분간은 이렇게 필요한 이야기를 메일로 나누면 좋겠습니다.', 'It has been a while. For now, I would prefer to keep in touch by email about what we need to discuss.'),
+};
+const pauseNotes = {
+  close: p('결정을 재촉하지 않고 들어 주신 건 기억하고 있습니다. 여유가 생기면 연구 이야기 없이도 안부를 전하고 싶습니다.', 'I remember that you heard me without rushing my decision. When I have room for it, I would like to send a note with no research to report.'),
+  reserved: p('앞으로의 일은 조금 더 정리한 뒤 말씀드리겠습니다. 지금은 이 정도 소식으로 남겨 두고 싶습니다.', 'I will tell you more once I have sorted out what comes next. For now, I would like to leave the update here.'),
+  distant: p('후속 연락은 필요한 인계에 관한 것만 부탁드립니다. 제 다음 선택은 제가 정리할 시간이 필요합니다.', 'Please limit further contact to the handover for now. I need time to work out my next choice myself.'),
+};
+
+const failurePages = {
+  graduation_requirements: [
+    p('학위를 마칠 시점이 왔지만, 필요한 연구와 학술발표를 모두 채우지는 못했다. 연구실 운영이 중단된 것은 아니었다. 다만 학생의 졸업에 필요한 준비가 끝나지 않았다.\n\n나는 성과표의 빈칸을 보고, 끝났다고 말할 수 없었던 시간을 생각했다.', 'The degree review arrived before all the required research and presentations were complete. The lab had not closed. The student’s preparation for graduation was unfinished.\n\nI looked at the gaps in the record and thought about the time I could not call complete.'),
+    p('교수님께.\n\n지금까지 한 일과 남은 일을 정리했습니다. 해 온 연구가 없어지는 것은 아니지만, 학위를 받았다고 말할 수는 없다는 걸 알고 있습니다.\n\n계속할지 다른 길로 갈지, 다음 계획은 제가 먼저 써 보고 싶습니다.\n― {name} 드림', 'Dear Professor,\n\nI have listed what I completed and what remains. The work I did does not disappear, but I know I cannot say I earned the degree.\n\nBefore deciding whether to continue or take another path, I would like to draft my next plan myself.\n— {name}'),
+    p('성적이나 일정만으로는 채울 수 없는 칸들이 있었다. 나는 다음 면담의 제목을 바꿨다.\n\n졸업을 서두르는 면담 대신, 남은 선택을 함께 살피는 면담.\n\n이 게임의 지도기간은 여기서 끝났다.', 'Some gaps could not be filled just by grades or a calendar. I changed the title of our next meeting.\n\nInstead of rushing graduation, we would examine the choices that remained.\n\nThe advising period in this game ended here.'),
+  ],
+  time_limit: [
+    p('학부연구생과 석박사, 8년이라는 시간이 흘렀다. 하지만 학위를 마칠 준비는 끝나지 않았다. 연구실 문은 여전히 열려 있었다.\n\n여덟 해라는 이 게임의 시간이 먼저 끝난 것이다.', 'An undergraduate researcher, then a graduate student. Eight years had passed, but the preparation for a degree was not complete. The lab door was still open.\n\nThe eight years allowed by this game had ended first.'),
+    p('교수님께.\n\n마지막 진도표를 다시 읽었습니다. 시작할 때는 여덟 해면 충분할 거라고 생각했습니다. 이제는 남은 일을 얼마나 오래 걸릴지보다 왜 하고 싶은지부터 써 보려고 합니다.\n\n다음 선택을 정리할 시간이 필요합니다.\n― {name} 드림', 'Dear Professor,\n\nI reread the final progress sheet. At the start, I thought eight years would be enough. Now I want to write why I want to do the remaining work before asking how long it will take.\n\nI need time to decide what comes next.\n— {name}'),
+    p('나는 아직 남은 파일을 닫지 않았다. 끝난 것은 게임의 기간이지, 그동안의 연구를 없애는 일이 아니었다.\n\n다음 계획을 적을 빈 페이지를 한 장 남겨 두었다.', 'I did not close the remaining files. The game’s period had ended; the work we had done had not vanished.\n\nI left one blank page for the next plan.'),
+  ],
+  qual_failure: [
+    p('자격시험을 다시 준비했지만, 이번에도 통과하지 못했다. 연구실을 운영하지 못해서 끝난 것은 아니었다. 박사과정을 이어가기 위한 관문을 넘지 못한 것이다.\n\n나는 시험 결과와 학생이 해 온 연구를 같은 말로 묶지 않으려 했다.', 'We prepared for the qualifying exam again, but did not pass. This ending was not a failure to operate the lab. The requirement for continuing the doctoral program remained unmet.\n\nI tried not to use the same words for the exam result and all the research the student had done.'),
+    p('교수님께.\n\n준비한 만큼 설명할 수 있기를 바랐는데, 결과는 달랐습니다. 지금은 다시 시험 이야기를 하기보다 여기까지 해 온 일을 정리하고 싶습니다.\n\n어떤 길이 가능한지, 제가 생각해 본 뒤 상담을 부탁드리겠습니다.\n― {name} 드림', 'Dear Professor,\n\nI hoped I could explain what I had prepared, but the result was different. For now, I would like to organize what I have done rather than discuss another exam.\n\nAfter considering which paths are possible, I will ask for advice.\n— {name}'),
+    p('시험 점수 옆에, 학생이 제출한 첫 그래프를 놓았다. 어느 하나가 다른 하나를 지워서는 안 됐다.\n\n나는 답장을 쓰기 전에 다음 선택을 설명할 자료부터 찾았다.', 'I placed the student’s first graph beside the exam result. Neither should erase the other.\n\nBefore writing my reply, I looked for information about the choices ahead.'),
+  ],
+};
+
+function appendLetterNote(pages, note, lang) {
+  const index = pages.findIndex(page => lang === 'en' ? page.includes('Dear Professor,') : /교수님께\./.test(page));
+  if (index < 0) return;
+  const signature = lang === 'en' ? '\n— {name}' : '\n― {name}';
+  const at = pages[index].indexOf(signature);
+  if (at < 0) pages[index] += '\n\n' + note;
+  else pages[index] = pages[index].slice(0, at) + '\n\n' + note + pages[index].slice(at);
+}
+
+// Return fresh strings: gallery replays and locale switches cannot alter source stories.
+export function getEndingPages(id, lang = 'ko', relationship, name, reason) {
+  const locale = lang === 'en' ? 'en' : 'ko';
+  const story = ENDINGS[id];
+  if (!story) return [];
+  const distance = endingRelationship(relationship, id);
+  const suppliedReason = typeof reason === 'object' ? reason?.endingReason : reason;
+  const rawPages = id === 'gameover' && failurePages[suppliedReason] ? failurePages[suppliedReason] : story.pages;
+  const pages = rawPages.map(page => page[locale]);
+  if (id === 'corporate' && distance === 'close') {
+    pages[0] = pages[0].replace(locale === 'ko' ? '그날의 커피는 정말로 한 잔뿐이었다.' : 'There really was only one cup of coffee.', locale === 'ko' ? '커피가 식는 동안에도 이야기는 끝나지 않았다.' : 'The conversation continued long after the coffee cooled.');
+    pages[4] = p('학회에서 뵙게 되면 커피를 사겠습니다. 그때는 교수님 이야기도 오래 듣고 싶습니다.\n\n추신. 교수님 논문 인용은 계속하겠습니다. 다음에는 그 논문에서 시작한 제 실험도 보여 드릴게요.\n― {name} 올림\n\n나는 마지막 문장을 한 번 더 읽었다. 이제는 검토를 받기 위해서만 연락하는 사이가 아니었다.\n\n……그래도 인용은 해준다니, 그건 반가웠다.', 'If we meet at a conference, I will buy the coffee. This time I would like to hear more about you too.\n\nP.S. I will keep citing your papers. Next time, I will show you the experiment I began from one of them.\n— {name}\n\nI reread the last sentence. We no longer kept in touch only for my review.\n\n…Still, it was nice to hear about the citations.')[locale];
+    pages[5] = pages[5].replace(locale === 'ko' ? '커피는 정말로 한 잔뿐이었다.' : 'there really was only one cup of coffee.', locale === 'ko' ? '첫 잔이 비었는데도 두 사람은 자리에서 일어나지 않았다.' : 'we stayed seated after the first cup was empty.');
+  } else if (id === 'corporate' && distance === 'distant') {
+    pages[0] = pages[0].replace(locale === 'ko' ? '그날의 커피는 정말로 한 잔뿐이었다.' : 'There really was only one cup of coffee.', locale === 'ko' ? '두 사람은 세션이 끝난 뒤 짧게 인사를 나누었다.' : 'We exchanged a brief greeting after the session.');
+    pages[4] = p('자료 인계 때문에 한 가지를 덧붙입니다. 냉동고 샘플은 보존 여부를 결정하신 뒤 메일로 알려 주세요.\n\n교수님 논문은 계속 인용하겠습니다. 함께 지낸 시간과는 별개로, 연구에 필요한 논문이라서요.\n― {name} 올림\n\n메일로 알려 달라는 문장을 다시 읽었다. 그 거리를 줄이겠다는 답장은 쓰지 않았다.\n\n연구 기록을 확인하고, 필요한 답만 보내기로 했다.', 'One more detail for the handover: please email me once you decide whether to retain the freezer samples.\n\nI will keep citing your papers. Whatever our time together was like, the papers remain useful to my work.\n— {name}\n\nI reread the request for an email. I did not reply with an attempt to close that distance.\n\nI would check the records and send the information needed.')[locale];
+    pages[5] = p('교수는 편지를 두 번 읽고 서랍에 넣었다. 냉동고 맨 아래 칸을 열어 라벨이 붙은 튜브들을 오래 바라보았다.\n\n3년 뒤 학회에서 두 사람은 짧게 인사를 나누었다. 더 긴 대화를 약속하지는 않았다.\n\n함께한 연구는 남았고, 연락의 방식은 달라졌다.', 'I read the letter twice and put it in the drawer. Then I opened the bottom freezer drawer and looked at the labeled tubes for a long time.\n\nThree years later, we exchanged a brief greeting at a conference. We did not promise a longer conversation.\n\nThe work we had done remained. The way we kept in touch had changed.')[locale];
+  } else if (id === 'true' && distance !== 'close') {
+    // Preserve the recommendation, old machine, acknowledgements and promised good news.
+    pages[3] = pages[3].replace(locale === 'ko' ? '건강하세요.' : 'Please take care.', relationshipNotes[distance][locale] + '\n\n' + (locale === 'ko' ? '건강하세요.' : 'Please take care.'));
+    pages[8] = distance === 'reserved' ? p('그날 저녁, 두 사람은 학회장 근처 카페에서 커피를 마셨다. 한 잔을 마시는 동안 오래된 기계와 {name} 교수의 대학원생 이야기가 이어졌다.\n\n다음 만남을 서두르지는 않았다. 돌아가기 전, 나는 처음으로 학생의 진도가 아닌 동료의 의견을 물었다.\n\n“자네는 어떻게 생각하나?”', 'That evening, we had one coffee at a café near the venue. We talked about the old machine and Professor {name}’s graduate students.\n\nWe did not rush to arrange another meeting. Before leaving, I asked for a colleague’s view rather than a student’s progress.\n\n“What do you think?”')[locale] : p('카페에 같이 가자는 말은 꺼내지 않았다. {name} 교수는 다음 세션으로 향했고, 나는 그 뒷모습을 잠깐 바라보았다.\n\n좋은 소식은 약속대로 직접 가져왔다. 그 뒤의 거리는 각자가 정할 일이었다.\n\n며칠 뒤 받은 메일에는 새로운 연구 질문이 적혀 있었다. 이번에는 동료에게 답장을 썼다.', 'I did not suggest going to a café together. Professor {name} headed to the next session, and I watched for a moment.\n\nThe good news had been brought in person as promised. The distance afterward was for each of us to choose.\n\nA few days later, an email arrived with a new research question. This time, I wrote to a colleague.')[locale];
+  } else if (id !== 'corporate' && id !== 'true') {
+    const pauses = ['leave', 'dropout', 'unfinished', 'gameover'].includes(id);
+    appendLetterNote(pages, (pauses ? pauseNotes : relationshipNotes)[distance][locale], locale);
+  }
+  return name == null ? pages : pages.map(page => page.replaceAll('{name}', () => String(name)));
+}

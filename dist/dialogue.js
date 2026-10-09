@@ -1,6 +1,30 @@
 // Original bilingual student voices. Abilities never appear as numeric dialogue.
 const lines = text => text.trim().split('\n').map(row => { const [ko, en] = row.trim().split(' | '); return { ko, en }; });
 export const DIALOGUES = {
+  firstContactCurious: lines(`
+교수님 논문을 읽다가 끝에서 새 질문이 생겼어요. 아직 잘 모르지만, 여기서 배워 보고 싶습니다. | Your paper left me with a new question at the end. I do not understand it well yet, but I would like to learn here.
+같은 결과를 다른 방법으로 확인할 수 있을지 궁금했어요. 연구실에서 그런 것도 해 볼 수 있나요? | I wondered whether the same result could be checked another way. Could I explore that in this lab?
+진로를 정했다고 말하기는 이르지만, 어떤 질문부터 연구가 되는지 알고 싶어요. | It is early to say I have chosen a career, but I want to know how a question becomes research.
+읽은 것과 제가 생각한 것을 나눠서 적어 왔어요. 처음부터 틀린 생각이어도 봐 주실 수 있을까요? | I separated what I read from what I thought. Could you look even if my first idea is wrong?
+수업에서 답이 정해지지 않은 부분이 제일 궁금했어요. 그래서 연구실에 연락드렸습니다. | The parts without a settled answer interested me most in class. That is why I contacted the lab.
+아직 익숙한 방법은 없어요. 대신 어떻게 확인해야 하는지 배우고 싶습니다. | I do not have a familiar method yet. I want to learn how to check an idea.
+`),
+  firstContactQuiet: lines(`
+메일은 몇 번 고쳐 썼는데, 직접 말씀드리려니 또 긴장되네요. 질문은 메모해 왔어요. | I rewrote the email several times, and speaking in person makes me nervous again. I brought my questions in notes.
+먼저 연구실에서 하루가 어떻게 흘러가는지 여쭤보고 싶어요. | I would first like to ask what an ordinary day in the lab is like.
+제가 잘할 수 있는지는 아직 모르겠어요. 작은 일부터 맡아 보면서 알고 싶습니다. | I do not know yet whether I can do this well. I would like to find out by starting with something small.
+바로 대답하기보다 잠깐 생각할 시간이 있으면 좋겠어요. | It would help if I could have a moment to think before answering.
+연구를 해 보고 싶어서 왔어요. 말은 조금 느려도 꾸준히 물어보겠습니다. | I came because I want to try research. I may speak slowly, but I will keep asking questions.
+다 같이 토론하는 건 아직 낯설어요. 처음에는 정리한 글로 질문해도 될까요? | Group discussion is still unfamiliar. Could I begin by asking questions in writing?
+`),
+  firstContactOutgoing: lines(`
+선배가 연구실 이야기를 들려줘서 더 궁금해졌어요. 직접 와서 여쭤보고 싶었습니다. | Hearing a senior student talk about the lab made me more curious. I wanted to come and ask directly.
+함께 공부할 사람이 있다는 게 기대돼요. 제가 먼저 읽을 자료가 있을까요? | I am looking forward to having people to learn with. Is there something I should read first?
+연구실 세미나에도 가 보고 싶어요. 처음에는 질문보다 듣는 게 더 많겠지만요. | I would like to attend the lab seminar too. At first, I will probably listen more than ask.
+연구는 혼자 하는 줄 알았는데, 오늘 와 보니까 같이 이야기할 일이 많을 것 같아요. | I thought research was mostly solitary. Visiting today, I can see there will be a lot to discuss together.
+제가 아직 모르는 게 많아서 질문도 많을 것 같아요. 한꺼번에 묻지 않도록 적어 왔습니다. | I do not know much yet, so I expect to have many questions. I wrote them down so I do not ask all at once.
+연구실 사람들에게도 인사하고 싶어요. 여기서 각자 어떤 일을 하는지 궁금합니다. | I would like to meet the people in the lab too. I am curious about what everyone works on.
+`),
   intro: lines(`
 교수님, 실험 노트는 어느 정도 자세히 쓰면 될까요? 아직 첫 장을 못 넘겼어요. | Professor, how detailed should my notebook be? I still have not made it past the first page.
 논문 제목은 읽었는데요, 모르는 단어가 제목보다 많아요. | I read the paper title. There are more unfamiliar words than words I understand.
@@ -343,7 +367,12 @@ export function studentLine(s, lang = 'ko') {
   const expression = value(t, 'expression');
   const listen = value(b, 'listen', 0), harsh = value(b, 'harsh', 0), praise = value(b, 'praise', 0), critique = value(b, 'critique', 0);
   let groups = ['ordinary'];
-  if (month === 0) groups = ['intro'];
+  if (month === 0) {
+    groups = ['intro'];
+    if (creativity > 25 || curiosity > 65) groups.push('firstContactCurious');
+    if (social < -20 || expression < 40 || caution > 65) groups.push('firstContactQuiet');
+    if (social > 25 && expression > 45) groups.push('firstContactOutgoing');
+  }
   else if (trust < -46) groups = ['lowTrust', ...(harsh > listen ? ['guarded'] : []), ...(rapport > 25 ? ['closeUncertain'] : [])];
   else if (stamina < 250) groups = ['tired', ...(diligence > 40 ? ['overworking'] : [])];
   else {
