@@ -68,6 +68,8 @@ try {
     const state=await page.evaluate(()=>JSON.parse(localStorage.getItem('pm-save-v3')));
     if(state.ending)break;
     if(state.pending) {
+      if(state.pending.kind==='route')assert.equal(await page.locator('.student-id p').innerText(),'학부연구생','Admission should not display a PhD before a route is selected');
+      if(state.pending.kind==='masters')assert.equal(await page.locator('.student-id p').innerText(),'석사과정');
       const values={event:'0',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
       const before=JSON.stringify(state);
       await page.locator(`[data-ui="decide"][data-choice="${values[state.pending.kind]}"]`).click();

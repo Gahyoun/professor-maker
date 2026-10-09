@@ -1,4 +1,4 @@
-const CACHE='professor-maker-spectrum-v3.0.0';
+const CACHE='professor-maker-spectrum-v3.0.1';
 const ASSETS=['./','./index.html','./app.js','./simulation-worker.js','./engine.js','./grants.js','./names.js','./events.js','./dialogue.js','./stories.js','./style.css','./logos.html','./icon.svg','./icon-192.png','./icon-512.png','./icon-maskable.png','./manifest.webmanifest','./assets/lab-mark.svg','./assets/lab-mark-network.svg','./assets/lab-mark-letter.svg','./assets/fonts/NotoSansKR.woff2','./assets/fonts/SUITE.woff2'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));self.skipWaiting();});
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('professor-maker-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
