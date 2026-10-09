@@ -1,3 +1,5 @@
+import {managedOptions} from './play-support.mjs';
+import {facultyCapacity,allocateCredits} from '../dist/workload.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createState,simulateMonth,proposeSchedule,decide,validateSave,researchGrade,HIDDEN_RANGES,abilityScore,calendarMonth,ACTIVITIES} from '../dist/engine.js';
@@ -36,7 +38,7 @@ test('wet supplies depend on available operating funds and allocation; every act
  s.professorProfile.labMode='dry';assert.ok(!researchText('예비 실험 · 실험 노트 · 실험실',s).includes('실험'));
 });
 test('full-body characters vary clothes each week, keep their face, and make bald styles uncommon',()=>{
- const s=createState('',6),first=weeklyAppearance(s,0);for(let i=1;i<5;i++){const a=weeklyAppearance(s,i);assert.notEqual(a.outfit,weeklyAppearance(s,i-1).outfit);assert.equal(a.hairLength,first.hairLength);assert.equal(a.skin,first.skin);}assert.ok(renderPortrait(first).includes('0 0 80 124'));assert.ok(!renderPortrait(first).includes('<rect width="80"'));
+ const s=createState('',6),first=weeklyAppearance(s,0);for(let i=1;i<5;i++){const a=weeklyAppearance(s,i);assert.notEqual(a.outfit,weeklyAppearance(s,i-1).outfit);assert.equal(a.hairLength,first.hairLength);assert.equal(a.skin,first.skin);}assert.ok(renderPortrait(first).includes('0 0 160 248'));assert.ok(!renderPortrait(first).includes('<rect width="80"'));
  let bald=0;for(let seed=1;seed<=5000;seed++)bald+=studentAppearance(seed*7919,'male').hairLength===0;assert.ok(bald>0&&bald<75,String(bald));
 });
 
@@ -46,7 +48,7 @@ test('RA research contributes weighted project work while TA course assistance d
 
 test('a founder ending remains reachable through current RA choices without the removed startup schedule',()=>{
  let s=createState('',63352,{gender:'female',age:38});for(let month=0;month<96&&!s.ending;month++){
-  const plan=proposeSchedule(s);if(![4,10].includes(calendarMonth(s.month)))plan[3]='industry';assert.ok(plan.every(id=>Object.hasOwn(ACTIVITIES,id)));if(s.grants.status==='bridge')s.lab.budget={...s.lab.budget,performance:0,environment:1,publicity:0};s=simulateMonth(s,plan,{facultyAction:month%4===0?'conversation':'routine'});
-  while(s.pending&&!s.ending){const p=s.pending,choice=({'presentation-recovery':'rehearse',story:'encourage','academic-exam':'support','external-admission':'remain',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',defense:'defend',service:'consult','service-review':'consult',event:0})[p.kind]??({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[p.step];s=decide(s,choice);}
+  const plan=proposeSchedule(s);if(![4,10].includes(calendarMonth(s.month)))plan[3]='industry';assert.ok(plan.every(id=>Object.hasOwn(ACTIVITIES,id)));if(s.grants.status==='bridge')s.lab.budget={...s.lab.budget,performance:0,environment:1,publicity:0};s=simulateMonth(s,plan,{...managedOptions(s,month%4===0?'conversation':'routine')});
+  while(s.pending&&!s.ending){const p=s.pending,choice=({'monthly-issue':'acknowledge','conference-plan':p.scope==='domestic'?'together':'none','failure-counsel':'review','conversation-topic':'daily','presentation-recovery':'rehearse',story:'encourage','academic-exam':'support','external-admission':'remain',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',defense:'defend',service:'consult','service-review':'consult',event:0})[p.kind]??({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[p.step];s=decide(s,choice);}
  }assert.equal(s.month,96);assert.equal(s.ending,'startup');assert.ok(validateSave(s));
 });

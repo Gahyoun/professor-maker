@@ -15,7 +15,7 @@ const rest=['rest','rest','rest','rest'];
 const clone=x=>structuredClone(x);
 
 test('stage-specific counseling covers career, academic learning and research without ranking careers',()=>{
- const s=createState('',6),counseling=EVENTS.filter(e=>e.kind==='counseling');assert.equal(counseling.length,9);
+ const s=createState('',6),counseling=EVENTS.filter(e=>e.kind==='counseling');assert.equal(counseling.length,10);
  for(const e of counseling){s.month=e.minMonth;s.route=s.month>=24?'integrated':null;s.project.phase=2;assert.ok(eventEligible(s,e),e.id);s.pending={kind:'event',id:e.id};assert.ok(validateSave(s),e.id);
   for(const choice of [0,1]){const n=decide(s,choice);assert.ok(validateSave(n));assert.ok(n.hidden.rapport>=s.hidden.rapport);assert.ok(endingMemoryNotes(n.history).length);n.ending='leave';const cv=buildEndingCV(n);assert.ok(validateCVModel(cv.model));assert.ok(cv.model.memories.some(m=>m.title===e.title.ko));}
   assert.ok(e.options.every(o=>!Object.hasOwn(o.effects?.career??{},'papers')),'A conversation never invents an achievement');
@@ -28,7 +28,7 @@ test('low rapport shows hesitant questions and observational narration; supporti
  s.hidden.rapport=45;assert.match(counselingBody(e,s),/학생이 먼저/);const n=decide(s,0);assert.match(counselingFollowup(n),/예제로/);assert.match(studentLine(n),/예제로/);const other=decide(s,1);assert.notEqual(studentLine(n),studentLine(other));n.month+=2;assert.equal(counselingFollowup(n),null);
 });
 test('counseling gets protected opportunities, respects a six-month gap and never jumps ahead of important events',()=>{
- const offered=new Set();for(let seed=1;seed<50;seed++){let s=createState('',seed);s.month=6;s.attendance.domestic='none';s=simulateMonth(s,rest);assert.equal(s.pending.kind,'event');assert.equal(EVENTS.find(e=>e.id===s.pending.id).kind,'counseling');offered.add(s.pending.id);s=decide(s,0);const next=simulateMonth(s,rest);assert.ok(![next.pending,...next.pendingQueue].filter(Boolean).some(p=>p.kind==='event'&&EVENTS.find(e=>e.id===p.id).kind==='counseling'));assert.ok(validateSave(next));}assert.ok(offered.size>=3);
+ const offered=new Set();for(let seed=1;seed<50;seed++){let s=createState('',seed);s.month=10;s.attendance.domestic='none';s=simulateMonth(s,rest);assert.equal(s.pending.kind,'event');assert.equal(EVENTS.find(e=>e.id===s.pending.id).kind,'counseling');offered.add(s.pending.id);s=decide(s,0);const next=simulateMonth(s,rest);assert.ok(![next.pending,...next.pendingQueue].filter(Boolean).some(p=>p.kind==='event'&&EVENTS.find(e=>e.id===p.id).kind==='counseling'));assert.ok(validateSave(next));}assert.ok(offered.size>=3);
  const s=createState('',6);s.month=23;const n=simulateMonth(s,rest);assert.ok([n.pending,...n.pendingQueue].some(p=>p.kind==='route'));assert.ok(![n.pending,...n.pendingQueue].some(p=>p.kind==='event'&&EVENTS.find(e=>e.id===p.id).kind==='counseling'));
 });
 test('rapport is the only relationship in new saves, with bounded legacy migration across saves, CV plots and analytics',()=>{

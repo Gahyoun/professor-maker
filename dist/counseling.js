@@ -12,6 +12,7 @@ export function counselingBody(event,s,locale='ko'){
  return opening+'\n\n'+event.body[locale];
 }
 const followups={
+ 'counsel-daily-life':['일정 사이에 제 시간을 조금 남겨 두었어요. 다음 주 계획도 다시 살펴봤어요.','제가 필요한 시간을 직접 정하니, 할 일과 쉬는 시간을 구분하기가 수월했어요.'],
  'counsel-career-first':['제가 좋아했던 일이 뭔지부터 적어 봤어요. 아직 결론은 없지만 알아볼 방향은 생겼어요.','진학 설명회와 채용 안내를 둘 다 봤어요. 조금 더 알아본 다음 제 생각을 말씀드릴게요.'],
  'counsel-coursework':['이번에는 수업 내용을 복습할 시간을 먼저 넣었어요. 놓쳤던 기초가 조금씩 연결돼요.','제가 짠 공부 계획을 해 봤어요. 다음 면담 때 어디까지 이해했는지 설명드려 볼게요.'],
  'counsel-small-question':['지난번에 같이 본 예제로 다시 계산해 봤어요. 작은 질문도 적어 와도 되는 거죠?','제가 이해한 부분부터 설명하니까 모르는 부분도 좀 더 분명해졌어요.'],
@@ -25,5 +26,5 @@ const followups={
 export function counselingFollowup(s,locale='ko'){
  const last=s.history.filter(h=>h.kind==='event'&&Object.hasOwn(followups,h.id)).at(-1);
  if(!last||s.month-last.month>1||s.hidden.rapport<10)return null;
- return locale==='ko'?followups[last.id][last.choice]:'I revisited our last conversation and brought the next question I would like to explore.';
+ return locale==='ko'?(followups[last.id][last.choice]??(last.choice===2?'제가 정한 계획과 근거를 가져왔어요. 부족한 부분은 다시 조정해 보려고요.':'기한에 맞춰 우선순위를 다시 정했어요. 진행하면서 어려웠던 점도 말씀드리고 싶어요.')):'I revisited our last conversation and brought the next question I would like to explore.';
 }

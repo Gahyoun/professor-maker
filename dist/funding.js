@@ -1,5 +1,6 @@
 // Simplified 3 PI / 5 total game model. Actual programs can have exceptions.
 export function grantCounts(s){const active=(s.grants.portfolio??[{id:0,role:'pi',end:s.grants.cycleEnd}]).filter(g=>g.id===0||g.end>s.month);return {pi:active.filter(g=>g.role==='pi').length,total:active.length};}
+export function grantCallOpen(s){const m=((s.month+(s.locale==='en'?8:2))%12)+1;return [3,9].includes(m)||s.lab.funds<80;}
 export function canApplyGrant(s,role='pi'){const n=grantCounts(s);return n.total<5&&(role==='co'||n.pi<3);}
 export function validApplication(a){return a&&['pi','co'].includes(a.role)&&[1,2,3].includes(a.years)&&Object.keys(a).every(k=>['role','years'].includes(k));}
 export function ensureFunding(s){
@@ -13,7 +14,7 @@ export function advancePortfolio(s,application,{random,log}){
  {for(const g of s.grants.portfolio){if(g.id!==0&&s.month>g.start&&(s.month-g.start)%12===0&&s.month<g.end){depositGrant(s,g.annual);log(s,{kind:'portfolio-payment',grantId:g.id,amount:g.annual});}}}
  if(s.facultyAction!=='funding')return;
  if(!canApplyGrant(s,application.role)){log(s,{kind:'portfolio-limit',role:application.role});return;}
- const chance=Math.min(.85,.35+s.professor.research*.002+s.professor.admin*.001+Math.min(4,s.career.papers)*.035);
+ const m=((s.month-1+(s.locale==='en'?8:2))%12)+1;const seasonal=[3,9].includes(m);const chance=Math.min(.85,(seasonal?.35:.15)+s.professor.research*.002+s.professor.admin*.001+Math.min(4,s.career.papers)*.035);
  const awarded=random()<chance;log(s,{kind:'portfolio-selection',awarded,role:application.role,years:application.years});
- if(awarded){const g={id:Math.max(...s.grants.portfolio.map(g=>g.id))+1,role:application.role,start:s.month,end:s.month+application.years*12,annual:application.role==='pi'?180:100,titleIndex:s.grants.portfolio.length%3};s.grants.portfolio.push(g);depositGrant(s,g.annual);}
+ if(awarded){const g={id:Math.max(...s.grants.portfolio.map(g=>g.id))+1,role:application.role,start:s.month,end:s.month+application.years*12,annual:application.role==='pi'?(s.professorProfile.institution==='institute'?180:150):90,titleIndex:s.grants.portfolio.length%3};s.grants.portfolio.push(g);depositGrant(s,g.annual);}
 }

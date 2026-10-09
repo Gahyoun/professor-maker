@@ -1,3 +1,4 @@
+import {endingVoice,dryEndingText} from './ending-voice.js';
 // Original epilogues. The professor/corporate letters adapt Gahyoun Gim's supplied story.
 const p=(ko,en)=>({ko,en});
 export const ENDINGS={
@@ -146,6 +147,7 @@ function appendLetterNote(pages, note, lang) {
 
 // Original composite memories: only events that actually occurred can appear.
 const eventMemories={
+ 'counsel-daily-life':['생활 시간을 함께 확인하며 다음 주 계획을 다시 정했던 면담을 기억합니다.','스스로 필요한 자율 시간을 제안할 수 있도록 해 주셨던 이야기가 남아 있습니다.'],
  'counsel-career-first':['연구가 좋은지, 대학원에 가고 싶은지는 다른 질문이라고 함께 생각했던 면담이 기억납니다.','진학과 취업을 함께 알아볼 시간을 주셨던 것이 제 선택에 도움이 됐습니다.'],
  'counsel-coursework':['놓쳤던 기초를 돌아보고 공부 시간을 다시 잡았던 경험이 지금도 도움이 됩니다.','제가 짠 공부 계획을 설명하고 확인했던 방식은 새로운 일을 배울 때도 쓰고 있습니다.'],
  'counsel-small-question':['다들 알 것 같은 작은 질문도 꺼내 볼 수 있었던 면담을 기억합니다.','어디까지 이해했는지 먼저 설명해 보던 습관이 아직 남아 있습니다.'],
@@ -168,19 +170,20 @@ const eventMemories={
  'doctoral-lead':['회의를 제가 진행하기 시작했을 때부터 제 판단을 설명하는 연습을 했습니다.','독립적으로 정한 계획을 함께 검토하던 시간이, 다음 연구를 준비하는 데 도움이 됐습니다.'],
 };
 export function endingMemoryNotes(history,relationship='reserved'){
- const found=Array.isArray(history)?history.filter(h=>h?.kind==='event'&&Object.hasOwn(eventMemories,h.id)&&[0,1].includes(h.choice)):[];
+ const found=Array.isArray(history)?history.filter(h=>h?.kind==='event'&&Object.hasOwn(eventMemories,h.id)&&Number.isInteger(h.choice)&&h.choice>=0&&h.choice<4):[];
  const unique=[...new Map(found.map(h=>[h.id,h])).values()].slice(-3);
- return unique.map(h=>relationship==='distant'?`인계 기록에는 ‘${eventMemories[h.id][h.choice].split('.')[0]}’라는 경험도 남아 있습니다. 지금은 필요한 기록을 중심으로 소식을 전하고 싶습니다.`:eventMemories[h.id][h.choice]);
+ const note=h=>eventMemories[h.id][h.choice]??(h.choice===2?'제 계획의 근거를 스스로 설명했던 면담을 기억합니다.':'기한과 보완할 범위를 분명히 정했던 면담을 기억합니다.');
+ return unique.map(h=>relationship==='distant'?`인계 기록에는 ‘${note(h).split('.')[0]}’라는 경험도 남아 있습니다. 지금은 필요한 기록을 중심으로 소식을 전하고 싶습니다.`:note(h));
 }
 // Return fresh strings: gallery replays and locale switches cannot alter source stories.
-export function getEndingPages(id, lang = 'ko', relationship, name, reason, history = []) {
+export function getEndingPages(id, lang = 'ko', relationship, name, reason, history = [], context) {
   const locale = lang === 'en' ? 'en' : 'ko';
   const story = ENDINGS[id];
   if (!story) return [];
   const distance = endingRelationship(relationship, id);
   const suppliedReason = typeof reason === 'object' ? reason?.endingReason : reason;
   const rawPages = id === 'gameover' && failurePages[suppliedReason] ? failurePages[suppliedReason] : story.pages;
-  const pages = rawPages.map(page => page[locale]);
+  let pages = rawPages.map(page => page[locale]);
   if(locale==='ko')for(const note of endingMemoryNotes(history,distance))appendLetterNote(pages,note,locale);
   if (id === 'corporate' && distance === 'close') {
     pages[0] = pages[0].replace(locale === 'ko' ? '그날의 커피는 정말로 한 잔뿐이었다.' : 'There really was only one cup of coffee.', locale === 'ko' ? '커피가 식는 동안에도 이야기는 끝나지 않았다.' : 'The conversation continued long after the coffee cooled.');
@@ -198,5 +201,7 @@ export function getEndingPages(id, lang = 'ko', relationship, name, reason, hist
     const pauses = ['leave', 'dropout', 'unfinished', 'gameover'].includes(id);
     appendLetterNote(pages, (pauses ? pauseNotes : relationshipNotes)[distance][locale], locale);
   }
+  for(const note of endingVoice(context,locale))appendLetterNote(pages,note,locale);
+  if(context?.labMode==='dry'&&locale==='ko')pages=pages.map(dryEndingText);
   return name == null ? pages : pages.map(page => page.replaceAll('{name}', () => String(name)));
 }

@@ -5,12 +5,13 @@ export function validImpact(value,papers){return value&&Array.isArray(value.cita
 export function advanceImpact(s){
  s.impact??=initialImpact();while(s.impact.citations.length<s.career.papers)s.impact.citations.push(0);
  const performance=Math.min(1,s.hidden.research/999*.5+s.hidden.language/999*.3+Math.min(1,s.career.awards/4)*.2),luck=(s.hidden.luck+100)/200;
+ const papers=s.history.filter(h=>h.kind==='paper');
  for(let i=0;i<s.impact.citations.length;i++){
   // An independent hash avoids changing academic-event RNG when citations are updated.
   const draw=((Math.imul((s.creationSeed??s.seed)^(s.month*7919)^(i*104729),2654435761)>>>0)/4294967296);
-  const paper=s.history.filter(h=>h.kind==='paper')[i],visibility=Number.isFinite(paper?.impactFactor)?Math.min(.12,paper.impactFactor*.015):0;const weight=Math.min(1,.75*performance+.25*luck+visibility);
+  const paper=papers[i],visibility=Number.isFinite(paper?.impactFactor)?Math.min(.12,paper.impactFactor*.015):0;const weight=Math.min(1,.75*performance+.25*luck+visibility);
   if(draw<.15+.5*weight)s.impact.citations[i]=Math.min(100000,s.impact.citations[i]+1+(draw<.08*weight?1:0));
  }
  s.impact.hIndex=hIndex(s.impact.citations);
 }
-export function externalAdmissionEligible(s,level){return (s.impact?.hIndex??0)>=(level==='bachelor'?1:2);}
+export function externalAdmissionEligible(s,level){return (s.impact?.hIndex??0)>=(level==='bachelor'?2:3)&&s.career.papers>=(level==='bachelor'?2:3)&&s.hidden.research>=999*.65&&s.hidden.language>=999*.55&&(s.career.topPapers>=1||s.career.awards>=1);}

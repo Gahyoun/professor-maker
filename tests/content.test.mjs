@@ -11,7 +11,7 @@ test('content covers the engine outcomes and both fields of each original letter
     for(const field of [story.title,story.career,story.time,...story.pages])for(const lang of ['ko','en'])assert.ok(typeof field[lang]==='string'&&field[lang].trim());
   }
   assert.equal(new Set(EVENTS.map(e=>e.id)).size,EVENTS.length);
-  for(const e of EVENTS){assert.equal(e.options.length,2);for(const lang of ['ko','en']){assert.ok(e.title[lang]&&e.body[lang]);for(const o of e.options)assert.ok(o.label[lang]);}}
+  for(const e of EVENTS){assert.ok(e.options.length>=2&&e.options.length<=4);for(const lang of ['ko','en']){assert.ok(e.title[lang]&&e.body[lang]);for(const o of e.options)assert.ok(o.label[lang]);}}
 });
 test('dialogue observes mixed spectra without changing simulation state or its RNG',()=>{
   assert.ok(Object.values(DIALOGUES).flat().length>=250);

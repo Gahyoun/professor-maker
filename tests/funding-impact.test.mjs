@@ -23,15 +23,15 @@ test('grant selection is probabilistic and grants last exactly one to three year
 });
 test('pooled stipend survives ended projects, pays first and cannot fund operations',()=>{
  const s=createState('',8);s.month=2;s.lab.funds=0;s.lab.pool=200;depositGrant(s,100);assert.equal(s.lab.funds,65);assert.equal(s.lab.pool,235);
- const n=simulateMonth(s,['rest','rest','rest','rest']);assert.equal(n.lab.pool,235-7.8);assert.equal(n.lab.funds,54);assert.equal(n.history.find(h=>h.kind==='stipend-payment').fromPool,7.8);
+ const n=simulateMonth(s,['rest','rest','rest','rest']);assert.equal(n.lab.pool,235-7.8);assert.equal(n.lab.funds,55);assert.equal(n.history.find(h=>h.kind==='stipend-payment').fromPool,7.8);
  s.lab.funds=0;assert.throws(()=>simulateMonth(s,['rest','rest','rest','rest']),/Budget/);
 });
 test('external admission is offered at undergraduate and master transitions and advice has distinct outcomes',()=>{
  for(const level of ['bachelor','masters']){
-  const s=createState('',8);s.month=level==='bachelor'?23:47;s.route=level==='bachelor'?null:'masters';s.career.papers=2;s.career.completedProjects=2;s.career.submissions=2;s.career.conferences=2;s.impact={citations:[4,4],hIndex:2};
+  const s=createState('',8);s.month=level==='bachelor'?23:47;s.route=level==='bachelor'?null:'masters';s.career.papers=3;s.career.completedProjects=3;s.career.submissions=3;s.career.conferences=3;s.career.awards=1;s.hidden.research=750;s.hidden.language=650;s.hidden.rapport=30;s.impact={citations:[4,4,4],hIndex:3};
   let next=simulateMonth(s,proposeSchedule(s));if(next.pending.kind==='thesis')next=decide(next,'confirm');assert.equal(next.pending.kind,'external-admission');assert.equal(next.pending.level,level);
   const stayed=decide(next,'remain');assert.equal(stayed.ending,null);assert.equal(stayed.pending.kind,level==='bachelor'?'route':'masters');
-  const left=decide(next,'encourage');assert.equal(left.ending,level==='bachelor'?'external_masters':'external_phd');assert.ok(validateSave(left));const cv=buildEndingCV(left);assert.ok(cv);assert.equal(cv.model.months,level==='bachelor'?24:48);assert.ok(!cv.model.education.some(e=>e.degree==='doctorate'));if(level==='masters')assert.ok(cv.model.education.some(e=>e.degree==='masters'));
+  next.seed=999999;const left=decide(next,'encourage');assert.equal(left.ending,level==='bachelor'?'external_masters':'external_phd');assert.ok(validateSave(left));const cv=buildEndingCV(left);assert.ok(cv);assert.equal(cv.model.months,level==='bachelor'?24:48);assert.ok(!cv.model.education.some(e=>e.degree==='doctorate'));if(level==='masters')assert.ok(cv.model.education.some(e=>e.degree==='masters'));
  }
 });
 

@@ -6,6 +6,21 @@ const event = (id, ko, en, bodyKo, bodyEn, kind, options, extra = {}) => ({
   minMonth: 1, maxMonth: 95, cooldown: 12, once: false, options, ...extra,
 });
 export const EVENTS = [
+  event('counsel-daily-life','연구실 밖의 하루','Life beyond the lab','“요즘은 수업 끝나고 바로 연구실로 와요. 일주일이 어떻게 지나갔는지 잘 모르겠어요.” 학생이 일상의 리듬을 이야기한다. 사적인 내용을 캐묻기보다 필요한 시간을 함께 살펴본다.','The student wants to discuss their daily rhythm, without being asked to disclose private matters.','counseling',[
+    option('이번 주의 부담과 생활 시간을 함께 확인한다','Review workload and time for life',{hidden:{rapport:2,stress:-3,resilience:.4},professor:{mentoring:1}}),
+    option('학생이 필요한 자율 시간을 직접 제안하게 한다','Let the student propose personal time',{hidden:{autonomy:3,rapport:1,stamina:2}}),
+  ],{minMonth:4,cooldown:12}),
+  event('one-student-lab','작은 연구실의 인원표','A small lab roster','“다른 연구실은 다인원으로 하는데, 저희 연구실에는 저밖에 없네요.” 교수는 인원표를 다시 본다. 이상하게도 다음 학생을 적을 칸은 보이지 않는다. 그래도 공동 세미나와 동료 연구자를 만날 방법은 있다.','The student notices they are the only student on a strangely short lab roster. Joint seminars can still bring peers.','social',[
+    option('다른 연구실의 공동 세미나에 연결한다','Connect them with a joint seminar',{hidden:{social:2,rapport:1,autonomy:1},professor:{mentoring:-.5}}),
+    option('작은 연구실의 장단점을 솔직하게 의논한다','Discuss the tradeoffs honestly',{hidden:{rapport:2,confidence:1}}),
+    option('우선 현재 프로젝트에 집중하자고 말한다','Prioritize the current project',{hidden:{research:1,rapport:-1,stress:1}}),
+  ],{minMonth:8,cooldown:30,once:true,weight:.3}),
+  event('equipment-decision','연구장비와 소모품 점검','Equipment and supplies','장비 점검에서 사용 시간이 늘어난 부품과 소모품 부족이 확인됐다. 연구비 잔액과 이번 달 계획을 살펴 집행 범위를 정한다.','The lab reviews worn parts and depleted supplies before choosing expenditure.','management',[
+    option('노후 장비를 교체한다 · 80만원','Replace aging equipment',{lab:{funds:-8,equipment:15},hidden:{research:.5}}),
+    option('소모품을 보충한다 · 30만원','Replenish supplies',{lab:{funds:-3,equipment:6}}),
+    option('장비·계산 자원을 증강한다 · 150만원','Expand research resources',{lab:{funds:-15,equipment:25},professor:{research:.5}}),
+    option('현재 자원으로 우선순위를 조정한다','Adjust priorities within existing resources',{hidden:{autonomy:1,stress:1},lab:{equipment:-1}}),
+  ],{minMonth:6,cooldown:12}),
 
   event('counsel-career-first','연구를 계속해도 될까요?','Is research a path for me?',
     '학생이 진학 안내를 접어 들고 왔다. “연구는 재미있는데, 대학원에 가고 싶은 건지 아직 모르겠어요. 취업도 함께 알아봐도 될까요?”',
@@ -62,7 +77,7 @@ export const EVENTS = [
       option('학생의 자기 평가를 듣고 다음 면담의 확인 기준을 정한다','Hear their self-assessment and agree on a check-in criterion',{hidden:{rapport:2,autonomy:3,intuition:1},professor:{mentoring:1}}),
     ],{minMonth:12,cooldown:12}),
 
-  event('undergraduate-contest','학부생 연구 발표대회','Undergraduate research showcase','2년차 10월, 학부생을 위한 연구 발표대회가 열린다. 학생이 그동안의 시행착오를 작은 포스터로 정리해 보고 싶다고 한다.','An undergraduate showcase offers a first chance to explain the work.', 'academic', [option('작은 포스터로 발표를 응원한다','Support a small poster',{language:3,confidence:3,autonomy:2,stress:1}),option('현장에서 배우고 다음 발표를 준비한다','Observe and prepare for later',{learning:2,social:1,stress:-1})],{minMonth:20,maxMonth:20,stages:['undergrad'],once:true}),
+  event('undergraduate-contest','학부생 연구 발표대회','Undergraduate research showcase','2년차 10월, 학부생을 위한 연구 발표대회가 열린다. 학생이 그동안의 시행착오를 작은 포스터로 정리해 보고 싶다고 한다.','An undergraduate showcase offers a first chance to explain the work.', 'academic', [option('작은 포스터로 발표를 응원한다','Support a small poster',{hidden:{language:3,confidence:3,autonomy:2,stress:1}}),option('현장에서 배우고 다음 발표를 준비한다','Observe and prepare for later',{hidden:{learning:2,social:1,stress:-1}})],{minMonth:20,maxMonth:20,stages:['undergrad'],once:true}),
 
   event('ordinary-meaning','실적표 밖의 한 주','A week beyond the output sheet',
     '학생이 동료들과 산책을 다녀왔다. 논문 이야기 없이 걸었던 시간이 뜻밖에 좋았다고 한다. “다음 주에도 한 번은 시간을 비워 두고 싶어요.”',
@@ -317,3 +332,8 @@ export const EVENTS = [
       option('다른 연구실 장비를 빌리고 기존 주문의 조건을 협의한다', 'Arrange shared equipment and renegotiate the original order', { hidden: { research: 2, social: 2, rapport: 2 }, professor: { admin: -3, research: 2 }, lab: { equipment: 2, funds: -2 } }, 2),
     ], { minMonth: 3, maxMonth: 30, once: true, requires: 'young_professor' }),
 ];
+
+// Counseling includes both supportive and demanding approaches, with distinct consequences.
+for(const e of EVENTS.filter(e=>e.kind==='counseling')){e.options.push(option('우선 학생이 계획을 정하고 다음 면담에서 근거를 설명하게 한다','Ask for an independently justified plan',{hidden:{autonomy:2,rapport:-.4,stress:1},professor:{mentoring:.3}}),option('합의한 목표와 기한을 명확히 하고 보완을 요구한다','Set a clear deadline and require revisions',{hidden:{diligence:1,research:.4,stress:3,rapport:-1.4,confidence:-.5},professor:{research:.5}}));}
+
+for(const e of EVENTS.filter(e=>e.kind!=='counseling'&&e.options.length===2)){e.options.push(option('기존 계획을 유지하고 다음 면담에서 다시 검토한다','Keep the plan and revisit it next month',{hidden:{autonomy:.5,rapport:-.3,stress:.5}}),option('우선순위와 기한을 정하고 보완 보고를 요청한다','Set priorities and request a follow-up report',{hidden:{diligence:.4,rapport:-.8,stress:1},professor:{admin:.3}}));}

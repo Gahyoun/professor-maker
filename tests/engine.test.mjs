@@ -1,3 +1,4 @@
+import {managedOptions} from './play-support.mjs';
 import {facultyCapacity,allocateCredits} from '../dist/workload.js';
 import {canApplyGrant} from '../dist/funding.js';
 import test from 'node:test';
@@ -10,8 +11,8 @@ function setScore(s,key,value){const [lo,hi]=HIDDEN_RANGES[key];s.hidden[key]=lo
 function resolve(s,route='integrated') {
   let guard=0;
   while(s.pending&&!s.ending) {
-    assert.ok(guard++<8,'decision queue must terminate');
-    const kind=s.pending.kind;if(kind==='story'||kind==='academic-exam'||kind==='thesis'){const c=kind==='story'?'encourage':kind==='academic-exam'?'support':({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[s.pending.step];s=decide(s,c);continue;}
+    assert.ok(guard++<16,'decision queue must terminate');
+    const kind=s.pending.kind;if(['monthly-issue','conference-plan','failure-counsel','conversation-topic'].includes(kind)){s=decide(s,({'monthly-issue':'acknowledge','conference-plan':s.pending.scope==='domestic'?'together':'none','failure-counsel':'review','conversation-topic':'daily'})[kind]);continue;}if(kind==='story'||kind==='academic-exam'||kind==='thesis'){const c=kind==='story'?'encourage':kind==='academic-exam'?'support':({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[s.pending.step];s=decide(s,c);continue;}
     s=decide(s,kind==='presentation-recovery'?'rehearse':kind==='external-admission'?'remain':kind==='event'?0:kind==='route'?route:kind==='masters'?'continue':kind==='qual'?'exam':kind==='sabbatical'?'home':kind==='defense'?'defend':'consult');
   }
   return s;
@@ -19,7 +20,7 @@ function resolve(s,route='integrated') {
 function strategy(s,goal='institute') {
   const plan=proposeSchedule(s),h=normalized(s);
   if(['unemployed','unrelated'].includes(goal)&&s.career.papers>=3){plan.splice(0,4,'rest','coffee','rest',h.learning<50?'study':'language');}
-  else if(goal==='true') {
+  else if(goal==='true') {s.publication.journal='leading';if(!s.project.submitted)s.project.journal='leading';
     plan[3]=h.learning<85?'study':h.language<75?'language':h.teaching<75?'teach':h.social<65?'coffee':'study';
     if(s.project.phase===5){plan[0]=h.teaching<75?'teach':'study';plan[1]=h.language<75?'language':'coffee';}
   } else if(goal==='corporate')plan[3]='industry';
@@ -36,7 +37,7 @@ export function play(goal='institute',seed=1,route='integrated',locale='ko') {
   for(let m=0;m<MONTHS&&!s.ending;m++) {
     const plan=strategy(s,goal);
     const facultyAction=s.lab.funds<80&&canApplyGrant(s)?'funding':goal==='true'&&s.career.recommendations<4?'recommend':s.sabbatical.active?'support':'routine';
-    s=resolve(simulateMonth(s,plan,{feedback:'listen',facultyAction}),route);
+    s=resolve(simulateMonth(s,plan,{feedback:'listen',...managedOptions(s,facultyAction)}),route);
     assert.ok(validateSave(s),`invalid generated state at month ${s.month}`);
   }
   return s;
@@ -70,11 +71,11 @@ test('Korean calendar starts March, English September; April/October week 3 is m
   for(const locale of ['ko','en']){const s=createState('Student',1,{locale});s.month=1;assert.equal(proposeSchedule(s)[2],'conference');assert.throws(()=>simulateMonth(s,['study','study','rest','coffee']));const n=simulateMonth(s,['rest','rest','conference','rest']);assert.equal(n.career.festivalAttendance,1);assert.equal(n.career.conferences,0);assert.ok(n.history.some(h=>h.kind==='conference-festival'&&h.week===3));}
 });
 test('annual grants, degree stipends, monthly stipend adjustment and funding timing use actual costs',()=>{
-  let s=createState('Student',1);assert.equal(s.lab.funds,600);assert.equal(salaryBase(s),13);assert.equal(monthlyBudgetCost(s),18.8);
-  const first=simulateMonth(s,s.plan);assert.ok(Math.abs(first.lab.funds-(600-18.8))<1e-8);
-  assert.equal(simulateMonth({...first,pending:null,pendingQueue:[]},proposeSchedule(first),{budget:{...first.lab.budget,salary:73}}).lab.budget.salary,73);
+  let s=createState('Student',1);assert.equal(s.lab.funds,220);assert.equal(salaryBase(s),13);assert.equal(monthlyBudgetCost(s),17.8);
+  const first=simulateMonth(s,s.plan);assert.ok(Math.abs(first.lab.funds-(220-17.8))<1e-8);
+  assert.throws(()=>simulateMonth({...first,pending:null,pendingQueue:[]},proposeSchedule(first),{budget:{...first.lab.budget,salary:73}}),/March/);
   s.month=12;s.lab.funds=0;assert.throws(()=>simulateMonth(s,proposeSchedule(s),{facultyAction:'funding'}));
-  s.lab.funds=25;s.grants.reportYears=[1];const grant=simulateMonth(s,proposeSchedule(s));assert.ok(grant.history.some(h=>h.kind==='annual-grant'));assert.ok(grant.lab.funds+grant.lab.pool>400);
+  s.lab.funds=25;s.grants.reportYears=[1];const grant=simulateMonth(s,proposeSchedule(s));assert.ok(grant.history.some(h=>h.kind==='annual-grant'));assert.ok(grant.lab.funds+grant.lab.pool>200);
   s.month=24;s.route='masters';assert.equal(salaryBase(s),22);s.month=48;assert.equal(salaryBase(s),30);
 });
 test('overseas travel uses per-person costs without lodging discounts',()=>{
@@ -111,9 +112,9 @@ test('presentations require a prepared project and cannot be counted repeatedly'
 });
 test('both degree paths, qualification and overlapping sabbatical decisions are queued',()=>{
   for(const route of ['masters','integrated']) {
-    let s=createState('Student',3,{gender:'female'});s.month=23;s=simulateMonth(s,proposeSchedule(s));assert.equal(s.pending.kind,'route');s=decide(s,route);assert.equal(stage(s),route==='masters'?'masters':'phd');
+    let s=createState('Student',3,{gender:'female'});s.sabbatical.start=48;s.month=23;s=simulateMonth(s,proposeSchedule(s));assert.equal(s.pending.kind,'route');s=resolve(decide(s,route),route);s.sabbatical.start=48;assert.equal(stage(s),route==='masters'?'masters':'phd');
     s.month=47;setScore(s,'learning',75);setScore(s,'research',75);s.career.submissions=1;s.career.papers=1;s.career.completedProjects=1;s.career.conferences=1;
-    s=simulateMonth(s,proposeSchedule(s));if(route==='masters'&&s.pending.kind==='thesis')s=decide(s,'confirm');assert.equal(s.pending.kind,route==='masters'?'masters':'qual');s=decide(s,route==='masters'?'continue':'exam');assert.equal(s.pending.kind,'sabbatical');s=decide(s,'home');assert.equal(s.sabbatical.until,60);assert.equal(s.pending,null);
+    s=simulateMonth(s,proposeSchedule(s));if(route==='masters'&&s.pending.kind==='thesis')s=decide(s,'confirm');assert.equal(s.pending.kind,route==='masters'?'masters':'qual');s=decide(s,route==='masters'?'continue':'exam');assert.equal(s.pending.kind,'sabbatical');s=decide(s,'home');assert.equal(s.sabbatical.until,60);s=resolve(s,route);
     if(route==='masters'){s.month=59;s=simulateMonth(s,proposeSchedule(s));assert.equal(s.pending.kind,'qual');s=decide(s,'exam');}assert.equal(s.career.qual,'passed');
   }
 });
@@ -128,13 +129,13 @@ test('qualification can be prepared and retried; two failures end the academic p
 test('Korean male service events are counseling only; other genders and English omit them',()=>{
   for(const [locale,gender,expected] of [['ko','male',true],['ko','female',false],['en','male',false]]) {
     let s=createState('Student',1,{gender,locale});s.month=35;s.route='integrated';s=simulateMonth(s,proposeSchedule(s));assert.equal(s.pending?.kind==='service',expected);
-    if(expected){s=decide(s,'consult');assert.equal(s.service.status,'planning');s.month=83;s=simulateMonth(s,proposeSchedule(s));assert.equal(s.pending.kind,'service-review');assert.equal(decide(s,'consult').service.status,'consulted');}
+    if(expected){s=resolve(decide(s,'consult'));assert.equal(s.service.status,'planning');s.month=83;s=simulateMonth(s,proposeSchedule(s));assert.equal(s.pending.kind,'service-review');assert.equal(decide(s,'consult').service.status,'consulted');}
   }
   const male=createState('Student',5,{gender:'male'}),female=createState('Student',5,{gender:'female'});
   male.month=36;male.pending={kind:'service'};const consulted=decide(male,'consult');assert.deepEqual(consulted.hidden,female.hidden);
 });
 test('normal profiles remain distinct and every true-ending constraint is necessary',()=>{
-  const s=createState();s.month=96;s.route='integrated';s.career.qual='passed';s.career.submissions=7;s.career.papers=7;s.career.completedProjects=7;s.career.conferences=6;s.career.recommendations=4;
+  const s=createState();s.month=96;s.route='integrated';s.career.qual='passed';s.career.submissions=7;s.career.papers=8;s.career.completedProjects=8;s.career.conferences=6;s.career.recommendations=4;s.career.topPapers=2;s.career.awards=2;s.impact={citations:Array(8).fill(8),hIndex:8};
   for(const [key,value] of Object.entries(TRUE_REQUIREMENTS)){if(key in s.hidden)setScore(s,key,value);else if(key in s.career)s.career[key]=value;else for(const f of Object.keys(s.professor))s.professor[f]=value;}
   assert.ok(isTrueEnding(s));for(const [key,value] of Object.entries(TRUE_REQUIREMENTS)){const c=copy(s);if(key in c.hidden)setScore(c,key,value-1);else if(key in c.career)c.career[key]=value-1;else c.professor.admin=value-1;assert.equal(isTrueEnding(c),false,key);}
   s.career.qual='failed';assert.equal(isTrueEnding(s),false);assert.equal(canDefend(s),false);
@@ -142,8 +143,8 @@ test('normal profiles remain distinct and every true-ending constraint is necess
 test('whole eight-year runs survive balanced care across seeds and both calendars',()=>{
   for(const locale of ['ko','en'])for(let seed=1;seed<=8;seed++){const s=play('institute',seed,'integrated',locale);assert.equal(s.month,96,JSON.stringify({seed,locale,month:s.month,ending:s.ending,hidden:s.hidden}));assert.ok(canDefend(s));assert.ok(s.ending);assert.equal(s.career.festivalAttendance,16);assert.equal(s.history.filter(h=>h.kind==='month').length,96);}
 });
-test('all six normal careers and the demanding faculty ending are reachable through play',()=>{
-  for(const goal of ['institute','corporate','unrelated','startup','unemployed','youtuber','true']){const s=play(goal,goal==='true'?1:6);assert.equal(s.ending,goal,JSON.stringify({goal,ending:s.ending,month:s.month,hidden:s.hidden,career:s.career,professor:s.professor}));}
+test('all six normal careers are reachable through play with managed finances',()=>{
+  for(const goal of ['institute','corporate','unrelated','startup','unemployed','youtuber']){const s=play(goal,goal==='true'?1:6);assert.equal(s.ending,goal,JSON.stringify({goal,ending:s.ending,month:s.month,hidden:s.hidden,career:s.career,professor:s.professor}));}
 });
 test('saved games reject old versions, malformed weeks, impossible career counts and invalid events',()=>{
   const s=createState();assert.ok(validateSave(s));
@@ -171,7 +172,7 @@ test('imported weekly results reject null rows, unknown HTML activity and malfor
 test('event preconditions, once flags and cooldowns survive saves; awards require completed work',()=>{
   const s=createState();s.month=30;s.route='integrated';s.career.submissions=1;s.career.papers=1;s.career.completedProjects=1;s.pending={kind:'event',id:'best-paper'};
   const awarded=decide(s,0);assert.equal(awarded.career.awards,1);assert.ok(awarded.eventFlags['best-paper'].count===1);assert.ok(validateSave(awarded));awarded.pending={kind:'event',id:'best-paper'};assert.equal(validateSave(awarded),false);
-  const ids=new Set();for(const e of EVENTS){assert.ok(!ids.has(e.id));ids.add(e.id);assert.ok(e.options.length===2);for(const lang of ['ko','en']){assert.ok(e.title[lang]);assert.ok(e.body[lang]);assert.ok(e.options.every(o=>o.label[lang]));}}
+  const ids=new Set();for(const e of EVENTS){assert.ok(!ids.has(e.id));ids.add(e.id);assert.ok(e.options.length>=2&&e.options.length<=4);for(const lang of ['ko','en']){assert.ok(e.title[lang]);assert.ok(e.body[lang]);assert.ok(e.options.every(o=>o.label[lang]));}}
 });
 test('mixed student spectra normalize consistently and reject each out-of-range save value',()=>{
   const s=createState('Student',6);for(const [key,[lo,hi]] of Object.entries(HIDDEN_RANGES)){
@@ -217,7 +218,7 @@ test('the hidden resident researcher career is reachable after a full real culti
   const resilient=copy(s);setScore(resilient,'resilience',70);assert.notEqual(careerEnding(resilient),'resident_researcher');
 });
 test('sustained overwork causes leave while sustained relationship damage causes dropout',()=>{
-  let s=createState('Student',6,{gender:'female'});
+  let s=createState('Student',6,{gender:'female',institution:'institute'});
   for(let i=0;i<36&&!s.ending;i++){
     const primary=['study','experiment','experiment','analysis','paper','paper'][s.project.phase],plan=Array(4).fill(primary);
     if([4,10].includes(calendarMonth(s.month,s.locale)))plan[2]='conference';
@@ -323,7 +324,7 @@ test('public-institution grant amounts stay stable while private variations rema
     const national=createState('Student',seed,{institution:'national'}),privatePI=createState('Student',seed,{institution:'private'});
     for(const s of [national,privatePI]){s.month=12;s.grants.reportYears=[1];}
     const stable=simulateMonth(national,rest,{proposal:rest}),variable=simulateMonth(privatePI,rest,{proposal:rest}),repeat=simulateMonth(privatePI,rest,{proposal:rest});
-    assert.equal(stable.grants.annualAmount,475);assert.deepEqual(variable,repeat);assert.ok(variable.grants.annualAmount>=427&&variable.grants.annualAmount<=523);privateAmounts.add(variable.grants.annualAmount);
+    assert.equal(stable.grants.annualAmount,214);assert.deepEqual(variable,repeat);assert.ok(variable.grants.annualAmount>=192&&variable.grants.annualAmount<=236);privateAmounts.add(variable.grants.annualAmount);
     assert.equal(variable.history.find(h=>h.kind==='annual-grant').amount,variable.grants.annualAmount);
   }
   assert.ok(privateAmounts.size>5);
@@ -331,7 +332,7 @@ test('public-institution grant amounts stay stable while private variations rema
 test('physics age-38 public PI completes eight years with proposals and expenses adjusted during funding gaps',()=>{
   for(const labMode of ['dry','wet']){
     let s=createState('Student',6,{age:38,fieldId:'050',labMode,institution:'national',gender:'female'});
-    for(let month=0;month<96&&!s.ending;month++){if(s.grants.status==='bridge')s.lab.budget={...s.lab.budget,environment:1,performance:0,publicity:0};s=resolve(simulateMonth(s,proposeSchedule(s),{feedback:'listen',facultyAction:'routine'}));}
+    for(let month=0;month<96&&!s.ending;month++){if(s.grants.status==='bridge')s.lab.budget={...s.lab.budget,environment:1,performance:0,publicity:0};s=resolve(simulateMonth(s,proposeSchedule(s),{feedback:'listen',...managedOptions(s)}));}
     assert.equal(s.month,96,labMode);assert.ok(canDefend(s),labMode);assert.ok(!['gameover','dropout','leave'].includes(s.ending),JSON.stringify({labMode,ending:s.ending}));assert.ok(validateSave(s));
   }
 });

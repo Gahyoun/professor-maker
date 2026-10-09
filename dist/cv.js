@@ -98,7 +98,7 @@ function makeModel(state) {
   const career=state.career||{};
   return {version:2,advisor:{name:state.professorName||'지도교수',gender:state.professorProfile.gender,age:state.professorProfile.age,institution:state.professorProfile.institution},statistics:endingStatistics(state),impact:{hIndex:state.impact?.hIndex??0,citations:[...(state.impact?.citations??[])]},locale,name:String(state.name??''),ending:state.ending,careerPath:ENDINGS[state.ending]?.career[locale]||tx(locale,'다음 길을 준비 중','Preparing the next chapter'),field:getDiscipline(state.professorProfile?.fieldId).label,months,duration:durationLabel(months,locale),period:periodLabel(0,months,locale),education,outputs:{completedProjects:integer(career.completedProjects),acceptedPapers:integer(career.papers),submissions:integer(career.submissions),conferences:integer(career.conferences),awards:integer(career.awards),recommendations:integer(career.recommendations)},projects:projectsFrom(state,history,locale),memories:memoriesFrom(history,locale),qual:career.qual==='passed'?tx(locale,'자격시험 통과','Qualifying exam passed'):null};
 }
-function renderParts(model) {
+function renderParts(model,{summary=false}={}) {
   const t=(ko,en)=>tx(model.locale,ko,en),e=escapeHTML;
   const items=[['completedProjects',t('완료 프로젝트','Completed projects')],['acceptedPapers',t('게재 논문','Accepted papers')],['submissions',t('논문 투고','Submissions')],['conferences',t('학술발표','Presentations')],['awards',t('수상','Awards')],['recommendations',t('추천서','Recommendations')]];
   const education=model.education.map(entry=>`<li><time>${e(entry.period)}</time><div><h3>${e(entry.title)}</h3><p>${e(entry.status)}</p></div><span class="cv-degree-status ${entry.awarded?'cv-awarded':''}">${entry.awarded?'✓':'—'}</span></li>`).join('');
@@ -110,7 +110,7 @@ function renderParts(model) {
     title:`<p class="cv-kicker">PROFESSOR MAKER · ${e(t('연구실 활동 기록','Research record'))}</p><h1>${e(model.name)}</h1><p class="cv-career">${e(ENDINGS[model.ending].career[model.locale])}</p><p class="cv-field">${e(model.field)}</p>${model.advisor?`<p class="cv-advisor">지도교수: ${e(model.advisor.name)} · ${e(({national:'국립대',private:'사립대',institute:'과학기술원'})[model.advisor.institution])}</p>`:''}<p class="cv-fiction-notice">게임에서 생성한 가상의 활동 기록 · 실제 학위·경력 증명서가 아닙니다.</p>`,
     period:`<p class="cv-period"><strong>${e(model.duration)}</strong><span>${e(model.period)}</span></p>`,
     educationSection:`<section class="cv-section"><h2>${e(t('학력과 연구 경험','Education & research experience'))}</h2><ol class="cv-education">${education}</ol></section>`,
-    projectSection:`${publications?`<section class="cv-section"><h2>${e(t('연구 논문','Publications'))}</h2><ol class="cv-memories cv-publications">${publications}</ol></section>`:''}<section class="cv-section"><h2>${e(t('연구 프로젝트','Research projects'))}</h2><ol class="cv-projects">${projects}</ol></section>`,
+    projectSection:`${!summary&&publications?`<section class="cv-section"><h2>${e(t('연구 논문','Publications'))}</h2><ol class="cv-memories cv-publications">${publications}</ol></section>`:''}<section class="cv-section"><h2>${e(t('연구 프로젝트','Research projects'))}</h2><ol class="cv-projects">${projects}</ol></section>`,
     memorySection:`<section class="cv-section"><h2>${e(t('연구실에서 남긴 장면','Moments from the lab'))}</h2><ol class="cv-memories">${memories}</ol></section>`,
     footer:`<footer class="cv-footer"><span>Professor Maker · GAME RECORD</span><span>${e(t('지도 종료 시점의 활동 기록','Activity record at the end of advising'))}</span></footer>`,
   };
@@ -157,8 +157,8 @@ export function validateCVModel(model) {
 /** Re-render saved data using a known layout and escape every text/attribute value. */
 export function renderCV(model) {
   if(!validateCVModel(model))throw new Error('Invalid CV snapshot.');
-  const parts=renderParts(model);
-  return `<article class="cv-document cv-${model.templateId}" lang="${model.locale}" aria-label="${escapeHTML(tx(model.locale,`${model.name}의 경력 기록`,`${model.name}’s career record`))}"><span class="cv-watermark" aria-hidden="true">PROFESSOR MAKER · GAME RECORD</span>${renderers[model.templateId](model,parts)}${model.impact?`<p class="cv-impact">h-index ${model.impact.hIndex} · 가상 학술 인용 ${model.impact.citations.reduce((a,b)=>a+b,0)}회</p>`:''}${model.statistics?renderStatistics(model.statistics):''}</article>`;
+  const fullParts=renderParts(model),parts=renderParts({...model,projects:model.projects.slice(-2),memories:model.memories.slice(-2)},{summary:true});
+  return `<article class="cv-document cv-${model.templateId}" lang="${model.locale}" aria-label="${escapeHTML(tx(model.locale,`${model.name}의 경력 기록`,`${model.name}’s career record`))}"><span class="cv-watermark" aria-hidden="true">PROFESSOR MAKER · GAME RECORD</span><div class="cv-summary">${renderers[model.templateId](model,parts)}${model.impact?`<p class="cv-impact">h-index ${model.impact.hIndex} · 가상 학술 인용 ${model.impact.citations.reduce((a,b)=>a+b,0)}회</p>`:''}</div>${model.statistics?`<div class="research-report"><header><small>PROFESSOR MAKER · SIMULATION REPORT</small><h1>지도 종료 기록: 상태 변수 및 수행 이력</h1><p>가상의 단일 플레이 기록 · 재현 가능한 시뮬레이션 결과</p></header>${renderStatistics(model.statistics)}<p class="report-methods">자료: 해당 게임 종료 시점의 저장 상태. 막대는 각 변수의 값을 표시하며 오차막대는 표시하지 않는다. 각 척도의 범위는 게임 설계에 의해 정의된다. 실제 사람을 측정한 자료가 아니다.</p><section class="report-appendix"><h2>부록 · 연구 활동 및 주요 경험</h2>${fullParts.projectSection}${fullParts.memorySection}</section></div>`:''}</article>`;
 }
 
 /** Render an immutable career snapshot for a completed run. Parameter snapshots are included only after advising has ended. */

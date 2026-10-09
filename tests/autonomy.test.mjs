@@ -14,15 +14,15 @@ test('student proposals offer self-directed time and legacy saves migrate only u
 });
 test('self-directed choices cover study, travel and rest reproducibly, with recovery prioritized under strain',()=>{
  const chosen=new Set();for(let seed=1;seed<=400;seed++){const s=healthy(seed*7919),before=structuredClone(s);chosen.add(autonomousChoice(s,0));assert.equal(autonomousChoice(s,0),autonomousChoice(s,0));assert.deepEqual(s,before);score(s,'stamina',30);assert.equal(autonomousChoice(s,0),'rest');score(s,'stamina',90);score(s,'stress',80);assert.equal(autonomousChoice(s,0),'rest');}
- assert.deepEqual(chosen,new Set(['rest','study','travel']));
+ assert.deepEqual(chosen,new Set(['rest','coursework','experiment','travel']));
 });
 test('self-directed weekly reports save actual choices; only study can contribute weighted research progress',()=>{
  const choices=new Set();let progressed=false;
  for(let seed=1;seed<=80;seed++){const s=healthy(seed*7919),plan=Array(proposeSchedule(s).length).fill('free'),r=simulateMonth(s,plan,{proposal:plan});assert.deepEqual(r,simulateMonth(s,plan,{proposal:plan}));assert.ok(validateSave(r));assert.ok(validateSave(migrateSave(r)));
-  for(const w of r.lastReport.results){choices.add(w.autonomous);assert.equal(w.proposed,'free');assert.ok(['study','rest','travel'].includes(w.autonomous));if(w.autonomous!=='study')assert.equal(w.progress,0);else if(w.progress>0){assert.equal(w.progress,w.weight*w.successRate);progressed=true;}assert.ok(!weeklyScene(r,w,w.week-1).includes('undefined'));}
+  for(const w of r.lastReport.results){choices.add(w.autonomous);assert.equal(w.proposed,'free');assert.ok(['study','coursework','experiment','analysis','rest','travel'].includes(w.autonomous));if(!['study','experiment','analysis'].includes(w.autonomous))assert.equal(w.progress,0);else if(w.progress>0){assert.equal(w.progress,w.weight*w.successRate);progressed=true;}assert.ok(!weeklyScene(r,w,w.week-1).includes('undefined'));}
   assert.equal(r.lastReport.progress,r.lastReport.results.reduce((sum,w)=>sum+w.progress,0));
  }
- assert.equal(choices.size,3);assert.ok(progressed);
+ assert.equal(choices.size,4);assert.ok(progressed);
 });
 test('advising conversation belongs to professor activity without consuming a student week, and enters CV memories',()=>{
  const s=healthy(6),plan=Array(proposeSchedule(s).length).fill('free'),before=structuredClone(s);
