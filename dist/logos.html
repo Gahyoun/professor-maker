@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0069B4">
+  <title>연구실 로고 시안 · Professor Maker</title>
+  <style>
+    @font-face{font-family:Noto Sans KR;src:url(assets/fonts/NotoSansKR.woff2) format('woff2');font-display:swap}
+    @font-face{font-family:SUITE;src:url(assets/fonts/SUITE.woff2) format('woff2');font-display:swap}
+    :root{--ink:#18364a;--muted:#647784;--blue:#0069b4;--sky:#009edb;--line:#d9e4ea;--surface:#fff;--mark-size:112px}
+    *{box-sizing:border-box}body{margin:0;color:var(--ink);background:#f3f6f8;font-family:'Noto Sans KR',sans-serif;line-height:1.7}a{color:inherit}button,input{font:inherit}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--sky);outline-offset:4px}
+    .top{border-top:5px solid var(--sky);background:white;border-bottom:1px solid var(--line)}.top-inner{max-width:1140px;margin:auto;padding:20px 28px;display:flex;justify-content:space-between;align-items:center;gap:20px}.brand{font-family:SUITE,sans-serif;letter-spacing:.11em;font-weight:800;font-size:16px}.back{font-size:13px;text-decoration:none;color:var(--blue)}
+    main{max-width:1140px;margin:0 auto;padding:56px 28px 44px}.eyebrow{font-size:12px;letter-spacing:.16em;font-weight:700;color:var(--blue);margin:0 0 12px}.intro{max-width:720px}h1{font-family:SUITE,sans-serif;font-size:clamp(29px,5vw,44px);line-height:1.2;letter-spacing:-.035em;margin:0 0 19px;font-weight:800}.intro p{margin:0;color:var(--muted);font-size:15px}.intro strong{font-weight:600;color:var(--ink)}
+    .controls{margin:32px 0 24px;border:1px solid var(--line);border-radius:12px;background:white;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}.control{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted)}.swatches{display:flex;gap:8px}.swatch{width:28px;height:28px;border:1px solid #bccbd5;border-radius:50%;padding:0}.swatch[aria-pressed=true]{outline:2px solid var(--blue);outline-offset:3px}.swatch[data-preview=paper]{background:white}.swatch[data-preview=sky]{background:#e8f6fc}.swatch[data-preview=night]{background:#18364a}.control input{width:140px;accent-color:var(--blue)}output{min-width:42px;font-variant-numeric:tabular-nums;font-size:12px;color:var(--ink)}
+    .gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}.stage{height:252px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;border-bottom:1px solid var(--line);transition:background .15s}.stage img{width:var(--mark-size);height:var(--mark-size);object-fit:contain}.wordmark{font-family:SUITE,sans-serif;font-size:13px;font-weight:800;letter-spacing:.16em;color:var(--ink)}body[data-preview=sky] .stage{background:#e8f6fc}body[data-preview=night] .stage{background:#18364a}body[data-preview=night] .stage img{filter:brightness(0) invert(1)}body[data-preview=night] .wordmark{color:#fff}
+    .details{padding:23px;display:flex;flex-direction:column;flex:1}.number{font-family:SUITE,sans-serif;font-size:11px;font-weight:800;letter-spacing:.11em;color:var(--blue);display:flex;justify-content:space-between;align-items:center}.recommended{letter-spacing:0;border:1px solid #c9e7f5;background:#eef8fc;color:var(--blue);font-size:10px;border-radius:20px;padding:2px 9px}h2{font-family:SUITE,sans-serif;font-size:23px;line-height:1.3;margin:13px 0 4px;letter-spacing:-.02em}.english{font-size:12px;color:var(--muted);margin:0 0 15px}.description{font-size:13px;margin:0 0 22px;color:#43525a;flex:1}.download{display:block;text-align:center;font-size:12px;font-weight:600;text-decoration:none;padding:10px 12px;border:1px solid var(--line);border-radius:7px;color:var(--blue);background:#fafcfd}.download:hover{border-color:var(--blue);background:#eef8fc}
+    .guidance{margin-top:24px;padding:24px;border-radius:12px;background:#e9f0f4;display:grid;grid-template-columns:1fr 2fr;gap:26px}.guidance h3{font-size:14px;margin:0 0 5px}.guidance .sub{font-size:11px;color:var(--muted);margin:0}.guidance p{font-size:13px;margin:0;color:#43525a}.chips{display:flex;gap:12px;flex-wrap:wrap;margin-top:13px}.chip{display:flex;align-items:center;gap:6px;font-size:11px;font-family:SUITE,sans-serif}.chip i{width:12px;height:12px;border-radius:3px;background:var(--color)}footer{font-size:11px;color:var(--muted);margin-top:30px;padding-top:18px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    @media(max-width:850px){.gallery{grid-template-columns:1fr}.card{display:grid;grid-template-columns:minmax(170px, .85fr) 1.2fr}.stage{height:auto;min-height:260px;border-bottom:0;border-right:1px solid var(--line)}.guidance{grid-template-columns:1fr;gap:12px}main{padding-top:38px}}
+    @media(max-width:490px){.top-inner,main{padding-left:20px;padding-right:20px}.card{display:flex}.stage{height:230px;min-height:230px;border-right:0;border-bottom:1px solid var(--line)}.controls{padding:16px}.brand{font-size:13px}.back{font-size:11px}.details{padding:21px}.guidance{padding:21px}.control input{width:122px}}
+    @media(prefers-reduced-motion:reduce){.stage{transition:none}}
+  </style>
+</head>
+<body data-preview="paper">
+  <header class="top"><div class="top-inner"><span class="brand">PROFESSOR MAKER</span><a class="back" href="./#lab">게임으로 돌아가기 ↗</a></div></header>
+  <main>
+    <div class="intro"><p class="eyebrow">LAB IDENTITY / DESIGN STUDIES</p><h1>한 사람의 성장,<br>세 가지 연구실의 표정.</h1><p>조용한 교수와 한 명의 학생을 위한 연구실 로고 시안.<br><strong>푸른색의 학사 포털 분위기</strong>와 게임의 이야기를 독자적인 형태로 담았다.</p></div>
+    <div class="controls" aria-label="로고 미리보기 설정">
+      <div class="control"><span>배경 · Background</span><div class="swatches"><button class="swatch" data-preview="paper" aria-label="흰색 배경" aria-pressed="true"></button><button class="swatch" data-preview="sky" aria-label="하늘색 배경" aria-pressed="false"></button><button class="swatch" data-preview="night" aria-label="남색 배경, 흰색 단색 로고" aria-pressed="false"></button></div></div>
+      <label class="control" for="size">크기 · Size <input id="size" type="range" min="32" max="152" value="112" step="8"><output for="size" id="size-label">112 px</output></label>
+    </div>
+    <section class="gallery" aria-label="연구실 로고 시안 3종">
+      <article class="card"><div class="stage"><img src="assets/lab-mark.svg" alt="푸른 P와 남색 M을 나란히 그린 Professor Maker 모노그램" width="128" height="128"><span class="wordmark">PROFESSOR MAKER</span></div><div class="details"><div class="number">01 / MONOGRAM <span class="recommended">메인 추천</span></div><h2>나란히, PM</h2><p class="english" lang="en">Side by side</p><p class="description">교수와 학생이 나란히 서 있는 두 글자. 단정한 선과 작은 파란 점은 연구실에서 시작되는 서로의 성장을 표현한다. 포털 상단과 모바일 아이콘에 어울리는 기본 시안.</p><a class="download" href="assets/lab-mark.svg" download="professor-maker-monogram.svg">SVG 내려받기 · Download</a></div></article>
+      <article class="card"><div class="stage"><img src="assets/lab-mark-letter.svg" alt="파란 편지가 담긴 열린 봉투" width="128" height="128"><span class="wordmark">PROFESSOR MAKER</span></div><div class="details"><div class="number">02 / LETTER</div><h2>몇 해 뒤의 편지</h2><p class="english" lang="en">A letter, years later</p><p class="description">학위가 끝난 뒤 책상에 도착하는 한 통의 편지. 열린 봉투와 아직 남은 파란 점으로 이야기의 여운을 담았다. 엔딩 기록, 동문 소식과 편지 화면에 어울리는 시안.</p><a class="download" href="assets/lab-mark-letter.svg" download="professor-maker-letter.svg">SVG 내려받기 · Download</a></div></article>
+      <article class="card"><div class="stage"><img src="assets/lab-mark-network.svg" alt="교수와 학생을 뜻하는 큰 점 두 개가 작은 연구 네트워크 안에서 연결된 모습" width="128" height="128"><span class="wordmark">PROFESSOR MAKER</span></div><div class="details"><div class="number">03 / NETWORK</div><h2>하나의 연결</h2><p class="english" lang="en">One connection</p><p class="description">여러 아이디어 사이에서 한 사람과 맺는 선명한 연결. 서로 다른 크기의 두 점과 열린 네트워크로 사제 관계와 STEM 연구를 표현했다. 프로젝트와 학술활동 화면에 어울리는 시안.</p><a class="download" href="assets/lab-mark-network.svg" download="professor-maker-network.svg">SVG 내려받기 · Download</a></div></article>
+    </section>
+    <aside class="guidance"><div><h3>공통 시각 언어</h3><p class="sub" lang="en">An original lab identity</p><div class="chips"><span class="chip" style="--color:#009edb"><i></i>#009EDB</span><span class="chip" style="--color:#0069b4"><i></i>#0069B4</span><span class="chip" style="--color:#18364a"><i></i>#18364A</span></div></div><p>한국어 화면의 파란색 학사 포털 테마와 영어 화면의 남색 관리 시스템에 함께 사용할 수 있다. 세 시안은 모두 새로 그린 벡터로, 경상국립대학교의 로고·문장·심벌을 사용하지 않았다. 남색 배경 미리보기에서는 흰색 단색으로 표시된다.</p></aside>
+    <footer><span>Professor Maker · 연구실 로고 시안</span><span>Noto Sans KR / SUITE · SVG vectors</span></footer>
+  </main>
+  <script>
+    document.querySelectorAll('.swatch').forEach(button => button.addEventListener('click', () => {
+      document.body.dataset.preview = button.dataset.preview;
+      document.querySelectorAll('.swatch').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    }));
+    document.getElementById('size').addEventListener('input', event => {
+      document.documentElement.style.setProperty('--mark-size', `${event.target.value}px`);
+      document.getElementById('size-label').value = `${event.target.value} px`;
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Professor Maker — One connection</title>
+  <desc id="desc">An original research network: one mentor and one student connected to a small constellation of ideas.</desc>
+  <path d="m38 80 46-36m-46 36 53 16M38 80 22 30m62 14 24 16M84 44 60 18m31 78 17-36" stroke="#9BB7C8" stroke-width="4" stroke-linecap="round"/>
+  <path d="m38 80 46-36" stroke="#0069B4" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="38" cy="80" r="17" fill="#18364A"/>
+  <circle cx="84" cy="44" r="12" fill="#009EDB"/>
+  <circle cx="22" cy="30" r="5" fill="#9BB7C8"/>
+  <circle cx="60" cy="18" r="5" fill="#9BB7C8"/>
+  <circle cx="108" cy="60" r="5" fill="#9BB7C8"/>
+  <circle cx="91" cy="96" r="5" fill="#9BB7C8"/>
+</svg>
