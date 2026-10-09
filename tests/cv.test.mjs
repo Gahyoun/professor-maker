@@ -59,3 +59,9 @@ test('rendering imported content escapes descriptions and cannot add arbitrary m
   const model=buildEndingCV(completed()).model;model.projects[0].title='<script>alert(1)</script>';model.memories[0].detail='<img src=x onerror="alert(1)">';
   assert.equal(validateCVModel(model),true);const html=renderCV(model);assert.ok(!html.includes('<script>'));assert.ok(!html.includes('<img'));assert.ok(html.includes('&lt;script&gt;'));
 });
+test('archived CVs use current respectful career labels while preserving their research record',()=>{
+  const state=completed();state.ending='unemployed';const model=buildEndingCV(state).model;
+  model.careerPath='백수 · 구직 중';
+  for(const template of CV_TEMPLATES){model.templateId=template.id;const html=renderCV(model);assert.ok(!html.includes('백수'));assert.ok(html.includes('구직 중'));assert.ok(html.includes(state.name));assert.equal(model.outputs.acceptedPapers,3);}
+  model.ending='resident_researcher';model.careerPath='독립하지 못한 연구원';assert.ok(!renderCV(model).includes('독립하지 못한'));assert.ok(renderCV(model).includes('교내 연구원'));
+});

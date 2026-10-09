@@ -101,7 +101,7 @@ function renderParts(model) {
   const metricHTML=items.map(([key,label])=>`<div><dt>${e(label)}</dt><dd>${model.outputs[key]}</dd></div>`).join('');
   const publications=model.projects.filter(project=>project.status==='accepted').map(project=>`<li><time>${e(monthLabel(project.acceptedMonth??project.lastMonth,model.locale))}</time><div><h3>${e(project.title)}</h3><p>${e(model.name)} · ${e(t('게재 확정','Accepted'))}</p></div></li>`).join('');
   return {e,t,education,projects,memories,metricHTML,
-    title:`<p class="cv-kicker">PROFESSOR MAKER · ${e(t('연구실 활동 기록','Research record'))}</p><h1>${e(model.name)}</h1><p class="cv-career">${e(model.careerPath)}</p><p class="cv-field">${e(model.field)}</p>`,
+    title:`<p class="cv-kicker">PROFESSOR MAKER · ${e(t('연구실 활동 기록','Research record'))}</p><h1>${e(model.name)}</h1><p class="cv-career">${e(ENDINGS[model.ending].career[model.locale])}</p><p class="cv-field">${e(model.field)}</p>`,
     period:`<p class="cv-period"><strong>${e(model.duration)}</strong><span>${e(model.period)}</span></p>`,
     educationSection:`<section class="cv-section"><h2>${e(t('학력과 연구 경험','Education & research experience'))}</h2><ol class="cv-education">${education}</ol></section>`,
     projectSection:`${publications?`<section class="cv-section"><h2>${e(t('연구 논문','Publications'))}</h2><ol class="cv-memories cv-publications">${publications}</ol></section>`:''}<section class="cv-section"><h2>${e(t('연구 프로젝트','Research projects'))}</h2><ol class="cv-projects">${projects}</ol></section>`,
