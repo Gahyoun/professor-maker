@@ -80,7 +80,7 @@ test('annual grants, degree stipends, monthly stipend adjustment and funding tim
 test('vacation travel checks cost, room count and affirmative same-gender consent',()=>{
   const s=createState('Student',1,{gender:'female',professorGender:'male'});
   assert.throws(()=>simulateMonth(s,s.plan,{facultyAction:'abroad_student'}));
-  s.month=4;assert.equal(calendarMonth(s.month),7);
+  s.month=29;s.route='integrated';s.travel={status:'accepted',submittedAt:28,decidedAt:29,conferenceMonth:30,projectId:1};assert.equal(calendarMonth(s.month),8);
   assert.throws(()=>simulateMonth(s,proposeSchedule(s),{facultyAction:'abroad_shared',travelConsent:true}));
   const trip=simulateMonth(s,proposeSchedule(s),{facultyAction:'abroad_together'});const entry=trip.history.find(h=>h.kind==='research-travel');assert.equal(entry.rooms,2);assert.equal(entry.cost,34);assert.equal(entry.joining,true);
   s.professorGender='female';s.professorProfile.gender='female';assert.throws(()=>simulateMonth(s,proposeSchedule(s),{facultyAction:'abroad_shared'}));
