@@ -1,47 +1,34 @@
 # Professor Maker
 
-한 명의 학생과 여덟 해를 함께하는 **한국 연구실 경영·학생 육성 시뮬레이션**. 기획·원작 편지: Gahyoun Gim.
+한 사람의 연구자, 여덟 번의 봄. 교수의 입장에서 한 명의 학생을 지도하고 연구실을 운영하는 한국어 경영·육성 시뮬레이션입니다.
 
-[게임 플레이](https://gahyoun.github.io/professor-maker/) · [로고 시안](https://gahyoun.github.io/professor-maker/logos.html) · [아키텍처](docs/ARCHITECTURE.md) · [참고 시스템·이름 출처](docs/REFERENCE_SYSTEMS.md)
+[플레이하기](https://gahyoun.github.io/professor-maker/)
 
-매달 랩미팅에서 학생의 4주 제안을 수정하고 연구 피드백, 교수 업무, 인건비와 운영비를 결정합니다. 합의한 일정이 실제로 수행되는지는 학생의 숨은 상태와 연구의 불확실성에 따라 달라집니다. 교수 화면에는 학생의 능력 수치가 나오지 않습니다.
+교수의 성별·연령·연구 분야·학교 유형을 선택하고, 매달 면담에서 학생이 제안한 네 주의 일정을 조정합니다. 학부연구생에서 석사·박사 또는 석박사통합과정으로 이어지며, 연구성과와 관계에 따라 진로와 후일담이 달라집니다. 정상 엔딩에서는 함께한 연구와 추억을 CV로 보관할 수 있습니다.
 
-- 3월부터 다음 해 2월까지, 96개월과 384주의 육성. 약 15분을 목표로 하며 실제 독자 플레이타임은 추가 검증이 필요합니다.
-- 학부연구생 → 석사 → 박사 또는 학부연구생 → 석박사통합. 진학, qual, 석사 보완 학기, 연구년과 중간 이탈.
-- 네트워크 과학 연구 질문을 직렬 프로젝트로 수행. 발표·투고·심사·게재를 별도로 기록.
-- 4월·10월 3주 학술대회, 방학 해외학회, 연구비·연차보고·후속 과제 심사.
-- 학술활동·교육·학교행정·학생관리의 균형. 하나라도 0이면 운영 종료.
-- 예의·체력·정신력·언어, 사교성·창의성·성실성·라포·신뢰·운 등 연속적인 숨은 파라미터. 대사 258개와 연구실 사건 32개.
-- 까다로운 교수 TRUE END, 일반 진로 6종, 교내연구원 히든 엔딩과 휴학·중도 종료. 엔딩은 시간이 지난 뒤 도착하는 편지로 읽습니다.
-- 반응형 웹/PWA, 기기 내 자동 저장, JSON 내보내기·가져오기. 첫 온라인 방문과 캐시 준비 후 오프라인 실행.
+웹과 모바일을 지원하며 첫 방문 후 오프라인에서도 플레이할 수 있습니다. 저장 데이터는 사용하는 브라우저에 남고, JSON 파일로 내보내 다른 기기로 옮길 수 있습니다. 현재 한국어판이며 영어판은 추후 확장합니다.
 
-현재 공개판은 **한국어**입니다. 영어 문구와 9월 시작 엔진 경로는 추후 확장을 위해 보존했으며 영어 UI는 공개하지 않습니다. 경상국립대의 웹 색상·서체·구성을 참고하고, 대학 로고 대신 사용자가 선택한 독자 네트워크 연구실 로고를 사용합니다.
+## 개발
 
-이름은 확인 가능한 **1995년생 상위 이름의 빈도**와 **2015년 전체 인구의 성씨 비율**을 제한된 풀에서 조합합니다. 1995–2005 전체 출생 통계를 확보한 것이 아닙니다. 원자료의 범위, 대법원 발표를 전한 보도 출처, 가중치와 독립 추첨 가정은 [문서](docs/REFERENCE_SYSTEMS.md)에 명시했습니다.
-
-## 실행과 검증
-
-빌드나 런타임 패키지 설치가 필요 없습니다. Node 24+와 Python 3를 사용할 수 있습니다.
+Node.js 24 이상으로 테스트합니다. 별도 npm 패키지는 필요하지 않습니다.
 
 ```sh
 npm test
 python3 -m http.server 4173 --directory dist
 ```
 
-브라우저에서 `http://127.0.0.1:4173/`를 엽니다. ES 모듈과 Worker를 사용하므로 `index.html`을 파일로 직접 열지 않습니다.
+브라우저 검증은 Playwright가 설치된 환경에서 `PLAYWRIGHT_MODULE`을 지정하고 `node tests/browser-smoke.mjs`를 실행합니다.
 
-옵션 브라우저 검증은 Playwright가 설치된 환경에서 실행합니다.
+`main`에 반영하면 GitHub Actions가 테스트 후 `dist`를 Pages에 배포합니다. 릴리스는 의미적 버전과 Git 태그로 구분하며 변경 내역은 [CHANGELOG](CHANGELOG.md)에 기록합니다. 저장 형식 버전과 배포 버전은 별도로 관리합니다.
 
-```sh
-node tests/browser-smoke.mjs
-```
+운영자용 밸런스 문서와 아키텍처, 제공받은 원본 연구 데이터는 공개 게임 배포에 포함하지 않습니다.
 
-다른 패키지 경로를 쓰면 `PLAYWRIGHT_MODULE`에 Playwright 모듈 경로를, 다른 주소를 쓰면 `GAME_URL`에 게임 루트 URL을 지정합니다. 엔진·콘텐츠 테스트는 Node 내장 테스트 러너만 사용합니다. 현재 배포는 `dist/`를 담은 `gh-pages` 브랜치를 사용합니다. Actions를 사용하려면 [워크플로 예시](docs/pages-workflow.example.yml)를 `.github/workflows/pages.yml`로 복사하고 필요한 workflow 권한을 부여합니다.
+## 제작 및 참고
 
-저장은 브라우저·기기별로 따로 보관합니다. VERSION 3은 이전 월간 프로토타입 저장과 호환되지 않습니다. 잘못된 배분 입력을 수정하는 동안에는 마지막 유효한 저장을 보존합니다. 클라우드 계정·랭킹·서버 동기화는 구현 범위에 포함하지 않았습니다.
+기획·원작 편지: Gahyoun Gim. 네트워크 과학 연구실을 소재로 한 독립 창작 게임입니다. 경상국립대학교 홈페이지의 색상과 서체 구성을 참고하며 학교 로고는 사용하지 않습니다.
 
-## 라이선스와 출처
+시간과 선택의 흐름은 [80억 분의 1](https://1in8b.life/ko/), 연구 진행과 사건 구조는 [PhD Simulator](https://research.wmz.ninja/projects/phd/index.html)와 [phd-game](https://github.com/morriswmz/phd-game)을 참고했습니다. 참고 게임의 코드와 대사는 복사하지 않았습니다. 학위 목표와 경영 효과는 게임 규칙이며 실제 대학의 공통 규정이 아닙니다.
 
-코드: GPL-3.0 ([LICENSE](LICENSE)). SUITE와 Noto Sans KR: 각 폰트의 SIL OFL 동봉. 로고·도트 초상화·게임 대사·엔딩은 이 게임을 위해 제작했습니다.
+## 라이선스
 
-[GNU network science skills](https://github.com/Gahyoun/gnu-network-science-skills)의 웹 디자인 지침, [The PhD Simulator](https://research.wmz.ninja/projects/phd/index.html), [80억 분의 1](https://1in8b.life/ko/), 프린세스 메이커의 육성·후일담 구조와 [Professor Simulator: Desktop Lab](https://store.steampowered.com/app/3894790/)를 참고했습니다. 원작의 코드·이미지·음악을 복사하지 않았습니다. 실제 학교·교수·학생의 성과를 평가하거나 미래를 예측하는 도구가 아닙니다.
+게임 코드·창작 콘텐츠·로고: **GNU GPL v3** ([LICENSE](LICENSE)). 폰트 SUITE와 Noto Sans KR은 동봉된 SIL Open Font License를 따릅니다. 저작권 © 2026 Gahyoun Gim.
