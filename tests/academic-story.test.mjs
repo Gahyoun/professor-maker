@@ -1,7 +1,7 @@
 import {managedOptions,affordableEventChoice} from './play-support.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';
 import {academicWeeks,weekContext} from '../dist/academic-calendar.js';
-import {createState,simulateMonth,decide,proposeSchedule,validateSave} from '../dist/engine.js';
+import {createState,simulateMonth,decide,proposeSchedule,validateSave,feedbackEffect} from '../dist/engine.js';
 import {facultyCapacity,allocateCredits} from '../dist/workload.js';
 import {studentAppearance,renderPortrait} from '../dist/appearance.js';
 import {weeklyScene} from '../dist/weekly-scene.js';
@@ -20,7 +20,11 @@ test('unused workload credits persist and advance; excess credits are rejected b
  const s=createState('',6),allocation={research:2,teaching:2,admin:1,mentoring:2},before=JSON.stringify(s);const n=simulateMonth(s,proposeSchedule(s),{allocation});assert.equal(JSON.stringify(s),before);assert.deepEqual(n.allocation,allocation);assert.deepEqual(allocateCredits(allocation,12),allocation);assert.ok(validateSave(n));const tooMuch={...allocation,research:facultyCapacity(s).credits};assert.throws(()=>simulateMonth(s,proposeSchedule(s),{allocation:tooMuch}),/workload/);
 });
 test('full master and integrated routes follow staged defenses and never award an unearned degree',()=>{
- for(const route of ['masters','integrated']){let s=createState('',6,{age:38});s.started=true;s.lab.creditEnabled=true;for(let m=0;m<96&&!s.ending;m++)s=resolve(simulateMonth(s,proposeSchedule(s),{...managedOptions(s)}),route,route==='masters');assert.ok(validateSave(s));const thesis=s.history.filter(h=>h.kind==='thesis');assert.deepEqual(thesis.map(h=>h.step),['draft','presentation','questions','revision','verdict']);assert.ok(thesis.every(h=>h.level===(route==='masters'?'masters':'phd')));assert.equal(s.month,route==='masters'?48:96);assert.equal(thesis.at(-1).passed,true);assert.notEqual(s.ending,'gameover');assert.ok(s.history.some(h=>h.kind==='story'));}
+ for(const route of ['masters','integrated']){let s=createState('',6,{age:38});s.started=true;s.lab.creditEnabled=true;for(let m=0;m<96&&!s.ending;m++){
+  const aligned=feedbackEffect(s,'praise').efficiency>1?'praise':feedbackEffect(s,'critique').efficiency>1?'critique':'listen';
+  const feedback=s.advising?.lastFeedback===aligned&&s.advising.streak>=3?'listen':aligned;
+  s=resolve(simulateMonth(s,proposeSchedule(s),{...managedOptions(s,m%6===0?'conversation':'routine'),feedback}),route,route==='masters');
+ }assert.ok(validateSave(s));const thesis=s.history.filter(h=>h.kind==='thesis');assert.deepEqual(thesis.map(h=>h.step),['draft','presentation','questions','revision','verdict']);assert.ok(thesis.every(h=>h.level===(route==='masters'?'masters':'phd')));assert.equal(s.month,route==='masters'?48:96);assert.equal(thesis.at(-1).passed,true);assert.notEqual(s.ending,'gameover');assert.ok(s.history.some(h=>h.kind==='story'));}
  const s=createState('',6);s.month=96;s.route='integrated';s.pending={kind:'thesis',level:'phd',step:'verdict'};const failed=decide(s,'confirm');assert.equal(failed.ending,'gameover');assert.equal(failed.endingReason,'graduation_requirements');
  s.pending={kind:'thesis',level:'masters',step:'draft'};assert.throws(()=>decide(s,'outline'),/Integrated/);
 });

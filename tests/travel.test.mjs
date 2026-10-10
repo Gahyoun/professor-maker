@@ -1,3 +1,4 @@
+import {GAME_BALANCE} from '../dist/balance.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createState,simulateMonth,validateSave} from '../dist/engine.js';
@@ -29,7 +30,7 @@ test('accepted abstracts require operating funds; attendance boosts learning mor
   let trip;for(let seed=1;seed<100;seed++){s.seed=seed;trip=simulateMonth(s,rest,{facultyAction:'abroad_student'});if(trip.travel.status==='attended')break;}
   assert.equal(trip.travel.status,'attended');assert.ok(validateSave(trip));assert.equal(trip.career.conferences,s.career.conferences+1);
   const baseline=simulateMonth(s,rest,{facultyAction:'routine'});
-  assert.ok(trip.hidden.language-baseline.hidden.language>2*9.99);assert.ok(trip.hidden.social-baseline.hidden.social>3*2);
+  assert.ok(trip.hidden.language-baseline.hidden.language>2*9.99*GAME_BALANCE.abilityGrowthScale);assert.ok(trip.hidden.social-baseline.hidden.social>3*2*GAME_BALANCE.abilityGrowthScale);
   assert.ok(trip.hidden.autonomy>baseline.hidden.autonomy);assert.ok(trip.hidden.research>baseline.hidden.research);
   assert.equal(trip.history.find(h=>h.kind==='research-travel').cost,40);
   assert.equal(trip.history.find(h=>h.kind==='conference').abroad,true);

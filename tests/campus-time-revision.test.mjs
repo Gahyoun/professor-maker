@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {createState,simulateMonth,decide,validateSave,calendarMonth,abilityScore,HIDDEN_RANGES,eventEligible,eventWeight,EVENTS} from '../dist/engine.js';
 import {facultyCapacity,professorAge} from '../dist/workload.js';
 import {CONFERENCE_TIERS} from '../dist/venues.js';
+import {GAME_BALANCE} from '../dist/balance.js';
 
 const rest=Array(4).fill('rest');
 const clone=structuredClone;
@@ -103,8 +104,8 @@ test('domestic attendance is decided during March or September for the following
 test('domestic listening and unsuccessful presentation still build social experience; successful presentation builds more',()=>{
  const plan=['rest','rest','conference','rest'];
  const {s:listener,n:listened}=findRun(seed=>fixture(seed,1),plan,n=>n.lastReport.results[2].outcome==='attended');
- close(abilityScore(listened,'social')-abilityScore(listener,'social'),2*CONFERENCE_TIERS.regular.learning);
- close(abilityScore(listened,'language')-abilityScore(listener,'language'),.7);
+ close(abilityScore(listened,'social')-abilityScore(listener,'social'),2*CONFERENCE_TIERS.regular.learning*GAME_BALANCE.abilityGrowthScale);
+ close(abilityScore(listened,'language')-abilityScore(listener,'language'),.7*GAME_BALANCE.abilityGrowthScale);
  assert.equal(listened.career.conferences,0);
 
  const talk=['conference','rest','rest','rest'];
@@ -114,11 +115,11 @@ test('domestic listening and unsuccessful presentation still build social experi
   return s;
  };
  const success=findRun(prepared,talk,n=>n.lastReport.results[0].outcome==='presented');
- close(abilityScore(success.n,'social')-abilityScore(success.s,'social'),4*CONFERENCE_TIERS.regular.learning);
+ close(abilityScore(success.n,'social')-abilityScore(success.s,'social'),4*CONFERENCE_TIERS.regular.learning*GAME_BALANCE.abilityGrowthScale);
  assert.equal(success.n.career.conferences,1);
 
  const failure=findRun(seed=>{const s=fixture(seed);s.project.phase=3;s.project.progress=20;return s;},talk,n=>n.lastReport.results[0].outcome==='presentation_failed');
- close(abilityScore(failure.n,'social')-abilityScore(failure.s,'social'),2*CONFERENCE_TIERS.regular.learning);
+ close(abilityScore(failure.n,'social')-abilityScore(failure.s,'social'),2*CONFERENCE_TIERS.regular.learning*GAME_BALANCE.abilityGrowthScale);
  assert.equal(failure.n.career.conferences,0);
  assert.ok(pending(failure.n).some(p=>p.kind==='presentation-recovery'));
 });
@@ -131,7 +132,7 @@ test('overseas participation retains its social benefit when the talk fails and 
  };
  for(const [outcome,gain,count] of [['presentation_failed',2,0],['presented',6,1]]){
   const {s,n}=findRun(make,rest,n=>n.lastReport.results.at(-1).outcome===outcome,{facultyAction:'abroad_student'});
-  close(abilityScore(n,'social')-abilityScore(s,'social'),gain);
+  close(abilityScore(n,'social')-abilityScore(s,'social'),gain*GAME_BALANCE.abilityGrowthScale);
   assert.equal(n.career.conferences,count);
   assert.ok(n.history.some(h=>h.kind==='research-travel'&&h.attendance==='student'));
  }

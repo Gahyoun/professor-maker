@@ -30,6 +30,7 @@ test('accepting proposals and free time affect rapport each month; ignore streak
 test('undergraduate proposals emphasize course work and graduates respond to actual prior work',()=>{
  const u=createState('학생',35);assert.equal(proposeSchedule(u).slice(0,2).filter(x=>x==='coursework').length,2);
  const g=clone(u);g.month=30;g.route='integrated';g.project.phase=2;assert.ok(proposeSchedule(g).slice(0,2).some(x=>['experiment','study','analysis'].includes(x)));
+ g.history.push({month:29,kind:'month',results:Array.from({length:8},()=>({actual:'coursework',performed:true}))});
  g.lastReport={results:[{actual:'analysis',performed:true,successRate:.8},{actual:'experiment',performed:true,successRate:.2}]};assert.equal(proposeSchedule(g)[0],'analysis');assert.equal(proposeSchedule(g)[1],'study');
 });
 test('course work can fail; three consecutive failed weeks unlock distinct counseling responses',()=>{

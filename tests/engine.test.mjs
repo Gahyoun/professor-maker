@@ -3,7 +3,7 @@ import {facultyCapacity,allocateCredits} from '../dist/workload.js';
 import {canApplyGrant} from '../dist/funding.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {VERSION,MONTHS,ACTIVITIES,PROJECT_PHASES,EVENTS,createState,simulateMonth,decide,stage,proposeSchedule,calendarMonth,salaryBase,monthlyBudgetCost,canContinue,canDefend,careerEnding,isTrueEnding,TRUE_REQUIREMENTS,validateSave,HIDDEN_RANGES,abilityScore,eventWeight,migrateSave,degreeRequirements} from '../dist/engine.js';
+import {VERSION,MONTHS,ACTIVITIES,PROJECT_PHASES,EVENTS,createState,simulateMonth,decide,stage,proposeSchedule,calendarMonth,salaryBase,monthlyBudgetCost,canContinue,canDefend,careerEnding,isTrueEnding,TRUE_REQUIREMENTS,validateSave,HIDDEN_RANGES,abilityScore,eventWeight,migrateSave,degreeRequirements,qualificationStudy,projectWork,projectThresholds,feedbackEffect} from '../dist/engine.js';
 import {DISCIPLINES,degreeTargets} from '../dist/disciplines.js';
 const copy=s=>structuredClone(s);
 const normalized=s=>Object.fromEntries(Object.keys(s.hidden).map(k=>[k,abilityScore(s,k)]));
@@ -21,11 +21,20 @@ function resolve(s,route='integrated',pressure=false) {
 function strategy(s,goal='institute') {
   const plan=proposeSchedule(s),h=normalized(s);
   if(['unemployed','unrelated'].includes(goal)&&s.career.papers>=3){plan.splice(0,4,'rest','coffee','rest',h.learning<50?'study':'rest');}
-  else if(goal==='true') {s.publication.journal='leading';if(!s.project.submitted)s.project.journal='leading';
-    plan[3]=s.month<24?'coursework':h.learning<85?'study':h.language<75?'language':h.teaching<75?'teach':h.social<65?'coffee':'study';
-    if(s.project.phase===5){plan[0]=s.month<24?'coursework':h.teaching<75?'teach':'study';plan[1]=h.language<75?'language':'coffee';}
-  } else if(goal==='corporate')plan[3]='industry';
-  else if(goal==='startup')plan[3]='startup';
+  else if(goal==='true') {
+    if(!s.project.submitted){s.publication.journal=s.career.topPapers<2?'leading':'standard';s.project.journal=s.publication.journal;}
+    if(s.month>=24){
+      const primary=['study','experiment','experiment','analysis','analysis','analysis'][s.project.phase];
+      plan[0]=plan[1]=primary;plan[2]=h.stamina<50||h.stress>55?'free':primary;
+      plan[3]=h.teaching<65?'teach':h.language<70?'language':primary;
+      if([4,10].includes(calendarMonth(s.month,s.locale))){plan[0]=plan[1]='presentation';plan[2]='conference';plan[3]='free';}
+      else if(s.month>=30&&s.month<=48&&s.month%3===0)plan[0]='coursework';
+      else if(!s.project.conference&&projectWork(s)>=projectThresholds(s).conference){plan[0]=plan[1]='presentation';plan[2]='conference';}
+    }
+    if(s.month>=30&&s.month<52&&s.career.qual!=='passed'&&(qualificationStudy(s)<8||s.career.qual==='failed'&&qualificationStudy(s,(s.history.find(h=>h.kind==='qual'&&!h.passed)?.month??s.month)+1)<2))plan[0]=plan[1]='coursework';
+    return plan;
+  } else if(goal==='corporate')plan[3]=h.industry<98?'industry':s.project.phase<=2?'experiment':'analysis';
+  else if(goal==='startup'){plan[3]='industry';if(s.month>=24)plan[0]='industry';}
   else if(goal==='youtuber')plan[3]='video';
   else if(goal==='unrelated')plan[3]=h.industry<35?'industry':'free';
   if(goal==='unrelated'&&s.career.papers>=3&&h.industry<35)plan[3]='industry';
@@ -34,11 +43,13 @@ function strategy(s,goal='institute') {
   return plan;
 }
 export function play(goal='institute',seed=1,route='integrated',locale='ko') {
-  let s=createState('Test student',seed,{gender:'female',locale});
+  let s=createState('Test student',seed,{gender:'female',locale,...(goal==='true'?{age:38}:{})});
   for(let m=0;m<MONTHS&&!s.ending;m++) {
     s.lab.creditEnabled=true;const plan=strategy(s,goal);
-    const facultyAction=s.lab.funds<80&&canApplyGrant(s)?'funding':goal==='true'&&s.career.recommendations<4?'recommend':s.sabbatical.active?'support':goal==='resident_researcher'?'conversation':'routine';
-    try{s=resolve(simulateMonth(s,plan,{feedback:'listen',...managedOptions(s,facultyAction)}),route);}catch(error){error.state=structuredClone(s);throw error;}
+    const facultyAction=s.lab.funds<80&&canApplyGrant(s)?'funding':goal==='true'&&s.career.papers&&s.career.recommendations<4?'recommend':s.sabbatical.active?'support':goal==='true'||goal==='resident_researcher'||m%6===0?'conversation':'routine';
+    const aligned=feedbackEffect(s,'praise').efficiency>1?'praise':feedbackEffect(s,'critique').efficiency>1?'critique':'listen';
+    const feedback=s.advising?.lastFeedback===aligned&&s.advising.streak>=3?'listen':aligned;
+    try{s=resolve(simulateMonth(s,plan,{feedback,...managedOptions(s,facultyAction)}),route);}catch(error){error.state=structuredClone(s);throw error;}
     assert.ok(validateSave(s),`invalid generated state at month ${s.month}`);
   }
   return s;
@@ -161,7 +172,9 @@ test('advanced doctoral preparation remains attainable through actual practice u
   assert.ok(s.career.papers>=TRUE_REQUIREMENTS.papers);assert.ok(s.career.conferences>=TRUE_REQUIREMENTS.conferences);
 });
 test('all six normal careers are reachable through play with managed finances',()=>{
-  for(const goal of ['institute','corporate','unrelated','startup','unemployed','youtuber']){const s=play(goal,goal==='unemployed'?1:6);assert.equal(s.ending,goal,JSON.stringify({goal,ending:s.ending,month:s.month,hidden:s.hidden,career:s.career,professor:s.professor}));}
+  // The RA founder fixture uses seed 8 × 7919, also exercised by lab-play.test.mjs.
+  const seeds={startup:63352,unemployed:1};
+  for(const goal of ['institute','corporate','unrelated','startup','unemployed','youtuber']){const s=play(goal,seeds[goal]??6);assert.equal(s.month,96,goal);assert.ok(canDefend(s),goal);assert.equal(s.ending,goal,JSON.stringify({goal,ending:s.ending,month:s.month,hidden:s.hidden,career:s.career,professor:s.professor}));}
 });
 test('saved games reject old versions, malformed weeks, impossible career counts and invalid events',()=>{
   const s=createState();assert.ok(validateSave(s));
@@ -351,7 +364,12 @@ test('public-institution grant amounts stay stable while private variations rema
 test('physics age-38 public PI completes eight years with proposals and expenses adjusted during funding gaps',()=>{
   for(const labMode of ['dry','wet']){
     let s=createState('Student',6,{age:38,fieldId:'050',labMode,institution:'national',gender:'female'});
-    s.lab.creditEnabled=true;for(let month=0;month<96&&!s.ending;month++){if(s.grants.status==='bridge')s.lab.budget={...s.lab.budget,environment:1,performance:0,publicity:0};s=resolve(simulateMonth(s,proposeSchedule(s),{feedback:'listen',...managedOptions(s)}));}
+    s.lab.creditEnabled=true;for(let month=0;month<96&&!s.ending;month++){
+      if(s.grants.status==='bridge')s.lab.budget={...s.lab.budget,environment:1,performance:0,publicity:0};
+      const aligned=feedbackEffect(s,'praise').efficiency>1?'praise':feedbackEffect(s,'critique').efficiency>1?'critique':'listen';
+      const feedback=s.advising?.lastFeedback===aligned&&s.advising.streak>=3?'listen':aligned;
+      s=resolve(simulateMonth(s,proposeSchedule(s),{feedback,...managedOptions(s,month%6===0?'conversation':'routine')}));
+    }
     assert.equal(s.month,96,labMode);assert.ok(canDefend(s),labMode);assert.ok(!['gameover','dropout','leave'].includes(s.ending),JSON.stringify({labMode,ending:s.ending}));assert.ok(validateSave(s));
   }
 });
