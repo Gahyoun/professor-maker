@@ -153,7 +153,7 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
   pixels=backHead;
   const end=[0,0,0,68,79,91,99][l];
   if(l>=3){poly([[18,32],[57,32],[60,end-7],[56,end],[52,end-4],[48,end],[23,end],[19,end-4],[16,end-9]],hairD);for(const x of [20,25,49,54])poly([[x,43],[x+3,42],[x+2,end-5],[x,end-2]],hairM);}
-  // A short back and bent legs keep the hips on the chair, feet under its front.
+  // The pelvis rests on the chair; thighs reach forward before the calves drop.
   pixels=body;
   box(35,63,45,68,skinD);
   poly([[27,68],[39,65],[50,67],[54,74],[54,91],[49,96],[28,94],[24,87],[24,75]],top);
@@ -165,13 +165,18 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
   else if(outfit===4){for(const y of [77,85]){row(y,27,51,shirt);row(y+1,27,51,shirt);}}
   else if(outfit===5){poly([[30,68],[36,66],[42,67],[43,72],[36,73]],topH);box(42,73,43,92,topD);}
   // Forearms reach the desktop, with the hands immediately above the keyboard.
-  poly([[28,73],[32,72],[37,80],[42,82],[49,80],[58,78],[60,80],[49,84],[41,87],[31,82],[27,77]],topH);
-  poly([[50,71],[55,72],[58,78],[68,79],[70,81],[66,84],[56,82],[52,77]],top);
-  box(58,78,63,80,skin);row(80,58,63,skinD);box(68,80,73,82,skin);row(82,68,73,skinD);
-  poly([[30,94],[49,94],[56,96],[55,101],[43,101],[37,104],[29,101]],pants);
-  poly([[31,99],[38,101],[37,107],[29,107]],pants);poly([[47,99],[54,99],[57,107],[49,108]],pantsD);
-  row(97,41,53,pantsH);box(31,101,33,105,pantsH);
-  box(28,107,39,110,'#39303e');box(49,108,60,111,'#39303e');row(107,29,37,'#726174');row(108,50,58,'#726174');
+  poly([[28,73],[32,72],[37,81],[42,84],[49,83],[58,81],[60,83],[49,87],[41,89],[31,84],[27,77]],topH);
+  poly([[50,71],[55,72],[58,79],[68,82],[70,84],[66,87],[56,84],[52,77]],top);
+  box(58,81,63,83,skin);row(83,58,63,skinD);box(68,83,73,85,skin);row(85,68,73,skinD);
+  poly([[43,94],[49,94],[69,95],[73,98],[72,102],[65,101],[57,98],[43,98]],pantsD);
+  poly([[30,94],[43,94],[60,96],[64,98],[63,102],[57,102],[46,99],[32,99]],pants);
+  poly([[71,99],[76,99],[76,107],[71,108],[69,104]],pantsD);
+  poly([[58,99],[64,99],[63,107],[58,108],[56,104]],pants);
+  poly([[34,94],[43,94],[59,96],[61,98],[55,98],[42,97]],pantsH);
+  poly([[50,94],[57,94],[70,96],[72,98],[68,98],[57,97]],pantsH);
+  box(58,101,60,106,pantsH);box(71,101,72,106,pantsH);
+  box(56,108,67,111,'#39303e');box(70,108,78,111,'#39303e');
+  row(108,57,65,'#726174');row(108,71,77,'#726174');row(111,56,67,'#222432');row(111,70,78,'#222432');
   // One eye and a stepped cheek silhouette make the viewing direction clear.
   pixels=frontHead;
   oval(43,40,21,23,skinD);poly([[45,24],[56,29],[61,35],[61,40],[66,43],[63,46],[63,54],[57,61],[47,63],[39,58],[37,39]],skin);
@@ -196,7 +201,7 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  // About 3.5 head heights when standing: a 30px skull, a 38px torso and 36px
  // legs. Seated hips stay on the chair; the hands still meet the desktop.
  // A finer integer output grid preserves eyes/glasses as the skull gets smaller.
- const seated=pose==='seated',neck=seated?45:37,hip=seated?88:75,foot=111,precision=2;
+ const seated=pose==='seated',neck=seated?45:37,hip=seated?(facing==='monitor'?82:88):75,foot=111,precision=2;
  const bodyY=y=>y<=94?neck+(y-66)*(hip-neck)/28:hip+(y-94)*(foot-hip)/17;
  const outputW=W*precision,outputH=H*precision,composite=Array.from({length:outputH},()=>Array(outputW).fill(null));
  const overlay=(source,head)=>{for(let y=0;y<outputH;y++)for(let x=0;x<outputW;x++){

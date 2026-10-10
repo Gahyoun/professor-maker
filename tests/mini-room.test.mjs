@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createState} from '../dist/engine.js';
 import {roomScene,roomDecorations} from '../dist/lab-scene.js';
-import {projectRoom,ROOM_ANCHORS,WALLPAPERS,FLOOR_TILES} from '../dist/mini-room.js';
+import {projectRoom,chairGeometry,ROOM_ANCHORS,WALLPAPERS,FLOOR_TILES} from '../dist/mini-room.js';
 test('room floor axes have equal lengths and opposing slopes; height stays vertical',()=>{
  const delta=(a,b)=>a.map((v,i)=>v-b[i]),base=projectRoom(0,0),u=delta(projectRoom(1,0),base),v=delta(projectRoom(0,1),base);
  assert.equal(Math.hypot(...u),Math.hypot(...v));assert.equal(u[0],-v[0]);assert.equal(u[1],v[1]);
@@ -61,6 +61,22 @@ test('all four desk chairs occlude the seated body, while the idle student stand
  assert.equal(seen.size,4);
  const [x]=projectRoom(...ROOM_ANCHORS.standing),[plantX]=projectRoom(...ROOM_ANCHORS.plant);
  assert.ok(Math.abs(x-plantX)>=36,'idle feet and the foreground plant need separate projected footprints');
+});
+test('office chairs connect five grounded casters to a visible support pole and mounted armrests',()=>{
+ for(const type of [2,3]){
+  const geometry=chairGeometry(12,22,type),{center,seat,casters}=geometry;
+  assert.deepEqual(center,ROOM_ANCHORS.deskSeat);
+  assert.equal(casters.length,5);assert.equal(new Set(casters.map(p=>p.join(','))).size,5);
+  for(const [u,v] of casters)assert.ok(Math.abs(Math.hypot(u-center[0],v-center[1])-1.85)<1e-9);
+  const front=projectRoom(seat.u+seat.w,seat.v+seat.d,seat.bottom)[1],hub=projectRoom(...center,3)[1];
+  assert.ok(hub-front>4,'the lower pole must remain visible below the seat instead of hiding entirely behind it');
+  let state;for(let seed=1;seed<=120;seed++){const candidate=createState('',seed,{labMode:'dry'});if(roomDecorations(candidate).chairType===type){state=candidate;break;}}
+  const scene=roomScene(state,{actual:'analysis',performed:true,outcome:'completed'});
+  assert.equal((scene.match(/class="chair-spoke"/g)||[]).length,5);
+  assert.match(scene,/class="chair-support-pole"/);
+  assert.equal((scene.match(/class="chair-armrest"/g)||[]).length,2);
+  assert.ok(scene.indexOf('class="chair-wheelbase"')<scene.indexOf('class="mini-student '),'the connected support is behind the seated body');
+ }
 });
 test('cosmetic room variety is stable and never consumes gameplay state',()=>{
  const walls=new Set(),floors=new Set(),props=new Set();

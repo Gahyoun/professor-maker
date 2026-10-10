@@ -27,14 +27,26 @@ function lectureDiagram(type,ink){
 }
 export function roomDecorations(state){const seed=state.creationSeed??state.seed,draw=i=>(Math.imul(seed^(i*7919),2654435761)>>>0)/4294967296;return {fridge:draw(1)>.25,kettle:draw(2)>.2,plush:draw(3)>.45,cot:draw(4)>.65,board:true,boardType:Math.floor(draw(12)*4),chairType:Math.floor(draw(13)*4),restType:Math.floor(draw(14)*4),sofa:draw(6)>.5,server:state.professorProfile.labMode==='dry',palette:Math.floor(draw(5)*3),wallpaper:Math.floor(draw(7)*WALLPAPERS.length),floor:Math.floor(draw(8)*FLOOR_TILES.length),printer:draw(9)>.25,plant:true,bag:draw(10)>.35,deskLamp:true,clock:true,noticeboard:draw(11)>.3};}
 function desk(u,v,w,d,color='#c5ab8e'){let art='';for(const [a,b] of [[u+.5,v+.5],[u+w-1,v+.5],[u+.5,v+d-1],[u+w-1,v+d-1]])art+=box(a,b,.65,.65,23,'#a58c73');art+=box(u,v,w,d,3,color,23);return art;}
+export function chairGeometry(u,v,type=0){
+ const center=[u+1.5,v+1.5],seat={u:u+.4,v:v+.4,w:2.2,d:2.2,bottom:17,top:20};
+ const casters=type>=2?Array.from({length:5},(_,i)=>{const angle=-Math.PI/2+i*Math.PI*2/5;return [center[0]+Math.cos(angle)*1.85,center[1]+Math.sin(angle)*1.85];}):[];
+ return {center,seat,casters};
+}
 function chairParts(u,v,color,type=0,facing='front'){
  const labels=['목재 의자','플라스틱 의자','사무용 의자','고급 등받이 의자'];
- const backrest=box(u,v+(facing==='monitor'?2.4:0),3,.6,type===3?29:type===2?24:17,shade(color,9),14);
- let base='',arms='';
- if(type>=2){base+=box(u+1.3,v+1.3,.4,.4,11,'#77858d');for(const [a,b]of [[0,0],[2.6,0],[0,2.6],[2.6,2.6]])base+=box(u+a,v+b,.4,.4,2,'#5b6770');arms=box(u,v+1,.4,2,1,color,21)+box(u+2.6,v+1,.4,2,1,color,21);}
- else for(const[a,b]of [[0,0],[2.6,0],[0,2.6],[2.6,2.6]])base+=box(u+a,v+b,.4,.4,11,'#92958b');
- base+=box(u,v,3,3,3,color,11);
- const near=facing==='monitor';
+ const {center:[cu,cv],seat,casters}=chairGeometry(u,v,type),near=facing==='monitor';
+ const backV=near?seat.v+seat.d-.35:seat.v;
+ const backrest=box(seat.u+.1,backV,2,.35,type===3?26:type===2?22:17,shade(color,9),seat.top);
+ let base=`<g class="chair-floor-shadow" opacity=".18">${plane([[cu-1.8,cv-1.8,0],[cu+1.8,cv-1.8,0],[cu+1.8,cv+1.8,0],[cu-1.8,cv+1.8,0]],'#727c78')}</g>`,arms='';
+ if(type>=2){
+  // Each wheel touches z=0 and connects to the same hub. A taller, narrower
+  // seat leaves the support pole visible below the front edge in this projection.
+  base+='<g class="chair-wheelbase">';
+  for(const [a,b] of [...casters].sort((a,b)=>a[0]+a[1]-b[0]-b[1]))base+=`<g class="chair-spoke" data-floor="${a},${b}">`+line([cu,cv,3],[a,b,2],'#586873',2.8)+line([cu,cv,3.6],[a,b,2.6],'#9aadb1',1)+box(a-.22,b-.2,.44,.4,2,'#52606b')+'</g>';
+  base+='</g>'+`<g class="chair-support-pole">${box(cu-.2,cv-.2,.4,.4,seat.bottom-3,'#84979f',3)}${box(cu-.3,cv-.3,.6,.6,3,'#586873',2)}</g>`;
+  for(const a of [seat.u,seat.u+seat.w-.25])arms+=`<g class="chair-armrest">`+box(a,seat.v+.8,.25,.25,9,'#71838c',seat.top)+box(a,seat.v+.6,.3,1.3,1,color,seat.top+9)+'</g>';
+ }else for(const[a,b]of [[seat.u+.15,seat.v+.15],[seat.u+seat.w-.4,seat.v+.15],[seat.u+.15,seat.v+seat.d-.4],[seat.u+seat.w-.4,seat.v+seat.d-.4]])base+=box(a,b,.25,.25,seat.bottom,'#92958b');
+ base+=box(seat.u,seat.v,seat.w,seat.d,3,color,seat.bottom);
  return {base:`<g data-chair="${type}" data-chair-facing="${facing}" aria-label="${labels[type]}">${base}${near?'':backrest+arms}</g>`,front:near?`<g class="chair-foreground" aria-hidden="true">${backrest}${arms}</g>`:''};
 }
 function chair(...args){const parts=chairParts(...args);return parts.base+parts.front;}
