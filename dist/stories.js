@@ -1,7 +1,7 @@
 import {POSTDOC_STORY,OUTSIDE_SCENES,VIDEO_SCENES,workplaceScene} from './ending-scenarios.js';
-import {getDiscipline} from './disciplines.js';
-const getField=id=>getDiscipline(id).label;
-import {endingVoice,dryEndingText} from './ending-voice.js';
+import {endingVoice} from './ending-voice.js';
+import {adaptResearchText,researchSetting} from './ending-context.js';
+import {formatStudentName} from './korean.js';
 // Original epilogues. The professor/corporate letters adapt Gahyoun Gim's supplied story.
 const p=(ko,en)=>({ko,en});
 export const ENDINGS={
@@ -186,8 +186,9 @@ export function getEndingPages(id, lang = 'ko', relationship, name, reason, hist
   if(locale==='ko'&&context?.recommendation==='alternate')pages.unshift('마감 사흘 전, 학생은 지도교수에게 추천서를 부탁하려다 망설였다. 다른 추천인에게 연락했지만, 이 이야기의 임용 서류에서는 지도교수 추천서가 비어 있어 심사를 통과하지 못했다. 그 뒤 어떤 길을 택할지는 학생의 몫이었다.');
   if(id==='startup'&&locale==='ko'&&context?.statistics){const close=(context.statistics.student.rapport+100)/2>=70;pages[0]=close?'졸업 뒤 {name}는 연구실에서 발전시킨 연구를 바탕으로 회사를 시작했다. 기술이전과 장비 사용 범위는 별도로 계약했다. 교수는 합의된 범위에서 기술 자문을 맡았다.':'졸업 뒤 {name}는 새로운 문제를 찾아 독립적으로 회사를 시작했다. 연구실의 기술이나 장비를 당연히 사용할 수 있다고 생각하지 않았다. 고객과 이야기하며 방향을 바꾸고 팀의 일을 배웠다.';pages[1]=close?'교수님께.\n\n첫 고객과의 계약을 마쳤습니다. 연구실 장비를 사용할 일이 생기면 계약 범위와 비용부터 확인하겠습니다. 연구와 회사의 업무가 섞이지 않도록 일정을 나누고 있습니다.\n― {name} 드림':'교수님께.\n\n처음 계획한 제품은 고객의 문제와 달랐습니다. 면담 기록을 다시 살펴 서비스를 바꾸었습니다. 이제는 팀과 고객이 함께 검토할 수 있는 자료를 만들고 있습니다.\n― {name} 드림';}
 
-  if(id==='unrelated'&&distance==='distant'&&context?.statistics){pages=OUTSIDE_SCENES.map(p=>p[locale]);if(locale==='ko'&&context.recommendation==='alternate')pages[3]+='\n\n마감 사흘 전 추천서 부탁도 망설였다. 다른 추천인에게 연락했지만, 지도교수 추천서가 비어 있던 임용 서류는 통과하지 못했다.';return name==null?pages:pages.map(p=>p.replaceAll('{name}',()=>String(name)));}
-  if(locale==='ko'&&['corporate','institute'].includes(id)&&context?.fieldId)pages[0]+='\n\n'+workplaceScene(context.field||getField(context.fieldId),id,context.labMode==='dry');
+  if(id==='unrelated'&&distance==='distant'&&context?.statistics){pages=OUTSIDE_SCENES.map(p=>p[locale]);if(locale==='ko'&&context.recommendation==='alternate')pages[3]+='\n\n마감 사흘 전 추천서 부탁도 망설였다. 다른 추천인에게 연락했지만, 지도교수 추천서가 비어 있던 임용 서류는 통과하지 못했다.';return pages.map(p=>formatStudentName(locale==='ko'?adaptResearchText(p,context):p,name,locale));}
+  if(locale==='ko'&&['corporate','institute'].includes(id)&&(context?.fieldId||context?.field))pages[0]+='\n\n'+workplaceScene(researchSetting(context).field,id,context.labMode==='dry',context.fieldId);
+  if(locale==='ko'&&id==='startup'&&(context?.fieldId||context?.field))pages[0]+='\n\n'+researchSetting(context).sector+' 분야에서 현장의 요구와 기술의 적용 범위를 살피며 사업 방향을 정했다.';
   if(locale==='ko')for(const note of endingMemoryNotes(history,distance))appendLetterNote(pages,note,locale);
   if (id === 'corporate' && distance === 'close') {
     pages[0] = pages[0].replace(locale === 'ko' ? '그날의 커피는 정말로 한 잔뿐이었다.' : 'There really was only one cup of coffee.', locale === 'ko' ? '커피가 식는 동안에도 이야기는 끝나지 않았다.' : 'The conversation continued long after the coffee cooled.');
@@ -206,6 +207,6 @@ export function getEndingPages(id, lang = 'ko', relationship, name, reason, hist
     appendLetterNote(pages, (pauses ? pauseNotes : relationshipNotes)[distance][locale], locale);
   }
   for(const note of endingVoice(context,locale))appendLetterNote(pages,note,locale);
-  if(context?.labMode==='dry'&&locale==='ko')pages=pages.map(dryEndingText);
-  return name == null ? pages : pages.map(page => page.replaceAll('{name}', () => String(name)));
+  if(locale==='ko')pages=pages.map(text=>adaptResearchText(text,context));
+  return pages.map(text=>formatStudentName(text,name,locale));
 }

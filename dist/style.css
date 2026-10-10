@@ -227,3 +227,12 @@ body.month-playing .lab-main{position:relative}body.month-playing .lab-main:afte
 @media(max-width:650px){.mail-workspace{grid-template-columns:1fr;gap:8px}.mail-folders{padding:10px 12px;display:flex;gap:15px;align-items:center}.mail-folders>span{padding:0}.mail-folders p{display:none}.mail-row{grid-template-columns:minmax(0,1fr) 75px;gap:6px;padding:12px 8px}.mail-sender{grid-row:1}.mail-row time{grid-column:2;grid-row:1}.mail-subject{grid-column:1/-1;grid-row:2}.mail-subject strong{font-size:13px}.scholar-metrics{gap:24px}.scholar-table table{font-size:12px}.scholar-table th,.scholar-table td{padding:9px 5px}.ending-evidence table{font-size:11px}}
 
 @media(max-width:650px){.live-lab .pixel-student{width:74px;bottom:13px}}
+
+/* Miniroom: one floor projection also locates the student and every prop. */
+.pixel-room[data-projection=isometric]{height:clamp(195px,28vw,330px);background:#f7f5ef;border:0}
+.mini-room-art .room-portrait{background:transparent;image-rendering:pixelated}
+.mini-student{transform-box:fill-box;transform-origin:center bottom}.mini-idle{animation:mini-idle 2.6s steps(2,end) infinite}.mini-working{animation:mini-work .7s steps(2,end) infinite}
+@keyframes mini-idle{50%{transform:translateY(-.7px)}}@keyframes mini-work{50%{transform:translateY(-1.5px) rotate(.4deg)}}
+@media(max-width:650px){.live-lab .pixel-room[data-projection=isometric]{height:205px}.pixel-room[data-projection=isometric] .room-label{background:#faf8f2;color:#687b80;max-width:90%;font-size:8px}}
+@media(max-height:650px) and (max-width:650px){.live-lab .pixel-room[data-projection=isometric]{height:155px}}
+@media(prefers-reduced-motion:reduce){.mini-student{animation:none!important}}

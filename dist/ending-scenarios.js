@@ -1,4 +1,5 @@
 // Original fictional scenes adapted from the creator's supplied drafts.
+import {fieldWorkplace} from './ending-context.js';
 const p=(ko,en)=>({ko,en});
 export const POSTDOC_STORY={type:'EPILOGUE',title:p('이름은 저널에, 소속은 포닥에','A name in the journal, a postdoctoral affiliation'),career:p('박사후연구원 · 연구를 이어 가는 자리','Postdoctoral researcher'),time:p('졸업 몇 해 후 · 저널 알림과 안부 메일','Years after graduation · a journal alert and an email'),pages:[
  p('학부연구생과 석박사, 8년이라는 시간이 흘렀다. 그리고 다시 몇 해가 지났다.\n\n어느 평일 아침, 연구실 메일함에 저널 알림이 도착했다.','Eight years passed, then a few more. A journal alert arrived one weekday morning.'),
@@ -37,7 +38,6 @@ export const VIDEO_SCENES=[
  p('거절 메일을 세 번 썼다가 지웠다. 연구비 잔액을 확인했다.\n\n학과에 물어보니 담당자는 이미 구독자였다.','I wrote and deleted a refusal three times, then checked the lab funds. The department contact was already a subscriber.'),
  p('동의를 마친 뒤 「지도교수님이 직접 반박합니다」가 공개되었다. 조회수 300만.\n\nh-index는 크게 달라지지 않았다. 연구실 문의는 늘었다.\n\n구독, 좋아요, 그리고 인용 부탁드립니다.','After agreeing on the production, we released The professor responds. Three million fictional views. My h-index barely changed, but lab inquiries grew. Subscribe, like, and cite responsibly.')
 ];
-export function workplaceScene(field,kind,dry){
- const area=/수학|통계/.test(field)?['모형의 가정과 추정 오차를 검토하는 분석팀','공공 자료의 불확실성과 정책 모형을 검증하는 연구팀']:/컴퓨터|정보|소프트|인공지능/.test(field)?['서비스 데이터와 소프트웨어의 성능·재현성을 검증하는 개발팀','공공 데이터와 계산 인프라, 신뢰할 수 있는 알고리즘을 연구하는 팀']:/생명|생물|바이오|약학|의학/.test(field)?[dry?'생물학 데이터와 분석 절차를 검증하는 연구팀':'시료의 품질과 후보 물질의 재현성을 확인하는 개발팀',dry?'생물 자원 자료와 분석 조건을 장기적으로 비교하는 연구팀':'생물 자원과 시험법의 장기적인 신뢰성을 연구하는 팀']:/화학|소재|재료/.test(field)?['소재 특성과 제조 조건, 품질 기준을 함께 검토하는 개발팀','측정 표준과 물질 특성, 분석법을 축적하는 연구팀']:/물리|천문/.test(field)?[dry?'물리 모형과 계산으로 장치 성능을 분석하는 팀':'장치 성능과 측정 신뢰성을 확인하는 연구팀','공동 활용 장비와 장기 관측·측정 자료를 다루는 연구팀']:/지구|환경|해양|기상/.test(field)?['환경 자료와 현장 조건을 제품·서비스 설계에 반영하는 팀','관측 자료와 환경 변화를 장기적으로 축적하는 연구팀']:/농|산림|축산|식품|수산/.test(field)?['생산 조건과 품질·안전성을 함께 확인하는 개발팀','자원 보전과 생산 환경의 장기 변화를 조사하는 연구팀']:['설계·해석 결과를 제품의 요구 조건과 대조하는 개발팀','공동 활용 기술과 장기 연구 자료를 축적하는 연구팀'];
- return `${field}에서 배운 방법은 새로운 일정 속에서도 이어졌다. ${kind==='corporate'?area[0]:area[1]}에서 동료들과 기준을 의논하고 결과를 기록했다.`;
+export function workplaceScene(field,kind,dry,fieldId){
+ return fieldWorkplace({field,fieldId,labMode:dry?'dry':'wet'},kind);
 }
