@@ -2,7 +2,7 @@ import {ISSUE_CHOICES} from '../dist/monthly-choices.js';
 import {mergeRelationship} from '../dist/relationship.js';
 import {HIDDEN_RANGES,ACTIVITIES,LEGACY_ACTIVITIES,EVENTS} from '../dist/engine.js';
 import {DISCIPLINES} from '../dist/disciplines.js';
-const outcomes=['bachelor','masters','true','postdoc','institute','corporate','unrelated','startup','unemployed','youtuber','resident_researcher','leave','dropout','unfinished','gameover','external_masters','external_phd'];
+const outcomes=['bachelor','masters','true','postdoc','institute','corporate','unrelated','startup','unemployed','youtuber','resident_researcher','leave','dropout','dismissed','unfinished','gameover','external_masters','external_phd'];
 const allowedOrigin=(request)=>{const origin=request.headers.get('Origin');return origin===new URL(request.url).origin||origin==='https://gahyoun.github.io'||/^http:\/\/127\.0\.0\.1:(4173|4174)$/.test(origin||'');};
 const json=(data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Cross-Origin-Resource-Policy':'same-origin',...headers}});
 const hash=async value=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)))].map(x=>x.toString(16).padStart(2,'0')).join('');

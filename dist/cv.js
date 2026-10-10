@@ -1,5 +1,5 @@
 import {careerDescription} from './ending-context.js';
-import {JOURNALS,CONFERENCE_TIERS} from './venues.js';
+import {JOURNALS,CONFERENCE_TIERS,getJournal,publicationMetric} from './venues.js';
 import {researchText} from './lab-scene.js';
 import {CHAPTERS,THESIS_SCENES} from './main-story.js';
 import {hIndex} from './impact.js';
@@ -57,7 +57,7 @@ function projectsFrom(state,history,locale) {
     if(entry.kind==='submission'){record.submissions++;record.status='submitted';}
     if(entry.kind==='conference'){record.presentations++;if(Object.hasOwn(CONFERENCE_TIERS,entry.tier))record.conferenceTier=entry.tier;}
     if(entry.kind==='revision')record.revisions++;
-    if(entry.kind==='paper'){record.status='accepted';record.acceptedMonth=integer(entry.month);if(Object.hasOwn(JOURNALS,entry.journal)){record.journal=entry.journal;record.impactFactor=JOURNALS[entry.journal].impactFactor;}}
+    if(entry.kind==='paper'){record.status='accepted';record.acceptedMonth=integer(entry.month);if(Object.hasOwn(JOURNALS,entry.journal)){record.journal=entry.journal;if(entry.journal!=='kci')record.impactFactor=Number.isFinite(entry.impactFactor)&&entry.impactFactor>=0&&entry.impactFactor<=100?entry.impactFactor:getJournal(entry.journal,state.professorProfile.fieldId).impactFactor;}}
   }
   const current=state.project,id=integer(current?.id);
   if(id&&!records.has(id)&&(integer(current.phase)>0||Number(current.progress)>0||!records.size)) {
@@ -103,10 +103,10 @@ function renderParts(model,{summary=false}={}) {
   const t=(ko,en)=>tx(model.locale,ko,en),e=escapeHTML;
   const items=[['completedProjects',t('완료 프로젝트','Completed projects')],['acceptedPapers',t('게재 논문','Accepted papers')],['submissions',t('논문 투고','Submissions')],['conferences',t('학술발표','Presentations')],['awards',t('수상','Awards')],['recommendations',t('추천서','Recommendations')]];
   const education=model.education.map(entry=>`<li><time>${e(entry.period)}</time><div><h3>${e(entry.title)}</h3><p>${e(entry.status)}</p></div><span class="cv-degree-status ${entry.awarded?'cv-awarded':''}">${entry.awarded?'✓':'—'}</span></li>`).join('');
-  const projects=model.projects.map(project=>`<li><span class="cv-project-number">${String(project.id).padStart(2,'0')}</span><div><h3>${e(project.title)}</h3><p>${e(project.statusLabel)}${project.journal?` · ${e(JOURNALS[project.journal].label)} (가상 IF ${project.impactFactor})`:''}${project.conferenceTier?` · ${e(CONFERENCE_TIERS[project.conferenceTier].label)}`:''}${project.presentations?` · ${e(t(`학술발표 ${project.presentations}회`,`${project.presentations} presentation${project.presentations===1?'':'s'}`))}`:''}${project.revisions?` · ${e(t(`수정 ${project.revisions}회`,`${project.revisions} revision${project.revisions===1?'':'s'}`))}`:''}</p></div></li>`).join('');
+  const projects=model.projects.map(project=>`<li><span class="cv-project-number">${String(project.id).padStart(2,'0')}</span><div><h3>${e(project.title)}</h3><p>${e(project.statusLabel)}${project.journal?` · ${e(JOURNALS[project.journal].label)} (${e(publicationMetric(project.journal,project.impactFactor))})`:''}${project.conferenceTier?` · ${e(CONFERENCE_TIERS[project.conferenceTier].label)}`:''}${project.presentations?` · ${e(t(`학술발표 ${project.presentations}회`,`${project.presentations} presentation${project.presentations===1?'':'s'}`))}`:''}${project.revisions?` · ${e(t(`수정 ${project.revisions}회`,`${project.revisions} revision${project.revisions===1?'':'s'}`))}`:''}</p></div></li>`).join('');
   const memories=model.memories.length?model.memories.map(memory=>`<li><time>${e(memory.date)}</time><div><h3>${e(memory.title)}</h3><p>${e(memory.detail)}</p></div></li>`).join(''):`<li class="cv-empty">${e(t('첫 기록을 남긴 시간도 이 이력의 일부다.','The beginning belongs in this record, too.'))}</li>`;
   const metricHTML=items.map(([key,label])=>`<div><dt>${e(label)}</dt><dd>${model.outputs[key]}</dd></div>`).join('');
-  const publications=model.projects.filter(project=>project.status==='accepted').map(project=>`<li><time>${e(monthLabel(project.acceptedMonth??project.lastMonth,model.locale))}</time><div><h3>${e(project.title)}</h3><p>${e(model.name)} · ${e(t('게재 확정','Accepted'))}${project.journal?` · ${e(JOURNALS[project.journal].label)} · 가상 IF ${project.impactFactor}`:''}</p></div></li>`).join('');
+  const publications=model.projects.filter(project=>project.status==='accepted').map(project=>`<li><time>${e(monthLabel(project.acceptedMonth??project.lastMonth,model.locale))}</time><div><h3>${e(project.title)}</h3><p>${e(model.name)} · ${e(t('게재 확정','Accepted'))}${project.journal?` · ${e(JOURNALS[project.journal].label)} · ${e(publicationMetric(project.journal,project.impactFactor))}`:''}</p></div></li>`).join('');
   return {e,t,education,projects,memories,metricHTML,
     title:`<p class="cv-kicker">PROFESSOR MAKER · ${e(t('연구실 활동 기록','Research record'))}</p><h1>${e(model.name)}</h1><p class="cv-career">${e(ENDINGS[model.ending].career[model.locale])}</p><p class="cv-field">${e(model.field)}</p>${model.advisor?`<p class="cv-advisor">지도교수: ${e(model.advisor.name)} · ${e(({national:'국립대',private:'사립대',institute:'과학기술원'})[model.advisor.institution])}</p>`:''}<p class="cv-fiction-notice">게임에서 생성한 가상의 활동 기록 · 실제 학위·경력 증명서가 아닙니다.</p>`,
     period:`<p class="cv-period"><strong>${e(model.duration)}</strong><span>${e(model.period)}</span></p>`,

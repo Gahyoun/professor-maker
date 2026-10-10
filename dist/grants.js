@@ -7,7 +7,7 @@ export const GRANT_TITLES = [
 ];
 export const GRANT_SOURCE = 'https://webzine.nrf.re.kr/magazine/2604/sub1.php';
 export function initialGrants(institution='national') {
-  return {titleIndex:0,cycleStart:0,cycleEnd:36,annualAmount:institution==='institute'?600:220,status:'active',
+  return {titleIndex:0,cycleStart:0,cycleEnd:36,annualAmount:institution==='institute'?600:institution==='private'?360:400,status:'active',
     reportYears:[],applicationCycles:[],renewals:0,bridgeYears:0,lastPaymentMonth:0};
 }
 export function advanceGrants(s,{random,log}) {
@@ -33,7 +33,7 @@ export function advanceGrants(s,{random,log}) {
     log(s,{kind:'grant-selection',awarded,prepared});
   }
   const easy=s.professorProfile?.institution==='institute';
-  const amount=easy?(g.status==='bridge'?180:reported?Math.round(420+(s.professor.research+s.professor.admin)*.5):220):(g.status==='bridge'?85:reported?Math.round(190+(s.professor.research+s.professor.admin)*.22):100);
+  const amount=easy?(g.status==='bridge'?180:reported?Math.round(420+(s.professor.research+s.professor.admin)*.5):220):(g.status==='bridge'?140:reported?Math.round(350+(s.professor.research+s.professor.admin)*.3):180);
   if(g.status==='bridge')g.bridgeYears++;
   g.annualAmount=amount;g.lastPaymentMonth=s.month;
   s.lab.funds=Math.min(5000,s.lab.funds+amount);

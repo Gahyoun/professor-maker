@@ -1,4 +1,4 @@
-import {EXPRESSIONS,normalizeExpression,expressionFace} from './student-reaction.js';
+import {EXPRESSIONS,normalizeExpression} from './student-reaction.js';
 const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
 const shade=(hex,amount)=>'#'+hex.slice(1).match(/../g).map(channel=>Math.max(0,Math.min(255,parseInt(channel,16)+amount)).toString(16).padStart(2,'0')).join('');
 // Independent cosmetic RNG: appearance never changes ability or simulation rolls.
@@ -6,18 +6,9 @@ export function studentAppearance(seed,gender){
  let n=Number(seed)>>>0;const rand=()=>{n=(Math.imul(n,1664525)+1013904223)>>>0;return (n+.5)/4294967296;};
  const mean=gender==='male'?2.8:gender==='female'?4.4:3.5;
  const gaussian=Math.sqrt(-2*Math.log(rand()))*Math.cos(2*Math.PI*rand());
- return {hairLength:rand()<.006?0:Math.max(1,Math.min(6,Math.round(mean+gaussian*1.15))),hair:['#282827','#3b302b','#49392f','#242836','#675046','#352e2d'][Math.floor(rand()*6)],skin:['#f0c8a7','#e6b99a','#d6a383','#edc2a1','#cba080'][Math.floor(rand()*5)],shirt:['#456c87','#597a68','#906b71','#6c6587'][Math.floor(rand()*4)],glasses:rand()<.3,eyes:Math.floor(rand()*3),face:Math.floor(rand()*3),outfit:Math.floor(rand()*6),fringe:Math.floor(rand()*16),brows:Math.floor(rand()*3),glassesShape:Math.floor(rand()*2)};
+ const rare=rand();return {hairLength:rare<(gender==='male'?.006:0)?0:Math.max(1,Math.min(6,Math.round(mean+gaussian*1.15))),hair:['#282827','#3b302b','#49392f','#242836','#675046','#352e2d'][Math.floor(rand()*6)],skin:['#f0c8a7','#e6b99a','#d6a383','#edc2a1','#cba080'][Math.floor(rand()*5)],shirt:['#456c87','#597a68','#906b71','#6c6587'][Math.floor(rand()*4)],glasses:rand()<.3,eyes:Math.floor(rand()*3),face:Math.floor(rand()*3),outfit:Math.floor(rand()*6),fringe:Math.floor(rand()*16),brows:Math.floor(rand()*3),glassesShape:Math.floor(rand()*2),curly:((Math.imul(Number(seed)^0x37ac,2654435761)>>>0)%5)===0};
 }
-export function renderPortrait(appearance,label='학생 도트 초상화',expression='neutral'){
- expression=normalizeExpression(expression);const face=expressionFace(appearance,expression);
- label=escape(label);
- const a=appearance,l=a.hairLength,styles=['대머리','크롭컷','짧은 머리','중간 길이 머리','단발','어깨 길이 머리','긴 머리'];
- const texture=(a.fringe??0)%3;
- const hairEnd=l===4?65:l===5?75:84;
- const back=l>=4?`<path d="M20 20h40v8h2v13h1v${hairEnd-46}h-1v3h-2v2h-3v-1h-4v-2H27v2h-4v1h-3v-2h-2v-3h-1V41h1V28h2z" fill="${shade(a.hair,-9)}"/>${texture===1?`<path d="M15 48h5v8h-5zm0 13h5v8h-5zm46-10h5v9h-5zm0 13h5v9h-5z" fill="${a.hair}"/>`:texture===2&&l>=5?`<path d="M61 39h6v3h3v7h-3v18h-2v6h-3v4h-4V45z" fill="${a.hair}"/>`:''}`:'';
- const top=l===0?'':l===1?`<path d="M24 22h32v6H24zM20 28h6v6h-6zm36 0h5v6h-5z" fill="${a.hair}"/>`:l===2?`<path d="M20 24v17h6V29h12v-7h12v7h8v12h5V21h-7v-7H30v5H20z" fill="${a.hair}"/>`:`<path d="M19 23v24h7V31h8v-9h13v7h10v18h6V20h-8v-8H28v6h-9z" fill="${a.hair}"/>`;
- const crown=l<2?'':`<g fill="${a.hair}" class="hair-crown">${texture===0?'<path d="M23 19h3v-3h4v-2h5v-3h10v1h5v2h5v2h4v3H23z"/>':texture===1?'<path d="M19 21h3v-3h4v-3h7v-2h4v-3h10v2h7v3h4v3h3v3H19z"/>':'<path d="M21 21h3v-4h4v-2h5v-4h9v1h6v2h6v3h4v4h3v3H21z"/>'}</g>`;
- const fringes=[
+const FRINGES=[
   [5,6,6,5,4,3,5,6,7,6,5,3,4,5,6,5,4,3,5,6,7,6,4,3,4,5,6,6,5,4],
   [8,8,7,7,6,6,5,5,4,4,3,3,2,2,1,1,0,0,0,1,1,2,2,3,4,5,6,7,8,8],
   [6,6,6,7,7,6,6,6,7,7,6,6,6,7,7,6,6,6,7,7,6,6,6,7,7,6,6,6,7,7],
@@ -34,22 +25,90 @@ export function renderPortrait(appearance,label='학생 도트 초상화',expres
   [8,8,7,7,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7,7,8,8],
   [5,5,5,4,5,5,5,4,5,5,5,4,5,5,5,4,5,5,5,4,5,5,5,4,5,5,5,4,5,5],
   [8,8,7,7,6,6,5,5,4,4,3,3,2,2,1,1,1,2,3,4,5,6,7,8,8,7,6,5,4,3]
- ];
- const fringeIndex=(a.fringe??0)%fringes.length,locks=fringes[fringeIndex];
- // Quarter-unit pixels add real detail; enlarging only the SVG canvas would not.
- const fineLocks=Array.from({length:60},(_,i)=>{const h=locks[Math.floor(i/2)],next=locks[Math.min(29,Math.floor(i/2)+1)];return Math.max(0,l===1?Math.min(4,h):i%2?Math.round((h+next)*2)/4:h);});
- const fringe=l===0?'':`<g class="hair-fringe" fill="${a.hair}"><path d="M25 21h30v8H25z"/>${fineLocks.map((height,i)=>height?`<path d="M${25+i*.5} 29h.5v${Math.max(.25,height-.25)}h-.25v.25h-.25z"/>`:'').join('')}<g fill="${shade(a.hair,22)}">${fineLocks.map((height,i)=>height>2&&i%5===1?`<path d="M${25+i*.5} 27.5h.25v${height-1.5}h-.25z"/>`:'').join('')}</g><g fill="${shade(a.hair,-16)}">${fineLocks.map((height,i)=>height>3&&i%5===3?`<path d="M${25+i*.5} ${28+height}h.25v.5h-.25z"/>`:'').join('')}</g></g>`;
- const detail=l===0?'':`<g class="hair-detail" fill="#fff" opacity=".2"><path d="M28 17h4v1h-4zm5-2h5v1h-5zm7 0h4v1h-4zm5 2h5v1h-5zm6 3h4v1h-4zM24 22h2v2h-2zm3-2h4v1h-4zm5-1h7v1h-7zm9 1h6v1h-6zm8 2h4v1h-4zM21 29h.5v9H21zm38-2h.5v12H59zM23 23h.5v4H23zm33-4h.5v5H56z${l>=4?'M18 44h.5v13H18zm2 15h.5v7H20zM60 45h.5v16H60zm2 18h.5v6H62z':''}"/></g>`;
- const faceDetails=`<g class="face-pixels"><g fill="${shade(a.skin,-18)}"><path d="M58 36h.75v12H58zM56.5 49h.75v5h-.75zM54 55h1v2h-1zM51 59h1v1h-1zM32 63h16v.75H32zM31 64h1v2h-1zM32 66h16v.75H32z"/></g><g fill="${shade(a.skin,16)}"><path d="M24 36h.5v10H24zM26 48h1v2h-1zM28 51h1v1h-1zM39 49h.5v1.5H39zM32 58h1v1h-1z"/></g><g fill="#b27e69"><path d="M28 38h8v.75h-8zM45 38h7v.75h-7zM30 49h6v.5h-6zM45 49h6v.5h-6z"/></g><g fill="#ecc6c1"><path d="M26 50.5h1v1h-1zm2.5 1h1v1h-1zm1.5-1h.5v.5h-.5zM49 50.5h1v1h-1zm2.5 1h1v1h-1zm1.5-1h.5v.5h-.5z"/></g><g fill="#ffffff"><path d="M35 46h.75v.75H35zM48 46h.75v.75H48z"/></g></g>`;
- const outfitDetails=`<g class="outfit-pixels"><g fill="#243344" opacity=".22"><path d="M16 72h1v22h-1zM63 72h1v22h-1zM17 89h5v.5h-5zm40 0h6v.5h-6zM25 70h.5v5H25zm29 0h.5v5H54zM16 94h48v.75H16zM36 98h1v4h-1zm1 4h6v.5h-6z"/></g><g fill="#fff" opacity=".4"><path d="M17 73h.5v9H17zM62 73h.5v9H62zM18 90h4v.5h-4zm40 0h4v.5h-4zM25 117h11v.5H25zm18 0h11v.5H43z"/></g>${[0,2,3].includes(a.outfit??0)?'<g fill="#7f939d"><path d="M39.5 81h1v1h-1zm0 5h1v1h-1zm0 5h1v1h-1z"/></g><path d="M23 79h8v6h-8z" fill="#9eaeb7" opacity=".25"/><path d="M23 79h8v.5h-8z" fill="#607c8d"/>':a.outfit===1?'<path d="M28 69h4v1h-4zm16 0h4v1h-4zM32 70h.5v6H32zm15 0h.5v6H47zM29 87h22v.5H29zM29 88h.5v4H29zm21 0h.5v4H50z" fill="#e9ddc9" opacity=".55"/>':a.outfit===5?'<path d="M39.5 77h.5v12h-.5zM22 81h10v.5H22zm0 .5h.5v6H22zm9.5 0h.5v6h-.5z" fill="#c1ba9d" opacity=".6"/>':''}</g>`;
- return `<svg class="portrait" data-expression="${expression}" viewBox="0 0 320 496" role="img" aria-label="${label} · ${EXPRESSIONS[expression]} · ${styles[l]}${l?` · 앞머리 ${fringeIndex+1}`:``}"><title>${label} · ${EXPRESSIONS[expression]} · ${styles[l]}${l?` · 앞머리 ${fringeIndex+1}`:``}</title><g shape-rendering="crispEdges" transform="scale(4)">${back}<g class="chibi-body" transform="translate(8 0) scale(.8 1)"><path d="M26 92h28v14H26zM27 105h9v12h-9zm17 0h9v12h-9z" fill="#586981"/><path d="M24 116h14v7H24zm18 0h14v7H42z" fill="#414e61"/><path d="M15 74h9v22h-9zm41 0h9v22h-9z" fill="${a.skin}"/><path d="M14 96V70h12V65h28v5h12v26H14z" fill="${a.shirt}"/></g><path d="M32 55h16v14H32z" fill="${a.skin}"/><path d="M26 23h28v2h2v7h3v3h2v17h-1v3h-2v3h-3v2h-3v2h-4v${a.face+1}H32v-${a.face+1}h-4v-2h-3v-2h-3v-3h-2v-3h-1V35h2v-3h3v-7h2z" fill="${a.skin}"/>${top}${crown}${fringe}${detail}${face.eyes}<path d="M26 50h5v2h-5zm23 0h5v2h-5z" fill="#dba0a0" opacity=".6"/>${a.glasses?(a.glassesShape===1?'<rect x="26" y="37" width="12" height="12" rx="3" stroke="#44525d" stroke-width="1.25" fill="none"/><rect x="42" y="37" width="12" height="12" rx="3" stroke="#44525d" stroke-width="1.25" fill="none"/><path d="M38 40h4" stroke="#44525d" stroke-width="1.25"/>':'<path d="M26 38h12v9H26zm16 0h12v9H42zM38 40h4" stroke="#44525d" stroke-width="1.25" fill="none"/>'):''}${expression==='neutral'?faceDetails:faceDetails.replace(/<g fill="#ffffff">.*?<\/g>/,'')}${face.mouth}<g class="chibi-clothing" transform="translate(8 0) scale(.8 1)">${[
- `<path d="M14 70h12v-5h7l7 13 7-13h7v5h12v26H14z" fill="#f7f7f4"/><path d="M38 78h4v18h-4z" fill="#d1d9df"/>`,
- `<path d="M14 70h12v-5h28v5h12v26H14z" fill="${a.shirt}"/><path d="M36 79h8v7h-8" fill="#eee3cf"/>`,
- `<path d="M14 70h12v-5h28v5h12v26H14z" fill="#edf0e9"/><path d="M39 70h2v26" fill="#a5b4be"/>`,
- `<path d="M14 70h12v-5h7l7 10 7-10h7v5h12v26H14z" fill="#f6f5ec"/><path d="M38 76h4v20h-4z" fill="${a.shirt}"/><path d="M23 79h8v5h-8z" fill="#8aa2b4"/>`,
- `<path d="M26 67h28v4H26zM14 78h52v4H14zM14 88h52v4H14z" fill="#e7ded0"/>`,
- `<path d="M26 66h28v8H26z" fill="#2d3c50"/><path d="M38 74h4v16h-4z" fill="#b2a77e"/>`
-][a.outfit??0]}${outfitDetails}<g class="sprite-detail" fill="#ffffff" opacity=".17"><path d="M15 72h.5v21H15zM64 73h.5v19H64zM29 96h5v1.5h-5zm17 0h5v1.5h-5zM26 117h9v1h-9zm18 0h9v1h-9z"/></g><g class="clothing-seams" fill="#263c4c" opacity=".2"><path d="M22 73h.5v19H22zm35 0h.5v19H57zM26 92h9v.5h-9zm19 0h9v.5h-9zM27 98h7v.5h-7zm19 0h7v.5h-7zM34 105h.5v11H34zm11 0h.5v11H45z"/></g><g fill="#fff" opacity=".28"><path d="M28 107h.5v8H28zm22 0h.5v8H50zM25 119h10v.5H25zm19 0h10v.5H44z"/></g></g><path d="M39 48h1v2h1v1h-2z" fill="#b98266" opacity=".5"/></g></svg>`;
+];
+export function renderPortrait(appearance,label='학생 도트 초상화',expression='neutral',pose='standing'){
+ expression=normalizeExpression(expression);pose=['standing','seated','experiment'].includes(pose)?pose:'standing';
+ label=escape(label);
+ const a=appearance,l=a.hairLength??3,styles=['까까머리','크롭컷','짧은 머리','중간 길이 머리','단발','어깨 길이 머리','긴 머리'];
+ const fringeIndex=(a.fringe??0)%FRINGES.length,locks=FRINGES[fringeIndex];
+ // Chibi sprite on a 40×62 grid (8 viewBox units per dot), finished with a coloured outline pass.
+ const W=40,H=62,OY=2,g=Array.from({length:H},()=>Array(W).fill(null));
+ const put=(x,y,c)=>{y+=OY;if(x>=0&&x<W&&y>=0&&y<H)g[y][x]=c;};
+ const get=(x,y)=>g[y+OY]?.[x];
+ const row=(y,x0,x1,c)=>{for(let x=x0;x<=x1;x++)put(x,y,c);};
+ const box=(x0,y0,x1,y1,c)=>{for(let y=y0;y<=y1;y++)row(y,x0,x1,c);};
+ const ell=(rx,ry,y0,y1,c)=>{for(let y=y0;y<=y1;y++){const d=(y+.5-15)/ry;if(Math.abs(d)>1)continue;const k=Math.round(rx*Math.sqrt(1-d*d));row(y,20-k,19+k,c);}};
+ const hair=shade(a.hair,22),hairDk=shade(a.hair,6),hairEdge=shade(a.hair,-8),hairHl=shade(a.hair,78),hairLine=shade(a.hair,4);
+ const skin=shade(a.skin,10),skinSh=shade(skin,-24),skinHl=shade(skin,14);
+ const shirt=a.shirt,pants='#3a4d6b',white='#f7f6f0';
+ // back hair
+ if(l>0){const endY={1:17,2:22,3:27,4:33,5:41,6:50}[l],x0=l>=4?6:7,x1=l>=4?33:32;
+  ell(13.5,12.5,3,15,hairDk);
+  for(let y=15;y<=endY;y++){if(y>=endY-1){for(let x=x0;x<=x1;x++)if((x+y)%(y===endY?3:2)===0)put(x,y,hairDk);}else row(y,x0,x1,hairDk);}
+  for(let y=12;y<endY-1;y++){put(x0,y,hairEdge);put(x1,y,hairEdge);}}
+ // ears + face
+ box(8,19,8,22,skin);box(31,19,31,22,skin);put(8,21,skinSh);put(31,21,skinSh);
+ [8,10,11,11,11,11,11,11,11,11,11,11,11,10,10,9,8,7,5,3].forEach((k,i)=>row(11+i,20-k,19+k,skin));
+ for(let y=21;y<=28;y++){const k=[11,11,10,10,9,8,7,5][y-21];put(19+k,y,skinSh);}
+ if(l===0){ell(11.5,11,4,13,shade(a.hair,55));for(let y=5;y<13;y++)for(let x=10;x<30;x++)if(get(x,y)&&((x+y)%3===0))put(x,y,shade(a.hair,75));}
+ // body
+ box(18,31,21,32,skin);row(31,18,21,skinSh);
+ box(14,46,25,47,pants);box(15,48,18,54,pants);box(21,48,24,54,pants);put(18,50,shade(pants,-18));put(21,50,shade(pants,-18));
+ row(55,15,18,'#f2efe8');row(55,21,24,'#f2efe8');
+ box(14,56,18,58,'#4b3a42');box(21,56,25,58,'#4b3a42');row(56,15,17,'#76616b');row(56,22,24,'#76616b');
+ const outfit=a.outfit??0,top=[white,shirt,shirt,'#f6f5ee','#e9dfcf','#2f3d55'][outfit];
+ row(33,14,25,top);box(13,34,26,45,top);box(10,34,12,43,top);box(27,34,29,43,top);
+ for(let y=35;y<=43;y++){put(12,y,shade(top,-20));put(27,y,shade(top,-20));}
+ box(10,44,12,45,skin);box(27,44,29,45,skin);
+ if(outfit===0){[[17,22],[18,21],[18,21],[19,20]].forEach(([p,q],i)=>row(33+i,p,q,shirt));for(let y=37;y<=48;y++)put(20,y,'#d3d9de');row(40,15,17,'#d3d9de');box(13,46,26,48,white);for(let y=46;y<=48;y++)put(20,y,'#d3d9de');}
+ if(outfit===1){box(18,33,21,45,'#f6f3ea');[37,40,43].forEach(y=>{put(17,y,'#ead9a8');put(22,y,'#ead9a8');});}
+ if(outfit===2){row(33,14,25,shade(shirt,-26));row(34,15,24,shade(shirt,-14));[35,36,37,38].forEach(y=>{put(18,y,'#f4f1ea');put(21,y,'#f4f1ea');});box(15,41,24,44,shade(shirt,-14));}
+ if(outfit===3){row(33,13,26,shirt);row(34,13,26,shirt);row(35,13,16,shirt);row(35,23,26,shirt);row(34,18,21,'#f6f5ee');row(33,19,20,'#f6f5ee');box(18,35,21,36,'#d9606e');row(37,19,20,'#c24e5c');row(43,10,12,shirt);row(43,27,29,shirt);}
+ if(outfit===4){[37,41].forEach(y=>{row(y,13,26,shirt);row(y,10,12,shirt);row(y,27,29,shirt);});row(33,16,23,'#f6f3ea');}
+ if(outfit===5){[[17,22],[18,21],[18,21],[19,20],[19,20]].forEach(([p,q],i)=>row(33+i,p,q,'#f6f3ea'));box(19,34,20,40,shirt);put(17,41,'#cdb56e');put(17,44,'#cdb56e');}
+ // front hair
+ if(l>0){ell(13.5,12.5,3,12,hair);
+  const max=l===1?2:5;
+  row(11,9,30,hairDk);for(let x=8;x<=31;x++){const v=locks[Math.floor((x-8)*30/24)]??4,saw=[0,1,2,1][(x+fringeIndex)%4],len=Math.max(1,Math.min(max,Math.round(v*.35)+saw));for(let y=12;y<12+len;y++)put(x,y,y===11+len&&saw===2?hairEdge:((x+fringeIndex)%4===0&&y<11+len)?hairLine:hair);}
+  if(l>=2){const e=l>=3?27:24;box(7,12,9,e-2,hair);row(e-1,8,9,hair);put(9,e,hair);box(30,12,32,e-2,hair);row(e-1,30,31,hair);put(30,e,hair);put(9,16,hairLine);put(30,16,hairLine);}
+  row(8,10,12,hairHl);row(7,13,15,hairHl);row(8,18,21,hairHl);row(7,24,26,hairHl);row(8,27,28,hairHl);
+  put(16,7,shade(hair,40));put(22,8,shade(hair,40));}
+ // Soft curls follow the crown and sides instead of hiding the bangs.
+ if(a.curly&&l>0){for(let x=8;x<=31;x+=4){box(x,7+(x%3),x+2,9+(x%3),hair);put(x+1,7+(x%3),hairHl);}for(let y=14;y<(l>=4?{4:33,5:41,6:50}[l]:25);y+=4){box(6,y,8,y+2,hair);box(31,y+1,33,y+3,hair);put(7,y,hairHl);put(32,y+1,hairHl);}}
+ // brows only where the forehead shows
+ [[12,15],[24,27]].forEach(([p,q])=>{for(let x=p;x<=q;x++)if(get(x,15)===skin)put(x,15,shade(a.hair,10));});
+ // eyes: 0 dot · 1 line · 2 squint (simple, mini-hompy style)
+ const ey=17,lash='#2a2030',kind=a.eyes??0;
+ [[13,15],[24,26]].forEach(([x0,x1])=>{const c=x0+1;
+  if(expression==='surprised'){box(c,ey+1,c,ey+4,lash);put(c-1,ey+2,lash);put(c+1,ey+2,lash);}
+  else if(['happy','delighted','relieved'].includes(expression)){put(x0,ey+3,lash);put(c,ey+2,lash);put(x1,ey+3,lash);}
+  else if(['focused','tired','sad'].includes(expression)){row(ey+3,x0,x1,lash);if(expression==='sad')put(x0,ey+2,lash);}
+  else if(kind===0){box(c,ey+2,c,ey+4,lash);}
+  else if(kind===1){row(ey+3,x0,x1,lash);}
+  else{put(x0,ey+4,lash);put(c,ey+3,lash);put(x1,ey+4,lash);}});
+ // cheeks, mouth
+ row(25,10,12,'#f4a3aa');row(25,27,29,'#f4a3aa');
+ put(20,25,skinSh);
+ const mouth='#a24c55';
+ if(expression==='surprised'||expression==='delighted'){box(19,26,21,28,mouth);put(20,28,'#e98a8a');}
+ else if(['sad','worried','tired'].includes(expression)){row(26,19,21,mouth);put(18,27,mouth);put(22,27,mouth);if(expression==='sad')box(14,22,14,24,'#a4cedd');if(expression==='worried')box(31,17,31,19,'#a4cedd');}
+ else if(['happy','relieved'].includes(expression)){put(18,26,mouth);put(21,26,mouth);row(27,19,20,mouth);}
+ else if((a.face??0)===0){put(19,26,mouth);put(20,26,mouth);}
+ else if(a.face===1){row(26,19,21,mouth);put(20,27,'#e98a8a');}
+ else{put(18,26,mouth);put(21,26,mouth);put(19,27,mouth);put(20,27,mouth);}
+ if(a.glasses){const f='#4b4560',sq=a.glassesShape===1;[[10,17],[22,29]].forEach(([p,q])=>{row(ey+1,sq?p+1:p+2,sq?q-1:q-2,f);row(ey+5,sq?p+1:p+2,sq?q-1:q-2,f);for(let y=ey+2;y<=ey+4;y++){put(p+1,y,f);put(q-1,y,f);}});row(ey+3,17,22,f);}
+ // Bent knees, forward sleeves and hands form a real seated pose.
+ if(pose==='seated'){for(let y=46;y<=58;y++)for(let x=10;x<=29;x++)put(x,y,null);
+  box(13,46,26,49,pants);box(22,49,27,51,pants);box(24,51,27,54,pants);box(14,49,17,53,pants);box(14,54,18,56,'#4b3a42');box(24,55,29,57,'#4b3a42');
+  box(9,36,12,41,top);box(27,36,30,41,top);box(9,41,16,43,top);box(23,41,30,43,top);box(15,42,17,43,skin);box(22,42,24,43,skin);}
+ if(pose==='experiment'){box(27,36,30,41,top);box(29,39,34,41,top);box(33,39,35,40,skin);box(8,39,14,41,top);box(13,40,16,41,skin);}
+ // coloured outline
+ const out=g.map(r=>r.slice());
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(!g[y][x]){const n=[g[y-1]?.[x],g[y+1]?.[x],g[y][x-1],g[y][x+1]].find(Boolean);if(n)out[y][x]=shade(n,-58);}
+ let rects='';
+ for(let y=0;y<H;y++){let x=0;while(x<W){const c=out[y][x];if(!c){x++;continue;}let e=x;while(e+1<W&&out[y][e+1]===c)e++;rects+=`<rect x="${x}" y="${y}" width="${e-x+1}" height="1" fill="${c}"/>`;x=e+1;}}
+ const title=`${label} · ${EXPRESSIONS[expression]} · ${styles[l]}${a.curly&&l?' · 곱슬머리':''}${a.glasses?' · 안경':''}${l?` · 앞머리 ${fringeIndex+1}`:''}`;
+ return `<svg class="portrait" data-expression="${expression}" data-pose="${pose}" viewBox="0 0 320 496" role="img" aria-label="${title}"><title>${title}</title><g class="hair-fringe chibi-grid ${expression==='sad'?'expression-tear':''}" shape-rendering="crispEdges" transform="scale(8)">${rects}</g></svg>`;
 }
 
-export function weeklyAppearance(state,index=0){const a=studentAppearance(state.creationSeed??state.seed,state.gender);return {...a,outfit:(a.outfit+Math.max(0,state.month-1)*5+index)%6,shirt:['#456c87','#597a68','#906b71','#6c6587','#ba8659','#548b98'][(a.outfit+index+state.month)%6]};}
+export function weeklyAppearance(state,index=0){const a=studentAppearance(state.creationSeed??state.seed,state.gender);const month=state.visualMonth??state.month;return {...a,...(state.gender==='male'&&state.service?.trainingReturnMonth!==undefined&&month>=state.service.trainingReturnMonth&&month<state.service.trainingReturnMonth+2?{hairLength:0}:{}),outfit:(a.outfit+Math.max(0,state.month-1)*5+index)%6,shirt:['#456c87','#597a68','#906b71','#6c6587','#ba8659','#548b98'][(a.outfit+index+state.month)%6]};}

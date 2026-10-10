@@ -10,7 +10,7 @@ import {validRecord} from '../backend/api.js';
 import {managedOptions} from './play-support.mjs';
 const clone=structuredClone;
 const rest=['rest','rest','rest','rest'];
-const choices={'monthly-issue':'acknowledge','conference-plan':'none','failure-counsel':'review','conversation-topic':'daily',story:'encourage','academic-exam':'support',event:0,route:'integrated','presentation-recovery':'rehearse','external-admission':'remain',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
+const choices={'workshop-plan':'skip','monthly-issue':'acknowledge','conference-plan':'none','failure-counsel':'review','conversation-topic':'daily',story:'encourage','academic-exam':'support',event:0,route:'integrated','presentation-recovery':'rehearse','external-admission':'remain',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
 function resolve(s){for(let i=0;s.pending&&!s.ending;i++){assert.ok(i<20);const p=s.pending;s=decide(s,choices[p.kind]??({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[p.step]);}return s;}
 function pending(s){return [s.pending,...s.pendingQueue].filter(Boolean);}
 test('sabbatical scheduling covers years 3–7 deterministically and never repeats',()=>{
@@ -42,8 +42,8 @@ test('salary is locked outside March and publicity spending is rejected; old sav
  s.month=12;assert.equal(simulateMonth(s,rest,{budget:changed}).stipendLock,75);const old=clone(s);delete old.stipendLock;old.lab.budget.publicity=3;const migrated=migrateSave(old);assert.equal(migrated.lab.budget.publicity,0);assert.equal(old.lab.budget.publicity,3);
 });
 test('normal finance needs planning while institute support remains easier, and limited funds are actionable',()=>{
- const normal=createState('학생',16),easy=createState('학생',16,{institution:'institute'});assert.ok(normal.lab.funds<easy.lab.funds/2);
- for(const s of [normal,easy]){s.month=12;s.grants.reportYears=[1];}const n=simulateMonth(normal,rest),e=simulateMonth(easy,rest);assert.ok(n.grants.annualAmount<e.grants.annualAmount/2);
+ const normal=createState('학생',16),easy=createState('학생',16,{institution:'institute'});assert.ok(normal.lab.funds<=easy.lab.funds/2);
+ for(const s of [normal,easy]){s.month=12;s.grants.reportYears=[1];}const n=simulateMonth(normal,rest),e=simulateMonth(easy,rest);assert.ok(n.grants.annualAmount<e.grants.annualAmount*.85);
  const s=createState('학생',16);s.month=2;assert.equal(grantCallOpen(s),false);s.lab.funds=70;assert.equal(grantCallOpen(s),true);const options=managedOptions(s);assert.equal(options.facultyAction,'funding');assert.equal(options.budget.performance,0);assert.ok(validateSave(simulateMonth(s,proposeSchedule(s),options)));
 });
 test('grant selection and rejection become acknowledged issues; no repeated deposits on reading',()=>{
@@ -62,7 +62,7 @@ test('all ordinary situations offer 3–4 responses and analytics reject out-of-
 });
 test('true ending additionally requires strong published work, awards and citation visibility',()=>{
  const s=createState('학생',4);s.month=96;s.route='integrated';s.career={...s.career,qual:'passed',papers:8,submissions:8,conferences:7,topPapers:2,awards:2,recommendations:4};s.impact={citations:Array(8).fill(8),hIndex:8};for(const [key,value] of Object.entries(TRUE_REQUIREMENTS)){if(key in s.hidden){const [lo,hi]=HIDDEN_RANGES[key];s.hidden[key]=lo+(hi-lo)*value/100;}else if(key in s.career)s.career[key]=value;else Object.keys(s.professor).forEach(k=>s.professor[k]=value);}
- assert.equal(isTrueEnding(s),true);for(const [key,value] of [['topPapers',1],['awards',1]]){const low=clone(s);low.career[key]=value;assert.equal(isTrueEnding(low),false);}const low=clone(s);low.impact={citations:Array(8).fill(4),hIndex:4};assert.equal(isTrueEnding(low),false);
+ assert.equal(isTrueEnding(s),true);for(const [key,value] of [['topPapers',0],['awards',0]]){const low=clone(s);low.career[key]=value;assert.equal(isTrueEnding(low),false);}const low=clone(s);low.impact={citations:Array(8).fill(3),hIndex:3};assert.equal(isTrueEnding(low),false);
 });
 test('email combinations use personality, final state and field without changing saved data or RNG',()=>{
  const s=createState('학생',77);s.ending='institute';s.month=96;const context={statistics:endingStatistics(s),fieldId:'048',labMode:'dry'},before=clone(context);const a=getEndingPages('institute','ko','close','학생',null,[],context);
@@ -76,8 +76,8 @@ test('room layouts and sixteen distinct fringes are cosmetic, escape labels and 
 test('well prepared graduate presentations can earn awards and appear as important issues',()=>{
  let awards=0;for(let seed=1;seed<=60;seed++){
  const s=createState('학생',seed);s.month=25;s.route='integrated';s.project.phase=3;s.project.progress=20;s.hidden.language=950;s.hidden.research=950;s.hidden.motivation=100;s.hidden.stamina=999;s.hidden.stress=30;
- const n=simulateMonth(s,['language','language','conference','free']);if(n.history.some(h=>h.kind==='presentation-award')){awards++;assert.equal(n.lastReport.results[2].outcome,'presented');assert.ok(pending(n).some(p=>p.id==='presentation-award'));assert.ok(n.career.awards>0);}
- const poor=clone(s);poor.hidden.language=1;assert.ok(!simulateMonth(poor,['language','language','conference','free']).history.some(h=>h.kind==='presentation-award'));
+ const n=simulateMonth(s,['presentation','presentation','conference','free']);if(n.history.some(h=>h.kind==='presentation-award')){awards++;assert.equal(n.lastReport.results[2].outcome,'presented');assert.ok(pending(n).some(p=>p.id==='presentation-award'));assert.ok(n.career.awards>0);}
+ const poor=clone(s);poor.hidden.language=1;assert.ok(!simulateMonth(poor,['presentation','presentation','conference','free']).history.some(h=>h.kind==='presentation-award'));
  }assert.ok(awards>3&&awards<50);
 });
 test('high rapport makes voluntary internal progression more likely after encouragement',()=>{

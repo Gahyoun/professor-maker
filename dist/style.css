@@ -260,3 +260,38 @@ body.month-playing .lab-main{position:relative}body.month-playing .lab-main:afte
 @keyframes anime-slump{0%,100%{transform:translateY(1px) rotate(-1deg)}50%{transform:translateY(2px) rotate(-1.5deg)}}
 @keyframes anime-hop{0%,70%,100%{transform:translateY(0)}35%{transform:translateY(-3px)}}
 @media(prefers-reduced-motion:reduce){.student-reaction *,.pixel-room .mini-student,.pixel-room .pixel-student{animation:none!important}.anime-flight{transform:translate(var(--dx),var(--dy));opacity:1}.anime-halo{opacity:.2}}
+
+/* 2026-10 UI fixes: seamless lab frame, chibi sprite sizing, radio-free feedback rows. */
+.live-lab{border:0!important;box-shadow:none!important;border-radius:4px;background:#34566f}
+.live-lab .pixel-room{border:0!important}
+.live-lab .live-scene-status{border-top:0}
+.pixel-room .pixel-student .portrait{filter:drop-shadow(0 2px 0 #293e4b33)}
+.feedback-option{position:relative;grid-template-columns:96px 1fr!important}
+.feedback-option input{position:absolute!important;opacity:0;width:1px!important;height:1px!important;margin:0;pointer-events:none}
+.feedback-option strong{grid-column:1!important}
+.feedback-option span{grid-column:2!important}
+.feedback-option.selected strong{color:var(--action)}
+.feedback-option:has(input:focus-visible){outline:3px solid var(--action);outline-offset:-3px}
+@media(max-width:600px){.feedback-option{grid-template-columns:70px 1fr!important}}
+
+.assignment-change{display:block;color:#8b513d;font-size:.86rem;font-style:normal}.mini-student.pose-seated{animation:none}.mini-student.pose-experiment{animation:mini-work 1.8s steps(2,end) infinite}
+
+/* Full viewport playback lock; the lab is the only interactive surface. */
+body.month-playing:after{content:'';position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:900;cursor:wait;pointer-events:auto}
+body.month-playing .lab-main:after{display:none}body.month-playing .student-panel{filter:none}
+body.month-playing #live-stage{z-index:901;position:sticky;isolation:isolate}body.month-playing #live-stage:before{display:none}
+@media(prefers-reduced-motion:reduce){.mini-student{animation:none!important}}
+
+html{scroll-behavior:smooth;scroll-padding-top:var(--lab-scroll-offset,20px)}body{overflow-x:clip}.student-panel,dialog,.faculty-scroll-summary{-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}.operating-credit{margin:20px 0;padding:16px;background:#f5f3ea;border-left:3px solid #9aabac}.operating-credit h3{font-size:15px}.operating-credit p,.operating-credit label{font-size:12px;line-height:1.8}.operating-credit label{display:flex;align-items:center;gap:9px;min-height:44px}.operating-credit input{width:18px;height:18px}.operating-credit small{display:block;font-size:11px;line-height:1.7;color:#697680}.week-plan,.decision,.project-overview{scroll-margin-top:12px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+/* Keep the active room legible throughout each weekly transition. */
+.is-playing .weekly-stage{animation:none;opacity:1;transform:none}
+.scene-active .mini-activity-prop{animation:mini-tool-use 1s steps(2,end) infinite}
+@keyframes mini-tool-use{50%{transform:translateY(-1px)}}
+@media(prefers-reduced-motion:reduce){.mini-activity-prop{animation:none!important}}
+@media(max-width:600px){.student-voice{gap:12px;padding:14px}.student-voice p{font-size:14px;line-height:1.8}.section-top{flex-wrap:wrap;gap:8px}.operating-credit{padding:14px}.week-plan select{font-size:16px}}
+
+.is-playing .week-scene-header{animation:none;opacity:1}
+.student-voice p{min-width:0;overflow-wrap:anywhere}.student-voice>span{flex-shrink:0}
+@media(max-width:600px){.student-voice{flex-wrap:wrap}.student-voice p{flex:1 1 210px}.student-voice>span{margin-left:auto}}

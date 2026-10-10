@@ -24,7 +24,7 @@ test('research rates span five grades continuously, and project progress is the 
 });
 test('actual rehearsal makes failed conference presentations less frequent and failure never awards a presentation',()=>{
  let bare=0,rehearsed=0;for(let seed=1;seed<=120;seed++){const s=createState('',seed*7919);s.month=26;s.route='integrated';s.project.phase=3;set(s,'stamina',95);set(s,'motivation',95);set(s,'rapport',90);set(s,'rapport',90);
-  for(const prepared of [false,true]){const n=simulateMonth(s,prepared?['language','language','conference','free']:['free','free','conference','free']);const failed=n.history.some(h=>h.kind==='presentation-failure');if(failed){if(prepared)rehearsed++;else bare++;assert.equal(n.career.conferences,0);assert.ok([n.pending,...n.pendingQueue].some(p=>p.kind==='presentation-recovery'));while(n.pending&&n.pending.kind!=='presentation-recovery')n.pending=n.pendingQueue.shift()??null;const supported=decide(n,'rehearse');assert.ok(validateSave(supported));}}
+  for(const prepared of [false,true]){const n=simulateMonth(s,prepared?['presentation','presentation','conference','free']:['free','free','conference','free']);const failed=n.history.some(h=>h.kind==='presentation-failure');if(failed){if(prepared)rehearsed++;else bare++;assert.equal(n.career.conferences,0);assert.ok([n.pending,...n.pendingQueue].some(p=>p.kind==='presentation-recovery'));while(n.pending&&n.pending.kind!=='presentation-recovery')n.pending=n.pendingQueue.shift()??null;const supported=decide(n,'rehearse');assert.ok(validateSave(supported));}}
  }assert.ok(bare>30);assert.ok(rehearsed<bare/2,`${rehearsed} vs ${bare}`);
 });
 test('repeated inattentive meetings and praise change habits gently; a conversation interrupts inattention',()=>{
@@ -43,12 +43,12 @@ test('full-body characters vary clothes each week, keep their face, and make bal
 });
 
 test('RA research contributes weighted project work while TA course assistance develops teaching',()=>{
- const s=createState('',6);s.month=2;s.project.phase=1;set(s,'stamina',99);set(s,'motivation',99);const ra=simulateMonth(s,['industry','industry','industry','free']),ta=simulateMonth(s,['teach','teach','teach','free']);assert.ok(ra.lastReport.results.some(w=>w.proposed==='industry'&&w.progress>0));assert.ok(ta.hidden.teaching>s.hidden.teaching);assert.ok(ta.lastReport.results.filter(w=>w.proposed==='teach').every(w=>w.progress===0));
+ const s=createState('',6);s.month=26;s.route='integrated';s.project.phase=1;set(s,'stamina',99);set(s,'motivation',99);const ra=simulateMonth(s,['industry','industry','industry','free']),ta=simulateMonth(s,['teach','teach','teach','free']);assert.ok(ra.lastReport.results.some(w=>w.proposed==='industry'&&w.progress>0));assert.ok(ta.hidden.teaching>s.hidden.teaching);assert.ok(ta.lastReport.results.filter(w=>w.proposed==='teach').every(w=>w.progress===0));
 });
 
 test('a founder ending remains reachable through current RA choices without the removed startup schedule',()=>{
  let s=createState('',63352,{gender:'female',age:38});for(let month=0;month<96&&!s.ending;month++){
   const plan=proposeSchedule(s);if(![4,10].includes(calendarMonth(s.month)))plan[3]='industry';assert.ok(plan.every(id=>Object.hasOwn(ACTIVITIES,id)));if(s.grants.status==='bridge')s.lab.budget={...s.lab.budget,performance:0,environment:1,publicity:0};s=simulateMonth(s,plan,{...managedOptions(s,month%4===0?'conversation':'routine')});
-  while(s.pending&&!s.ending){const p=s.pending,choice=({'monthly-issue':'acknowledge','conference-plan':p.scope==='domestic'?'together':'none','failure-counsel':'review','conversation-topic':'daily','presentation-recovery':'rehearse',story:'encourage','academic-exam':'support','external-admission':'remain',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',defense:'defend',service:'consult','service-review':'consult',event:0})[p.kind]??({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[p.step];s=decide(s,choice);}
+  while(s.pending&&!s.ending){const p=s.pending,choice=({'workshop-plan':'skip','monthly-issue':'acknowledge','conference-plan':p.scope==='domestic'?'together':'none','failure-counsel':'review','conversation-topic':'daily','presentation-recovery':'rehearse',story:'encourage','academic-exam':'support','external-admission':'remain',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',defense:'defend',service:'consult','service-review':'consult',event:0})[p.kind]??({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[p.step];s=decide(s,choice);}
  }assert.equal(s.month,96);assert.equal(s.ending,'startup');assert.ok(validateSave(s));
 });

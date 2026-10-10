@@ -11,7 +11,7 @@ const base=process.env.GAME_URL||'http://127.0.0.1:4173/';
 const browser=await chromium.launch({headless:true});
 const errors=[],qa='/tmp/professor-maker-qa',saveKey='pm-save-v4',galleryKey='pm-letters-v3';
 await fs.mkdir(qa,{recursive:true});
-const choices={'monthly-issue':'acknowledge','conference-plan':'none','failure-counsel':'review','conversation-topic':'daily','presentation-recovery':'rehearse','external-admission':'remain',event:'0',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
+const choices={'workshop-plan':'skip','monthly-issue':'acknowledge','conference-plan':'none','failure-counsel':'review','conversation-topic':'daily','presentation-recovery':'rehearse','external-admission':'remain',event:'0',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
 const snapshot=page=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),saveKey);
 async function noOverflow(page,label){await page.evaluate(()=>document.fonts.ready);const size=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));assert.ok(size.scroll<=size.width,`${label}: ${size.scroll}px > ${size.width}px`);}
 async function injectState(page,state,{clearGallery=false}={}){assert.ok(validateSave(state),'Fixture is engine-valid');await page.evaluate(({state,saveKey,galleryKey,clearGallery})=>{localStorage.setItem(saveKey,JSON.stringify(state));localStorage.setItem('pm-fast','true');if(clearGallery)localStorage.removeItem(galleryKey);},{state,saveKey,galleryKey,clearGallery});await page.reload();}

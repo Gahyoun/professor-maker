@@ -5,6 +5,7 @@ import {formatStudentName} from './korean.js';
 // Original epilogues. The professor/corporate letters adapt Gahyoun Gim's supplied story.
 const p=(ko,en)=>({ko,en});
 export const ENDINGS={
+  dismissed:{type:'ENDING',title:p('과정을 마무리하는 날','Closing this chapter'),career:p('자격시험 재응시 미통과 · 제적','Program dismissal after qualification retake'),time:p('학적 정리 후 · 다음 계획을 위한 면담','A meeting about the next chapter'),pages:[p('자격시험에서 한 차례 불합격한 뒤, 세 달의 준비 기간이 주어졌다. 재응시에서도 요구되는 학습 기준을 충족하지 못해 학적을 정리하게 되었다.','After a failed qualification exam, there were three months to prepare. The retake requirements were not met.'),p('{name}은 연구 노트와 개인 물품을 정리했다. 교수는 시험 결과와 행정 절차를 설명하고, 다음 계획을 묻기 전에 학생의 말을 들었다.','{name} packed personal belongings and research notes. The advisor explained the academic process and listened.'),p('이 기록은 한 과정이 끝난 이유를 남긴다. 앞으로 어떤 일을 할지는 아직 정해지지 않았다. 더 공부할지, 다른 분야에서 일할지, 시간을 두고 결정하기로 했다.','This record explains why the program ended. The next path will be chosen in time.')]},
   postdoc:POSTDOC_STORY,
   resident_researcher:{type:'EPILOGUE',title:p('같은 연구실, 다른 자리','The same lab, a different desk'),career:p('교내 연구원','University research staff'),time:p('졸업 2년 후 · 같은 건물에서 온 메일','Two years after graduation · an email from the same building'),pages:[
     p("학부연구생과 석박사, 8년이라는 시간이 흘렀다. 그리고 다시 몇 해가 지났다.\n\n학생은 학위를 받은 뒤 우리 연구실의 연구원이 되었다. 함께 일하던 책상에는 새 명패가 놓였다.\n\n업무와 생활의 조건을 살펴본 끝에 정한 자리였다. 연구를 이어 가는 방법은 하나만 있는 것이 아니었다.","Eight years passed, and then a few more.\n\nAfter earning the degree, my former student joined our lab as a researcher. A new nameplate stood on the familiar desk.\n\nThey had considered the work and their life before choosing this position. There was more than one way to continue research."),
@@ -180,6 +181,7 @@ export function getEndingPages(id, lang = 'ko', relationship, name, reason, hist
   const story = ENDINGS[id];
   if (!story) return [];
   const distance = endingRelationship(relationship, id);
+  if(id==='dismissed'){const closing={close:['학생은 이후에도 필요한 절차를 함께 확인하기로 했다. 다음 계획이 정해지면 학생이 먼저 연락하기로 했다.','They agreed to review the remaining procedures and get in touch when plans were ready.'],reserved:['필요한 서류와 연락 방법을 정리했다. 이후의 계획을 재촉하지 않았다.','They reviewed the documents and contact details without pressing for plans.'],distant:['행정상 필요한 연락만 남기고, 더 이야기하고 싶지 않다는 학생의 뜻을 존중했다.','Only administrative contact remained, respecting the student’s wish for privacy.']};return story.pages.map((p,i)=>p[locale]+(i===story.pages.length-1?'\n\n'+closing[distance][locale==='en'?1:0]:'')).map(p=>formatStudentName(p,name,locale));}
   const suppliedReason = typeof reason === 'object' ? reason?.endingReason : reason;
   const rawPages = id === 'gameover' && failurePages[suppliedReason] ? failurePages[suppliedReason] : story.pages;
   let pages = rawPages.map(page => page[locale]);
