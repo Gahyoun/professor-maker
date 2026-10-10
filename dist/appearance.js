@@ -27,7 +27,7 @@ const FRINGES=[
   [8,8,7,7,6,6,5,5,4,4,3,3,2,2,1,1,1,2,3,4,5,6,7,8,8,7,6,5,4,3]
 ];
 export function renderPortrait(appearance,label='학생 도트 초상화',expression='neutral',pose='standing'){
- expression=normalizeExpression(expression);pose=['standing','seated','experiment'].includes(pose)?pose:'standing';
+ expression=normalizeExpression(expression);pose=['standing','seated','experiment','lecturing'].includes(pose)?pose:'standing';
  label=escape(label);
  const a=appearance,l=a.hairLength??3,styles=['까까머리','크롭컷','짧은 머리','중간 길이 머리','단발','어깨 길이 머리','긴 머리'];
  const fringeIndex=(a.fringe??0)%FRINGES.length,locks=FRINGES[fringeIndex];
@@ -66,6 +66,8 @@ export function renderPortrait(appearance,label='학생 도트 초상화',expres
  if(outfit===3){row(33,13,26,shirt);row(34,13,26,shirt);row(35,13,16,shirt);row(35,23,26,shirt);row(34,18,21,'#f6f5ee');row(33,19,20,'#f6f5ee');box(18,35,21,36,'#d9606e');row(37,19,20,'#c24e5c');row(43,10,12,shirt);row(43,27,29,shirt);}
  if(outfit===4){[37,41].forEach(y=>{row(y,13,26,shirt);row(y,10,12,shirt);row(y,27,29,shirt);});row(33,16,23,'#f6f3ea');}
  if(outfit===5){[[17,22],[18,21],[18,21],[19,20],[19,20]].forEach(([p,q],i)=>row(33+i,p,q,'#f6f3ea'));box(19,34,20,40,shirt);put(17,41,'#cdb56e');put(17,44,'#cdb56e');}
+ // The lecturing arm is drawn separately so only the gesture moves, not the feet.
+ if(pose==='lecturing')for(let y=34;y<=45;y++)for(let x=10;x<=12;x++)put(x,y,null);
  // front hair
  if(l>0){ell(13.5,12.5,3,12,hair);
   const max=l===1?2:5;
@@ -109,7 +111,8 @@ export function renderPortrait(appearance,label='학생 도트 초상화',expres
  let rects='';
  for(let y=0;y<H;y++){let x=0;while(x<W){const c=out[y][x];if(!c){x++;continue;}let e=x;while(e+1<W&&out[y][e+1]===c)e++;rects+=`<rect x="${x}" y="${y}" width="${e-x+1}" height="1" fill="${c}"/>`;x=e+1;}}
  const title=`${label} · ${EXPRESSIONS[expression]} · ${styles[l]}${a.curly&&l?' · 곱슬머리':''}${a.glasses?' · 안경':''}${l?` · 앞머리 ${fringeIndex+1}`:''}`;
- return `<svg class="portrait" data-expression="${expression}" data-pose="${pose}" data-outfit="${outfit}" viewBox="0 0 320 496" role="img" aria-label="${title}"><title>${title}</title><g class="hair-fringe chibi-grid ${expression==='sad'?'expression-tear':''}" shape-rendering="crispEdges" transform="translate(0 24) scale(8)">${rects}</g></svg>`;
+ const lectureArm=pose==='lecturing'?`<g transform="translate(0 24) scale(8)" shape-rendering="crispEdges"><g class="ta-lecture-arm"><path d="M10 34h3v5h-4v-3H7v-3H5v-5h4v3h2z" fill="${top}" stroke="${shade(top,-58)}" stroke-width="1"/><path d="M6 31h2v3h2v3h2" fill="none" stroke="${shade(top,-20)}"/><path class="ta-pointer" d="M7 29V23H6v-7" fill="none" stroke="#756353" stroke-width="1.2"/><path d="M6 16v2" stroke="#e9e5d8" stroke-width="1"/><path d="M5 27h4v3H5z" fill="${skin}" stroke="${skinSh}" stroke-width=".7"/></g></g>`:'';
+ return `<svg class="portrait" data-expression="${expression}" data-pose="${pose}" data-outfit="${outfit}" viewBox="0 0 320 496" role="img" aria-label="${title}${pose==='lecturing'?' · 칠판 앞에서 강의':''}"><title>${title}${pose==='lecturing'?' · 칠판 앞에서 강의':''}</title><g class="hair-fringe chibi-grid ${expression==='sad'?'expression-tear':''}" shape-rendering="crispEdges" transform="translate(0 24) scale(8)">${rects}</g>${lectureArm}</svg>`;
 }
 
 export function weeklyAppearance(state,index=0){

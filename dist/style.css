@@ -290,6 +290,14 @@ html{scroll-behavior:smooth;scroll-padding-top:var(--lab-scroll-offset,20px)}bod
 .scene-active .mini-activity-prop{animation:mini-tool-use 1s steps(2,end) infinite}
 @keyframes mini-tool-use{50%{transform:translateY(-1px)}}
 @media(prefers-reduced-motion:reduce){.mini-activity-prop{animation:none!important}}
+/* TA: a planted stance, raised pointer, and sequential writing on the wall plane. */
+.mini-student.pose-lecturing{animation:none}
+.ta-lecture-arm{transform-box:view-box;transform-origin:12px 35px;animation:ta-explain .9s steps(3,end) infinite}
+.ta-board-stroke{stroke-dasharray:1;animation:ta-write .75s ease-out both}
+.ta-board-stroke:nth-child(2){animation-delay:.1s}.ta-board-stroke:nth-child(3){animation-delay:.2s}.ta-board-stroke:nth-child(4){animation-delay:.25s}.ta-board-stroke:nth-child(5){animation-delay:.3s}
+@keyframes ta-explain{0%,100%{transform:rotate(0)}40%{transform:rotate(-4deg)}75%{transform:rotate(2deg)}}
+@keyframes ta-write{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:reduce){.ta-lecture-arm,.ta-board-stroke{animation:none!important}.ta-board-stroke{stroke-dashoffset:0}}
 @media(max-width:600px){.student-voice{gap:12px;padding:14px}.student-voice p{font-size:14px;line-height:1.8}.section-top{flex-wrap:wrap;gap:8px}.operating-credit{padding:14px}.week-plan select{font-size:16px}}
 
 .is-playing .week-scene-header{animation:none;opacity:1}
