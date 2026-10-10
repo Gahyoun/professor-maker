@@ -26,7 +26,7 @@ function lectureDiagram(type,ink){
 }
 export function roomDecorations(state){const seed=state.creationSeed??state.seed,draw=i=>(Math.imul(seed^(i*7919),2654435761)>>>0)/4294967296;return {fridge:draw(1)>.25,kettle:draw(2)>.2,plush:draw(3)>.45,cot:draw(4)>.65,board:true,boardType:Math.floor(draw(12)*4),chairType:Math.floor(draw(13)*4),restType:Math.floor(draw(14)*4),sofa:draw(6)>.5,server:state.professorProfile.labMode==='dry',palette:Math.floor(draw(5)*3),wallpaper:Math.floor(draw(7)*WALLPAPERS.length),floor:Math.floor(draw(8)*FLOOR_TILES.length),printer:draw(9)>.25,plant:true,bag:draw(10)>.35,deskLamp:true,clock:true,noticeboard:draw(11)>.3};}
 function desk(u,v,w,d,color='#c5ab8e'){let art='';for(const [a,b] of [[u+.5,v+.5],[u+w-1,v+.5],[u+.5,v+d-1],[u+w-1,v+d-1]])art+=box(a,b,.65,.65,23,'#a58c73');art+=box(u,v,w,d,3,color,23);return art;}
-function chair(u,v,color,type=0){const labels=['목재 의자','플라스틱 의자','사무용 의자','고급 등받이 의자'];let art=box(u,v,3,3,3,color,11)+box(u,v,3,.6,type===3?29:type===2?24:17,shade(color,9),14);if(type>=2){art+=box(u+1.3,v+1.3,.4,.4,11,'#77858d');for(const [a,b]of [[0,0],[2.6,0],[0,2.6],[2.6,2.6]])art+=box(u+a,v+b,.4,.4,2,'#5b6770');art+=box(u,v+1,.4,2,1,color,21)+box(u+2.6,v+1,.4,2,1,color,21);}else for(const[a,b]of [[0,0],[2.6,0],[0,2.6],[2.6,2.6]])art+=box(u+a,v+b,.4,.4,11,'#92958b');return `<g data-chair="${type}" aria-label="${labels[type]}">${art}</g>`;}
+function chair(u,v,color,type=0,facing='front'){const labels=['목재 의자','플라스틱 의자','사무용 의자','고급 등받이 의자'];let art=box(u,v,3,3,3,color,11)+box(u,v+(facing==='monitor'?2.4:0),3,.6,type===3?29:type===2?24:17,shade(color,9),14);if(type>=2){art+=box(u+1.3,v+1.3,.4,.4,11,'#77858d');for(const [a,b]of [[0,0],[2.6,0],[0,2.6],[2.6,2.6]])art+=box(u+a,v+b,.4,.4,2,'#5b6770');art+=box(u,v+1,.4,2,1,color,21)+box(u+2.6,v+1,.4,2,1,color,21);}else for(const[a,b]of [[0,0],[2.6,0],[0,2.6],[2.6,2.6]])art+=box(u+a,v+b,.4,.4,11,'#92958b');return `<g data-chair="${type}" data-chair-facing="${facing}" aria-label="${labels[type]}">${art}</g>`;}
 function restFurniture(u,v,type){if(type===0)return `<g data-rest="sofa">${sofa(u,v)}</g>`;if(type===1)return `<g data-rest="cot">${cot(u,v)}</g>`;if(type===2)return `<g data-rest="beanbag">${box(u+.4,v+.4,4,4,6,'#c3b49b')+box(u+1,v+1,3,3,6,'#d7c8af',6)+box(u+1.6,v+.3,2,2,13,'#cabbab',6)}</g>`;return `<g data-rest="camp-chair">${chair(u,v,'#a2b4a9',1)+line([u,v,0],[u+3,v+3,14],'#798e86',2)+line([u+3,v,0],[u,v+3,14],'#798e86',2)}</g>`;}
 function plant(u,v){let art=box(u,v,2,2,10,'#b89b80');art+=box(u+.25,v+.25,1.5,1.5,1,'#7e846b',10);for(const [a,b,h] of [[.6,.5,18],[1.1,1,27],[.8,1.5,21]]){art+=box(u+a,v+b,.25,.25,h,'#839987',10)+box(u+a-.5,v+b-.35,1.2,.75,2,'#9fb49a',h+6);}return art;}
 function bookshelf(u,v,wet,stock){let art=box(u,v,5.5,2,60,'#c6b296');for(const z of [6,23,40]){art+=front(u+.4,v+2.02,z,4.7,14,'#ebe1d0');art+=front(u+.3,v+2.1,z-1,4.9,2,'#b69c80');}
@@ -43,13 +43,13 @@ function kettle(u,v,z=0){return box(u,v,1.2,1.2,1,'#8a9b9c',z)+box(u+.2,v+.2,.8,
 function plush(u,v,z){const [x,y]=projectRoom(u,v,z);return `<g fill="#c6a281"><path d="M${x-7} ${y-16}h3v-3h4v2h5v-2h4v3h3v10h-3v7h-13v-7h-3z"/><path d="M${x-6} ${y-6}h12v5h-12z" fill="#e7d5b7"/><path d="M${x-4} ${y-12}h1v2h-1zm8 0h1v2h-1z" fill="#696060"/><path d="M${x-1} ${y-8}h3v1h-3z" fill="#a57c69"/></g>`;}
 function monitor(u,v,z,active=false){return box(u+1.5,v,.4,.6,7,'#7e909c',z)+box(u+.7,v-.2,2.2,1,1,'#9daeb1',z)+front(u,v+.3,z+7,4.7,21,'#788f9c')+front(u+.35,v+.32,z+8.5,4,17.7,'#d9e6de')+line([u+.7,v+.35,z+22],[u+3.7,v+.35,z+22],'#9cb9ac',1.4)+line([u+.7,v+.35,z+17],[u+3.3,v+.35,z+17],'#9cb9ac',1.4)+line([u+.7,v+.35,z+12],[u+2.4,v+.35,z+12],'#9cb9ac',1.4)+(active?monitorMotion(projectRoom,u,v,z):'');}
 function microscope(u,v,z){return box(u,v,2.3,2,2,'#d9dfd5',z)+box(u+1.5,v+.2,.55,.8,17,'#9eafb5',z+2)+box(u+.7,v+.2,1.8,.7,3,'#8e9fa8',z+19)+box(u+.6,v+.3,.4,.4,6,'#8395a0',z+13)+box(u+.4,v+.3,1.4,1.2,1,'#bdcbd0',z+7);}
-function actor(state,result,index,u,v,idle,lift=0){
+function actor(state,result,index,u,v,idle,lift=0,facing='front'){
  const [x,y]=projectRoom(u,v,lift),w=62.4,h=96.72,activity=String(result.actual),wet=state.professorProfile.labMode==='wet';
  const executing=!idle&&result.performed!==false&&!['idle','training','unfinished'].includes(activity),relaxing=!idle&&['rest','coffee'].includes(activity);
  const pose=isLecturing(result,idle)?'lecturing':relaxing||!idle&&['study','coursework','analysis','language','paper'].includes(activity)||!idle&&activity==='experiment'&&!wet?'seated':!idle&&['experiment','research'].includes(activity)&&wet?'experiment':'standing';
  const expression=studentEmotion(state,result,{idle}),appearance={...weeklyAppearance({...state,visualMonth:idle?state.month:Math.max(0,state.month-1)},index),...(pose==='experiment'?{outfit:0}:{})};
- const portrait=renderPortrait(appearance,'학생 도트 초상화',expression,pose).replace('class="portrait"',`class="portrait room-portrait" x="${x-w/2}" y="${y-h+(pose==='seated'?7:2)}" width="${w}" height="${h}" style="width:${w}px;height:${h}px"`);
- const props=executing||relaxing?`<g transform="translate(${x} ${y}) scale(.8)">${activityProps(activity,{wet,index,kind:equipmentProfile(state)})}</g>`:'';
+ const portrait=renderPortrait(appearance,'학생 도트 초상화',expression,pose,facing).replace('class="portrait"',`class="portrait room-portrait" x="${x-w/2}" y="${y-h+(pose==='seated'?7:2)}" width="${w}" height="${h}" style="width:${w}px;height:${h}px"`);
+ const props=executing||relaxing?`<g transform="translate(${x} ${y}) scale(.8)">${activityProps(activity,{wet,index,kind:equipmentProfile(state),facing})}</g>`:'';
  return (pose==='seated'?'':plane([[u-1.3,v-.4,0],[u-.4,v-1.3,0],[u+1.3,v+.4,0],[u+.4,v+1.3,0]],'#b9b4a4'))+`<g class="mini-student pose-${pose} expression-${expression} ${idle?'mini-idle':'mini-working'} action-${activity.replace(/[^a-z_-]/g,'')}" data-floor="${u},${v}"><g transform="translate(${x} ${y-h+33.6})">${reactionEffects(expression,index)}</g>${portrait}${props}</g>`;
 }
 export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'}={}){
@@ -80,17 +80,22 @@ export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'
  add(22,5,4,8,`<g class="rest-seat-layer" data-seat-type="${d.restType}">${restFurniture(22,5,d.restType)}${restActor}</g>`);
  if(d.cot&&d.restType!==1)add(19,24,7,3,cot(19,24));
  if(d.printer)add(15,1,3.5,3,desk(15,1,3.5,3)+printer(15.5,1.7,26));
+ const working=!idle&&['study','coursework','analysis','language','experiment','paper'].includes(result.actual),deskWorking=working&&!(result.actual==='experiment'&&wet)&&result.outcome!=='training';
  const equipment=roomEquipment(state,{box,front,line,desk,microscope,monitor,project:projectRoom},!idle&&result.performed===true&&['analysis','experiment','industry','startup','video','paper'].includes(result.actual));
  add(3.5,10,6.2,3.5,equipment.bench);
- let work=desk(9,16,10,6,wet?'#bac9c5':'#c5ab8e');work+=equipment.primary+equipment.accessories;
+ let work=desk(9,16,10,6,wet?'#bac9c5':'#c5ab8e');work+=(wet&&deskWorking?`<g class="desk-monitor" data-floor="14.2,18.3">${monitor(14.2,18.3,26,result.performed===true&&result.actual==='analysis')}</g>`:equipment.primary)+equipment.accessories;
  // Notebook, pencil, keyboard, task lamp and cups share the desk's top plane.
- work+=box(16.5,19,1.6,1.7,.6,'#f2ecdd',26)+line([17,19,27],[17.5,20.4,27],'#82949b',1.2)+box(15,21.1,2.4,.55,.5,'#d4ddda',26);
+ work+=box(10.1,19.8,1.6,1.7,.6,'#f2ecdd',26)+line([10.6,19.8,27],[11.1,21.2,27],'#82949b',1.2)+`<g class="desk-keyboard" data-floor="13.5,21.3">`+box(13.5,21.3,2.4,.55,.5,'#d4ddda',26)+line([13.7,21.45,26.7],[15.6,21.45,26.7],'#9db0b1',.7)+'</g>';
  work+=box(17.6,16.8,1,1,1,'#abb9b1',26)+box(17.9,17,.25,.25,15,'#91a39e',27)+box(17.2,16.7,1.4,1.3,2,'#b7c4b3',42);
  if(wet){const count=({sparse:1,balanced:3,rich:5})[stock];for(let i=0;i<count;i++)work+=box(14+i*.5,17.5,.25,.4,5,'#b5cecb',26)+box(14+i*.5,17.5,.25,.4,1,'#899ca3',31);if(stock==='rich')work+=box(17,18.2,1.3,1.2,7,'#c8d2cc',26);}
- add(9,16,10,6,work);add(12,23,3,3,chair(12,23,'#b5b9b0',d.chairType));
+ add(9,16,10,6,work);
  add(24,19,2,2,plant(24,19));
  if(d.bag)add(6,23,2.2,1.7,box(6,23,2.2,1.7,9,'#b49a8c')+line([6.4,23.2,10],[7.7,23.2,10],'#85786d',2));
- const working=!idle&&['study','coursework','analysis','language','experiment','paper'].includes(result.actual),pos=lecturing?[24,3]:result.actual==='presentation'&&!idle?[24,4]:working?[17,15]:[19,14];if(working&&!(result.actual==='experiment'&&wet))objects.push({depth:31,art:chair(16,14,['#b5b9b0','#a1b7bf','#879ba8','#777f99'][d.chairType],d.chairType)});if(result.outcome!=='training'&&!resting)add(...pos,1,1,actor(state,result,index,...pos,idle));
+ const deskSeat=chair(12,22,['#b5b9b0','#a1b7bf','#879ba8','#777f99'][d.chairType],d.chairType,'monitor');
+ // The chair is in front of the desk, with its back towards the viewer. Keep
+ // it and its occupant in one layer so the desk cannot repaint over the head.
+ objects.push({depth:44,art:`<g class="desk-seat-layer">${deskSeat}${deskWorking?actor(state,result,index,13.5,23.5,false,0,'monitor'):''}</g>`});
+ const pos=lecturing?[24,3]:result.actual==='presentation'&&!idle?[24,4]:working?[17,15]:[22,17];if(result.outcome!=='training'&&!resting&&!deskWorking)add(...pos,1,1,actor(state,result,index,...pos,idle));
  objects.sort((a,b)=>a.depth-b.depth);art+=objects.map(o=>o.art).join('');
  // Front rim has the same two floor axes as the tiles, never an unrelated angle.
  art+=plane([[0,28,0],[28,28,0],[28,28,-3],[0,28,-3]],shade(tile,-18))+plane([[28,0,0],[28,28,0],[28,28,-3],[28,0,-3]],shade(tile,-28));

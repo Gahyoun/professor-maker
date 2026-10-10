@@ -1,7 +1,8 @@
 // Small local props keep the feet, chair and desk anchored to the room projection.
 // These motions follow the executed activity and never draw from gameplay RNG.
-export function activityProps(activity,{wet=false,index=0,kind}={}){
+export function activityProps(activity,{wet=false,index=0,kind,facing='front'}={}){
  const paper=['study','coursework','language','paper'].includes(activity);
+ if(paper&&facing==='monitor')return `<g data-motion="reading" transform="translate(34 -39) rotate(26)"><g class="mini-activity-prop"><path d="M-13 -3h12v8h-12zM0 -3h12v8H0z" fill="#f4ecdd" stroke="#b9ab95"/><path d="M-10 0h6m7 0h6" stroke="#a8b2a6"/><path class="study-page" d="M0 -3h9v8H0z" fill="#fff7e8"/><g class="study-pencil"><path d="M4 0l7-5 1 2-7 5z" fill="#c59862"/><path d="M4 0l1 2-3 1z" fill="#56676d"/></g></g></g>`;
  if(paper)return `<g data-motion="reading"><g class="mini-activity-prop"><path d="M-14 -30h13v7h-13zM0 -30h13v7h-13z" fill="#f4ecdd" stroke="#b9ab95"/><path d="M-11 -27h7m7 0h7" stroke="#a8b2a6"/><path class="study-page" d="M0 -30h8v7H0z" fill="#fff7e8"/><g class="study-pencil"><path d="M4 -27l7-5 1 2-7 5z" fill="#c59862"/><path d="M4 -27l1 2-3 1z" fill="#56676d"/></g></g></g>`;
  if(wet&&kind==='measurement'&&['experiment','research'].includes(activity))return `<g data-motion="measuring"><g class="lab-pipette"><path d="M23 -37h9v3h-9zM31 -37h4v6h-4z" fill="#95acb6" stroke="#6b8392"/><path d="M35 -33l6 4v5" fill="none" stroke="#8b9d9f"/><path d="M26 -36h3v2h-3z" fill="#c4d8c8"/></g></g>`;
  if(wet&&['experiment','research'].includes(activity))return `<g data-motion="pipetting"><g class="mini-activity-prop"><path d="M27 -36h4v13h-4z" fill="#d6e7e8" stroke="#96aeb2"/><path d="M27 -27h4v4h-4z" fill="#b8c5a6"/><g class="lab-pipette"><path d="M27 -49h2v12h-2z" fill="#819da5"/><path d="M27 -38h2v4h-2z" fill="#e6eeea"/></g><path class="lab-droplet" d="M28 -34h1v3h-1z" fill="#89bcca"/></g></g>`;

@@ -24,6 +24,25 @@ test('resting students sit at their own furniture anchor with the backrest behin
  }
  assert.equal(seen.size,4);
 });
+test('desk work sits in front of the monitor and faces it, with one chair and aligned desktop tools',()=>{
+ for(const labMode of ['dry','wet']){
+  const state=createState('',9,{labMode}),before=structuredClone(state);
+  for(const actual of ['study','coursework','analysis','language','paper',...(labMode==='dry'?['experiment']:[])]){
+   const scene=roomScene(state,{actual,performed:true,outcome:'completed'});
+   assert.match(scene,/data-pose="seated" data-outfit="[0-5]" data-facing="monitor"/);
+   assert.match(scene,/class="mini-student [^>]+data-floor="13.5,23.5"/);
+   assert.match(scene,/class="desk-monitor" data-floor="14.2,18.3"/);
+   assert.match(scene,/class="desk-keyboard" data-floor="13.5,21.3"/);
+   assert.equal((scene.match(/data-chair=/g)||[]).length,1+(scene.includes('data-rest="camp-chair"')?1:0));
+   const seat=scene.indexOf('class="desk-seat-layer"'),chair=scene.indexOf('data-chair=',seat),student=scene.indexOf('class="mini-student ',seat);
+   assert.ok(seat>=0&&chair>seat&&student>chair,'chair and occupant share a layer after the desktop');
+   assert.ok(seat>scene.indexOf('class="desk-keyboard"'),'the desktop must not repaint over the student face');
+  }
+  assert.deepEqual(state,before);
+ }
+ const seat=projectRoom(13.5,23.5),screen=projectRoom(16.55,18.6,44);
+ assert.ok(screen[0]>seat[0]&&screen[1]<seat[1],'the seated student looks towards the upper-right screen');
+});
 test('cosmetic room variety is stable and never consumes gameplay state',()=>{
  const walls=new Set(),floors=new Set(),props=new Set();
  for(let seed=1;seed<=120;seed++){const s=createState('',seed,{labMode:seed%2?'wet':'dry'}),before=JSON.stringify(s),d=roomDecorations(s);assert.deepEqual(d,roomDecorations(s));walls.add(d.wallpaper);floors.add(d.floor);for(const [key,value]of Object.entries(d))if(value===true)props.add(key);const scene=roomScene(s,{actual:'idle'},0,{idle:true});assert.equal(JSON.stringify(s),before);assert.match(scene,/data-projection="isometric"/);assert.match(scene,/preserveAspectRatio="xMidYMid meet"/);assert.equal((scene.match(/class="portrait /g)||[]).length,1);assert.ok(!scene.includes('class="pixel-student'));

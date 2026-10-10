@@ -6,6 +6,9 @@
  .site-footer .footer-contact{margin-top:18px;gap:4px}.site-footer .footer-contact a{margin:0!important;white-space:normal}
  .header-nav{gap:20px}.header-content{flex-wrap:wrap;gap:12px;padding-top:12px;padding-bottom:12px}
  .project-overview,.decision,.save-points,.student-voice{overflow-wrap:anywhere}
+ /* Exam notices on phones start with the decision, without a portrait spacer. */
+ .decision.important-exam .story-character{display:none}
+ .decision.important-exam{padding:18px!important;min-height:0}
  .feedback-option{min-height:64px;cursor:pointer;touch-action:manipulation}
  dialog{max-height:calc(100dvh - 24px);overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
  .pixel-room[data-projection=isometric] .room-label{font-size:10px;line-height:1.5;padding:5px 7px;max-width:94%}

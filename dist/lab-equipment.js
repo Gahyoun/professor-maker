@@ -44,10 +44,10 @@ export function roomEquipment(state,{box,front,line,desk,microscope,monitor,proj
   bench=counter('#b3c1c3')+mark('optical-bench','계측용 정반과 센서 지지대',box(4,10.6,5.2,2.4,2,'#778d98',27)+box(4.4,11.3,.4,.5,10,'#9eafb0',29)+box(6,11.3,.4,.5,14,'#9eafb0',29)+box(8.2,11.3,.4,.5,8,'#9eafb0',29)+box(5.6,11,1.2,.8,2,'#d0dcd4',43));
   accessories=mark('sensor','측정 프로브와 연결 케이블',box(16,18.8,1,1,3,'#9fb9bb',26)+line([16.5,19.3,29],[17.5,20.5,27],'#7a8d95',1));
  }else if(kind==='design'){
-  primary=monitor(11,17,26,active);
+  primary=`<g class="desk-monitor" data-floor="14.2,18.3">${monitor(14.2,18.3,26,active)}</g>`;
   bench=desk(3.5,10,6.2,3.5)+mark('scale-model','설계 도면과 축척 모형',box(4,10.6,5.1,2.4,.5,'#ebeadf',26)+box(4.5,11.1,1.7,1.1,9,'#d6d6c5',26.5)+box(6.5,11.5,1.4,.8,6,'#b4c5bb',26.5)+line([4.2,10.8,27],[8.5,10.8,27],'#91aab0',.8));
  }else{
-  primary=monitor(11,17,26,active);
+  primary=`<g class="desk-monitor" data-floor="14.2,18.3">${monitor(14.2,18.3,26,active)}</g>`;
   bench=desk(3.5,10,6.2,3.5)+mark('workstation','보조 워크스테이션과 자료집',monitor(4.4,10.7,26,false)+box(4.8,13,2.6,.5,.5,'#b9c9c7',26)+box(8,11.5,.7,1.4,3,'#b3afbe',26));
  }
  if(variant===1)bench+=mark('measurement-log','계측 기록 바인더',box(8.3,12.3,.9,1.1,1.5,'#c2af97',27));

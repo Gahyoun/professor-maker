@@ -5,9 +5,10 @@ const mix=(a,b,t)=>'#'+a.slice(1).match(/../g).map((v,i)=>Math.round(parseInt(v,
 
 // Integer raster art: the public 320 × 496 frame is shared by every activity.
 // Cosmetics are read from saved appearance fields and never consume game RNG.
-export function renderStudentPortrait(a,label='학생 도트 초상화',expression='neutral',pose='standing'){
+export function renderStudentPortrait(a,label='학생 도트 초상화',expression='neutral',pose='standing',facing='front'){
  expression=normalizeExpression(expression);
  pose=['standing','seated','experiment','lecturing'].includes(pose)?pose:'standing';
+ facing=pose==='seated'&&facing==='monitor'?'monitor':'front';
  const W=80,H=118,pixels=Array.from({length:H},()=>Array(W).fill(null));
  const put=(x,y,c)=>{if(x>=0&&x<W&&y>=0&&y<H)pixels[y][x]=c;};
  const row=(y,x0,x1,c)=>{for(let x=x0;x<=x1;x++)put(x,y,c);};
@@ -141,13 +142,57 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  else{put(35,57,mouth);put(44,57,mouth);row(58,36,43,mouth);row(59,38,41,mouth);}
  if(a.glasses){const frame='#514658';for(const [x,y]of [[21,41],[44,41]]){row(y,x+2,x+12,frame);row(y+12,x+2,x+12,frame);box(x,y+2,x+1,y+10,frame);box(x+13,y+2,x+14,y+10,frame);if(a.glassesShape!==1){put(x+1,y+1,frame);put(x+13,y+1,frame);put(x+1,y+11,frame);put(x+13,y+11,frame);}row(y+2,x+3,x+5,'#f9eeec');}row(45,35,44,frame);row(44,19,21,frame);row(44,58,61,frame);}
 
+ // Desk work needs a rear three-quarter view, rather than a mirrored front
+ // portrait. The face and both forearms point towards the screen at upper right.
+ if(facing==='monitor'){
+  for(const r of pixels)r.fill(null);
+  const end=[0,0,0,68,79,91,99][l];
+  if(l>=3){poly([[18,32],[57,32],[60,end-7],[56,end],[52,end-4],[48,end],[23,end],[19,end-4],[16,end-9]],hairD);for(const x of [20,25,49,54])poly([[x,43],[x+3,42],[x+2,end-5],[x,end-2]],hairM);}
+  // A short back and bent legs keep the hips on the chair, feet under its front.
+  box(35,63,45,68,skinD);
+  poly([[27,68],[39,65],[50,67],[54,74],[54,91],[49,96],[28,94],[24,87],[24,75]],top);
+  poly([[27,70],[32,68],[31,88],[28,91],[25,86],[25,74]],topH);
+  poly([[48,68],[54,72],[57,78],[53,83],[48,80]],topD);
+  row(92,29,49,topD);row(93,30,48,topD);
+  if(outfit===0){poly([[31,68],[38,66],[46,67],[50,71],[44,73],[34,73]],'#dbe3df');box(40,74,41,92,'#c4ceca');row(86,29,35,'#c5d2d0');box(28,94,50,97,white);}
+  else if(outfit===2){poly([[29,69],[34,65],[44,65],[50,69],[47,73],[33,73]],topD);poly([[32,83],[46,83],[48,88],[30,88]],topH);}
+  else if(outfit===4){for(const y of [77,85]){row(y,27,51,shirt);row(y+1,27,51,shirt);}}
+  else if(outfit===5){poly([[30,68],[36,66],[42,67],[43,72],[36,73]],topH);box(42,73,43,92,topD);}
+  // Forearms reach the desktop, with the hands immediately above the keyboard.
+  poly([[28,73],[32,74],[33,78],[45,76],[47,78],[45,81],[31,83],[27,79]],topH);
+  poly([[50,71],[55,72],[58,75],[63,74],[64,78],[57,81],[52,77]],top);
+  box(45,76,50,79,skin);row(79,45,50,skinD);box(63,74,68,77,skin);row(77,63,68,skinD);
+  poly([[30,94],[49,94],[56,96],[55,101],[43,101],[37,104],[29,101]],pants);
+  poly([[31,99],[38,101],[37,107],[29,107]],pants);poly([[47,99],[54,99],[57,107],[49,108]],pantsD);
+  row(97,41,53,pantsH);box(31,101,33,105,pantsH);
+  box(28,107,39,110,'#39303e');box(49,108,60,111,'#39303e');row(107,29,37,'#726174');row(108,50,58,'#726174');
+  // One eye and a stepped cheek silhouette make the viewing direction clear.
+  oval(43,40,21,23,skinD);poly([[45,24],[56,29],[61,35],[61,40],[66,43],[63,46],[63,54],[57,61],[47,63],[39,58],[37,39]],skin);
+  row(59,49,58,skinD);put(65,44,skinH);box(60,51,63,54,'#edb0ac');put(61,51,'#ffe0d5');
+  const closed=['happy','delighted','relieved'].includes(expression),eyeBottom=['tired','sad'].includes(expression)?47:50;
+  if(closed){row(43,57,59,ink);row(44,56,57,ink);row(44,59,61,ink);}
+  else{box(56,41,61,eyeBottom,'#fff0e3');box(57,41,60,eyeBottom,iris);box(58,42,60,eyeBottom-2,ink);row(40,55,61,ink);box(57,41,58,43,'#fff8ec');put(59,eyeBottom-1,'#8399ad');}
+  row(37,55,60,hairD);row(56,58,61,mouth);
+  if(a.glasses){row(39,54,62,'#514658');row(51,54,62,'#514658');box(53,40,54,50,'#514658');box(62,40,63,50,'#514658');row(42,47,54,'#514658');put(55,40,'#f9eeec');}
+  // The rear crown retains the saved length, fringe family, curls and highlights.
+  const rearHair=l?hair:mix(hair,'#c8b2a0',.5);
+  oval(34,31,23,24,l?hairD:rearHair);
+  poly([[13,31],[16,22],[21,16],[30,11],[41,10],[49,14],[54,22],[55,29],[52,37],[47,39],[46,31],[39,35],[39,49],[34,55],[21,52],[15,46]],rearHair);
+  if(l){poly([[17,26],[24,19],[34,16],[43,17],[49,21],[43,22],[36,20],[27,22],[21,27]],hairM);poly([[22,21],[29,18],[36,18],[34,20],[27,23]],hairH);
+   poly([[42,21],[53,25],[57,30],[57,37],[53,35],[51,40],[49,33],[46,30+(fringe%3)]],fringe%2?hair:hairM);
+   if(l>=3){poly([[18,49],[23,51],[25,end-5],[22,end],[19,end-4]],hair);poly([[47,45],[52,41],[56,end-5],[53,end],[49,end-4]],hairD);for(const x of [22,50])poly([[x,52],[x+2,49],[x+2,end-6],[x,end-3]],hairM);}
+   if(a.curly){for(const [x,y]of [[18,23],[27,16],[39,14],[49,20],[15,35],[49,33]]){oval(x,y,4,4,hair);row(y-2,x-2,x+1,hairM);}if(l>=3)for(let y=53;y<end;y+=10){oval(18,y,3,4,hair);oval(53,y+2,3,4,hairD);}}
+  }else for(let x=18;x<52;x+=4)put(x,26+(x%3),hairM);
+  oval(44,48,4,5,skinD);oval(45,47,3,4,skin);box(44,46,45,49,skinD);
+ }
+
  // A single pixel coloured contour keeps the delicate edges readable at 80%.
  const outlined=pixels.map(r=>r.slice());
  for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(!pixels[y][x]){const n=[pixels[y-1]?.[x],pixels[y+1]?.[x],pixels[y][x-1],pixels[y][x+1]].find(Boolean);if(n)outlined[y][x]=mix(n,edge,.65);}
  let rects='';for(let y=0;y<H;y++){let x=0;while(x<W){const c=outlined[y][x];if(!c){x++;continue;}let end=x;while(end+1<W&&outlined[y][end+1]===c)end++;rects+=`<rect x="${x}" y="${y}" width="${end-x+1}" height="1" fill="${c}"/>`;x=end+1;}}
  const styles=['까까머리','크롭컷','짧은 머리','중간 길이 머리','단발','어깨 길이 머리','긴 머리'];
- const title=escape(`${label} · ${EXPRESSIONS[expression]} · ${styles[l]}${a.curly&&l?' · 곱슬머리':''}${a.glasses?' · 안경':''}${l?` · 앞머리 ${fringe+1}`:''}${pose==='lecturing'?' · 칠판 앞에서 강의':''}`);
+ const title=escape(`${label} · ${EXPRESSIONS[expression]} · ${styles[l]}${a.curly&&l?' · 곱슬머리':''}${a.glasses?' · 안경':''}${l?` · 앞머리 ${fringe+1}`:''}${pose==='lecturing'?' · 칠판 앞에서 강의':''}${facing==='monitor'?' · 모니터를 바라보며 앉음':''}`);
  // Keep TA arm's animation coordinates in its established 40 × 62 grid.
  const arm=pose==='lecturing'?`<g transform="translate(0 24) scale(8)" shape-rendering="crispEdges"><g class="ta-lecture-arm"><path d="M13 36h3v5h-4v-3h-2v-3H8v-5h3v3h2z" fill="${top}" stroke="${topD}" stroke-width=".7"/><path d="M9 30V24H8V14" fill="none" stroke="#756353" stroke-width="1" class="ta-pointer"/><path d="M8 14v2" stroke="#e9e5d8" stroke-width="1"/><path d="M8 29h3v3H8z" fill="${skin}" stroke="${skinD}" stroke-width=".5"/></g></g>`:'';
- return `<svg class="portrait" data-expression="${expression}" data-pose="${pose}" data-outfit="${outfit}" viewBox="0 0 320 496" role="img" aria-label="${title}"><title>${title}</title><g class="hair-fringe chibi-grid ${expression==='sad'?'expression-tear':''}" shape-rendering="crispEdges" transform="translate(0 24) scale(4)">${rects}</g>${arm}</svg>`;
+ return `<svg class="portrait" data-expression="${expression}" data-pose="${pose}" data-outfit="${outfit}"${facing==='monitor'?' data-facing="monitor"':''} viewBox="0 0 320 496" role="img" aria-label="${title}"><title>${title}</title><g class="hair-fringe chibi-grid ${expression==='sad'?'expression-tear':''}" shape-rendering="crispEdges" transform="translate(0 24) scale(4)">${rects}</g>${arm}</svg>`;
 }
