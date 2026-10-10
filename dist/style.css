@@ -236,3 +236,5 @@ body.month-playing .lab-main{position:relative}body.month-playing .lab-main:afte
 @media(max-width:650px){.live-lab .pixel-room[data-projection=isometric]{height:205px}.pixel-room[data-projection=isometric] .room-label{background:#faf8f2;color:#687b80;max-width:90%;font-size:8px}}
 @media(max-height:650px) and (max-width:650px){.live-lab .pixel-room[data-projection=isometric]{height:155px}}
 @media(prefers-reduced-motion:reduce){.mini-student{animation:none!important}}
+
+.brand-initial-p{color:#18364a}.brand-initial-m{color:#009edb}
