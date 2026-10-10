@@ -65,7 +65,7 @@ export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'
  add(9,16,10,6,work);add(12,23,3,3,chair(12,23,'#b5b9b0',d.chairType));
  add(24,19,2,2,plant(24,19));
  if(d.bag)add(6,23,2.2,1.7,box(6,23,2.2,1.7,9,'#b49a8c')+line([6.4,23.2,10],[7.7,23.2,10],'#85786d',2));
- const working=!idle&&['study','coursework','analysis','language','experiment'].includes(result.actual),pos=working?[17,15]:kind==='rest'?[22,8]:[19,14];if(working&&!(result.actual==='experiment'&&wet))objects.push({depth:31,art:chair(16,14,['#b5b9b0','#a1b7bf','#879ba8','#777f99'][d.chairType],d.chairType)});add(...pos,1,1,actor(state,result,index,...pos,idle));
+ const working=!idle&&['study','coursework','analysis','language','experiment'].includes(result.actual),pos=working?[17,15]:kind==='rest'?[22,8]:[19,14];if(working&&!(result.actual==='experiment'&&wet))objects.push({depth:31,art:chair(16,14,['#b5b9b0','#a1b7bf','#879ba8','#777f99'][d.chairType],d.chairType)});if(result.outcome!=='training')add(...pos,1,1,actor(state,result,index,...pos,idle));
  objects.sort((a,b)=>a.depth-b.depth);art+=objects.map(o=>o.art).join('');
  // Front rim has the same two floor axes as the tiles, never an unrelated angle.
  art+=plane([[0,28,0],[28,28,0],[28,28,-3],[0,28,-3]],shade(tile,-18))+plane([[28,0,0],[28,28,0],[28,28,-3],[28,0,-3]],shade(tile,-28));

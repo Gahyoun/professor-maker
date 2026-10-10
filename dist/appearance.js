@@ -115,5 +115,5 @@ export function renderPortrait(appearance,label='학생 도트 초상화',expres
 export function weeklyAppearance(state,index=0){
  const a=studentAppearance(state.creationSeed??state.seed,state.gender),month=state.visualMonth??state.month;
  const sequence=(a.outfit+Math.max(0,state.month-1)*5+index),outfit=state.professorProfile?.labMode==='dry'?1+sequence%5:sequence%6;
- return {...a,...(state.gender==='male'&&state.service?.trainingReturnMonth!==undefined&&month>=state.service.trainingReturnMonth&&month<state.service.trainingReturnMonth+2?{hairLength:0}:{}),outfit,shirt:['#456c87','#597a68','#906b71','#6c6587','#ba8659','#548b98'][(a.outfit+index+state.month)%6]};
+ return {...a,...(state.gender==='male'&&state.service?.trainingReturnMonth!==undefined&&(month>=state.service.trainingReturnMonth&&month<state.service.trainingReturnMonth+2||month===state.service.trainingStartMonth&&index>=3)?{hairLength:0}:{}),outfit,shirt:['#456c87','#597a68','#906b71','#6c6587','#ba8659','#548b98'][(a.outfit+index+state.month)%6]};
 }

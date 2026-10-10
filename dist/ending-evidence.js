@@ -6,6 +6,7 @@ export function endingEvidence(s){
  const metrics=[{label:'지도기간(개월)',value:s.month},{label:'논문 게재',value:s.career.papers},{label:'학술 발표',value:s.career.conferences},{label:'수상',value:s.career.awards},{label:'h-index',value:s.impact?.hIndex??0},{label:'라포(0–100)',value:abilityScore(s,'rapport')}];
  if(['true','postdoc'].includes(s.ending))for(const [key,target] of Object.entries(TRUE_REQUIREMENTS))metrics.push({label:labels[key],value:key==='faculty'?Math.min(...Object.values(s.professor)):key in s.hidden?abilityScore(s,key):s.career[key],target});
  else {for(const key of ['research','language','autonomy','industry','enterprise'])metrics.push({label:labels[key]??({industry:'산학 경험',enterprise:'창업 경험'})[key],value:abilityScore(s,key)});const score=careerScores(s)[s.ending];if(score>=0)metrics.push({label:'진로 적합도(게임 지표)',value:score});}
+ if(s.ending==='resident_researcher')metrics.push({label:'신중함 · 안정 선호(게임 기질)',value:s.temperament.caution,target:65},{label:'연구실 운영',value:s.professor.mentoring,target:40});
  const requirements=['bachelor','external_masters'].includes(s.ending)?{}:degreeRequirements(s,['masters','external_phd'].includes(s.ending)?'masters':'phd');
  return {metrics,requirements:Object.entries(requirements).map(([key,target])=>({label:labels[key]??key,value:s.career[key],target})).filter(r=>Number.isFinite(r.value)),reason:s.endingReason??null,recommendation:recommendationCandidate(s)?abilityScore(s,'rapport')>=85?'strong':abilityScore(s,'rapport')>=40?'formal':'alternate':null};
 }

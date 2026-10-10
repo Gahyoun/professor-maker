@@ -1,0 +1,147 @@
+{
+  "runs": 10000,
+  "seedFormula": "7919 * (run + 1)",
+  "endings": {
+    "institute": 3154,
+    "bachelor": 851,
+    "corporate": 1269,
+    "resident_researcher": 426,
+    "dismissed": 287,
+    "startup": 155,
+    "leave": 777,
+    "true": 331,
+    "budget-blocked": 1,
+    "youtuber": 20,
+    "postdoc": 352,
+    "masters": 829,
+    "unrelated": 765,
+    "unemployed": 783
+  },
+  "byPolicy": {
+    "guided": {
+      "runs": 834,
+      "endings": {
+        "institute": 742,
+        "resident_researcher": 91,
+        "bachelor": 1
+      }
+    },
+    "independent": {
+      "runs": 833,
+      "endings": {
+        "bachelor": 3,
+        "institute": 701,
+        "resident_researcher": 86,
+        "dismissed": 43
+      }
+    },
+    "venture": {
+      "runs": 833,
+      "endings": {
+        "corporate": 628,
+        "resident_researcher": 86,
+        "dismissed": 39,
+        "startup": 80
+      }
+    },
+    "faculty": {
+      "runs": 834,
+      "endings": {
+        "institute": 393,
+        "resident_researcher": 49,
+        "true": 331,
+        "dismissed": 56,
+        "budget-blocked": 1,
+        "leave": 2,
+        "bachelor": 2
+      }
+    },
+    "graduate": {
+      "runs": 833,
+      "endings": {
+        "bachelor": 833
+      }
+    },
+    "communication": {
+      "runs": 833,
+      "endings": {
+        "leave": 771,
+        "dismissed": 56,
+        "bachelor": 2,
+        "youtuber": 3,
+        "institute": 1
+      }
+    },
+    "formal-faculty": {
+      "runs": 834,
+      "endings": {
+        "postdoc": 352,
+        "institute": 426,
+        "dismissed": 56
+      }
+    },
+    "masters": {
+      "runs": 833,
+      "endings": {
+        "masters": 829,
+        "leave": 1,
+        "bachelor": 3
+      }
+    },
+    "new-field": {
+      "runs": 833,
+      "endings": {
+        "unrelated": 765,
+        "institute": 60,
+        "leave": 2,
+        "dismissed": 1,
+        "youtuber": 5
+      }
+    },
+    "industry": {
+      "runs": 834,
+      "endings": {
+        "corporate": 641,
+        "startup": 75,
+        "resident_researcher": 79,
+        "dismissed": 35,
+        "bachelor": 3,
+        "leave": 1
+      }
+    },
+    "low-contact": {
+      "runs": 833,
+      "endings": {
+        "institute": 798,
+        "resident_researcher": 35
+      }
+    },
+    "job-search": {
+      "runs": 833,
+      "endings": {
+        "unemployed": 783,
+        "bachelor": 4,
+        "institute": 33,
+        "youtuber": 12,
+        "dismissed": 1
+      }
+    }
+  },
+  "unmetFacultyCriteria": {
+    "teaching": 5704,
+    "resilience": 1339,
+    "manners": 2331,
+    "recommendations": 5704,
+    "leadingPaper": 5704,
+    "award": 2709,
+    "rapport": 2908,
+    "motivation": 4,
+    "papers": 1662,
+    "conferences": 1595,
+    "hIndex": 1568,
+    "language": 728,
+    "social": 3
+  },
+  "errors": [],
+  "seconds": 156.305
+}

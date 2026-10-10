@@ -213,10 +213,10 @@ test('language supports manuscript progress and creativity supports research pro
   const ordinary=createState('Student',6),creative=copy(ordinary);ordinary.month=2;creative.month=2;setScore(ordinary,'creativity',10);setScore(creative,'creativity',90);
   const science=['study','study','rest','rest'];assert.ok(simulateMonth(creative,science,{proposal:science}).lastReport.progress>simulateMonth(ordinary,science,{proposal:science}).lastReport.progress);
 });
-test('the hidden resident researcher career is reachable after a full real cultivation history',()=>{
-  const s=play('institute',207);assert.equal(s.month,96);assert.equal(s.ending,'resident_researcher');assert.ok(canDefend(s));assert.ok(abilityScore(s,'rapport')>=85);assert.ok(abilityScore(s,'resilience')<=40);
+test('the resident researcher path uses stability preference rather than low resilience',()=>{
+  const s=play('institute',207);assert.equal(s.month,96);s.temperament.caution=80;assert.equal(careerEnding(s),'resident_researcher');assert.ok(canDefend(s));assert.ok(abilityScore(s,'rapport')>=85);assert.ok(abilityScore(s,'resilience')<=40);
   const distant=copy(s);setScore(distant,'rapport',60);assert.notEqual(careerEnding(distant),'resident_researcher');
-  const resilient=copy(s);setScore(resilient,'resilience',70);assert.notEqual(careerEnding(resilient),'resident_researcher');
+  const resilient=copy(s);setScore(resilient,'resilience',70);assert.equal(careerEnding(resilient),'resident_researcher');const exploratory=copy(s);exploratory.temperament.caution=30;assert.notEqual(careerEnding(exploratory),'resident_researcher');
 });
 test('sustained overwork causes leave while sustained relationship damage causes dropout',()=>{
   let s=createState('Student',6,{gender:'female',institution:'institute'});
