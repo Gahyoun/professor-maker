@@ -140,7 +140,7 @@ export function adaptResearchText(text,context={},locale='ko'){
    .replaceAll('labeled tubes',p.archive)
    .replaceAll('old machine','old '+p.equipmentName);
   if(p.storage!=='bottom freezer drawer')result=result.replace(/freezer/gi,'research archive');
-  if(p.dry)result=result.replace(/lab coat/gi,'everyday clothes').replace(/experiment notebooks?/gi,'research notes').replace(/experiments?/gi,'study').replace(/cultivation schedule/gi,'analysis schedule').replace(/tubes/gi,'analysis files');
+  if(p.dry)result=result.replace(/lab coat/gi,'everyday clothes').replace(/experiment notebooks?/gi,'research notes').replace(/experiments?/gi,'study').replace(/cultivation schedule/gi,'analysis schedule').replace(/tubes/gi,'analysis files').replace(/equipment stopped/gi,'server stopped').replace(/shared facility/gi,'shared server');
   return result;
  }
  const p=researchSetting(context);
@@ -156,7 +156,7 @@ export function adaptResearchText(text,context={},locale='ko'){
   .replaceAll('실험 노트',p.record);
  for(const source of ['오래된 기계','그 기계','기사님을 부르는 기계'])result=replaceNounWithParticle(result,source,source.replace(/기계$/,p.equipmentName));
  if(p.storage!=='냉동고 맨 아래 칸')result=result.replaceAll('냉동고',p.dry?'자료 보관함':'연구 자료 보관함');
- if(p.dry)result=result.replaceAll('실험복','평상복').replaceAll('실험','연구').replaceAll('배양 일정','분석 일정');
+ if(p.dry)result=result.replaceAll('실험복','평상복').replaceAll('실험','연구').replaceAll('배양 일정','분석 일정').replaceAll('장비가 멈춘 날','서버가 멈춘 날').replaceAll('공동기기실에서','공용 서버에서');
  return result;
 }
 export function fieldWorkplace(context,kind,locale='ko'){if(locale==='en'){const p=englishResearchSetting(context);return `Their training continued in ${p.sector}. In ${kind==='corporate'?'an industrial R&D':'a public research'} team, they worked with colleagues on ${p.task} and documented the results.`;}const p=researchSetting(context);return `${p.field}에서 배운 방법은 ${p.sector} 분야의 새로운 일정 속에서도 이어졌다. ${kind==='corporate'?p.company:p.institute}에서 동료들과 ${withParticle(p.task,'을/를')} 검토하고 결과를 기록했다.`;}

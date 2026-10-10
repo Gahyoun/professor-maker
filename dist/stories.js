@@ -169,20 +169,61 @@ const failureAnchors={
  qual_withdrawal:p('다음 계획은 제가 먼저 생각해 보고,','I will consider my next plans and contact you')
 };
 export function endingLetterAnchor(id,locale='ko',reason){return (id==='gameover'&&failureAnchors[reason]||letterAnchors[id])?.[locale==='en'?'en':'ko']??'';}
-function insertLetterClosing(pages,note,locale){
- const signature=locale==='en'?'— {name}':'― {name}',index=pages.findIndex(text=>text.includes(signature));
- if(index<0||!note)return;
- const text=pages[index],at=text.indexOf(signature);
- const prefix=text.slice(0,at).trimEnd().replace(locale==='en'?/(?:\s*Please take care\.)$/:/(?:\s*(?:교수님도\s+)?건강하세요\.)$/,'').trimEnd();
- pages[index]=(prefix?prefix+'\n\n':'')+note+'\n\n'+text.slice(at);
-}
-function insertLetterPassages(pages,id,notes,locale,reason){
- if(!notes.length)return;
- const anchor=endingLetterAnchor(id,locale,reason),index=pages.findIndex(text=>anchor&&text.includes(anchor));
- // An absent slot contributes no filler: never append after a closing or signature.
- if(index<0)return;
- const at=pages[index].indexOf(anchor),prefix=pages[index].slice(0,at).trimEnd();
- pages[index]=(prefix?prefix+'\n\n':'')+notes.map(n=>n.text).join('\n\n')+'\n\n'+pages[index].slice(at);
+function assembleLetterPages(pages, id, distance, history, context, locale, reason) {
+  const signature = locale === 'en' ? '— {name}' : '― {name}';
+  const letterIndex = pages.findIndex(text => text.includes(signature));
+  if (letterIndex < 0) return pages;
+
+  const text = pages[letterIndex];
+  const parts = text.split('\n\n');
+  if (parts.length < 3) return pages;
+
+  const greeting = parts[0];
+  const sigIndex = parts.findIndex(p => p.includes(signature));
+  const sigText = parts[sigIndex];
+
+  let bodyParas = parts.slice(1, sigIndex);
+
+  const anchorText = endingLetterAnchor(id, locale, reason);
+  let coreParas = bodyParas;
+  let requestParas = [];
+
+  if (anchorText) {
+    const anchorIndex = bodyParas.findIndex(p => p.includes(anchorText));
+    if (anchorIndex >= 0) {
+      coreParas = bodyParas.slice(0, anchorIndex);
+      requestParas = bodyParas.slice(anchorIndex);
+    }
+  }
+
+  // Remove generic take care from the last paragraph
+  let lastArr = requestParas.length ? requestParas : coreParas;
+  if (lastArr.length) {
+    const lastIdx = lastArr.length - 1;
+    lastArr[lastIdx] = lastArr[lastIdx].replace(locale === 'en' ? /(?:\s*Please take care\.)$/ : /(?:\s*(?:교수님도\s+)?건강하세요\.)$/, '').trimEnd();
+  }
+
+  const insertions = endingLetterInsertions(id, distance, history, context, locale).map(n => n.text);
+  const closingText = (id !== 'corporate' && id !== 'true') ? letterClosing(id, distance, context, locale) : '';
+
+  // Ensure request is correctly ordered for unemployed
+  if (id === 'unemployed' && distance === 'distant' && requestParas.length >= 2) {
+    // requestParas was [request, agenda], we want [agenda, request] maybe?
+    // Actually, earlier string replace did: request + \n\n + agenda. 
+    // Wait, the unemployed fix is to just let the paragraphs be in the natural order without string replacing in getEndingPages.
+  }
+
+  const finalParas = [
+    greeting,
+    ...coreParas,
+    ...insertions,
+    ...requestParas,
+    closingText,
+    sigText
+  ].filter(Boolean);
+
+  pages[letterIndex] = finalParas.join('\n\n');
+  return pages;
 }
 
 // Original composite memories: only events that actually occurred can appear.
@@ -237,8 +278,8 @@ function memoryCandidates(history,locale='ko'){
  const unique=[...new Map(found.map(h=>[h.id,h])).values()].reverse();
  return unique.map((h,index)=>({id:`memory.${h.id}.${h.choice}`,group:'memory',priority:100-index,
   tags:[...(['counsel-daily-life','caregiving','support-without-assumptions'].includes(h.id)?['recovery']:['counsel-coursework','undergrad-record'].includes(h.id)?['newcomer']:[]),
-   ...(h.id==='equipment'||h.id==='funding-cut'&&h.choice===1||h.id==='undergrad-record'&&h.choice===1?['wet']:['wet','dry'])],
-  text:locale==='en'?(englishMemories[h.id]?.[h.choice]??(h.choice===2?'We agreed to review the evidence for my plan at the next meeting.':'We agreed on a deadline and the work that needed revision.')):(eventMemories[h.id][h.choice]??(h.choice===2?'다음 면담에서 제 계획의 근거를 검토하기로 했던 약속이 남아 있습니다.':'기한과 보완할 범위를 분명히 정했던 면담이 떠오릅니다.'))}));
+   ...(h.id==='funding-cut'&&h.choice===1||h.id==='undergrad-record'&&h.choice===1?['wet']:['wet','dry'])],
+  text:locale==='en'?('[Memory] '+(englishMemories[h.id]?.[h.choice]??(h.choice===2?'We agreed to review the evidence for my plan at the next meeting.':'We agreed on a deadline and the work that needed revision.'))):('[회상] '+(eventMemories[h.id][h.choice]??(h.choice===2?'다음 면담에서 제 계획의 근거를 검토하기로 했던 약속이 남아 있습니다.':'기한과 보완할 범위를 분명히 정했던 면담이 떠오릅니다.')))}));
 }
 export function validPassageIds(ids){const known=new Set([...VOICE_PASSAGE_IDS,...Object.keys(eventMemories).flatMap(id=>[0,1,2,3].map(choice=>`memory.${id}.${choice}`))]);return Array.isArray(ids)&&ids.length<=known.size&&new Set(ids).size===ids.length&&ids.every(id=>typeof id==='string'&&known.has(id));}
 const passageHash=text=>{let n=2166136261;for(const c of text)n=Math.imul(n^c.charCodeAt(0),16777619);return n>>>0;};
@@ -267,8 +308,8 @@ export function endingLetterInsertions(id,relationship,history=[],context={},loc
  return chosen.slice(0,budget).map(clean);
 }
 export function endingMemoryNotes(history,relationship='reserved'){
- const budget=relationship==='close'?2:relationship==='reserved'?1:0,notes=[];
- for(const note of memoryCandidates(history)){if(notes.length>=budget)break;if(notes.reduce((n,text)=>n+(text.match(/기억합니다/g)||[]).length,0)+(note.text.match(/기억합니다/g)||[]).length<=1)notes.push(note.text);}
+ const notes=[];
+ for(const note of memoryCandidates(history)){if(notes.length>=2)break;if(notes.reduce((n,text)=>n+(text.match(/기억합니다/g)||[]).length,0)+(note.text.match(/기억합니다/g)||[]).length<=1)notes.push(note.text);}
  return notes;
 }
 // Return fresh strings: gallery replays and locale switches cannot alter source stories.
@@ -296,7 +337,7 @@ export function getEndingPages(id, lang = 'ko', relationship, name, reason, hist
   if(id==='unemployed'&&distance==='distant'){
     const request=p('제가 해 온 연구와 앞으로 해 보고 싶은 일을 함께 정리해 볼 수 있을까요? 교수님 일정이 괜찮다면 면담을 부탁드리고 싶습니다.','Could we review the research I have done and the work I would like to try? If your schedule allows, I would appreciate a meeting.')[locale];
     const agenda=p('면담에서는 지원에 필요한 연구 기록과 서류를 중심으로 의논하고 싶습니다. 연락 범위도 제가 정리해서 말씀드리겠습니다.','For our meeting, I would like to focus on the research record and documents needed for applications. I will also explain the contact boundaries that work for me.')[locale];
-    pages[1]=pages[1].replace(request,request+'\n\n'+agenda);
+    pages[1]=pages[1].replace(request,agenda+'\n\n'+request);
   }
   if(id==='youtuber')pages[7]=pages[7].replace(locale==='en'?'— {name}':'― {name}',p('교수님 출연분만은 대본에 검토란을 세 칸 만들어 두었습니다.\n― {name}','For your scenes, the script has three separate review boxes.\n— {name}')[locale]);
   if(id==='unrelated'&&distance==='distant'&&context?.statistics){pages=OUTSIDE_SCENES.map(p=>p[locale]);if(locale==='ko'&&context.recommendation==='alternate')pages[3]+='\n\n마감 사흘 전 추천서 부탁도 망설였다. 다른 추천인에게 연락했지만, 지도교수 추천서가 비어 있던 임용 서류는 통과하지 못했다.';return pages.map(p=>formatStudentName(adaptResearchText(p,context,locale),name,locale));}
@@ -305,25 +346,22 @@ export function getEndingPages(id, lang = 'ko', relationship, name, reason, hist
   }
 
   if (id === 'corporate' && distance === 'close') {
-    pages[0] = pages[0].replace(locale === 'ko' ? '그날의 커피는 정말로 한 잔뿐이었다.' : 'There really was only one cup of coffee.', locale === 'ko' ? '커피가 식는 동안에도 이야기는 끝나지 않았다.' : 'The conversation continued long after the coffee cooled.');
+    pages[0] = pages[0].replace(locale === 'ko' ? '두 사람이 다시 만난 것은 어느 학회에서였다.' : 'We met again at a conference.', locale === 'ko' ? '두 사람이 다시 만난 학회, 커피가 식는 동안에도 이야기는 끝나지 않았다.' : 'When we met again at a conference, the conversation continued long after the coffee cooled.');
     pages[4] = p('학회에서 뵙게 되면 커피를 사겠습니다. 그때는 교수님 이야기도 오래 듣고 싶습니다.\n\n추신. 교수님 논문 인용은 계속하겠습니다. 다음에는 그 논문에서 시작한 제 실험도 보여 드릴게요.\n― {name} 올림\n\n나는 마지막 문장을 한 번 더 읽었다. 이제는 검토를 받기 위해서만 연락하는 사이가 아니었다.\n\n함께 했던 연구가 다른 자리에서도 이어진다는 사실을 오래 생각했다.', 'If we meet at a conference, I will buy the coffee. This time I would like to hear more about you too.\n\nP.S. I will keep citing your papers. Next time, I will show you the experiment I began from one of them.\n— {name}\n\nI reread the last sentence. We no longer kept in touch only for my review.\n\nI thought about how our shared research continued elsewhere.')[locale];
     pages[5] = pages[5].replace(locale === 'ko' ? '커피는 정말로 한 잔뿐이었다.' : 'there really was only one cup of coffee.', locale === 'ko' ? '첫 잔이 비었는데도 두 사람은 자리에서 일어나지 않았다.' : 'we stayed seated after the first cup was empty.');
     pages[5] = pages[5].replace(locale === 'ko' ? '그것이 이 사제에게는 딱 알맞은 거리였다.' : 'For the two of us, that was just the right distance.', locale === 'ko' ? '거리는 처음보다 조금 가까워져 있었다.' : 'The distance between us had grown a little smaller.');
   } else if (id === 'corporate' && distance === 'distant') {
-    pages[0] = pages[0].replace(locale === 'ko' ? '그날의 커피는 정말로 한 잔뿐이었다.' : 'There really was only one cup of coffee.', locale === 'ko' ? '두 사람은 세션이 끝난 뒤 짧게 인사를 나누었다.' : 'We exchanged a brief greeting after the session.');
+    pages[0] = pages[0].replace(locale === 'ko' ? '두 사람이 다시 만난 것은 어느 학회에서였다.' : 'We met again at a conference.', locale === 'ko' ? '두 사람은 세션이 끝난 뒤 짧게 인사를 나누었다.' : 'We exchanged a brief greeting after the session.');
     pages[4] = p('자료 인계 때문에 한 가지를 덧붙입니다. 냉동고 샘플은 보존 여부를 결정하신 뒤 메일로 알려 주세요.\n\n교수님 논문은 계속 인용하겠습니다. 함께 지낸 시간과는 별개로, 연구에 필요한 논문이라서요.\n― {name} 올림\n\n메일로 알려 달라는 문장을 다시 읽었다. 그 거리를 줄이겠다는 답장은 쓰지 않았다.\n\n연구 기록을 확인하고, 필요한 답만 보내기로 했다.', 'One more detail for the handover: please email me once you decide whether to retain the freezer samples.\n\nI will keep citing your papers. Whatever our time together was like, the papers remain useful to my work.\n— {name}\n\nI reread the request for an email. I did not reply with an attempt to close that distance.\n\nI would check the records and send the information needed.')[locale];
     pages[5] = p('교수는 메일을 두 번 읽고 보관함에 넣었다. 냉동고 맨 아래 칸을 열어 라벨이 붙은 튜브들을 오래 바라보았다.\n\n3년 뒤 학회에서 두 사람은 짧게 인사를 나누었다. 더 긴 대화를 약속하지는 않았다.\n\n함께한 연구는 남았고, 연락의 방식은 달라졌다.', 'I read the email twice and archived it. Then I opened the bottom freezer drawer and looked at the labeled tubes for a long time.\n\nThree years later, we exchanged a brief greeting at a conference. We did not promise a longer conversation.\n\nThe work we had done remained. The way we kept in touch had changed.')[locale];
   } else if (id === 'true' && distance !== 'close') {
     // Preserve the recommendation, old machine, acknowledgements and promised good news.
     pages[3] = pages[3].replace(locale === 'ko' ? '건강하세요.' : 'Please take care.', relationshipNotes[distance][locale] + '\n\n' + (locale === 'ko' ? '건강하세요.' : 'Please take care.'));
     pages[pages.length-1] = distance === 'reserved' ? p('그날 저녁, 두 사람은 학회장 근처 카페에서 커피를 마셨다. 한 잔을 마시는 동안 오래된 기계와 {name} 교수의 대학원생 이야기가 이어졌다.\n\n다음 만남을 서두르지는 않았다. 돌아가기 전, 나는 처음으로 학생의 진도가 아닌 동료의 의견을 물었다.\n\n“{name} 교수는 어떻게 생각해요?”', 'That evening, we had one coffee at a café near the venue. We talked about the old machine and Professor {name}’s graduate students.\n\nWe did not rush to arrange another meeting. Before leaving, I asked for a colleague’s view rather than a student’s progress.\n\n“What do you think?”')[locale] : p('카페에 같이 가자는 말은 꺼내지 않았다. {name} 교수는 다음 세션으로 향했고, 나는 그 뒷모습을 잠깐 바라보았다.\n\n좋은 소식은 약속대로 직접 가져왔다. 그 뒤의 거리는 각자가 정할 일이었다.\n\n며칠 뒤 받은 메일에는 새로운 연구 질문이 적혀 있었다. 이번에는 동료에게 답장을 썼다.', 'I did not suggest going to a café together. Professor {name} headed to the next session, and I watched for a moment.\n\nThe good news had been brought in person as promised. The distance afterward was for each of us to choose.\n\nA few days later, an email arrived with a new research question. This time, I wrote to a colleague.')[locale];
-  } else if (id !== 'corporate' && id !== 'true') {
-    const closing=letterClosing(id,distance,context,locale);if(closing)insertLetterClosing(pages,closing,locale);
-  }
   if(id==='corporate')pages[4]=p('메일은 이렇게 이어졌다.','The email continued.')[locale]+'\n\n'+pages[4];
   if(id==='startup'&&context?.labMode==='dry')pages=pages.map(text=>text.replace(locale==='ko'?'다음 실험은 무엇입니까?':'What is your next experiment?',locale==='ko'?'다음 연구는 무엇입니까?':'What is your next study?'));
   const slotReason=id==='gameover'&&suppliedReason==='qual_failure'&&history.filter(h=>h.kind==='qual'&&!h.passed).length<2?'qual_withdrawal':suppliedReason;
-  insertLetterPassages(pages,id,endingLetterInsertions(id,distance,history,context??{},locale),locale,slotReason);
+  assembleLetterPages(pages, id, distance, history, context??{}, locale, slotReason);
   pages=pages.map(text=>adaptResearchText(text,context,locale));
   // Add the recommendation prologue after positional scene replacements.
   if(locale==='ko'&&context?.recommendation==='alternate')pages.unshift('마감 사흘 전, 학생은 지도교수에게 추천서를 부탁하려다 망설였다. 다른 추천인에게 연락했지만, 이 이야기의 임용 서류에서는 지도교수 추천서가 비어 있어 심사를 통과하지 못했다. 그 뒤 어떤 길을 택할지는 학생의 몫이었다.');

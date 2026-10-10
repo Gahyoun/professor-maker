@@ -104,7 +104,6 @@ export function endingVoiceCandidates(context={},locale='ko'){
  else if(t.expression>=65&&normalized('social')>=55)add('expression','trait',70);
  else if(t.curiosity>=65&&normalized('creativity')>=55)add('curiosity','trait',70);
  else if(normalized('diligence')>=70)add('diligence','trait',70);
- else add('newroutine','trait',55);
  if(h.stress>=65||normalized('stamina')<35)add('recovery','trait',65);
  const skills=['research','learning','language','social','autonomy','teaching','industry','enterprise','outreach','intuition'].map(key=>({key,score:normalized(key)})).filter(skill=>skill.score>=60).sort((a,b)=>b.score-a.score).slice(0,2);
  for(const skill of skills)add(skill.key,'skill',90+skill.score/100);

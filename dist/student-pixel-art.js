@@ -2,7 +2,7 @@ import {EXPRESSIONS,normalizeExpression} from './student-reaction.js';
 
 const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const mix=(a,b,t)=>'#'+a.slice(1).match(/../g).map((v,i)=>Math.round(parseInt(v,16)*(1-t)+parseInt(b.slice(1+i*2,3+i*2),16)*t).toString(16).padStart(2,'0')).join('');
-export const STUDENT_HEAD_SCALE=.5;
+export const STUDENT_HEAD_SCALE=.58;
 
 // Integer raster art: the public 320 × 496 frame is shared by every activity.
 // Cosmetics are read from saved appearance fields and never consume game RNG.
@@ -135,7 +135,7 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
   else row(38,x,x+5,hairD);
  }
  // Tiny blush clusters, light cheek accents and distinct mouths.
- row(53,21,27,'#e79a9f');row(54,22,27,'#edb0ac');row(53,52,58,'#e79a9f');row(54,52,57,'#edb0ac');put(22,52,'#ffe0d5');put(56,52,'#ffe0d5');put(40,54,skinD);
+ row(53,21,27,'#e79a9f');row(54,22,27,'#edb0ac');row(53,52,58,'#e79a9f');row(54,52,57,'#edb0ac');put(22,52,'#ffe0d5');put(56,52,'#ffe0d5');put(40,54,skinD);put(24,55,'#d68d92');put(54,55,'#d68d92');
  const mouth='#a85d69';
  if(['surprised','delighted'].includes(expression)){row(57,37,42,mouth);box(36,58,43,60,mouth);row(61,38,41,mouth);row(60,38,41,'#df9598');}
  else if(['sad','worried','tired'].includes(expression)){row(58,37,42,mouth);put(36,59,mouth);put(43,59,mouth);if(expression==='sad'){box(28,50,29,55,'#a1c7e0');put(28,51,'#e7f6f5');}if(expression==='worried'){box(63,39,64,42,'#a1c7e0');put(63,39,'#e7f6f5');}}
@@ -222,7 +222,7 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  const title=escape(`${label} · ${EXPRESSIONS[expression]} · ${styles[l]}${a.curly&&l?' · 곱슬머리':''}${a.glasses?' · 안경':''}${l?` · 앞머리 ${fringe+1}`:''}${pose==='lecturing'?' · 칠판 앞에서 강의':''}${facing==='monitor'?' · 모니터를 바라보며 앉음':''}`);
  // The raised TA arm shares the new torso coordinates; the pointer is shortened
  // independently so stretching the torso cannot pull its tip outside the frame.
- const armPoints=[[13,36],[16,36],[16,41],[12,41],[12,38],[10,38],[10,35],[8,35],[8,30],[11,30],[11,33],[13,33]].map(([x,y])=>[x*2,Math.round(bodyY(y*2))]);
+ const armPoints=[[13,36],[16,36],[16,41],[12,41],[12,38],[10,38],[10,35],[8,35],[8,30],[11,30],[11,33],[13,33]].map(([x,y])=>[x*2,Math.round(bodyY(y*2))-1]);
  const palmTop=Math.round(bodyY(58)),palmBottom=Math.round(bodyY(64)),grip=Math.round(bodyY(60));
  const arm=pose==='lecturing'?`<g transform="translate(0 24) scale(4)" shape-rendering="crispEdges"><g class="ta-lecture-arm"><path d="M${armPoints.map(([x,y])=>`${x} ${y}`).join('L')}z" fill="${top}" stroke="${topD}" stroke-width="1.2"/><path d="M18 ${grip}V${grip-6}H16V7" fill="none" stroke="#756353" stroke-width="2" class="ta-pointer"/><path d="M16 7v2" stroke="#e9e5d8" stroke-width="2"/><path d="M16 ${palmTop}h6v${palmBottom-palmTop}h-6z" fill="${skin}" stroke="${skinD}" stroke-width="1"/></g></g>`:'';
  return `<svg class="portrait" data-expression="${expression}" data-pose="${pose}" data-outfit="${outfit}"${facing==='monitor'?' data-facing="monitor"':''} data-head-scale="${STUDENT_HEAD_SCALE}" data-body-proportion="3.5" viewBox="0 0 320 496" role="img" aria-label="${title}"><title>${title}</title><g class="hair-fringe chibi-grid ${expression==='sad'?'expression-tear':''}" shape-rendering="crispEdges" transform="translate(0 24) scale(2)">${rects}</g>${arm}</svg>`;

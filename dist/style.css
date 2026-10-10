@@ -219,7 +219,7 @@ body.month-playing .lab-main{position:relative}body.month-playing .lab-main:afte
 .live-lab{overflow:visible;isolation:isolate}.live-lab:before{content:'';position:absolute;left:-2px;right:-2px;bottom:100%;height:64px;background:#fff;pointer-events:none;z-index:-1}.live-lab .pixel-room{overflow:hidden}.lab-scene-heading{border-radius:3px 3px 0 0}.live-scene-status{background:#f6f3eb}.portal-login{border:1px solid #c9d5df;border-top:4px solid #34566f;background:#fff;padding:30px;box-shadow:0 8px 30px #263f4d0b}.portal-login-code{font-size:11px!important;color:#4a728b!important;letter-spacing:.1em}.portal-login h2{margin:12px 0;font-size:25px}.portal-login>p{font-size:13px;color:#6d7780}.portal-account{display:flex;justify-content:space-between;padding:15px;margin:25px 0;background:#f1f5f7;font-size:13px}.portal-login .primary{display:flex;margin-top:0}.portal-login small{display:block;font-size:11px;color:#697985;line-height:1.7;margin-top:16px}.portal-fiction{line-height:1.8}
 @media(max-width:600px){.portal-login{padding:20px}.portal-hero{gap:24px;padding:20px 0}.brand-name small{letter-spacing:0;font-size:10px}}
 
-.home-page-title{display:none}.portal-hero .primary{font-size:16px;min-height:56px;padding:15px 24px;gap:20px}.portal-login .primary{font-size:15px}
+.home-page-title{display:none}.portal-hero .primary{font-size:16px;min-height:56px;padding:15px 24px;gap:20px}.portal-login .primary{font-size:15px;padding:0 24px}
 
 /* On the home page the brand introduces the game beside the start panel. */
 body[data-view=home] .header-content{justify-content:flex-end;min-height:64px}

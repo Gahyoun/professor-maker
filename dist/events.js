@@ -49,8 +49,8 @@ export const EVENTS = [
       option('학생의 다른 설명을 듣고 작은 검증을 설계하게 한다','Hear their alternative and plan a small validation',{hidden:{creativity:2,autonomy:3,research:1,confidence:1},professor:{research:1}}),
     ],{minMonth:12,requires:'research',cooldown:12}),
   event('counsel-master-career','석사 이후의 선택','After the master’s',
-    '“계속 연구하고 싶은 마음도 있고, 현장에서 배운 걸 써 보고 싶은 마음도 있어요.” 학생은 박사 진학 안내와 채용 공고를 함께 가져왔다.',
-    'The student brings PhD information and job listings, interested in both further research and applying what they learned.', 'counseling',[
+    '“계속 연구하고 싶은 마음도 있고, 현장에서 배운 걸 써 보고 싶은 마음도 있어요.” 학생은 박사 진학 안내와 관심 있는 기업의 직무를 함께 적어 왔다.',
+    'The student brings PhD information and industry job descriptions, interested in both further research and applying what they learned.', 'counseling',[
       option('각 길에서 하고 싶은 일과 생활을 먼저 묻는다','Ask about desired work and daily life in each route',{hidden:{rapport:3,autonomy:2,stress:-2},professor:{mentoring:1}}),
       option('관심 있는 선배·연구자와 이야기할 기회를 연결한다','Connect them with people on the routes they are considering',{hidden:{social:2,industry:1,autonomy:2,confidence:1},professor:{mentoring:1}}),
     ],{minMonth:30,maxMonth:47,requires:'early_graduate',cooldown:12}),

@@ -491,8 +491,8 @@ export function careerScores(s) {
     institute:h.research>=70&&h.learning>=65&&h.autonomy>=60&&(c.papers>=4||c.papers>=2&&c.topPapers>=1)?h.research*.45+h.learning*.2+h.autonomy*.2+Math.min(c.papers,5)*3:-1,
     corporate:h.industry>=55&&h.research>=50?h.industry*.65+h.research*.35:-1,
     unrelated:h.industry>=20&&h.social>=45&&h.autonomy>=45?h.industry*.35+h.social*.35+h.autonomy*.3:-1,
-    startup:h.enterprise>=65&&h.autonomy>=60?h.enterprise*.7+h.autonomy*.3:-1,
-    youtuber:Math.max(h.language>=90&&h.social>=90?80:-1,h.outreach>=65&&h.language>=45?h.outreach*.75+h.language*.15+h.social*.1:-1),
+    startup:h.enterprise>=55&&h.autonomy>=55?h.enterprise*.7+h.autonomy*.3:-1,
+    youtuber:Math.max(h.language>=90&&h.social>=90?100:-1,h.outreach>=60&&h.language>=45?h.outreach*.75+h.language*.15+h.social*.1:-1),
   };
 }
 export function careerEnding(s) { if(s.ending==='masters'||s.pending?.kind==='masters')return 'masters';if(isTrueEnding(s))return 'true';if(recommendationCandidate(s)&&abilityScore(s,'rapport')>=40)return 'postdoc';if(canDefend(s)&&abilityScore(s,'rapport')>=85&&s.temperament.caution>=65&&s.professor.mentoring>=40)return 'resident_researcher';const priority=['youtuber','startup','corporate','institute','unrelated'];const ranked=Object.entries(careerScores(s)).sort((a,b)=>b[1]-a[1]||priority.indexOf(a[0])-priority.indexOf(b[0]));return ranked[0][1]>=0?ranked[0][0]:'unemployed'; }
