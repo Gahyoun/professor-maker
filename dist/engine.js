@@ -293,8 +293,8 @@ function weekly(s,id,index) {
     if(id==='analysis')practiceShift({research:1.2,learning:.5,intuition:.7});
     if(id==='paper')practiceShift({research:.6,language:1.1,autonomy:.7});
     if(id==='language')shift(s,'hidden',{language:3,social:.5});
-    if(id==='presentation')shift(s,'hidden',{language:1,social:1.5,confidence:1});
-    if(id==='industry')practiceShift({enterprise:Math.min(3,Math.max(.15,(h.creativity-60)/8)),industry:4.5*(.75+h.social/200),research:.6,autonomy:1,social:1,manners:.4});
+    if(id==='presentation')shift(s,'hidden',{language:1,social:1.5,confidence:1,outreach:1.2});
+    if(id==='industry')practiceShift({enterprise:Math.min(3.5,Math.max(.6,(h.creativity-45)/10+.6)),industry:4.5*(.75+h.social/200),research:.6,autonomy:1,social:1,manners:.4});
     if(id==='startup')shift(s,'hidden',{enterprise:4.5*(.75+h.social/200),industry:.7,autonomy:1.3,social:1,creativity:.5});
     if(id==='video')shift(s,'hidden',{outreach:4.5,language:1,social:1.3});
     if(id==='teach')shift(s,'hidden',{teaching:4,learning:.5,social:1.4,autonomy:.9,manners:.5});
@@ -491,11 +491,11 @@ export function careerScores(s) {
     institute:h.research>=70&&h.learning>=65&&h.autonomy>=60&&(c.papers>=4||c.papers>=2&&c.topPapers>=1)?h.research*.45+h.learning*.2+h.autonomy*.2+Math.min(c.papers,5)*3:-1,
     corporate:h.industry>=55&&h.research>=50?h.industry*.65+h.research*.35:-1,
     unrelated:h.industry>=20&&h.social>=45&&h.autonomy>=45?h.industry*.35+h.social*.35+h.autonomy*.3:-1,
-    startup:h.enterprise>=55&&h.autonomy>=55?h.enterprise*.7+h.autonomy*.3:-1,
-    youtuber:Math.max(h.language>=90&&h.social>=90?100:-1,h.outreach>=60&&h.language>=45?h.outreach*.75+h.language*.15+h.social*.1:-1),
+    startup:h.enterprise>=25&&h.autonomy>=45?h.enterprise*.7+h.autonomy*.3+18:-1,
+    youtuber:Math.max(h.language>=90&&h.social>=90?100:-1,h.outreach>=20&&h.language>=50?h.outreach*.75+h.language*.15+h.social*.1+20:-1),
   };
 }
-export function careerEnding(s) { if(s.ending==='masters'||s.pending?.kind==='masters')return 'masters';if(isTrueEnding(s))return 'true';if(recommendationCandidate(s)&&abilityScore(s,'rapport')>=40)return 'postdoc';if(canDefend(s)&&abilityScore(s,'rapport')>=85&&s.temperament.caution>=65&&s.professor.mentoring>=40)return 'resident_researcher';const priority=['youtuber','startup','corporate','institute','unrelated'];const ranked=Object.entries(careerScores(s)).sort((a,b)=>b[1]-a[1]||priority.indexOf(a[0])-priority.indexOf(b[0]));return ranked[0][1]>=0?ranked[0][0]:'unemployed'; }
+export function careerEnding(s) { if(s.ending==='masters'||s.pending?.kind==='masters')return 'masters';if(isTrueEnding(s))return 'true';if(recommendationCandidate(s)&&abilityScore(s,'rapport')>=40)return 'postdoc';if(canDefend(s)&&abilityScore(s,'rapport')>=65&&s.temperament.caution>=55&&s.professor.mentoring>=35)return 'resident_researcher';const priority=['youtuber','startup','corporate','institute','unrelated'];const ranked=Object.entries(careerScores(s)).sort((a,b)=>b[1]-a[1]||priority.indexOf(a[0])-priority.indexOf(b[0]));return ranked[0][1]>=0?ranked[0][0]:'unemployed'; }
 function applyEvent(s,o,event) {
   const collaborationFactor=event.id==='collaboration'?.75+abilityScore(s,'social')/200:1;
   for(const group of ['hidden','professor','lab'])if(o.effects?.[group])shift(s,group,o.effects[group]);

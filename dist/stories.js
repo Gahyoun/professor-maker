@@ -174,6 +174,16 @@ function assembleLetterPages(pages, id, distance, history, context, locale, reas
   const letterIndex = pages.findIndex(text => text.includes(signature));
   if (letterIndex < 0) return pages;
 
+  if (id === 'postdoc') {
+    if (distance === 'distant') return pages;
+    const insertions = endingLetterInsertions(id, distance, history, context, locale).map(n => n.text);
+    const closingText = letterClosing(id, distance, context, locale);
+    const requestPara = locale === 'en' ? 'I hope to bring good news next time.' : '다음에는 꼭 좋은 소식을 들고 찾아뵙겠습니다.';
+    const sigText = locale === 'en' ? '— {name}' : '― {name} 올림';
+    pages[letterIndex] = [...insertions, requestPara, closingText, sigText].filter(Boolean).join('\n\n');
+    return pages;
+  }
+
   const text = pages[letterIndex];
   const parts = text.split('\n\n');
   if (parts.length < 3) return pages;
@@ -238,9 +248,15 @@ const eventMemories={
  'counsel-independent':['제 질문으로 시작한 작은 검증을 믿고 맡겨 주셨던 일을 기억합니다.','반례와 필요한 자원을 놓고 독립 연구의 범위를 의논했던 시간을 기억합니다.'],
  'counsel-phd-career':['어떤 진로든 제가 원하는 생활을 먼저 생각해 보라고 하셨던 면담을 기억합니다.','관심 있는 일을 하는 분께 이야기를 들으며 다음 경험을 준비했던 일이 떠오릅니다.'],
  'counsel-feedback':['잘한 점과 보완할 점을 따로 짚어 주셨던 메모가 아직 남아 있습니다.','다음 면담의 확인 기준을 함께 정한 뒤 스스로 계획을 돌아보기 쉬워졌습니다.'],
+ 'counsel-late-night':['늦은 밤 연구실 불을 꺼 주시며, 연구보다 제 몸이 먼저라고 말씀해 주셨던 퇴근길을 기억합니다.','불안해서 밤을 새우려던 제게 적절한 마침표를 찍어 주셨던 면담이 아직 남아 있습니다.'],
+ 'counsel-rejection-tea':['첫 리젝을 받고 막막했을 때, 교수님의 옛 거절 편지를 보여주시며 차를 건네주셨던 기억이 납니다.','혹독한 심사평 속에서도 배울 점을 골라내어 다시 일어설 수 있게 이끌어 주신 시간을 기억합니다.'],
+ 'counsel-imposter-stride':['남들의 빠른 진도에 주눅 들었을 때, 제 연구만의 보폭과 강점을 짚어 주셨던 격려를 기억합니다.','조급함을 내려놓고 깊이 있는 질문으로 나아가도록 마일스톤을 함께 나눠 주셨던 기억이 납니다.'],
+ 'counsel-first-mistake':['큰 실수를 저지르고 겁먹었을 때, 솔직함을 인정해 주시고 함께 원인을 짚어 주셨던 날을 기억합니다.','실패를 질책하기보다 다시는 같은 실수가 없도록 체크리스트를 만들게 이끌어 주신 기억이 남습니다.'],
+ 'counsel-junior-mentoring':['후배를 어떻게 이끌어야 할지 막막했을 때, 기다려 주는 지도의 가치를 알려 주셨던 면담을 기억합니다.','후배 지도를 단순한 잡무가 아닌 성장의 기회로 인정해 주셨던 배려가 지금도 마음에 남아 있습니다.'],
+ 'counsel-exam-buffer':['시험 기간에 연구 진도를 재촉하지 않고 공부 시간을 온전히 지켜 주셨던 배려를 기억합니다.','어려웠던 전공 과목의 기초를 연구실에서 함께 짚어 주셨던 기억이 아직도 큰 힘이 됩니다.'],
  'equipment': ['장비가 멈춘 날, 제 실수인지부터 물었던 것을 기억합니다. 함께 점검 기록을 확인했던 방법을 지금도 쓰고 있습니다.','공동기기실에서 다시 배운 기록과 예약 습관이 새 자리에서도 도움이 됩니다.'],
  'authorship':['기여 내역을 함께 적었던 일이 기억납니다. 지금도 새로운 협업을 시작하면 역할부터 의논합니다.','원고를 잠시 멈추고 모두의 의견을 들었던 경험이 남았습니다. 저도 합의할 시간을 먼저 잡으려고 합니다.'],
- 'caregiving':['개인적인 설명을 길게 하지 않아도 일정을 의논할 수 있었던 날을 기억합니다. 자세한 이야기는 이 메일에도 남기지 않겠습니다.','제가 가능한 시간을 먼저 정해 보았던 경험 덕분에, 이제도 필요한 지원을 구체적으로 요청하려고 합니다.'],
+ 'caregiving':['개인적인 설명을 길게 하지 않아도 일정을 의논할 수 있었던 날을 기억합니다. 자세한 이야기는 이 메일에도 남기지 않겠습니다.','제가 가능한 시간을 먼저 정해 보았던 경험 덕분에, 지금도 필요한 지원을 구체적으로 요청하려고 합니다.'],
  'best-paper':['공동연구자들과 함께 축하했던 날의 사진이 아직 남아 있습니다.','수상 발표를 준비하며 제 연구를 제 말로 설명했던 기억이 납니다.'],
  'best-presentation':['질의응답을 잘했다고 짚어 주신 부분을 기억합니다. 다음 발표에서도 그때의 메모를 꺼내 보았습니다.','발표 워크숍을 맡았을 때는 긴장했지만, 누군가의 질문을 듣는 법도 배웠습니다.'],
  'data-loss':['폴더가 열리지 않던 날 이후로 백업을 확인하는 습관이 생겼습니다.','분석 과정을 다시 만들었던 기록을 보며, 재현할 수 있다는 말의 의미를 생각합니다.'],
@@ -261,6 +277,12 @@ const englishMemories={
  'counsel-independent':['You entrusted me with a small test that began with my own question.','We discussed counterexamples and resources before setting the scope of my independent work.'],
  'counsel-phd-career':['You asked me to consider the life I wanted alongside the career.','Talking to people doing the work helped me prepare my next experience.'],
  'counsel-feedback':['I still have the notes separating what worked from what needed revision.','Agreeing on what to check at the next meeting helped me review my own plan.'],
+ 'counsel-late-night':['I remember the walk home when you turned off the lab lights and told me that my health mattered more than research.','I still remember the meeting that gave me a proper stopping point when anxiety kept me up late.'],
+ 'counsel-rejection-tea':['I remember when I received my first rejection and felt lost; you handed me tea and showed your own old rejection letters.','I remember the time you helped me extract lessons from harsh reviews so I could stand back up.'],
+ 'counsel-imposter-stride':['I remember your encouragement highlighting my own strengths and stride when I felt intimidated by others’ pace.','I remember how we divided milestones together so I could let go of haste and pursue deeper questions.'],
+ 'counsel-first-mistake':['I remember the day I made a big mistake and was terrified; you appreciated my honesty and helped me trace the cause.','I remember how you guided me to build a prevention checklist rather than reprimanding me for failure.'],
+ 'counsel-junior-mentoring':['I remember our meeting when I felt lost advising junior students, and you taught me the value of waiting patiently.','Your consideration in treating mentoring as an opportunity for growth rather than a chore still stays with me.'],
+ 'counsel-exam-buffer':['I remember your consideration in protecting my study time during exams without pressing for research progress.','Reviewing the fundamentals of difficult coursework together in the lab still gives me great strength.'],
  equipment:['When the equipment stopped, we checked the maintenance record together. I still use that approach.','What I learned in the shared facility still helps me keep records and arrange access.'],
  authorship:['We wrote down everyone’s contributions. I still discuss roles before a new collaboration.','Pausing the manuscript to hear everyone’s views taught me to allow time for agreement.'],
  caregiving:['I could discuss a schedule without explaining every personal detail. I will keep those details out of this email too.','Setting out when I was available helped me request the support I needed.'],
@@ -308,8 +330,8 @@ export function endingLetterInsertions(id,relationship,history=[],context={},loc
  return chosen.slice(0,budget).map(clean);
 }
 export function endingMemoryNotes(history,relationship='reserved'){
- const notes=[];
- for(const note of memoryCandidates(history)){if(notes.length>=2)break;if(notes.reduce((n,text)=>n+(text.match(/기억합니다/g)||[]).length,0)+(note.text.match(/기억합니다/g)||[]).length<=1)notes.push(note.text);}
+ const budget=relationship==='close'?2:relationship==='reserved'?1:0,notes=[];
+ for(const note of memoryCandidates(history)){if(notes.length>=budget)break;if(notes.reduce((n,text)=>n+(text.match(/기억합니다/g)||[]).length,0)+(note.text.match(/기억합니다/g)||[]).length<=1)notes.push(note.text);}
  return notes;
 }
 // Return fresh strings: gallery replays and locale switches cannot alter source stories.
@@ -337,9 +359,12 @@ export function getEndingPages(id, lang = 'ko', relationship, name, reason, hist
   if(id==='unemployed'&&distance==='distant'){
     const request=p('제가 해 온 연구와 앞으로 해 보고 싶은 일을 함께 정리해 볼 수 있을까요? 교수님 일정이 괜찮다면 면담을 부탁드리고 싶습니다.','Could we review the research I have done and the work I would like to try? If your schedule allows, I would appreciate a meeting.')[locale];
     const agenda=p('면담에서는 지원에 필요한 연구 기록과 서류를 중심으로 의논하고 싶습니다. 연락 범위도 제가 정리해서 말씀드리겠습니다.','For our meeting, I would like to focus on the research record and documents needed for applications. I will also explain the contact boundaries that work for me.')[locale];
-    pages[1]=pages[1].replace(request,agenda+'\n\n'+request);
+    pages[1]=pages[1].replace(request,request+'\n\n'+agenda);
   }
-  if(id==='youtuber')pages[7]=pages[7].replace(locale==='en'?'— {name}':'― {name}',p('교수님 출연분만은 대본에 검토란을 세 칸 만들어 두었습니다.\n― {name}','For your scenes, the script has three separate review boxes.\n— {name}')[locale]);
+  if(id==='youtuber'){
+    pages[7]=pages[7].replace(locale==='en'?'— {name}':'― {name}',p('교수님 출연분만은 대본에 검토란을 세 칸 만들어 두었습니다.\n― {name}','For your scenes, the script has three separate review boxes.\n— {name}')[locale]);
+    pages[8]=pages[8].replace(locale==='ko'?'올해 연구비 잔액을 확인했다.':'checked this year’s grant balance.',locale==='ko'?'올해 대학원 지원자 수를 확인했다.':'checked this year’s graduate applications.');
+  }
   if(id==='unrelated'&&distance==='distant'&&context?.statistics){pages=OUTSIDE_SCENES.map(p=>p[locale]);if(locale==='ko'&&context.recommendation==='alternate')pages[3]+='\n\n마감 사흘 전 추천서 부탁도 망설였다. 다른 추천인에게 연락했지만, 지도교수 추천서가 비어 있던 임용 서류는 통과하지 못했다.';return pages.map(p=>formatStudentName(adaptResearchText(p,context,locale),name,locale));}
   if(id==='unrelated'&&distance==='close'){
     pages[pages.length-1]=p('나는 다음 안부를 재촉하지 않고 답장을 썼다. “새로운 일을 배우고 있군요. 다음에 만나면 회사 밖의 이야기도 들려주세요.”\n\n연구를 직업으로 이어 가지 않아도, 함께 배운 시간을 이야기할 수 있었다.','I replied without pressing for another update. We could talk about what we had learned together, even though research was no longer their job.')[locale];
@@ -347,7 +372,7 @@ export function getEndingPages(id, lang = 'ko', relationship, name, reason, hist
 
   if (id === 'corporate' && distance === 'close') {
     pages[0] = pages[0].replace(locale === 'ko' ? '두 사람이 다시 만난 것은 어느 학회에서였다.' : 'We met again at a conference.', locale === 'ko' ? '두 사람이 다시 만난 학회, 커피가 식는 동안에도 이야기는 끝나지 않았다.' : 'When we met again at a conference, the conversation continued long after the coffee cooled.');
-    pages[4] = p('학회에서 뵙게 되면 커피를 사겠습니다. 그때는 교수님 이야기도 오래 듣고 싶습니다.\n\n추신. 교수님 논문 인용은 계속하겠습니다. 다음에는 그 논문에서 시작한 제 실험도 보여 드릴게요.\n― {name} 올림\n\n나는 마지막 문장을 한 번 더 읽었다. 이제는 검토를 받기 위해서만 연락하는 사이가 아니었다.\n\n함께 했던 연구가 다른 자리에서도 이어진다는 사실을 오래 생각했다.', 'If we meet at a conference, I will buy the coffee. This time I would like to hear more about you too.\n\nP.S. I will keep citing your papers. Next time, I will show you the experiment I began from one of them.\n— {name}\n\nI reread the last sentence. We no longer kept in touch only for my review.\n\nI thought about how our shared research continued elsewhere.')[locale];
+    pages[4] = p('학회에서 뵙게 되면 커피를 사겠습니다. 그때는 교수님 이야기도 오래 듣고 싶습니다.\n\n추신. 교수님 논문 인용은 계속하겠습니다. 다음에는 그 논문에서 시작한 제 실험도 보여 드릴게요.\n― {name} 올림\n\n나는 마지막 문장을 한 번 더 읽었다. 이제는 검토를 받기 위해서만 연락하는 사이가 아니었다.\n\n함께한 연구가 다른 자리에서도 이어진다는 사실을 오래 생각했다.', 'If we meet at a conference, I will buy the coffee. This time I would like to hear more about you too.\n\nP.S. I will keep citing your papers. Next time, I will show you the experiment I began from one of them.\n— {name}\n\nI reread the last sentence. We no longer kept in touch only for my review.\n\nI thought about how our shared research continued elsewhere.')[locale];
     pages[5] = pages[5].replace(locale === 'ko' ? '커피는 정말로 한 잔뿐이었다.' : 'there really was only one cup of coffee.', locale === 'ko' ? '첫 잔이 비었는데도 두 사람은 자리에서 일어나지 않았다.' : 'we stayed seated after the first cup was empty.');
     pages[5] = pages[5].replace(locale === 'ko' ? '그것이 이 사제에게는 딱 알맞은 거리였다.' : 'For the two of us, that was just the right distance.', locale === 'ko' ? '거리는 처음보다 조금 가까워져 있었다.' : 'The distance between us had grown a little smaller.');
   } else if (id === 'corporate' && distance === 'distant') {
@@ -358,6 +383,7 @@ export function getEndingPages(id, lang = 'ko', relationship, name, reason, hist
     // Preserve the recommendation, old machine, acknowledgements and promised good news.
     pages[3] = pages[3].replace(locale === 'ko' ? '건강하세요.' : 'Please take care.', relationshipNotes[distance][locale] + '\n\n' + (locale === 'ko' ? '건강하세요.' : 'Please take care.'));
     pages[pages.length-1] = distance === 'reserved' ? p('그날 저녁, 두 사람은 학회장 근처 카페에서 커피를 마셨다. 한 잔을 마시는 동안 오래된 기계와 {name} 교수의 대학원생 이야기가 이어졌다.\n\n다음 만남을 서두르지는 않았다. 돌아가기 전, 나는 처음으로 학생의 진도가 아닌 동료의 의견을 물었다.\n\n“{name} 교수는 어떻게 생각해요?”', 'That evening, we had one coffee at a café near the venue. We talked about the old machine and Professor {name}’s graduate students.\n\nWe did not rush to arrange another meeting. Before leaving, I asked for a colleague’s view rather than a student’s progress.\n\n“What do you think?”')[locale] : p('카페에 같이 가자는 말은 꺼내지 않았다. {name} 교수는 다음 세션으로 향했고, 나는 그 뒷모습을 잠깐 바라보았다.\n\n좋은 소식은 약속대로 직접 가져왔다. 그 뒤의 거리는 각자가 정할 일이었다.\n\n며칠 뒤 받은 메일에는 새로운 연구 질문이 적혀 있었다. 이번에는 동료에게 답장을 썼다.', 'I did not suggest going to a café together. Professor {name} headed to the next session, and I watched for a moment.\n\nThe good news had been brought in person as promised. The distance afterward was for each of us to choose.\n\nA few days later, an email arrived with a new research question. This time, I wrote to a colleague.')[locale];
+  }
   if(id==='corporate')pages[4]=p('메일은 이렇게 이어졌다.','The email continued.')[locale]+'\n\n'+pages[4];
   if(id==='startup'&&context?.labMode==='dry')pages=pages.map(text=>text.replace(locale==='ko'?'다음 실험은 무엇입니까?':'What is your next experiment?',locale==='ko'?'다음 연구는 무엇입니까?':'What is your next study?'));
   const slotReason=id==='gameover'&&suppliedReason==='qual_failure'&&history.filter(h=>h.kind==='qual'&&!h.passed).length<2?'qual_withdrawal':suppliedReason;

@@ -170,7 +170,7 @@ dialog::backdrop{background:rgb(14 32 46 / .65)}
 @media(max-height:600px) and (max-width:899px){
  .month-cue{top:42px;padding:5px 10px}
  .month-cue strong{font-size:15px}
- .month-cue>span{font-size:9px}
+ .month-cue>span{font-size:10px}
  .live-lab .week-outcome{padding:5px 8px}
 }
 @media(prefers-reduced-motion:reduce){
