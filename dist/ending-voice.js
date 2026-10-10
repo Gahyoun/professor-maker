@@ -1,6 +1,6 @@
 // Original modular email passages, drawn from a completed run, with no extra RNG.
 import {researchSetting,englishResearchSetting} from './ending-context.js';
-import {withParticle} from './korean.js';
+import {withParticle,replaceNounWithParticle} from './korean.js';
 import {HIDDEN_RANGES} from './engine.js';
 const line=(locale,ko,en)=>locale==='en'?en:ko;
 export function endingVoice(context,locale='ko'){
@@ -28,7 +28,7 @@ export function endingVoice(context,locale='ko'){
  if(context.fieldId||context.field)notes.push(line(locale,`${withParticle(field,'을/를')} 공부하며 ${withParticle(detail,'을/를')} 기억합니다. 바로 쓸 수 있는 답보다, 근거를 확인하는 방식을 배운 것이 오래 남습니다.`,`I remember studying ${englishResearchSetting(context).sector} and checking assumptions, evidence and methods. Learning how to justify an answer has stayed with me.`));
  return notes;
 }
-export function dryEndingText(text){return String(text).replaceAll('냉동고 맨 아래 칸 샘플','서버의 마지막 프로젝트 폴더').replaceAll('냉동고 맨 아래 칸을 열어','서버의 마지막 프로젝트 폴더를 열어').replaceAll('냉동고 샘플','보관 데이터').replaceAll('라벨이 붙은 튜브들','정리된 데이터 파일들').replaceAll('샘플은 라벨을 다 붙여 두었습니다','파일에는 설명과 실행 조건을 정리해 두었습니다').replaceAll('라벨을 다 붙여 두었습니다','설명과 실행 조건을 정리해 두었습니다').replaceAll('냉동고','자료 보관함').replaceAll('오래된 기계','오래된 워크스테이션').replaceAll('기계로 실험','컴퓨터로 계산').replaceAll('실험 노트','연구 노트').replaceAll('실험','연구');}
+export function dryEndingText(text){return replaceNounWithParticle(String(text),'오래된 기계','오래된 워크스테이션').replaceAll('냉동고 맨 아래 칸 샘플','서버의 마지막 프로젝트 폴더').replaceAll('냉동고 맨 아래 칸을 열어','서버의 마지막 프로젝트 폴더를 열어').replaceAll('냉동고 샘플','보관 데이터').replaceAll('라벨이 붙은 튜브들','정리된 데이터 파일들').replaceAll('샘플은 라벨을 다 붙여 두었습니다','파일에는 설명과 실행 조건을 정리해 두었습니다').replaceAll('라벨을 다 붙여 두었습니다','설명과 실행 조건을 정리해 두었습니다').replaceAll('냉동고','자료 보관함').replaceAll('기계로 실험','컴퓨터로 계산').replaceAll('실험 노트','연구 노트').replaceAll('실험','연구');}
 
 // Career-specific closings. No generic sentimental postscript for the special comedy.
 export function letterClosing(id,distance,context,locale='ko'){

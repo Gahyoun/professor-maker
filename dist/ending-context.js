@@ -1,5 +1,6 @@
 import {DISCIPLINES} from './disciplines.js';
-import {withParticle} from './korean.js';
+import {withParticle,replaceNounWithParticle} from './korean.js';
+import {postdocCareer} from './postdoc-career.js';
 // Explicit game-domain mapping. These are plausible fictional workplaces,
 // not claims about any real employer or a prediction of graduate employment.
 const groups=[
@@ -136,14 +137,12 @@ export function adaptResearchText(text,context={},locale='ko'){
   .replaceAll('라벨이 붙은 튜브들',p.archive)
   .replaceAll('여기 장비로 그때 못 했던 실험을 해 보았습니다','이곳에서 '+withParticle(p.task,'을/를')+' 이어 보았습니다')
   .replaceAll('최고급 기계로 실험을 하다 보면','새로운 환경에서 '+withParticle(p.task,'을/를')+' 이어 가다 보면')
-  .replaceAll('오래된 기계','오래된 '+p.equipment)
-  .replaceAll('그 기계요','그 '+withParticle(p.equipment,'이요/요'))
-  .replaceAll('기사님을 부르는 기계','기사님을 부르는 '+p.equipment)
   .replaceAll('실험 노트',p.record);
+ for(const source of ['오래된 기계','그 기계','기사님을 부르는 기계'])result=replaceNounWithParticle(result,source,source.replace(/기계$/,p.equipment));
  if(p.storage!=='냉동고 맨 아래 칸')result=result.replaceAll('냉동고',p.dry?'자료 보관함':'연구 자료 보관함');
  if(p.dry)result=result.replaceAll('실험복','평상복').replaceAll('실험','연구').replaceAll('배양 일정','분석 일정');
  return result;
 }
 export function fieldWorkplace(context,kind,locale='ko'){if(locale==='en'){const p=englishResearchSetting(context);return `Their training continued in ${p.sector}. In ${kind==='corporate'?'an industrial R&D':'a public research'} team, they worked with colleagues on ${p.task} and documented the results.`;}const p=researchSetting(context);return `${p.field}에서 배운 방법은 ${p.sector} 분야의 새로운 일정 속에서도 이어졌다. ${kind==='corporate'?p.company:p.institute}에서 동료들과 ${withParticle(p.task,'을/를')} 검토하고 결과를 기록했다.`;}
 
-export function careerDescription(ending,context,locale,original){if(!context?.fieldId&&!context?.field)return original;const p=locale==='en'?englishResearchSetting(context):researchSetting(context);return ending==='corporate'?(locale==='en'?`Industrial R&D · ${p.sector}`:`기업 연구·개발 · ${p.sector} 분야`):ending==='institute'?(locale==='en'?`Public research institution · ${p.sector}`:`정부출연연구기관 연구원 · ${p.sector} 분야`):original;}
+export function careerDescription(ending,context,locale,original){if(ending==='postdoc'&&context?.statistics)return postdocCareer(context).career[locale==='en'?'en':'ko'];if(!context?.fieldId&&!context?.field)return original;const p=locale==='en'?englishResearchSetting(context):researchSetting(context);return ending==='corporate'?(locale==='en'?`Industrial R&D · ${p.sector}`:`기업 연구·개발 · ${p.sector} 분야`):ending==='institute'?(locale==='en'?`Public research institution · ${p.sector}`:`정부출연연구기관 연구원 · ${p.sector} 분야`):original;}

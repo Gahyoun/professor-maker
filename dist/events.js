@@ -1,5 +1,5 @@
 import {DILEMMAS} from "./monthly-choices.js";
-import {withParticle} from './korean.js';
+import {withParticle,replaceNounWithParticle} from './korean.js';
 // Original fictional situations. Numeric effects are game balance, not empirical rates.
 const p = (ko, en) => ({ ko, en });
 const option = (ko, en, effects, progress = 0) => ({ label: p(ko, en), effects, ...(progress ? { progress } : {}) });
@@ -379,10 +379,6 @@ for(const [id,scene] of Object.entries(dryScenes)){
   if(scene.body)dryExact.set(e.body.ko,scene.body);
   for(const [index,label] of Object.entries(scene.labels??{}))dryExact.set(e.options[index].label.ko,label);
 }
-const particlePairs={은:'은/는',는:'은/는',이:'이/가',가:'이/가',을:'을/를',를:'을/를',과:'과/와',와:'과/와',으로:'으로/로',로:'으로/로'};
-function replaceNoun(text,source,target){
-  return text.replace(new RegExp(source+'(으로|로|은|는|이|가|을|를|과|와)?','g'),(_,suffix='')=>suffix?withParticle(target,particlePairs[suffix]):target);
-}
 // Display only: changing lab mode never changes event effects, state or RNG.
 export function adaptEventText(text,state,locale='ko'){
   let result=String(text??'');
@@ -413,6 +409,6 @@ export function adaptEventText(text,state,locale='ko'){
     ['측정','자료 검증'],
     ['실험','계산·검증'],
     ['시제품','분석 도구'],
-  ])result=replaceNoun(result,source,target);
+  ])result=replaceNounWithParticle(result,source,target);
   return result;
 }

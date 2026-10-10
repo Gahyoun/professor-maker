@@ -3,8 +3,8 @@ import {createState,simulateMonth,decide,validateSave,proposeSchedule,studentTra
 import {getEndingPages} from '../dist/stories.js';import {endingStatistics} from '../dist/statistics.js';import {endingCollection,MAIN_ENDINGS,retirementScenes} from '../dist/ending-collection.js';import {weeklyAppearance} from '../dist/appearance.js';import {weeklyScene} from '../dist/weekly-scene.js';
 test('faculty story retains chronological postdoc letter, call, first meeting, revised letter and colleague greeting',()=>{
  const pages=getEndingPages('true','ko','close','김민지',null,[],{fieldId:'090',labMode:'dry'}),text=pages.join('\n');
- assert.match(text,/소인이 두 번/);assert.match(text,/국제우편/);assert.match(text,/junior leader/);assert.match(text,/사흘 전이 아니라 이틀 전이었다/);
- assert.ok(pages.findIndex(p=>p.includes('junior leader'))<pages.findIndex(p=>p.includes('합격 소식은 지난봄')));assert.ok(pages.findIndex(p=>p.includes('합격 소식은 지난봄'))<pages.findIndex(p=>p.includes('화면에 떠올랐다')));
+ assert.match(text,/소인이 두 번/);assert.match(text,/국제우편/);assert.match(text,/Junior Research Group Leader/);assert.match(text,/사흘 전이 아니라 이틀 전이었다/);
+ assert.ok(pages.findIndex(p=>p.includes('Junior Research Group Leader'))<pages.findIndex(p=>p.includes('합격 소식은 지난봄')));assert.ok(pages.findIndex(p=>p.includes('합격 소식은 지난봄'))<pages.findIndex(p=>p.includes('화면에 떠올랐다')));
  assert.match(text,/임용 뒤 처음 마주 보고/);assert.match(text,/김민지 교수는 어떻게 생각해요/);assert.ok(!/실험|냉동고|자네는/.test(text));
  const end=pages.find(p=>p.includes('종소리'));assert.ok(end.indexOf('종소리')<end.indexOf('감사'));assert.ok(end.indexOf('감사')<end.indexOf('박수'));
  const postdoc=getEndingPages('postdoc','ko','reserved','김지훈').join('\n');assert.match(postdoc,/결과는 몇 달 전 메일로 들었다/);assert.match(postdoc,/추천서 한 장 때문은 아니었을 것이다/);

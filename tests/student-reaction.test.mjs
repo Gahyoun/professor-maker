@@ -10,7 +10,7 @@ test('weekly expression follows outcome, including partial failure and unsuccess
  s.hidden.stress=80;assert.equal(studentEmotion(s,{actual:'idle'},{idle:true}),'tired');s.pending={kind:'monthly-issue',id:'grant-selected'};assert.equal(studentEmotion(s,{actual:'idle'},{idle:true}),'surprised');s.pending={kind:'monthly-issue',id:'grant-rejected'};assert.equal(studentEmotion(s,{actual:'idle'},{idle:true}),'sad');s.pending={kind:'thesis'};assert.equal(studentEmotion(s,{actual:'idle'},{idle:true}),'worried');
 });
 test('nine accessible faces stay distinct and safely normalize unrecognized values',()=>{
- const a=studentAppearance(6,'female'),faces=new Set();for(const emotion of Object.keys(EXPRESSIONS)){const p=renderPortrait(a,'<student>',emotion);assert.match(p,new RegExp(`data-expression="${emotion}"`));assert.ok(p.includes(EXPRESSIONS[emotion]));assert.ok(!p.includes('<student>'));faces.add(p);}assert.equal(faces.size,9);
+ const a=studentAppearance(6,'female'),faces=new Set(),art=new Set();for(const emotion of Object.keys(EXPRESSIONS)){const p=renderPortrait(a,'<student>',emotion);assert.match(p,new RegExp(`data-expression="${emotion}"`));assert.ok(p.includes(EXPRESSIONS[emotion]));assert.ok(!p.includes('<student>'));faces.add(p);art.add(p.match(/<g class="hair-fringe[^>]*>([\s\S]*?)<\/g>/)[1]);}assert.equal(faces.size,9);assert.equal(art.size,9,'each emotion must change the drawing, not only its label');
  assert.equal(renderPortrait(a,'학생','" onload="alert(1)'),renderPortrait(a,'학생','neutral'));
 });
 test('stars are behind the head in both projections; rendering does not change gameplay state',()=>{

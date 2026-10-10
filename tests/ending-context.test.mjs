@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {formatStudentName,withParticle} from '../dist/korean.js';
+import {formatStudentName,withParticle,replaceNounWithParticle} from '../dist/korean.js';
 import {DISCIPLINES} from '../dist/disciplines.js';
-import {ENDING_FIELDS,researchSetting,fieldWorkplace,careerDescription} from '../dist/ending-context.js';
+import {ENDING_FIELDS,researchSetting,fieldWorkplace,careerDescription,adaptResearchText} from '../dist/ending-context.js';
 import {ENDINGS,getEndingPages} from '../dist/stories.js';
 import {createState} from '../dist/engine.js';
 import {endingStatistics} from '../dist/statistics.js';
@@ -16,6 +16,26 @@ test('Korean names choose particles, copulas and the rieul directional exception
  assert.equal(withParticle('하늘','으로/로'),'하늘로');assert.equal(withParticle('지훈','으로/로'),'지훈으로');
  assert.equal(withParticle('재활치료','을/를'),'재활치료를');assert.equal(withParticle('건축학','을/를'),'건축학을');
  assert.equal(formatStudentName('{name} is here.','$&','en'),'$& is here.');assert.equal(formatStudentName('{name}는',null),'{name}는');
+});
+
+test('field-specific equipment substitutions recompute all attached Korean particles',()=>{
+ const source='오래된 기계가 멈췄다. 오래된 기계를 고친다. 오래된 기계로 확인한다. 오래된 기계와 기록. 오래된 기계는 남았다. 그 기계요. 기사님을 부르는 기계가 있다.';
+ const dry=adaptResearchText(source,{fieldId:'090',labMode:'dry'});
+ assert.equal(dry,'오래된 워크스테이션이 멈췄다. 오래된 워크스테이션을 고친다. 오래된 워크스테이션으로 확인한다. 오래된 워크스테이션과 기록. 오래된 워크스테이션은 남았다. 그 워크스테이션이요. 기사님을 부르는 워크스테이션이 있다.');
+ for(const d of DISCIPLINES)for(const labMode of d.labModes){
+  const context={fieldId:d.id,labMode},equipment=researchSetting(context).equipment;
+  assert.equal(adaptResearchText('오래된 기계가 멈췄다.',context),withParticle('오래된 '+equipment,'이/가')+' 멈췄다.');
+  assert.equal(adaptResearchText('오래된 기계로 확인한다.',context),withParticle('오래된 '+equipment,'으로/로')+' 확인한다.');
+ }
+ assert.equal(replaceNounWithParticle('장치였다. 장치라고 기록했다.','장치','서버'),'서버였다. 서버라고 기록했다.');
+ assert.equal(replaceNounWithParticle('기계였다. 기계라고 기록했다.','기계','워크스테이션'),'워크스테이션이었다. 워크스테이션이라고 기록했다.');
+});
+
+test('name particles tolerate closing punctuation, decomposed Hangul, numbers and research acronyms',()=>{
+ assert.equal(withParticle('“김지훈”','은/는'),'“김지훈”은');
+ assert.equal(withParticle('김민지'.normalize('NFD'),'이/가'),'김민지'.normalize('NFD')+'가');
+ for(const [word,wanted]of [['1','1로'],['3','3으로'],['7','7로'],['AI','AI로'],['GPU','GPU로'],['R','R로']])assert.equal(withParticle(word,'으로/로'),wanted);
+ assert.equal(withParticle('PM','은/는'),'PM은');assert.equal(withParticle('RA','이/가'),'RA가');
 });
 
 test('every configured discipline has a workplace mapping and related industries stay distinct',()=>{

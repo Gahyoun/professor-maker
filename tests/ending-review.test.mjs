@@ -21,5 +21,5 @@ test('review uses field-aware Korean ending pages and the distant outside-career
 test('retirement review derives unlock from observed main endings and excludes video',()=>{
  const records=MAIN_ENDINGS.map(id=>reviewRecord(sample(id))),video=reviewRecord(sample('youtuber'));
  assert.equal(reviewCollection([video]).count,0);assert.equal(reviewCollection(records.slice(0,4)).unlocked,false);assert.equal(reviewCollection(records.slice(0,5)).unlocked,true);
- const complete=reviewCollection([...records,video]);assert.equal(complete.complete,true);assert.equal(complete.count,8);assert.match(complete.pages.at(-1),/모든 주요 후일담/);assert.match(complete.pages.join(''),/카메라/);
+ const complete=reviewCollection([...records,video]);assert.equal(complete.complete,true);assert.equal(complete.count,8);assert.match(complete.pages.at(-1),/강당이 비어 가고/);assert.match(complete.pages.join(''),/카메라/);
 });

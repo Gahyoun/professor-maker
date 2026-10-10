@@ -12,14 +12,17 @@ test('h-index is citation-based; independent performance/luck growth never chang
  assert.equal(low.seed,seed);assert.equal(high.seed,seed);assert.ok(high.impact.citations.reduce((a,b)=>a+b,0)>=low.impact.citations.reduce((a,b)=>a+b,0));assert.equal(high.impact.hIndex,hIndex(high.impact.citations));
 });
 test('3 PI and 5 total limits block a fourth PI before drawing or changing funds',()=>{
- const s=createState('',8);s.month=2;s.facultyAction='funding';const log=()=>{};const opts={random:()=>0,log};
- advancePortfolio(s,{role:'pi',years:1},opts);advancePortfolio(s,{role:'pi',years:2},opts);assert.deepEqual(grantCounts(s),{pi:3,total:3});assert.equal(canApplyGrant(s,'pi'),false);
+ const s=createState('',8);s.month=0;s.facultyAction='funding';
+ for(let id=1;id<=2;id++)s.grants.portfolio.push({id,role:'pi',start:0,end:60,annual:150,titleIndex:id%3});
+ assert.deepEqual(grantCounts(s),{pi:3,total:3});assert.equal(canApplyGrant(s,'pi'),false);
  const before=structuredClone(s);assert.throws(()=>simulateMonth(s,proposeSchedule(s),{facultyAction:'funding'}),/limit/);assert.deepEqual(s,before);
- advancePortfolio(s,{role:'co',years:3},opts);advancePortfolio(s,{role:'co',years:1},opts);assert.equal(canApplyGrant(s,'co'),false);assert.deepEqual(grantCounts(s),{pi:3,total:5});assert.ok(validateSave(s));
+ for(let id=3;id<=4;id++)s.grants.portfolio.push({id,role:'co',start:0,end:60,annual:90,titleIndex:id%3});
+ assert.equal(canApplyGrant(s,'co'),false);assert.deepEqual(grantCounts(s),{pi:3,total:5});assert.ok(validateSave(s));
+ s.month=s.grants.cycleEnd-6;assert.equal(canApplyGrant(s,'pi'),true,'renewal replaces the existing PI slot');
 });
-test('grant selection is probabilistic and grants last exactly one to three years',()=>{
- for(const years of [1,2,3]){const s=createState('',2);s.month=3;s.facultyAction='funding';advancePortfolio(s,{role:'pi',years},{random:()=>0,log:()=>{}});const g=s.grants.portfolio.at(-1);assert.equal(g.end-g.start,years*12);assert.ok(s.lab.pool>0);}
- const s=createState('',2);s.facultyAction='funding';const funds=s.lab.funds;advancePortfolio(s,{role:'pi',years:1},{random:()=>.999,log:()=>{}});assert.equal(s.grants.portfolio.length,1);assert.equal(s.lab.funds,funds);
+test('grant selection is probabilistic and grants last exactly two to five years',()=>{
+ for(const years of [2,3,4,5]){const s=createState('',2);s.month=1;s.facultyAction='funding';advancePortfolio(s,{role:'pi',years},{random:()=>0,log:()=>{}});const g=s.grants.portfolio.at(-1);assert.equal(g.end-g.start,years*12);assert.ok(s.lab.pool>0);}
+ const s=createState('',2);s.month=1;s.facultyAction='funding';const funds=s.lab.funds;advancePortfolio(s,{role:'pi',years:2},{random:()=>.999,log:()=>{}});assert.equal(s.grants.portfolio.length,1);assert.equal(s.lab.funds,funds);
 });
 test('pooled stipend survives ended projects, pays first and cannot fund operations',()=>{
  const s=createState('',8);s.month=2;s.lab.funds=0;s.lab.pool=200;depositGrant(s,100);assert.equal(s.lab.funds,65);assert.equal(s.lab.pool,235);

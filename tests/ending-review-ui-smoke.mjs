@@ -22,11 +22,11 @@ try{
  await page.locator('[data-action=full]').click();assert.match(await page.locator('.letter-paper').innerText(),/합격 소식/);assert.ok(await page.locator('.review-full-page').count()>8);await page.locator('[data-action=full]').click();
  let limit=30;while(await page.locator('[data-action=next]').count()){assert.ok(limit--);await page.locator('[data-action=next]').click();}
  assert.match(await page.locator('.letter-paper').innerText(),/교수는 어떻게 생각해요/);
- await page.screenshot({path:'/private/tmp/professor-maker-qa/pm412-true-review.png',fullPage:true});
+ await page.screenshot({path:'/private/tmp/professor-maker-qa/pm413-true-review.png',fullPage:true});
  await page.locator('a[href="#retirement"]').click();await page.waitForFunction(()=>document.querySelector('#reader .review-source')?.textContent.includes('실제 종료 기록 8종'));assert.match(await page.locator('#reader').innerText(),/실제 종료 기록 8종.*전체 수집 완료/);
  limit=30;while(await page.locator('[data-action=next]').count()){assert.ok(limit--);await page.locator('[data-action=next]').click();}
- assert.match(await page.locator('.letter-paper').innerText(),/모든 주요 후일담/);assert.ok(await page.locator('.review-finish-note').count());
- await page.screenshot({path:'/private/tmp/professor-maker-qa/pm412-retirement-review.png',fullPage:true});
+ assert.match(await page.locator('.letter-paper').innerText(),/연구실 문을 천천히 닫는다/);assert.ok(await page.locator('.review-finish-note').count());
+ await page.screenshot({path:'/private/tmp/professor-maker-qa/pm413-retirement-review.png',fullPage:true});
  const after=await page.evaluate(async()=>({save:localStorage.getItem('pm-save-v4'),gallery:localStorage.getItem('pm-letters-v3'),db:(await indexedDB.databases()).map(d=>d.name).sort()}));assert.deepEqual(after,before);assert.deepEqual(errors,[]);
  console.log(`Ending review UI passed: ${trueSamples} true-ending majors, retirement final scene, 320/390/1360px layout, no player storage changes.`);await context.close();
 }finally{await browser.close();}

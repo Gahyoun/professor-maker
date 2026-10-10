@@ -1,4 +1,4 @@
-import {ENDINGS,getEndingPages} from './stories.js';
+import {ENDINGS,getEndingPages,getEndingStory} from './stories.js';
 import {MAIN_ENDINGS,endingCollection,retirementScenes} from './ending-collection.js';
 import {endingStatistics,renderStatistics} from './statistics.js';
 import {endingEvidence,renderEvidence} from './ending-evidence.js';
@@ -20,7 +20,7 @@ export function reviewRecord(sample){
  return {id:`audit-${sample.run??sample.seed}-${s.ending}-${field.id}`,ending:s.ending,name:s.name,month:s.month,fieldId:field.id,field:field.label,labMode:s.professorProfile.labMode,relationship:rapport>=70?'close':rapport>=40?'reserved':'distant',rapport,endingReason:s.endingReason??null,statistics:endingStatistics(s),evidence:endingEvidence(s),memories:s.history.filter(h=>h.kind==='event'&&EVENTS.some(e=>e.id===h.id&&Number.isInteger(h.choice)&&h.choice>=0&&h.choice<e.options.length)).slice(-16).map(h=>({kind:'event',id:h.id,choice:h.choice,month:h.month})),career:{papers:s.career.papers,awards:s.career.awards,conferences:s.career.conferences},hIndex:s.impact?.hIndex??0,appearance:weeklyAppearance(s),source:{seed:sample.seed,run:sample.run??null,policy:sample.policy}};
 }
 export function reviewMeta(record){
- const story=ENDINGS[record.ending],context={fieldId:record.fieldId,field:record.field,labMode:record.labMode};
+ const context={statistics:record.statistics,fieldId:record.fieldId,field:record.field,labMode:record.labMode},story=getEndingStory(record.ending,context);
  const meta={title:adaptResearchText(story.title.ko,context),career:careerDescription(record.ending,context,'ko',story.career.ko),time:story.time.ko,type:record.ending==='true'?'TRUE ENDING':record.ending==='youtuber'?'SPECIAL ENDING':MAIN_ENDINGS.includes(record.ending)?'EPILOGUE':'ENDING'};
  if(record.ending==='unrelated'&&record.relationship==='distant'){meta.title='연구실 밖의 길';meta.time='졸업 2년 뒤 · 메일 없이 남은 후일담';}
  if(record.ending==='gameover'){

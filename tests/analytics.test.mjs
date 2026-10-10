@@ -39,3 +39,34 @@ test('legacy relationship records normalize once in SQLite while current-version
 });
 
 test('anonymous issue choices accept only bounded known decisions and reject injected fields',()=>{const good={...fixture(),issues:[{id:'grant-selected',choice:'reserve'}]};assert.ok(validRecord(good));assert.equal(validRecord({...good,issues:[{id:'grant-selected',choice:'<script>'}]}),false);assert.equal(validRecord({...good,issues:[{id:'grant-selected',choice:'reserve',name:'실명'}]}),false);assert.equal(validRecord({...good,issues:Array(9).fill(good.issues[0])}),false);});
+
+
+test('released 4.8–4.13 versions register and import through the same exact version gate',async()=>{
+ const env=environment();try{
+  const base={fieldId:'050',institution:'national',labMode:'dry'};
+  for(const version of ['4.8.0','4.9.0','4.10.0','4.11.0','4.12.0','4.13.0']){
+   const profile={...base,version};
+   const registration=await analyticsAPI(req('/api/runs',{method:'POST',data:{...profile,consent:'anonymous-gameplay-v1'}}),env);
+   assert.equal(registration.status,201,`registration rejected ${version}`);
+   const session=await registration.json();
+   assert.match(session.token,/^[a-f0-9]{64}$/);
+   const run={id:crypto.randomUUID(),consent:'anonymous-gameplay-v1',profile,records:[fixture()]};
+   const imported=await analyticsAPI(req('/api/admin/import',{method:'POST',token:env.ADMIN_KEY,data:run}),env);
+   assert.equal(imported.status,200,`import rejected ${version}`);
+   assert.deepEqual(await imported.json(),{imported:1});
+  }
+  for(const version of ['4.14.0','5.0.0','4.13.1','4.13.0<script>',413,null]){
+   const profile={...base,version};
+   assert.equal((await analyticsAPI(req('/api/runs',{method:'POST',data:{...profile,consent:'anonymous-gameplay-v1'}}),env)).status,400);
+   const run={id:crypto.randomUUID(),consent:'anonymous-gameplay-v1',profile,records:[fixture()]};
+   assert.equal((await analyticsAPI(req('/api/admin/import',{method:'POST',token:env.ADMIN_KEY,data:run}),env)).status,400);
+  }
+  const current={...base,version:'4.13.0',consent:'anonymous-gameplay-v1'};
+  assert.equal((await analyticsAPI(req('/api/runs',{method:'POST',data:{...current,consent:false}}),env)).status,400);
+  assert.equal((await analyticsAPI(req('/api/runs',{method:'POST',data:{...current,name:'실명'}}),env)).status,400);
+  const identified={id:crypto.randomUUID(),consent:current.consent,profile:{...base,version:current.version,name:'실명'},records:[fixture()]};
+  assert.equal((await analyticsAPI(req('/api/admin/import',{method:'POST',token:env.ADMIN_KEY,data:identified}),env)).status,400);
+  const summary=await (await analyticsAPI(req('/api/admin/summary',{token:env.ADMIN_KEY}),env)).json();
+  assert.equal(summary.runs,12);assert.equal(summary.monthlyRecords,6);
+ }finally{env.close();}
+});

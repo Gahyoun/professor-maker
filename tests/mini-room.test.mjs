@@ -8,6 +8,22 @@ test('room floor axes have equal lengths and opposing slopes; height stays verti
  assert.equal(Math.hypot(...u),Math.hypot(...v));assert.equal(u[0],-v[0]);assert.equal(u[1],v[1]);
  for(const [a,b,h] of [[3,4,20],[19,14,48],[28,28,90]])assert.deepEqual(delta(projectRoom(a,b,h),projectRoom(a,b)),[0,-h]);
 });
+
+test('resting students sit at their own furniture anchor with the backrest behind them',()=>{
+ const seen=new Set(),anchors=['24.3,8.5','26,6.5','24.1,7.5','23.5,6.5'];
+ for(let seed=1;seed<=100&&seen.size<4;seed++){
+  const s=createState('',seed,{labMode:'dry'}),type=roomDecorations(s).restType;if(seen.has(type))continue;seen.add(type);
+  for(const actual of ['rest','coffee']){
+   const scene=roomScene(s,{actual,performed:true,outcome:'completed'});
+   assert.equal((scene.match(/class="mini-student /g)||[]).length,1);
+   assert.match(scene,new RegExp('data-floor="'+anchors[type]+'"'));
+   const seat=scene.indexOf('class="rest-seat-layer"'),backrest=scene.indexOf('data-rest=',seat),student=scene.indexOf('class="mini-student ',seat);
+   assert.ok(seat>=0&&backrest>seat&&student>backrest,'rest furniture must render before its seated occupant');
+   assert.match(scene,/data-pose="seated"/);
+  }
+ }
+ assert.equal(seen.size,4);
+});
 test('cosmetic room variety is stable and never consumes gameplay state',()=>{
  const walls=new Set(),floors=new Set(),props=new Set();
  for(let seed=1;seed<=120;seed++){const s=createState('',seed,{labMode:seed%2?'wet':'dry'}),before=JSON.stringify(s),d=roomDecorations(s);assert.deepEqual(d,roomDecorations(s));walls.add(d.wallpaper);floors.add(d.floor);for(const [key,value]of Object.entries(d))if(value===true)props.add(key);const scene=roomScene(s,{actual:'idle'},0,{idle:true});assert.equal(JSON.stringify(s),before);assert.match(scene,/data-projection="isometric"/);assert.match(scene,/preserveAspectRatio="xMidYMid meet"/);assert.equal((scene.match(/class="portrait /g)||[]).length,1);assert.ok(!scene.includes('class="pixel-student'));

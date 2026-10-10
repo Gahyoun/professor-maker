@@ -43,14 +43,14 @@ function kettle(u,v,z=0){return box(u,v,1.2,1.2,1,'#8a9b9c',z)+box(u+.2,v+.2,.8,
 function plush(u,v,z){const [x,y]=projectRoom(u,v,z);return `<g fill="#c6a281"><path d="M${x-7} ${y-16}h3v-3h4v2h5v-2h4v3h3v10h-3v7h-13v-7h-3z"/><path d="M${x-6} ${y-6}h12v5h-12z" fill="#e7d5b7"/><path d="M${x-4} ${y-12}h1v2h-1zm8 0h1v2h-1z" fill="#696060"/><path d="M${x-1} ${y-8}h3v1h-3z" fill="#a57c69"/></g>`;}
 function monitor(u,v,z,active=false){return box(u+1.5,v,.4,.6,7,'#7e909c',z)+box(u+.7,v-.2,2.2,1,1,'#9daeb1',z)+front(u,v+.3,z+7,4.7,21,'#788f9c')+front(u+.35,v+.32,z+8.5,4,17.7,'#d9e6de')+line([u+.7,v+.35,z+22],[u+3.7,v+.35,z+22],'#9cb9ac',1.4)+line([u+.7,v+.35,z+17],[u+3.3,v+.35,z+17],'#9cb9ac',1.4)+line([u+.7,v+.35,z+12],[u+2.4,v+.35,z+12],'#9cb9ac',1.4)+(active?monitorMotion(projectRoom,u,v,z):'');}
 function microscope(u,v,z){return box(u,v,2.3,2,2,'#d9dfd5',z)+box(u+1.5,v+.2,.55,.8,17,'#9eafb5',z+2)+box(u+.7,v+.2,1.8,.7,3,'#8e9fa8',z+19)+box(u+.6,v+.3,.4,.4,6,'#8395a0',z+13)+box(u+.4,v+.3,1.4,1.2,1,'#bdcbd0',z+7);}
-function actor(state,result,index,u,v,idle){
- const [x,y]=projectRoom(u,v),w=62.4,h=96.72,activity=String(result.actual),wet=state.professorProfile.labMode==='wet';
+function actor(state,result,index,u,v,idle,lift=0){
+ const [x,y]=projectRoom(u,v,lift),w=62.4,h=96.72,activity=String(result.actual),wet=state.professorProfile.labMode==='wet';
  const executing=!idle&&result.performed!==false&&!['idle','training','unfinished'].includes(activity),relaxing=!idle&&['rest','coffee'].includes(activity);
  const pose=isLecturing(result,idle)?'lecturing':relaxing||!idle&&['study','coursework','analysis','language','paper'].includes(activity)||!idle&&activity==='experiment'&&!wet?'seated':!idle&&['experiment','research'].includes(activity)&&wet?'experiment':'standing';
  const expression=studentEmotion(state,result,{idle}),appearance={...weeklyAppearance({...state,visualMonth:idle?state.month:Math.max(0,state.month-1)},index),...(pose==='experiment'?{outfit:0}:{})};
  const portrait=renderPortrait(appearance,'학생 도트 초상화',expression,pose).replace('class="portrait"',`class="portrait room-portrait" x="${x-w/2}" y="${y-h+(pose==='seated'?7:2)}" width="${w}" height="${h}" style="width:${w}px;height:${h}px"`);
  const props=executing||relaxing?`<g transform="translate(${x} ${y}) scale(.8)">${activityProps(activity,{wet,index,kind:equipmentProfile(state)})}</g>`:'';
- return plane([[u-1.3,v-.4,0],[u-.4,v-1.3,0],[u+1.3,v+.4,0],[u+.4,v+1.3,0]],'#b9b4a4')+`<g class="mini-student pose-${pose} expression-${expression} ${idle?'mini-idle':'mini-working'} action-${activity.replace(/[^a-z_-]/g,'')}" data-floor="${u},${v}"><g transform="translate(${x} ${y-h+33.6})">${reactionEffects(expression,index)}</g>${portrait}${props}</g>`;
+ return (pose==='seated'?'':plane([[u-1.3,v-.4,0],[u-.4,v-1.3,0],[u+1.3,v+.4,0],[u+.4,v+1.3,0]],'#b9b4a4'))+`<g class="mini-student pose-${pose} expression-${expression} ${idle?'mini-idle':'mini-working'} action-${activity.replace(/[^a-z_-]/g,'')}" data-floor="${u},${v}"><g transform="translate(${x} ${y-h+33.6})">${reactionEffects(expression,index)}</g>${portrait}${props}</g>`;
 }
 export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'}={}){
  const d=roomDecorations(state),wall=WALLPAPERS[d.wallpaper],[tile,tileAlt,grout]=FLOOR_TILES[d.floor],wet=state.professorProfile.labMode==='wet';
@@ -72,7 +72,12 @@ export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'
  if(d.server)add(10,1,3,2.6,server(10,1));
  if(d.fridge)add(1,5,3.5,3,fridge(1,5));
  let tea=desk(1.5,21,3.8,3);if(d.kettle)tea+=kettle(2.2,22,26);tea+=box(3.5,22.5,.6,.6,4,'#c9ad92',26);add(1.5,21,3.8,3,tea);
- add(22,5,4,8,restFurniture(22,5,d.restType));
+ const resting=!idle&&(kind==='rest'||result.actual==='coffee')&&result.outcome!=='training';
+ // Keep each seat and its occupant together. Sorting by the chair's far
+ // corner alone used to paint the backrest over the student's face.
+ const restSeats=[[24.3,8.5,5],[26,6.5,7],[24.1,7.5,1],[23.5,6.5,2]];
+ const seat=restSeats[d.restType],restActor=resting?actor(state,result,index,seat[0],seat[1],false,seat[2]):'';
+ add(22,5,4,8,`<g class="rest-seat-layer" data-seat-type="${d.restType}">${restFurniture(22,5,d.restType)}${restActor}</g>`);
  if(d.cot&&d.restType!==1)add(19,24,7,3,cot(19,24));
  if(d.printer)add(15,1,3.5,3,desk(15,1,3.5,3)+printer(15.5,1.7,26));
  const equipment=roomEquipment(state,{box,front,line,desk,microscope,monitor,project:projectRoom},!idle&&result.performed===true&&['analysis','experiment','industry','startup','video','paper'].includes(result.actual));
@@ -85,7 +90,7 @@ export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'
  add(9,16,10,6,work);add(12,23,3,3,chair(12,23,'#b5b9b0',d.chairType));
  add(24,19,2,2,plant(24,19));
  if(d.bag)add(6,23,2.2,1.7,box(6,23,2.2,1.7,9,'#b49a8c')+line([6.4,23.2,10],[7.7,23.2,10],'#85786d',2));
- const working=!idle&&['study','coursework','analysis','language','experiment','paper'].includes(result.actual),pos=lecturing?[24,3]:result.actual==='presentation'&&!idle?[24,4]:working?[17,15]:kind==='rest'||result.actual==='coffee'?[24,8]:[19,14];if(working&&!(result.actual==='experiment'&&wet))objects.push({depth:31,art:chair(16,14,['#b5b9b0','#a1b7bf','#879ba8','#777f99'][d.chairType],d.chairType)});if(result.outcome!=='training')add(...pos,1,1,actor(state,result,index,...pos,idle));
+ const working=!idle&&['study','coursework','analysis','language','experiment','paper'].includes(result.actual),pos=lecturing?[24,3]:result.actual==='presentation'&&!idle?[24,4]:working?[17,15]:[19,14];if(working&&!(result.actual==='experiment'&&wet))objects.push({depth:31,art:chair(16,14,['#b5b9b0','#a1b7bf','#879ba8','#777f99'][d.chairType],d.chairType)});if(result.outcome!=='training'&&!resting)add(...pos,1,1,actor(state,result,index,...pos,idle));
  objects.sort((a,b)=>a.depth-b.depth);art+=objects.map(o=>o.art).join('');
  // Front rim has the same two floor axes as the tiles, never an unrelated angle.
  art+=plane([[0,28,0],[28,28,0],[28,28,-3],[0,28,-3]],shade(tile,-18))+plane([[28,0,0],[28,28,0],[28,28,-3],[28,0,-3]],shade(tile,-28));

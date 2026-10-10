@@ -11,7 +11,7 @@ export const GAME_BALANCE = {
   undergraduateMistakeRate: .12,
   masterMistakeRate: .05,
   doctoralMistakeRate: .015,
-  projectProgressScale: 1,
+  projectProgressScale: .5,
   randomEventProbability: .18
 };
 export function validBalance(value){

@@ -1,7 +1,8 @@
 import {POSTDOC_STORY,OUTSIDE_SCENES,VIDEO_SCENES,workplaceScene} from './ending-scenarios.js';
 import {endingVoice,letterClosing} from './ending-voice.js';
-import {adaptResearchText,researchSetting,fieldWorkplace} from './ending-context.js';
+import {adaptResearchText,researchSetting,englishResearchSetting,fieldWorkplace} from './ending-context.js';
 import {formatStudentName} from './korean.js';
+import {postdocScenes,postdocLetter} from './postdoc-career.js';
 // Original epilogues. The professor/corporate letters adapt Gahyoun Gim's supplied story.
 const p=(ko,en)=>({ko,en});
 export const ENDINGS={
@@ -21,7 +22,7 @@ export const ENDINGS={
     p("학부연구생과 석박사, 8년이라는 시간이 흘렀다. 그리고 다시 몇 해가 지났다.\n\n몇 해의 박사후연구와 여러 번의 지원을 지나, 학회 초청 연사 명단에 낯익은 이름이 있었다. 이름 아래에는 새 대학과 교수 직함이 적혀 있었다.\n\n임용 소식은 이미 들었지만, 프로그램에 인쇄된 그 이름은 달랐다. 나는 그 이름을 한 번 더 읽었다.","Eight years passed, then a few more. After postdoctoral research and several applications, a familiar name appeared among the invited speakers, with a new university and a faculty title. I already knew about the appointment, but seeing it in print felt different. I read the name again.")
 ,    p("교수는 서랍에 보관한 손편지 한 통을 떠올렸다.\n\n임용 결과를 기다리던 포닥 시절, 바다 건너 국제우편으로 온 편지였다. 봉투에는 소인이 두 번 찍혀 있었다.","I remembered a handwritten letter in my drawer. It had arrived by international post during the postdoctoral years, before the appointment decision. The envelope bore two postmarks.")
 ,    p("지도교수님께.\n\n추천서를 흔쾌히 써 주셔서 정말 감사합니다. 마감 사흘 전에 부탁드렸는데도 다음 날 바로 보내주셨다고 들었습니다. 지원 결과를 기다리는 동안에도 큰 힘이 됩니다.\n\n바다 건너 타지에서 최고급 기계로 실험을 하다 보면, 가끔은 우리 연구실의 오래된 기계가 생각납니다. 계절별로 기사님을 불러야 하던 그 기계요.","Dear Professor, thank you for writing the recommendation so willingly. I asked three days before the deadline and heard you sent it the next day. It is a source of support while I await the result. Working overseas, I sometimes think of our old machine, the one that needed a technician every season.")
-,    p("junior leader를 맡다 보니 실험뿐 아니라 공동연구 일정과 역할을 조율하는 일도 배우고 있습니다.\n\n아직 지원 결과는 모르지만, 교수님께 좋은 소식을 전해 드리고 싶어서 제 자리에서 할 일을 이어 가고 있습니다. 좋은 소식은 꼭 직접 들고 찾아뵙겠습니다.\n\n건강하세요.\n― {name} 올림","As a junior leader, I am learning to coordinate our collaboration as well as do research. I do not know the application result yet. I am continuing my work and hope to bring you good news in person. Please take care. — {name}")
+,    p("Junior Research Group Leader를 맡다 보니 공동연구 일정과 역할을 조율하는 일도 배우고 있습니다.\n\n아직 전임교원 지원 결과는 모르지만, 교수님께 좋은 소식을 전해 드리고 싶어서 제 자리에서 할 일을 이어 가고 있습니다. 좋은 소식은 꼭 직접 들고 찾아뵙겠습니다.\n\n건강하세요.\n― {name} 올림","As a Junior Research Group Leader, I am learning to coordinate our collaboration as well as do research. I do not know the faculty application result yet. I am continuing my work and hope to bring you good news in person. Please take care. — {name}")
 ,    p("사흘 전이 아니라 이틀 전이었다.\n\n부탁을 받은 다음 날 밤, 추천서를 세 번 고쳐 썼다. 너무 칭찬하면 안 믿을 것 같았고, 덜 쓰면 억울할 것 같았다.\n\n결국 마지막 문장은 이렇게 썼다.\n\n“제가 본 젊은 연구자 중 가장 끝까지 해내는 사람입니다.”\n\n그 밤에 발송했다. 녀석은 세 번 고쳐 쓴 것까지는 모를 것이다.","It was two days before the deadline, not three. The night after the request, I rewrote the recommendation three times. Too much praise might sound implausible; too little would be unfair. The final line read: Of the young researchers I have known, this is the one who sees things through. I sent it that night. The student would not know about the three revisions.")
 ,    p("합격 소식은 지난봄, 짧은 전화로 먼저 들었다.\n\n“교수님, 됐습니다.”\n\n그 한마디 뒤에 녀석은 덧붙였다.\n\n“자세한 건 직접 뵙고 말씀드릴게요.”\n\n그게 오늘이다.","I first heard the news in a brief call last spring. Professor, I got the position. Then came a promise: I will tell you the rest when we meet. That day is today.")
 ,    p("강연의 마지막 슬라이드가 화면에 떠올랐다.\nAcknowledgements.\n\n공동연구자와 연구비 목록 위에 나의 이름과 옛 연구실 사진이 있었다. 객석 몇 명이 뒤를 돌아보았다. 나는 괜히 안경을 고쳐 썼다.\n\n“좋은 소식은 직접 들고 찾아뵙겠습니다.”\n\n그 말을 이렇게 지킬 줄은 몰랐다.","The final slide appeared on the screen. Acknowledgements. Above the collaborators and grants were my name and a photograph of our old lab. A few people turned around. I adjusted my glasses. I had not imagined this was how the promise would be kept.")
@@ -99,6 +100,12 @@ export const ENDINGS={
   ]}
 };
 
+// Each replay gets fresh metadata and pages; the collected ending ID stays the same.
+export function getEndingStory(id,context={}){
+ const story=ENDINGS[id];
+ return id==='postdoc'&&story?postdocScenes(story,context,researchSetting(context),englishResearchSetting(context)):story;
+}
+
 // Rapport controls the distance in the letter, separately from the career outcome.
 // Numbers here are raw signed rapport, not the normalized 0–100 ability score.
 export function endingRelationship(relationship, id) {
@@ -175,13 +182,14 @@ export function endingMemoryNotes(history,relationship='reserved'){
 // Return fresh strings: gallery replays and locale switches cannot alter source stories.
 export function getEndingPages(id, lang = 'ko', relationship, name, reason, history = [], context) {
   const locale = lang === 'en' ? 'en' : 'ko';
-  const story = ENDINGS[id];
+  const story = getEndingStory(id,context);
   if (!story) return [];
   const distance = endingRelationship(relationship, id);
   if(id==='dismissed'){const closing={close:['학생은 이후에도 필요한 절차를 함께 확인하기로 했다. 다음 계획이 정해지면 학생이 먼저 연락하기로 했다.','They agreed to review the remaining procedures and get in touch when plans were ready.'],reserved:['필요한 서류와 연락 방법을 정리했다. 이후의 계획을 재촉하지 않았다.','They reviewed the documents and contact details without pressing for plans.'],distant:['행정상 필요한 연락만 남기고, 더 이야기하고 싶지 않다는 학생의 뜻을 존중했다.','Only administrative contact remained, respecting the student’s wish for privacy.']};return story.pages.map((p,i)=>p[locale]+(i===story.pages.length-1?'\n\n'+closing[distance][locale==='en'?1:0]:'')).map(p=>formatStudentName(p,name,locale));}
   const suppliedReason = typeof reason === 'object' ? reason?.endingReason : reason;
   const rawPages = id === 'gameover' && failurePages[suppliedReason] ? failurePages[suppliedReason] : story.pages;
   let pages = rawPages.map(page => page[locale]);
+  if(id==='true')pages[3]=postdocLetter(context,locale,locale==='en'?englishResearchSetting(context):researchSetting(context));
   if(id==='gameover'&&suppliedReason==='qual_failure'&&history.filter(h=>h.kind==='qual'&&!h.passed).length<2){
     const tried=history.some(h=>h.kind==='qual'&&!h.passed);
     pages=[

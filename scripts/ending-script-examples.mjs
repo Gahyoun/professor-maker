@@ -3,9 +3,9 @@
 import fs from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import assert from 'node:assert/strict';
-import {createState,HIDDEN_RANGES,abilityScore,canDefend,careerEnding,degreeRequirements,TRUE_REQUIREMENTS,EVENTS} from '../dist/engine.js';
+import {createState,HIDDEN_RANGES,abilityScore,canDefend,careerEnding,degreeRequirements,TRUE_REQUIREMENTS,TRUE_RESEARCH_REQUIREMENTS,EVENTS} from '../dist/engine.js';
 import {getDiscipline} from '../dist/disciplines.js';
-import {ENDINGS,getEndingPages} from '../dist/stories.js';
+import {ENDINGS,getEndingPages,getEndingStory} from '../dist/stories.js';
 import {endingStatistics} from '../dist/statistics.js';
 import {endingEvidence} from '../dist/ending-evidence.js';
 import {adaptResearchText,careerDescription} from '../dist/ending-context.js';
@@ -15,10 +15,10 @@ import {MAIN_ENDINGS,endingCollection,retirementScenes} from '../dist/ending-col
 const preferredFields={true:'090',postdoc:'056',institute:'055',corporate:'072',unrelated:'048',startup:'157',unemployed:'050',resident_researcher:'084',youtuber:'090',bachelor:'076',masters:'092',external_masters:'048',external_phd:'084'};
 const displayNames={true:'김민지',postdoc:'박지훈',institute:'최수빈',corporate:'이서윤',unrelated:'김하늘',startup:'정지우',unemployed:'윤준영',resident_researcher:'이지혜',youtuber:'김준영',bachelor:'한민서',masters:'오현우',external_masters:'홍유진',external_phd:'서도윤',leave:'송예린',dropout:'김태윤',dismissed:'이민재',gameover:'장예진',unfinished:'백수아'};
 const conditions={
- true:'박사학위요건과 자격시험을 충족하고, 아래 교수 임용 후보 요건 전체와 라포 85 이상을 충족한다. 다른 진로보다 먼저 판정한다.',
- postdoc:'교수 임용 후보 요건을 모두 충족하되 라포 40 이상·85 미만이다. 후보 요건을 충족하지 못한 학생의 일반 진로 판정과는 별도 분기다.',
- resident_researcher:'박사학위요건 충족, 라포 85 이상, 신중함 65 이상, 교수의 연구실 운영 40 이상. 트루·포닥 판정을 먼저 통과하지 않은 경우다. 정신력이 낮아서 잔류하는 조건은 없다.',
- institute:'연구수행 70 이상, 학습 65 이상, 자율성 60 이상, 게재 논문 4편 이상. 점수 = 연구수행×0.45 + 학습×0.20 + 자율성×0.20 + min(논문 수,10)×1.5.',
+ true:'박사학위요건과 자격시험을 충족하고, 아래 교수 임용 후보 요건 전체와 라포 80 이상을 충족한다. 다른 진로보다 먼저 판정한다.',
+ postdoc:'교수 임용 후보 요건을 모두 충족하되 라포 40 이상·80 미만이다. 후보 요건을 충족하지 못한 학생의 일반 진로 판정과는 별도 분기다.',
+ resident_researcher:'박사학위요건 충족, 라포 80 이상, 신중함 65 이상, 교수의 연구실 운영 40 이상. 트루·포닥 판정을 먼저 통과하지 않은 경우다. 정신력이 낮아서 잔류하는 조건은 없다.',
+ institute:'연구수행 70 이상, 학습 65 이상, 자율성 60 이상, 게재 논문 4편 이상 또는 게재 논문 2편 이상·상위 논문 1편 이상. 점수 = 연구수행×0.45 + 학습×0.20 + 자율성×0.20 + min(논문 수,5)×3.',
  corporate:'산학 경험 55 이상, 연구수행 50 이상. 점수 = 산학 경험×0.65 + 연구수행×0.35. 라포는 진로 조건에 포함하지 않고 연락 거리와 장면에 반영한다.',
  unrelated:'산학 경험 20 이상, 의사소통 45 이상, 자율성 45 이상. 점수 = 산학 경험×0.35 + 의사소통×0.35 + 자율성×0.30. 라포는 진로 조건에 포함하지 않으며 낮은 라포에서는 메일 없는 9장면 후일담을 사용한다.',
  startup:'창업 경험 65 이상, 자율성 60 이상. 점수 = 창업 경험×0.70 + 자율성×0.30. 높은 라포에서는 계약을 분리한 연구실 스핀오프, 그 외에는 독립 창업 장면을 사용한다.',
@@ -42,7 +42,7 @@ export function entryFromState(original,{rename=false}={}){
  return {name:s.name,ending:s.ending,fieldId:s.professorProfile.fieldId,labMode:s.professorProfile.labMode,month:s.month,relationship:rapport>=70?'close':rapport>=40?'reserved':'distant',endingReason:s.endingReason,career:{...s.career},statistics:endingStatistics(s),evidence:endingEvidence(s),memories:s.history.filter(h=>h.kind==='event'&&EVENTS.some(e=>e.id===h.id)&&Number.isInteger(h.choice)&&h.choice>=0&&h.choice<EVENTS.find(e=>e.id===h.id).options.length).slice(-16).map(h=>({kind:'event',id:h.id,choice:h.choice,month:h.month}))};
 }
 export function exampleMetadata(entry){
- const base=ENDINGS[entry.ending],context={fieldId:entry.fieldId,labMode:entry.labMode};
+ const context={statistics:entry.statistics,fieldId:entry.fieldId,labMode:entry.labMode},base=getEndingStory(entry.ending,context);
  const meta={title:adaptResearchText(base.title.ko,context),career:careerDescription(entry.ending,context,'ko',base.career.ko),time:base.time.ko};
  if(entry.ending==='unrelated'&&entry.relationship==='distant'){meta.title='연구실 밖의 길';meta.time='졸업 2년 뒤 · 메일 없이 남은 후일담';}
  if(entry.ending==='gameover'){
@@ -78,12 +78,12 @@ function syntheticState(id,reason=null){
  Object.assign(s.career,degreeRequirements(s,['masters','external_phd'].includes(id)?'masters':'phd'),{submissions:6,qual:'passed',qualAttempts:1,topPapers:0,awards:0,recommendations:1});
  if(['true','postdoc'].includes(id)){
   for(const [key,value]of Object.entries(TRUE_REQUIREMENTS))if(key in s.hidden)score(key,Math.min(100,value+5));else if(key!=='faculty')s.career[key]=value;
-  score('rapport',id==='true'?90:60);s.career.topPapers=1;s.career.awards=1;s.impact={citations:[6,6,4,4,1,0],hIndex:4};
+  score('rapport',id==='true'?90:60);s.career.topPapers=TRUE_RESEARCH_REQUIREMENTS.leadingPaper;s.career.awards=0;s.impact={citations:[6,4,1],hIndex:TRUE_RESEARCH_REQUIREMENTS.hIndex};
  }else{
   const values={resident_researcher:{rapport:90,research:60,autonomy:65},corporate:{industry:85,research:60,autonomy:60},institute:{learning:80,research:85,autonomy:75},unrelated:{industry:35,social:70,autonomy:65,rapport:30},startup:{enterprise:88,autonomy:80,research:65},youtuber:{language:96,social:95},unemployed:{industry:10,social:40,autonomy:40},leave:{stress:96,resilience:25,stamina:4,rapport:60},dropout:{stress:90,resilience:25,rapport:5},dismissed:{learning:35,research:40,rapport:45},bachelor:{rapport:45},masters:{rapport:55}};
   for(const [key,value]of Object.entries(values[id]??{}))score(key,value);
   if(id==='resident_researcher')s.temperament.caution=85;
-  if(id==='institute')s.career.papers=Math.max(4,s.career.papers);
+  if(id==='institute'){s.career.papers=Math.max(2,s.career.papers);s.career.topPapers=1;}
   if(id==='gameover'&&!reason)s.professor.admin=0;
   if(id==='gameover'&&reason){
    s.professor.admin=65;s.month=reason==='qual_failure'?48:96;
@@ -118,7 +118,7 @@ export async function writeExamples(){
  for(const reason of ['graduation_requirements','time_limit','qual_failure'])examples.push({id:'gameover',reason,sample:null,state:syntheticState('gameover',reason)});
  examples.push({id:'unfinished',sample:null,state:syntheticState('unfinished')});
  assert.deepEqual(new Set(examples.map(e=>e.id)),new Set(Object.keys(ENDINGS)));
- const blocks=[`# 엔딩 스크립트 대표 시나리오\n\n2026-10-10 · 게임 ${packageInfo.version} · 한국어\n\n이 문서는 실제 게임의 \`getEndingPages\`·\`researchText\`·\`retirementScenes\`로 생성한 전체 장면입니다. 관측한 엔딩은 1만 회 시뮬레이션의 종료 상태와 이름·분야·파라미터·이벤트 기록을 그대로 사용했습니다. 관측하지 못한 중도 종료 장면은 **합성 예시**로 명확히 구분하며, 그 설정이 실제 플레이로 도달했다는 뜻은 아닙니다. 엔딩 비율은 [별도 통계 보고서](ending-balance-audit.md)를 참고하세요.\n\n편지 안의 성격·능력·분야·연락 거리·실제로 기록된 선택에 관한 문장도 현재 생성 결과 그대로 포함합니다. 본문에 별도 편지가 없는 장면에 새 편지를 덧붙이지 않았습니다.\n\n## 판정 읽는 법\n\n박사 진로는 트루 → 포닥 → 교내 연구원 순으로 먼저 검사한 뒤, 나머지 유효한 진로 중 점수가 가장 큰 것을 선택합니다. 동점 순서는 영상 → 스타트업 → 기업 연구개발 → 정출연 → 새 분야입니다. 아래의 최소값 하나만 넘었다고 해당 엔딩이 보장되는 것은 아닙니다. 박사학위요건은 전공별이며, 자격시험 통과와 연구수행 50 이상도 필요합니다.\n\n학습·연구수행·어학·의사소통·라포 등의 기준은 원래 숨은 수치의 **0–100 정규화 점수**입니다. 라포에 따른 편지의 거리 구간은 가까움 70 이상, 중간 40 이상·70 미만, 거리 유지 40 미만입니다. 트루의 임용 기준인 라포 85는 그보다 엄격합니다.\n\n### 교수 임용 후보의 전체 요건\n\n| 항목 | 기준 |\n|---|---:|\n| 학습 | ${TRUE_REQUIREMENTS.learning} |\n| 연구수행 | ${TRUE_REQUIREMENTS.research} |\n| 어학 | ${TRUE_REQUIREMENTS.language} |\n| 의사소통 | ${TRUE_REQUIREMENTS.social} |\n| 자율성 | ${TRUE_REQUIREMENTS.autonomy} |\n| 교육 경험 | ${TRUE_REQUIREMENTS.teaching} |\n| 라포(트루 분기) | ${TRUE_REQUIREMENTS.rapport} |\n| 정신력 | ${TRUE_REQUIREMENTS.resilience} |\n| 예의범절 | ${TRUE_REQUIREMENTS.manners} |\n| 의욕 | ${TRUE_REQUIREMENTS.motivation} |\n| 게재 논문 | ${TRUE_REQUIREMENTS.papers}편 |\n| 학술 발표 | ${TRUE_REQUIREMENTS.conferences}회 |\n| 추천서 | ${TRUE_REQUIREMENTS.recommendations}건 |\n| 교수 업무 네 항목 각각 | ${TRUE_REQUIREMENTS.faculty} 이상 |\n| 상위 논문(추가) | 1편 이상 |\n| 수상(추가) | 1회 이상 |\n| h-index(추가) | 4 이상 |\n\n공통 박사학위요건과 자격시험 통과도 검사합니다. 임용 후보 조건에 라포를 제외하고 모두 해당하면, 라포 85 이상은 트루, 40 이상·85 미만은 포닥 후일담이 됩니다.\n\n외부 진학을 권해도 내부에 남을 확률은 \`clamp(0.1 + 라포×0.006, 0.1, 0.7)\`입니다. 내부 진학을 권했을 때 학생의 거절 확률은 라포 60 이상이면 0, 그 미만이면 \`clamp((60−라포)×0.012 + (의욕<50 ? 0.08 : 0), 0, 0.5)\`입니다.`];
+ const blocks=[`# 엔딩 스크립트 대표 시나리오\n\n2026-10-10 · 게임 ${packageInfo.version} · 한국어\n\n이 문서는 실제 게임의 \`getEndingPages\`·\`researchText\`·\`retirementScenes\`로 생성한 전체 장면입니다. 관측한 엔딩은 1만 회 시뮬레이션의 종료 상태와 이름·분야·파라미터·이벤트 기록을 그대로 사용했습니다. 관측하지 못한 중도 종료 장면은 **합성 예시**로 명확히 구분하며, 그 설정이 실제 플레이로 도달했다는 뜻은 아닙니다. 엔딩 비율은 [별도 통계 보고서](ending-balance-audit.md)를 참고하세요.\n\n편지 안의 성격·능력·분야·연락 거리·실제로 기록된 선택에 관한 문장도 현재 생성 결과 그대로 포함합니다. 본문에 별도 편지가 없는 장면에 새 편지를 덧붙이지 않았습니다.\n\n## 판정 읽는 법\n\n박사 진로는 트루 → 포닥 → 교내 연구원 순으로 먼저 검사한 뒤, 나머지 유효한 진로 중 점수가 가장 큰 것을 선택합니다. 동점 순서는 영상 → 스타트업 → 기업 연구개발 → 정출연 → 새 분야입니다. 아래의 최소값 하나만 넘었다고 해당 엔딩이 보장되는 것은 아닙니다. 박사학위요건은 전공별이며, 자격시험 통과와 연구수행 50 이상도 필요합니다.\n\n학습·연구수행·어학·의사소통·라포 등의 기준은 원래 숨은 수치의 **0–100 정규화 점수**입니다. 라포에 따른 편지의 거리 구간은 가까움 70 이상, 중간 40 이상·70 미만, 거리 유지 40 미만입니다. 트루의 임용 기준인 라포 80는 그보다 엄격합니다.\n\n### 교수 임용 후보의 전체 요건\n\n| 항목 | 기준 |\n|---|---:|\n| 학습 | ${TRUE_REQUIREMENTS.learning} |\n| 연구수행 | ${TRUE_REQUIREMENTS.research} |\n| 어학 | ${TRUE_REQUIREMENTS.language} |\n| 의사소통 | ${TRUE_REQUIREMENTS.social} |\n| 자율성 | ${TRUE_REQUIREMENTS.autonomy} |\n| 교육 경험 | ${TRUE_REQUIREMENTS.teaching} |\n| 라포(트루 분기) | ${TRUE_REQUIREMENTS.rapport} |\n| 정신력 | ${TRUE_REQUIREMENTS.resilience} |\n| 예의범절 | ${TRUE_REQUIREMENTS.manners} |\n| 의욕 | ${TRUE_REQUIREMENTS.motivation} |\n| 게재 논문 | ${TRUE_REQUIREMENTS.papers}편 |\n| 학술 발표 | ${TRUE_REQUIREMENTS.conferences}회 |\n| 추천서 | ${TRUE_REQUIREMENTS.recommendations}건 |\n| 교수 업무 네 항목 각각 | ${TRUE_REQUIREMENTS.faculty} 이상 |\n| 상위 논문(추가) | ${TRUE_RESEARCH_REQUIREMENTS.leadingPaper}편 이상 |\n| h-index(추가) | ${TRUE_RESEARCH_REQUIREMENTS.hIndex} 이상 |\n\n공통 박사학위요건과 자격시험 통과도 검사합니다. 수상은 추가 성취로 기록하며 임용 후보의 필수 관문은 아닙니다. 임용 후보 조건에 라포를 제외하고 모두 해당하면, 라포 80 이상은 트루, 40 이상·80 미만은 포닥 후일담이 됩니다.\n\n외부 진학을 권해도 내부에 남을 확률은 \`clamp(0.1 + 라포×0.006, 0.1, 0.7)\`입니다. 내부 진학을 권했을 때 학생의 거절 확률은 라포 60 이상이면 0, 그 미만이면 \`clamp((60−라포)×0.012 + (의욕<50 ? 0.08 : 0), 0, 0.5)\`입니다.`];
  let auditRunCount=null;try{auditRunCount=JSON.parse(await fs.readFile(new URL('../docs/ending-balance-audit.json',import.meta.url),'utf8')).runs;}catch(e){if(e.code!=='ENOENT')throw e;}
  blocks[0]=blocks[0].replace('1만 회 시뮬레이션',`백엔드 시뮬레이션${Number.isInteger(auditRunCount)?`(${auditRunCount.toLocaleString('en-US')}회)`:''}`).replace('관측하지 못한 중도 종료 장면','관측하지 못한 엔딩 장면');
  const gallery=[];

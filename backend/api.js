@@ -2,6 +2,9 @@ import {ISSUE_CHOICES} from '../dist/monthly-choices.js';
 import {mergeRelationship} from '../dist/relationship.js';
 import {HIDDEN_RANGES,ACTIVITIES,LEGACY_ACTIVITIES,EVENTS} from '../dist/engine.js';
 import {DISCIPLINES} from '../dist/disciplines.js';
+// Exact released schemas only; registration and administrator import share this gate.
+const SUPPORTED_ANALYTICS_VERSIONS=Object.freeze(['4.1.0','4.2.0','4.3.0','4.4.0','4.5.0','4.6.0','4.7.0','4.8.0','4.9.0','4.10.0','4.11.0','4.12.0','4.13.0']);
+const validAnalyticsVersion=value=>typeof value==='string'&&SUPPORTED_ANALYTICS_VERSIONS.includes(value);
 const outcomes=['bachelor','masters','true','postdoc','institute','corporate','unrelated','startup','unemployed','youtuber','resident_researcher','leave','dropout','dismissed','unfinished','gameover','external_masters','external_phd'];
 const allowedOrigin=(request)=>{const origin=request.headers.get('Origin');return origin===new URL(request.url).origin||origin==='https://gahyoun.github.io'||/^http:\/\/127\.0\.0\.1:(4173|4174)$/.test(origin||'');};
 const json=(data,status=200,headers={})=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Cross-Origin-Resource-Policy':'same-origin',...headers}});
@@ -38,7 +41,7 @@ export async function analyticsAPI(request,env){
    if(!await admin(request,env))return json({error:'Unauthorized'},401);
    await cleanup(env);
    const run=await body(request,500000);
-   if(!plain(run)||Object.keys(run).some(k=>!['id','profile','records','consent'].includes(k))||run.consent!=='anonymous-gameplay-v1'||typeof run.id!=='string'||!/^[a-f0-9-]{36}$/.test(run.id)||!Array.isArray(run.records)||run.records.length>97||!run.records.every(validRecord)||new Set(run.records.map(r=>r.month)).size!==run.records.length||!plain(run.profile)||Object.keys(run.profile).some(k=>!['version','fieldId','institution','labMode'].includes(k))||!['4.1.0','4.2.0','4.3.0','4.4.0','4.5.0','4.6.0','4.7.0'].includes(run.profile.version)||!DISCIPLINES.some(d=>d.id===run.profile.fieldId)||!['national','private','institute'].includes(run.profile.institution)||!['dry','wet'].includes(run.profile.labMode))return json({error:'Invalid anonymous run'},400);
+   if(!plain(run)||Object.keys(run).some(k=>!['id','profile','records','consent'].includes(k))||run.consent!=='anonymous-gameplay-v1'||typeof run.id!=='string'||!/^[a-f0-9-]{36}$/.test(run.id)||!Array.isArray(run.records)||run.records.length>97||!run.records.every(validRecord)||new Set(run.records.map(r=>r.month)).size!==run.records.length||!plain(run.profile)||Object.keys(run.profile).some(k=>!['version','fieldId','institution','labMode'].includes(k))||!validAnalyticsVersion(run.profile.version)||!DISCIPLINES.some(d=>d.id===run.profile.fieldId)||!['national','private','institute'].includes(run.profile.institution)||!['dry','wet'].includes(run.profile.labMode))return json({error:'Invalid anonymous run'},400);
    const existing=await env.DB.prepare('SELECT id FROM game_runs WHERE id = ?').bind(run.id).first();const now=Date.now();
    if(!existing)await env.DB.prepare('INSERT INTO game_runs (id,token_hash,created_at,expires_at,version,field_id,institution,lab_mode) VALUES (?,?,?,?,?,?,?,?)').bind(run.id,await hash(crypto.randomUUID()),now,now+90*86400000,run.profile.version,run.profile.fieldId,run.profile.institution,run.profile.labMode).run();
    await env.DB.batch(run.records.map(r=>env.DB.prepare('INSERT INTO game_months (run_id,month,record,created_at) VALUES (?,?,?,?) ON CONFLICT(run_id,month) DO UPDATE SET record=excluded.record').bind(run.id,r.month,JSON.stringify({...r,student:mergeRelationship(r.student)}),now)));return json({imported:run.records.length});
@@ -55,7 +58,7 @@ export async function analyticsAPI(request,env){
   if(!allowedOrigin(request))return json({error:'Origin denied'},403);
   if(path==='/api/runs'&&request.method==='POST'){
    const data=await body(request);
-   if(!plain(data)||Object.keys(data).some(k=>!['consent','version','fieldId','institution','labMode'].includes(k))||data.consent!=='anonymous-gameplay-v1'||!['4.1.0','4.2.0','4.3.0','4.4.0','4.5.0','4.6.0','4.7.0'].includes(data.version)||!DISCIPLINES.some(d=>d.id===data.fieldId)||!['national','private','institute'].includes(data.institution)||!['wet','dry'].includes(data.labMode))return json({error:'Invalid run'},400,cors);
+   if(!plain(data)||Object.keys(data).some(k=>!['consent','version','fieldId','institution','labMode'].includes(k))||data.consent!=='anonymous-gameplay-v1'||!validAnalyticsVersion(data.version)||!DISCIPLINES.some(d=>d.id===data.fieldId)||!['national','private','institute'].includes(data.institution)||!['wet','dry'].includes(data.labMode))return json({error:'Invalid run'},400,cors);
    // Stop accepting new records before an unbounded database grows.
    const count=await env.DB.prepare('SELECT COUNT(*) AS n FROM game_runs WHERE expires_at > ?').bind(Date.now()).first();if(count.n>=50000)return json({error:'Collection capacity reached'},429,cors);
    const id=crypto.randomUUID(),token=[...crypto.getRandomValues(new Uint8Array(32))].map(n=>n.toString(16).padStart(2,'0')).join(''),now=Date.now();

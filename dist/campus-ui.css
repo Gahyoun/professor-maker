@@ -1,0 +1,195 @@
+/* GNU-inspired color system; Professor Maker keeps its original lab identity.
+   Reference: https://www.gnu.ac.kr/main/cm/cntnts/cntntsView.do?cntntsId=1198&mi=1369 */
+:root{
+ --campus-navy:#17384b;
+ --campus-sky:#009edb;
+ --campus-action:#0069b4;
+ --campus-action-dark:#00538f;
+ --campus-text:#203746;
+ --campus-muted:#5e707c;
+ --campus-line:#d6e1e8;
+ --campus-tint:#f2f7fa;
+ --campus-paper:#fff;
+ --campus-radius:7px;
+ --campus-shadow:0 3px 14px rgb(23 56 75 / .05);
+ --campus-ease:cubic-bezier(.2,.8,.2,1);
+ --blue:var(--campus-sky);
+ --action:var(--campus-action);
+ --action-hover:var(--campus-action-dark);
+ --banner:var(--campus-navy);
+ --ink:var(--campus-text);
+ --muted:var(--campus-muted);
+ --line:var(--campus-line);
+ --surface:var(--campus-tint);
+}
+
+/* A restrained portal frame keeps the lab, choices and narrative visually distinct. */
+body{background:#f8fafc}
+.site-header{background:var(--campus-paper);border-bottom:1px solid var(--campus-line)}
+.utility-bar{background:var(--campus-tint);color:var(--campus-muted)}
+.header-content{min-height:96px}
+.brand-name{letter-spacing:-.035em}
+.brand-initial-p,.brand-initial-m{color:var(--campus-sky)}
+.header-nav{gap:30px}
+.header-nav a{position:relative;color:var(--campus-navy);transition:color .16s}
+.header-nav a:after{content:'';position:absolute;bottom:2px;left:0;right:0;height:3px;background:var(--campus-sky);transform:scaleX(0);transform-origin:left;transition:transform .18s var(--campus-ease)}
+.header-nav a[aria-current]:after,.header-nav a:hover:after{transform:scaleX(1)}
+.header-nav a:hover{text-decoration:none}
+.breadcrumb{background:var(--campus-navy);box-shadow:inset 0 -2px var(--campus-sky)}
+.breadcrumb .container{min-height:48px}
+.faculty-scroll-summary{background:var(--campus-paper);border-bottom:1px solid var(--campus-line);box-shadow:0 2px 8px rgb(23 56 75 / .04)}
+main.container{padding-top:30px;padding-bottom:52px}
+.page-title{margin-bottom:22px}
+.page-title h1{font-size:30px;letter-spacing:-.035em;color:var(--campus-navy)}
+.site-footer{background:var(--campus-tint);border-color:var(--campus-line)}
+.site-footer strong{color:var(--campus-navy)}
+
+/* Shared controls use one focus, hover and pressed vocabulary. */
+button,select,input,summary{touch-action:manipulation}
+button{border-radius:5px;transition:background .16s,border-color .16s,box-shadow .16s,transform .12s var(--campus-ease)}
+button:hover:not(:disabled){border-color:#a4bac8;background:#f0f6fa}
+button:active:not(:disabled){transform:translateY(1px);box-shadow:none}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--campus-sky);outline-offset:3px}
+.primary{box-shadow:0 2px 0 rgb(0 63 111 / .12);border-radius:5px}
+.primary:hover:not(:disabled){box-shadow:0 3px 8px rgb(0 83 143 / .16)}
+select{background-color:#fff;color:var(--campus-text);border:1px solid #a6bbc9;border-radius:5px;min-height:44px;max-width:100%}
+input[type=radio],input[type=checkbox]{accent-color:var(--campus-action)}
+button:disabled{opacity:1;box-shadow:none;transform:none}
+.secondary,.text-button{color:var(--campus-muted)}
+
+/* Panels stay light, while meaningful decisions carry a clear blue edge. */
+.welcome,.project-overview,.monthly-panel,.save-points,.ending-summary,.student-record,.portal-login{background:var(--campus-paper);border-color:var(--campus-line);border-radius:var(--campus-radius);box-shadow:var(--campus-shadow)}
+.welcome,.project-overview,.save-points{border-top-color:var(--campus-sky)}
+.student-panel{background:var(--campus-paper);border:1px solid var(--campus-line);border-top:3px solid var(--campus-sky);border-radius:var(--campus-radius);box-shadow:var(--campus-shadow)}
+.panel-title,.student-details[open]>summary{color:var(--campus-navy)}
+.track{border-radius:3px;overflow:hidden}
+.term-heading h2,.section-top h2,.monthly-panel h2{color:var(--campus-navy);letter-spacing:-.025em}
+.project-phases{gap:10px}
+.project-phases li{line-height:1.7}
+.student-voice{background:#f0f6fb;border-color:#cfdeea;box-shadow:none}
+.student-voice p{color:#354f60;line-height:1.8}
+.student-voice .student-speaker{color:var(--campus-muted)}
+.decision{background:#f5f9fc;border:1px solid var(--campus-line);border-top:3px solid var(--campus-sky);border-radius:var(--campus-radius);box-shadow:var(--campus-shadow)}
+.decision h2{color:var(--campus-navy)}
+.choice{background:#fff;border:1px solid #c5d7e3;border-radius:6px;position:relative;padding-right:30px}
+.choice:after{content:'›';position:absolute;right:13px;top:17px;color:#7596ad;font:22px/1 var(--title)}
+.choice:hover:not(:disabled){border-color:var(--campus-action);background:#f1f8fc;box-shadow:0 2px 7px rgb(23 56 75 / .05)}
+.choice strong{color:var(--campus-navy)}
+.choice:disabled:after{color:#c2ccd3}
+.week-plan{background:#fff;border-left-color:#91bad2!important}
+.week-plan.exam-week{background:#fffcf5}
+.week-plan.conference-week{background:#f1f8fc}
+.week-plan .week-heading strong{color:var(--campus-navy)}
+.week-plan select:focus{border-color:var(--campus-action)}
+.feedback-option{background:#fff}
+.feedback-option.selected{background:#edf7fd}
+.feedback-option:hover{background:#f5f9fc}
+.monthly-confirm{background:#f0f7fb;border-top:1px solid #cbdde8;border-radius:0 0 var(--campus-radius) var(--campus-radius);padding:20px}
+.monthly-confirm .primary{min-height:48px}
+.operating-credit{border-left-color:#6b8a9e;background:#f4f7f9;border-radius:0 5px 5px 0}
+.issue-followup,.month-issues,.issue-context,.issue-followup+.notice{border-radius:0 5px 5px 0}
+.advising-policies,.professor-setup{background:#f9fbfc;border-color:var(--campus-line);border-radius:5px}
+.grant-panel{border-top-color:var(--campus-navy);border-radius:5px;background:#fff}
+.grant-panel summary:hover{background:var(--campus-tint)}
+.faculty-age{margin:0 0 12px;color:var(--campus-muted);font-size:12px}
+.faculty-age strong,.professor-current-age{color:var(--campus-navy);font-variant-numeric:tabular-nums}
+.domestic-conference-summary strong{display:block;color:var(--campus-navy)}
+
+/* The room remains the spotlight during playback. No transform is applied to it. */
+.live-lab{outline:1px solid #c5d8e4;outline-offset:0;background:var(--campus-navy);border-radius:6px}
+.lab-scene-heading,.week-scene-header{background:var(--campus-navy);position:relative}
+.lab-scene-heading{padding:11px 16px}
+.lab-scene-heading:after{content:'';height:2px;position:absolute;bottom:0;left:0;right:0;background:var(--campus-sky);opacity:.8}
+.live-lab .week-scene-header{padding:10px 16px;gap:14px;align-items:center;overflow:hidden}
+.week-scene-header strong{font-weight:700}
+.is-playing .week-scene-header:after{content:'';position:absolute;inset:auto 0 0;height:2px;background:linear-gradient(90deg,#009edb,#b9e9fc,#009edb);transform-origin:left;animation:week-track-in .65s var(--campus-ease) both}
+.live-lab .week-outcome{background:#f5f8fa;padding:14px;color:var(--campus-navy);border-top:1px solid #d6e2e9}
+.live-lab .week-trying .week-outcome{background:#f4f2f1;color:#596974}
+.live-lab .week-outcome>strong{font-size:15px;letter-spacing:-.02em}
+.live-lab .week-outcome p{line-height:1.7}
+.live-lab .week-dots li{border-radius:3px;border-color:#bdcfda;font-variant-numeric:tabular-nums}
+.week-dots li.current{background:var(--campus-action);border-color:var(--campus-action);color:#fff}
+.week-dots li.done{background:#e4f0f7;color:#4b6d82;border-color:#bdcfda}
+.live-lab .week-skip{background:#e9f1f6;color:#315c79;border-top:1px solid #cbdce7;min-height:44px;border-radius:0}
+.live-lab .week-skip:focus-visible{outline-offset:-4px}
+.month-cue{position:absolute;left:16px;top:58px;z-index:5;padding:10px 18px;border-left:4px solid var(--campus-sky);background:#17384bea;color:#fff;box-shadow:0 4px 12px #10273718;pointer-events:none;max-width:calc(100% - 32px);display:grid;gap:1px;border-radius:0 5px 5px 0}
+.month-cue>span{font-size:10px;letter-spacing:.06em;color:#b9dfef}
+.month-cue strong{font:750 21px/1.4 var(--title)}
+@keyframes week-track-in{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+/* Letters have a paper reading surface with restrained visual-novel framing. */
+dialog{border-color:#b6ccda;box-shadow:0 14px 50px #102b4260;border-radius:8px}
+dialog::backdrop{background:rgb(14 32 46 / .65)}
+.vn-modal .modal-close{background:#ffffffed;color:var(--campus-navy);border-radius:50%;width:40px;min-height:40px}
+.vn-scene{background:linear-gradient(135deg,#17384b,#496a80);border-bottom:3px solid #6ab2cd}
+.vn-text{background:#fffdf8}
+.vn-text h2{color:var(--campus-navy);letter-spacing:-.035em}
+.vn-text .letter-paper{animation:none;border-color:#d9d9cb}
+.letter-pagination{border-top:1px solid #e1e3dc;padding-top:16px;align-items:center;gap:12px}
+.letter-pagination>span{font-variant-numeric:tabular-nums;color:#667887;font-size:12px}
+.mail-folders{border-radius:5px;background:#edf4f8;color:var(--campus-navy)}
+.mail-row{background:#fff}
+.mail-row:hover:not(:disabled){background:#f2f8fc;border-color:var(--campus-line)}
+.mail-toolbar{background:#f8fbfd;border-bottom-color:#b8d0df;border-radius:5px 5px 0 0}
+.scholar-table table{background:#fff}
+
+/* Compact touch surfaces retain the same hierarchy, with no horizontal spill. */
+@media(max-width:899px){
+ .header-content{min-height:76px;gap:12px}
+ .header-nav{display:flex}
+ main.container{padding-top:18px;padding-bottom:34px}
+ .lab-layout,.lab-main,.mail-workspace,.mail-main,.content-row{min-width:0}
+ .faculty-scroll-summary{background:#fff}
+ .lab-scene-heading{padding:8px 12px}
+ .live-lab .week-scene-header{font-size:12px;padding:9px 12px}
+ .live-lab .week-outcome{padding:10px}
+ .live-lab .week-outcome>strong{font-size:13px}
+ .live-lab .week-dots{gap:6px}
+ .live-lab .week-dots li{padding:3px 8px}
+ .monthly-confirm{padding:16px 14px}
+ .decision .choices{gap:10px}
+ .student-panel,.save-points,.project-overview{box-shadow:none}
+ .month-cue{top:44px;left:10px;padding:7px 13px;max-width:calc(100% - 20px)}
+ .month-cue strong{font-size:17px}
+ dialog{max-width:calc(100vw - 20px);max-height:calc(100dvh - 24px)}
+ .vn-modal .modal-close{width:44px;min-height:44px}
+}
+@media(max-width:420px){
+ .header-content{padding-top:10px;padding-bottom:9px;gap:8px}
+ .header-nav{font-size:13px;justify-content:space-between}
+ .brand-name{font-size:21px;letter-spacing:-.045em}
+ .brand{gap:10px}
+ .breadcrumb .container{min-height:43px;font-size:11px;gap:12px}
+ .page-title h1{font-size:26px}
+ .live-lab .week-scene-header{font-size:11px;gap:8px}
+ .choice:after{top:16px}
+ .letter-pagination{gap:8px;flex-wrap:wrap}
+ .letter-pagination button{font-size:12px;padding:8px 11px;min-height:44px}
+ .monthly-confirm{padding-bottom:max(16px,env(safe-area-inset-bottom))}
+}
+@media(max-height:600px) and (max-width:899px){
+ .month-cue{top:42px;padding:5px 10px}
+ .month-cue strong{font-size:15px}
+ .month-cue>span{font-size:9px}
+ .live-lab .week-outcome{padding:5px 8px}
+}
+@media(prefers-reduced-motion:reduce){
+ button,.header-nav a:after,.primary{transition:none}
+ .is-playing .week-scene-header:after{animation:none;transform:none}
+ .month-cue{display:none}
+}
+@media print{
+ body{background:#fff}
+ .student-panel,.welcome,.project-overview,.save-points,.decision,dialog{box-shadow:none;outline:none}
+ .month-cue{display:none}
+}
+
+/* A funding decision is visible as the month closes, even before issue choices. */
+.funding-results{margin:20px 0;padding:18px 20px;border:1px solid #c7dce9;border-top:3px solid var(--campus-sky);border-radius:6px;background:#f1f8fc;scroll-margin-top:var(--lab-scroll-offset,20px)}
+.funding-results h3{font-size:14px;color:var(--campus-navy);margin-bottom:10px}
+.funding-results article+article{border-top:1px solid #d3e3ed;margin-top:12px;padding-top:12px}
+.funding-results article>strong{font-size:15px;color:#245671}
+.funding-results p{font-size:12px;color:#405f72;margin:5px 0}
+.funding-results article>span{font-size:12px;line-height:1.8;color:var(--campus-muted);display:block}
+.funding-results .funding-rejected>strong{color:#766454}
+@media(max-width:600px){.funding-results{padding:14px}.funding-results article>strong{font-size:14px}}
