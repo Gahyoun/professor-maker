@@ -136,7 +136,9 @@ export function adaptResearchText(text,context={},locale='ko'){
   .replaceAll('냉동고 샘플은',withParticle(p.material,'은/는'))
   .replaceAll('라벨이 붙은 튜브들',p.archive)
   .replaceAll('여기 장비로 그때 못 했던 실험을 해 보았습니다','이곳에서 '+withParticle(p.task,'을/를')+' 이어 보았습니다')
-  .replaceAll('최고급 기계로 실험을 하다 보면','새로운 환경에서 '+withParticle(p.task,'을/를')+' 이어 가다 보면')
+  .replaceAll('바다 건너 타지에서 최고급 기계로 실험을 하다 보면','이곳에서 '+withParticle(p.task,'을/를')+' 이어 가다 보면')
+  .replaceAll('이곳의 장비로 연구를 이어 가다 보면','이곳에서 '+withParticle(p.task,'을/를')+' 이어 가다 보면')
+  .replaceAll('최고급 기계로 실험을 하다 보면',withParticle(p.task,'을/를')+' 이어 가다 보면')
   .replaceAll('실험 노트',p.record);
  for(const source of ['오래된 기계','그 기계','기사님을 부르는 기계'])result=replaceNounWithParticle(result,source,source.replace(/기계$/,p.equipment));
  if(p.storage!=='냉동고 맨 아래 칸')result=result.replaceAll('냉동고',p.dry?'자료 보관함':'연구 자료 보관함');

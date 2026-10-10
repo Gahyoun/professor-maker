@@ -29,7 +29,7 @@ export function reviewMeta(record){
  }
  return meta;
 }
-export function reviewPages(record){return getEndingPages(record.ending,'ko',record.relationship,record.name,record.endingReason,record.memories,{statistics:record.statistics,recommendation:record.evidence?.recommendation,fieldId:record.fieldId,field:record.field,labMode:record.labMode}).map(text=>researchText(text,{professorProfile:{labMode:record.labMode}}));}
+export function reviewPages(record){return getEndingPages(record.ending,'ko',record.relationship,record.name,record.endingReason,record.memories,{statistics:record.statistics,recommendation:record.evidence?.recommendation,fieldId:record.fieldId,field:record.field,labMode:record.labMode,passageIds:record.passageIds}).map(text=>researchText(text,{professorProfile:{labMode:record.labMode}}));}
 export function reviewCollection(records){
  const gallery=MAIN_ENDINGS.flatMap(id=>{const record=records.find(r=>r.ending===id);return record?[record]:[];});
  const special=records.find(r=>r.ending==='youtuber');if(special)gallery.push(special);

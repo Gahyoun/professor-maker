@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {getEndingPages,endingMemoryNotes,endingRelationship} from '../dist/stories.js';
+import {getEndingPages,endingMemoryNotes,endingRelationship,endingLetterInsertions} from '../dist/stories.js';
 import {createState} from '../dist/engine.js';
 import {endingStatistics} from '../dist/statistics.js';
 import {DISCIPLINES} from '../dist/disciplines.js';
@@ -23,15 +23,15 @@ test('alternate recommendation scenes preserve each career sequence and the sele
  assert.doesNotMatch(startup.join('\n'),/김지훈는|김지훈가/);
 });
 
-test('letters do not turn a deferred plan into completed work or repeat contact boundaries',()=>{
+test('distant letters omit automated memories and keep contact boundaries in the authored story',()=>{
  const history=['funding-cut','equipment','counsel-coursework'].map((id,i)=>({kind:'event',id,choice:2,month:i+1}));
- const text=endingMemoryNotes(history,'distant').join('\n');
- assert.equal((text.match(/지금은 필요한 기록을 중심으로/g)||[]).length,1);
- assert.match(text,/검토하기로 했던 약속/);
+ assert.deepEqual(endingMemoryNotes(history,'distant'),[]);
+ const deferred=endingMemoryNotes(history,'reserved').join('\n');assert.match(deferred,/검토하기로 했던 약속/);assert.doesNotMatch(deferred,/검토를 마쳤|확인했던 방법을/,'a promised follow-up cannot become completed work');
  const ctx=context();ctx.statistics.student.autonomy=20;
+ assert.deepEqual(endingLetterInsertions('unemployed','distant',history,ctx),[]);
  const unemployed=getEndingPages('unemployed','ko','distant','김민지',null,history,ctx).join('\n');
- assert.match(unemployed,/면담에서는 지원에 필요한/);
- assert.doesNotMatch(unemployed,/이후에는 필요한 절차에 관한 연락만/);
+ assert.doesNotMatch(unemployed,/인계 기록에는|검토하기로 했던 약속을 기억합니다|지금은 필요한 기록을 중심으로/);
+ assert.match(unemployed,/연락|서류|면담/,'the fixed story can still arrange necessary support');
  assert.equal(endingRelationship(-25,'corporate'),'distant');
  assert.equal(endingRelationship(-20,'corporate'),'reserved');
 });

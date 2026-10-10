@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {createState,simulateMonth,decide,validateSave,proposeSchedule,studentTrainingActive,calendarMonth,failureRun,careerEnding} from '../dist/engine.js';
-import {getEndingPages} from '../dist/stories.js';import {endingStatistics} from '../dist/statistics.js';import {endingCollection,MAIN_ENDINGS,retirementScenes} from '../dist/ending-collection.js';import {weeklyAppearance} from '../dist/appearance.js';import {weeklyScene} from '../dist/weekly-scene.js';
+import {createState,simulateMonth,decide,validateSave,proposeSchedule,studentTrainingActive,calendarMonth,failureRun,careerEnding,HIDDEN_RANGES} from '../dist/engine.js';
+import {getEndingPages,endingLetterInsertions} from '../dist/stories.js';import {endingStatistics} from '../dist/statistics.js';import {endingCollection,MAIN_ENDINGS,retirementScenes} from '../dist/ending-collection.js';import {weeklyAppearance} from '../dist/appearance.js';import {weeklyScene} from '../dist/weekly-scene.js';
 test('faculty story retains chronological postdoc letter, call, first meeting, revised letter and colleague greeting',()=>{
  const pages=getEndingPages('true','ko','close','김민지',null,[],{fieldId:'090',labMode:'dry'}),text=pages.join('\n');
  assert.match(text,/소인이 두 번/);assert.match(text,/국제우편/);assert.match(text,/Junior Research Group Leader/);assert.match(text,/사흘 전이 아니라 이틀 전이었다/);
@@ -12,11 +12,26 @@ test('faculty story retains chronological postdoc letter, call, first meeting, r
 test('letter combinations follow personality, abilities, rapport, field and outcome without changing source or RNG',()=>{
  const s=createState('김민지',6);s.ending='bachelor';const before=JSON.stringify(s),versions=new Set();
  for(const relationship of ['close','reserved','distant'])for(const trait of ['caution','expression','curiosity'])for(const skill of ['research','language','teaching','industry'])for(const fieldId of ['090','072','056']){
-  const statistics=structuredClone(endingStatistics(s));statistics.temperament={curiosity:30,caution:30,expression:30};statistics.temperament[trait]=90;statistics.student[skill]=skill==='research'||skill==='language'?900:90;
-  const pages=getEndingPages('bachelor','ko',relationship,'김민지',null,[],{statistics,fieldId,labMode:fieldId==='056'?'wet':'dry'});versions.add(pages.join('\n'));
+  const statistics=structuredClone(endingStatistics(s));statistics.temperament={curiosity:30,caution:30,expression:30};statistics.temperament[trait]=90;
+  // Expression and curiosity need social/creative experience as well as a tendency;
+  // low seed traits must not silently turn both fixtures into the newcomer fallback.
+  for(const [key,score]of Object.entries({social:75,creativity:75,[skill]:95})){const [lo,hi]=HIDDEN_RANGES[key];statistics.student[key]=lo+score*(hi-lo)/100;}
+  const context={statistics,fieldId,labMode:fieldId==='056'?'wet':'dry'},contextBefore=structuredClone(context),notes=endingLetterInsertions('bachelor',relationship,[],context);
+  if(relationship==='close'){assert.equal(notes.length,2);assert.ok(notes.some(note=>note.group==='trait'&&note.id.startsWith(`voice.${trait}.`)),`${trait} is represented within the two-passage cap`);}
+  if(relationship!=='distant'){assert.ok(notes.some(note=>note.group==='skill'&&note.id.startsWith(`voice.${skill}.`)),`${skill} is the strongest eligible ability`);if(relationship==='reserved')assert.equal(notes.length,1);}
+  else assert.deepEqual(notes,[],'distant letters deliberately omit automatic recollections');
+  const pages=getEndingPages('bachelor','ko',relationship,'김민지',null,[],context);versions.add(pages.join('\n'));assert.deepEqual(context,contextBefore);
   assert.ok(!pages.join('').includes('김민지은'));if(relationship==='distant')assert.ok(!pages.join('').includes('긴 안부를 쓰는 일'));
  }
  assert.ok(versions.size>=40);assert.equal(JSON.stringify(s),before);
+ const fieldTasks={'090':'코드와 데이터 처리 과정','072':'설계 도면과 구조·환경 해석','056':'시료와 대조 조건의 비교'},fieldVersions=new Set();
+ for(const [fieldId,task]of Object.entries(fieldTasks)){
+  const text=getEndingPages('institute','ko','close','김민지',null,[],{statistics:endingStatistics(s),fieldId,labMode:fieldId==='056'?'wet':'dry'}).join('\n');
+  assert.ok(text.includes(task),`${fieldId} uses work from the chosen discipline`);fieldVersions.add(text);
+ }assert.equal(fieldVersions.size,3,'field differences remain meaningful in the core research story');
+ const outcomeText=id=>getEndingPages(id,'ko','close','김민지',null,[],{statistics:endingStatistics(s),fieldId:'090',labMode:'dry'}).join('\n');
+ assert.match(outcomeText('institute'),/공동연구 제안|함께 해 주시겠습니까/);assert.match(outcomeText('bachelor'),/대학원 지원서를 내지 않았다|대학원에 가지 않기로/);assert.match(outcomeText('startup'),/첫 고객|회사를 시작/);
+ assert.equal(new Set(['institute','bachelor','startup'].map(outcomeText)).size,3,'the shared passage bank cannot replace the career-specific events');
  for(const id of ['youtuber','bachelor','external_masters','external_phd'])assert.ok(!getEndingPages(id,'ko','reserved','김지훈').join('').includes('긴 안부를 쓰는 일'));
  const corporate=getEndingPages('corporate','ko','reserved','김민지').join('');assert.equal(corporate.split('커피는 정말로 한 잔뿐이었다').length-1,1);
  const high=getEndingPages('corporate','ko','close','김민지',null,[],{fieldId:'072',labMode:'dry'}).join('');assert.ok(!/어색하니까|냉동고|배양/.test(high));

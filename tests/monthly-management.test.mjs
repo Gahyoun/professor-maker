@@ -68,8 +68,11 @@ test('fresh-doctorate faculty preparation requires strong work and visibility wi
 });
 test('email combinations use personality, final state and field without changing saved data or RNG',()=>{
  const s=createState('학생',77);s.ending='institute';s.month=96;const context={statistics:endingStatistics(s),fieldId:'048',labMode:'dry'},before=clone(context);const a=getEndingPages('institute','ko','close','학생',null,[],context);
- const b=clone(context);b.statistics.temperament={caution:90,curiosity:10,expression:10};const c=clone(context);c.statistics.student.stress=90;const d={...clone(context),fieldId:'055',labMode:'wet'};
- for(const variant of [b,c,d])assert.notDeepEqual(getEndingPages('institute','ko','close','학생',null,[],variant),a);assert.deepEqual(context,before);assert.equal(getEndingPages('corporate','ko','close','학생',null,[],context).join('').includes('냉동고'),false);assert.ok(!a.join('').includes('실험'));assert.ok(a.join('').includes('수학'));
+ const b=clone(context);b.statistics.temperament={caution:90,curiosity:10,expression:10};const c=clone(context);c.statistics.student.teaching=95;const d={...clone(context),fieldId:'055',labMode:'wet'};
+ for(const variant of [b,c,d])assert.notDeepEqual(getEndingPages('institute','ko','close','학생',null,[],variant),a);
+ const stressed=clone(context);stressed.statistics.student.stress=90;stressed.statistics.student.stamina=1;
+ assert.doesNotMatch(getEndingPages('institute','ko','close','학생',null,[],stressed).join('\n'),/제 속도에 맞는 생활과 일하는 방식|하루를 정리할 때 생활을 돌본/,'advanced research letters omit recovery tone');
+ assert.deepEqual(context,before);assert.equal(getEndingPages('corporate','ko','close','학생',null,[],context).join('').includes('냉동고'),false);assert.ok(!a.join('').includes('실험'));assert.match(a.join(''),/정의와 가정|증명과 반례/,'the concise letter retains discipline-specific work without a repeated field label');
 });
 test('room layouts and sixteen distinct fringes are cosmetic, escape labels and preserve RNG',()=>{
  const s=createState('학생',77),before=clone(s),halls=new Set();for(let m=0;m<16;m++)halls.add(conferenceHall({...s,month:m}));assert.equal(halls.size,4);assert.equal(figureType({...s,professorProfile:{...s.professorProfile,fieldId:'048'}}),'equation');assert.equal(figureType({...s,professorProfile:{...s.professorProfile,fieldId:'055'}}),'spectrum');

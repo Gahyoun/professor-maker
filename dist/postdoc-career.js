@@ -64,12 +64,13 @@ export function postdocScenes(story,context={},setting={task:'연구 자료와 �
 
 export function postdocLetter(context={},locale='ko',setting={task:'연구 자료와 검증 절차'}){
  const {id}=postdocCareer(context,'group_leader');
- const task=withParticle(setting.task,'을/를'),enTask=setting.task;
+ // The preceding letter page names the field-specific work. Refer back to it
+ // here rather than repeating that same noun slot in consecutive paragraphs.
  const openings={
-  group_leader:p(`Junior Research Group Leader를 맡다 보니, ${task} 검토하는 일뿐 아니라 팀의 연구비와 공동연구 일정, 역할을 조율하는 일도 배우고 있습니다.`,`As a Junior Research Group Leader, I am learning to plan our budget and coordinate responsibilities and collaborations, as well as work on ${enTask}.`),
-  fellowship:p(`제 이름으로 낸 연구계획서가 지원과제에 선정되었습니다. ${task} 검토할 연구비가 생겼고, 계획서의 약속과 실제 진도를 함께 살피고 있습니다.`,`The research proposal I submitted received funding. I can pursue ${enTask}, while learning to compare the commitments in my proposal with the work as it develops.`),
-  research_professor:p(`이곳 연구소에서 연구교수로 일하게 되었습니다. ${task} 검토하는 과제와 세미나를 맡으며, 연구를 설명하고 동료들의 질문을 듣는 일도 배우고 있습니다.`,`I have started work as a Research Professor at this institute. Alongside a project on ${enTask}, I lead a seminar and am learning to explain the work and listen to colleagues’ questions.`),
-  postdoc:p(`박사후연구를 이어 가며 ${task} 검토하고 있습니다. 공동연구 회의에서는 제 질문과 필요한 자료를 먼저 정리해 가져가는 습관이 생겼습니다.`,`I am continuing my postdoctoral work on ${enTask}. Before collaboration meetings, I now set out my questions and the evidence I need.`),
+  group_leader:p('Junior Research Group Leader를 맡다 보니, 그 연구를 이어 가는 일과 함께 팀의 연구비와 공동연구 일정, 역할을 조율하고 있습니다.','As a Junior Research Group Leader, I continue that research while planning our budget and coordinating responsibilities and collaborations.'),
+  fellowship:p('제 이름으로 낸 연구계획서가 지원과제에 선정되었습니다. 그 연구를 계속할 연구비가 생겼고, 계획서의 약속과 실제 진도를 함께 살피고 있습니다.','The research proposal I submitted received funding. I can continue that work, comparing the commitments in my proposal with the research as it develops.'),
+  research_professor:p('이곳 연구소에서 연구교수로 일하게 되었습니다. 그 연구의 후속 과제와 세미나를 맡아, 동료들의 질문을 들으며 연구의 방향을 함께 의논합니다.','I have started work as a Research Professor at this institute. I lead a follow-up project and a seminar, discussing our direction and listening to colleagues’ questions.'),
+  postdoc:p('박사후연구를 이어 가며 그 연구의 다음 질문을 검토하고 있습니다. 공동연구 회의에서는 제 질문과 필요한 자료를 먼저 정리해 가져가는 습관이 생겼습니다.','I am continuing my postdoctoral work and examining the next question it raises. Before collaboration meetings, I set out my questions and the evidence I need.'),
  };
  return openings[id][locale]+p('\n\n아직 전임교원 지원 결과는 모르지만, 교수님께 좋은 소식을 전해 드리고 싶어서 제 자리에서 할 일을 이어 가고 있습니다. 좋은 소식은 꼭 직접 들고 찾아뵙겠습니다.\n\n건강하세요.\n― {name} 올림','\n\nI do not know the result of my faculty application yet. I am continuing my work and hope to bring you good news in person. Please take care.\n— {name}')[locale];
 }
