@@ -27,6 +27,7 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  const looseEnd=[0,0,0,67,68,89,100][l];
  const hair=mix(a.hair,'#766058',.14),hairD=mix(a.hair,'#19202d',.22),hairM=mix(hair,'#b4a09a',.18),hairH=mix(hair,'#cfb7a9',.35),edge=mix(hair,'#20202b',.58);
  const skin=mix(a.skin,'#fff0df',.25),skinD=mix(skin,'#b77968',.24),skinH=mix(skin,'#fff7e8',.4);
+ const buzz=mix(hair,skin,.32),buzzFade=mix(buzz,skin,.28),buzzLight=mix(buzz,skinH,.16);
  const shirt=a.shirt,white='#f4f0eb';
  // Saved outfit slots: coat, knit cardigan, zip hoodie, layered shirt, striped
  // tee and casual jacket. Contemporary everyday clothes share the same anatomy.
@@ -82,7 +83,14 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  box(17,42,20,48,skin);box(59,42,62,48,skinD);box(18,43,19,46,skinD);box(59,43,60,46,skin);
  poly([[24,35],[27,29],[35,25],[43,25],[42,29],[30,31]],skinH);
  row(62,33,46,skinD);row(63,36,43,skinD);
- if(!l){oval(40,26,25,18,mix(hair,'#c0a295',.38));oval(39,24,23,16,mix(hair,'#c8b2a0',.5));for(let x=19;x<=60;x+=4)put(x,25+(x%3),hairM);}
+ if(!l){
+  // Close-cropped hair follows the scalp, leaving an open forehead instead of
+  // the deep solid edge of a bowl cut. Fine stubble and side fades stay subtle.
+  poly([[17,27],[19,19],[25,13],[34,10],[44,10],[54,13],[60,19],[63,28],[61,32],[57,30],[50,29],[43,30],[34,29],[27,30],[21,33],[17,31]],buzz);
+  poly([[19,22],[23,17],[29,14],[40,12],[49,14],[54,17],[46,16],[34,15],[26,18],[23,24]],buzzLight);
+  poly([[18,26],[22,25],[23,31],[21,35],[18,36]],buzzFade);poly([[57,24],[62,27],[62,35],[59,37],[58,30]],buzzFade);
+  for(let y=18;y<=28;y+=3)for(let x=23+(y%2);x<=56;x+=4)put(x,y,(x+y)%3?buzzLight:buzzFade);
+ }
 
  // Short torso, roomy shoulders and sleeves; two compact trouser legs.
  pixels=body;
@@ -134,21 +142,45 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
   row(92,27,35,rib);row(92,45,53,rib);row(88,24,29,rib);row(88,51,56,rib);row(94,36,43,'#d7dcd4');
  }
 
- // Bent thighs and forward forearms: sitting is an anatomical pose.
+ // Active front poses replace the hanging arms instead of painting a second
+ // pair on top. Only sleeve margins and the old hand pixels are cleared.
+ if(facing==='front'&&['seated','experiment','lecturing'].includes(pose)){
+  box(21,73,23,92,null);box(57,73,59,92,null);
+  box(24,88,24,92,null);box(56,88,56,92,null);
+  box(25,89,28,92,topH);box(52,89,55,92,topD);
+ }
+ // Relaxed elbows bend down towards two separate hands resting on the lap.
  if(pose==='seated'){
   box(22,98,57,111,null);poly([[29,94],[50,94],[54,98],[51,102],[39,101],[34,104],[28,101]],pants);
   box(28,100,35,106,pants);box(48,99,55,107,pants);row(100,40,53,pantsH);box(29,102,31,106,pantsH);
   row(106,28,35,pantsD);row(107,48,55,pantsD);sneaker(27,107);sneaker(48,108,11);
-  poly([[25,75],[30,76],[29,84],[36,85],[37,89],[27,89],[23,84]],topH);poly([[55,75],[50,76],[51,84],[44,85],[43,89],[53,89],[57,84]],top);
-  row(85,32,35,outfit===0?topD:rib);row(85,44,47,outfit===0?topD:rib);
-  box(35,86,39,89,skin);box(41,86,45,89,skin);row(89,35,39,skinD);row(89,41,45,skinD);
+  poly([[27,71],[30,73],[29,80],[27,84],[24,84],[23,80],[24,75]],topH);
+  poly([[25,81],[29,81],[35,87],[36,91],[32,92],[26,87],[24,84]],topH);
+  poly([[53,71],[56,75],[57,80],[56,84],[53,84],[51,80],[50,73]],top);
+  poly([[51,81],[55,81],[56,84],[54,87],[48,92],[44,91],[45,87]],top);
+  poly([[31,87],[34,86],[37,90],[35,92],[33,91]],outfit===0?topD:rib);
+  poly([[46,86],[49,87],[47,91],[45,92],[43,90]],outfit===0?topD:rib);
+  poly([[35,90],[38,90],[39,92],[38,94],[35,94],[34,92]],skin);
+  poly([[42,90],[45,90],[46,92],[45,94],[42,94],[41,92]],skin);
+  row(93,35,38,skinD);row(93,42,45,skinD);put(36,90,skinH);put(43,90,skinH);
  }
  if(pose==='experiment'){
-  poly([[25,75],[30,77],[29,84],[36,85],[37,89],[26,89],[22,84]],topH);box(35,86,41,89,skin);
-  poly([[51,75],[56,76],[57,81],[65,82],[65,86],[54,87],[51,83]],top);box(64,81,68,84,skin);row(84,64,68,skinD);
-  row(85,31,35,topD);box(62,82,63,85,topD);
+  poly([[27,71],[30,73],[29,80],[27,84],[23,84],[23,79],[25,74]],topH);
+  poly([[25,81],[29,80],[34,83],[36,83],[36,87],[31,87],[26,86],[23,83]],topH);
+  poly([[51,72],[54,71],[57,75],[59,80],[56,84],[53,80],[51,77]],top);
+  poly([[56,79],[59,78],[64,80],[65,81],[64,84],[59,84],[56,83]],top);
+  row(84,33,35,outfit===0?topD:rib);row(85,33,35,outfit===0?topD:rib);
+  box(62,80,64,83,outfit===0?topD:rib);
+  poly([[35,83],[39,83],[41,84],[41,86],[39,87],[35,87]],skin);
+  poly([[64,80],[68,80],[70,81],[69,83],[65,83],[64,82]],skin);
+  row(86,35,39,skinD);row(83,65,68,skinD);put(36,83,skinH);put(65,80,skinH);
  }
- if(pose==='lecturing')box(21,72,29,92,null);
+ if(pose==='lecturing'){
+  box(24,73,25,88,null);box(25,88,25,92,null);
+  // The left arm is animated below; the opposite arm stays relaxed.
+  poly([[26,72],[30,72],[30,89],[27,91],[26,87]],topH);
+  box(52,89,56,92,skinD);put(53,89,skin);
+ }
 
  // Crown highlights follow grouped locks instead of straight horizontal bands.
  pixels=frontHead;
@@ -241,7 +273,7 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
   box(35,63,45,68,skinD);
   poly([[27,68],[39,65],[50,67],[54,74],[54,91],[49,96],[28,94],[24,87],[24,75]],top);
   poly([[27,70],[32,68],[31,88],[28,91],[25,86],[25,74]],topH);
-  poly([[48,68],[54,72],[57,78],[53,83],[48,80]],topD);
+  poly([[48,68],[53,71],[55,75],[53,79],[49,77]],topD);
   row(92,29,49,topD);row(93,30,48,topD);
   if(outfit===0){poly([[31,68],[38,66],[46,67],[50,71],[44,73],[34,73]],'#dbe3df');box(40,74,41,92,'#c4ceca');row(86,29,35,'#c5d2d0');box(28,94,50,97,white);}
   else if(outfit===1){for(const x of [29,33,47,51])box(x,77,x,90,stitch);row(91,28,50,rib);row(94,29,49,white);}
@@ -249,14 +281,19 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
   else if(outfit===3){row(74,28,51,topD);for(const x of [29,33,47,51])box(x,76,x,90,stitch);row(92,29,49,topD);row(94,30,48,white);}
   else if(outfit===4){for(const y of [76,82,88]){row(y,27,51,stripe);row(y+1,27,51,mix(stripe,white,.2));}row(92,29,49,'#d7dcd4');}
   else if(outfit===5){poly([[30,68],[36,66],[45,68],[48,72],[34,73]],topH);row(77,29,51,topD);row(91,28,50,rib);row(94,29,49,white);}
-  // Forearms reach the desktop, with the hands immediately above the keyboard.
+  // Each upper arm starts at the visible side of the torso, bends once at the
+  // elbow, then follows the desktop; no sleeve crosses the back or long hair.
+  // Both keyboard contact points are unchanged across clothing and hair styles.
   pixels=farArm;
-  poly([[50,71],[55,72],[58,79],[68,82],[70,84],[66,87],[56,84],[52,77]],top);
+  poly([[49,70],[53,70],[56,74],[58,79],[61,80],[67,81],[68,82],[68,86],[60,85],[56,84],[53,79],[50,75]],top);
+  poly([[53,75],[55,76],[58,81],[61,82],[66,83],[66,85],[59,84],[56,82]],topD);
   box(66,82,67,85,outfit===0?topD:rib);
   box(68,83,73,85,skin);row(85,68,73,skinD);
   pixels=nearArm;
-  poly([[28,73],[32,72],[37,81],[42,84],[49,83],[58,81],[60,83],[49,87],[41,89],[31,84],[27,77]],topH);
-  row(83,55,57,outfit===0?topD:rib);row(84,54,57,outfit===0?topD:rib);
+  poly([[46,70],[50,70],[53,73],[54,79],[54,80],[58,80],[59,82],[58,84],[51,85],[48,83],[47,80],[45,74]],topH);
+  poly([[47,74],[49,75],[50,80],[52,82],[55,82],[55,84],[51,84],[48,82]],top);
+  row(82,49,51,topD);row(83,52,54,topD);
+  box(56,80,57,83,outfit===0?topD:rib);row(84,55,57,outfit===0?topD:rib);
   box(58,81,63,83,skin);row(83,58,63,skinD);
   pixels=body;
   poly([[43,94],[49,94],[69,95],[73,98],[72,102],[65,101],[57,98],[43,98]],pantsD);
@@ -277,7 +314,7 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
   row(37,55,60,hairD);row(56,58,61,mouth);
   if(a.glasses){row(39,54,62,'#514658');row(51,54,62,'#514658');box(53,40,54,50,'#514658');box(62,40,63,50,'#514658');row(42,47,54,'#514658');put(55,40,'#f9eeec');}
   // The rear crown retains the saved length, fringe family, curls and highlights.
-  const rearHair=l?hair:mix(hair,'#c8b2a0',.5);
+  const rearHair=l?hair:buzz;
   oval(34,31,23,24,l?hairD:rearHair);
   poly([[13,31],[16,22],[21,16],[30,11],[41,10],[49,14],[54,22],[55,29],[52,37],[47,39],[46,31],[39,35],[39,49],[34,55],[21,52],[15,46]],rearHair);
   if(l){poly([[17,26],[24,19],[34,16],[43,17],[49,21],[43,22],[36,20],[27,22],[21,27]],hairM);poly([[22,21],[29,18],[36,18],[34,20],[27,23]],hairH);
@@ -285,16 +322,30 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
    if(l===4){poly([[14,42],[23,44],[25,57],[29,62],[25,66],[17,64],[12,57]],hair);poly([[15,45],[18,43],[20,55],[24,60],[21,62],[16,57]],hairM);}
    else if(l>=2)poly([[18,45],[24,48],[26,61],[22,65],[18,60]],hair);
    if(a.curly)for(const [x,y]of [[18,23],[27,16],[39,14],[49,20],[15,35],[49,33]]){oval(x,y,5,4,hair);poly([[x-2,y-2],[x+2,y-2],[x+3,y],[x,y+2]],hairM);}
-   // Small stepped locks identify the saved fringe family in profile. They
-   // stop above the eye and spectacle lens; a buzz cut has no fringe at all.
+   // The forehead follows the forward crown in rear three-quarter view. A
+   // continuous hair cap prevents a shaved-looking skin strip at the temple.
+   // Its lower edge stays above the eye and the upper spectacle rim (y=39).
+   const foreheadCap=l===1?
+    [[48,23],[55,24],[59,27],[63,31],[63,34],[60,36],[57,34],[53,33],[50,29]]:
+    [[47,21],[54,22],[60,25],[64,29],[65,33],[63,36],[60,37],[58,38],[56,35],[52,34],[49,29]];
+   poly(foreheadCap,hair);
+   poly([[49,23],[54,24],[59,27],[62,30],[60,31],[56,28],[52,27]],hairM);
+   // Saved fringe families end in different stepped locks above the brow.
+   // The buzz cut skips this branch and keeps its original cropped silhouette.
    const sideFringe=l===1?[[50,25],[57,27],[61,31],[61,34],[58,32],[57,35],[55,31],[52,32]]:
     fringe%4===0?[[49,24],[58,27],[61,31],[61,38],[58,35],[56,38],[55,32],[51,33],[50,29]]:
     fringe%4===1?[[49,25],[57,27],[61,31],[62,35],[60,34],[59,38],[57,36],[56,32],[53,35],[53,30]]:
     fringe%4===2?[[50,23],[56,25],[60,29],[60,33],[57,30],[55,33],[54,28],[51,29]]:
     [[48,25],[54,25],[58,28],[62,33],[62,36],[59,35],[59,39],[57,36],[55,34],[54,31],[51,32]];
-   const fullerFringe=sideFringe.map(([x,y])=>[x,Math.min(x>=55?39:41,y+(y>=27?2:0))]);
-   poly(fullerFringe,hair);poly([[52,28],[55,29],[57,32],[55,31],[53,31]],hairM);
-  }else for(let x=18;x<52;x+=4)put(x,26+(x%3),hairM);
+   const fullerFringe=sideFringe.map(([x,y])=>[x+(x>=57?2:0),Math.min(38,y+(y>=27?3:0))]);
+   poly(fullerFringe,hair);poly([[54,28],[58,29],[61,32],[59,31],[56,31]],hairM);
+   if(a.curly)for(const [x,y]of [[57,26],[61,30]]){oval(x,y,3,3,hair);poly([[x-2,y-2],[x+1,y-2],[x+2,y],[x,y+1]],hairM);}
+  }else{
+   // Fade the close crop into the temple and nape; no fringe or tied tail.
+   poly([[17,24],[23,18],[33,14],[42,15],[49,20],[47,23],[39,19],[28,20],[21,26]],buzzLight);
+   poly([[16,38],[20,41],[24,47],[34,49],[38,44],[41,36],[47,34],[51,30],[54,28],[52,37],[47,39],[46,33],[42,39],[39,49],[34,55],[21,52],[15,46]],buzzFade);
+   for(let y=22;y<=38;y+=3)for(let x=19+(y%2);x<=46;x+=4)put(x,y,(x+y)%3?buzzLight:buzzFade);
+  }
   oval(44,48,4,5,skinD);oval(45,47,3,4,skin);box(44,46,45,49,skinD);
  }
 
@@ -324,10 +375,10 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  if(facing==='monitor')rects=parts.map((part,i)=>`<g data-avatar-part="${STUDENT_MONITOR_LAYERS[i]}">${part.join('')}</g>`).join('');
  const styles=['까까머리','크롭컷','짧은 머리','중간 길이 머리','단발','어깨 길이 머리','긴 머리'];
  const title=escape(`${label} · ${EXPRESSIONS[expression]} · ${styles[originalLength]}${hairStyle==='ponytail'?' · 포니테일':hairStyle==='braided-bun'?' · 땋아올린 번':''}${a.curly&&l?' · 곱슬머리':''}${a.glasses?' · 안경':''}${l?` · 앞머리 ${fringe+1}`:''}${pose==='lecturing'?' · 칠판 앞에서 강의':''}${facing==='monitor'?' · 모니터를 바라보며 앉음':''}`);
- // The raised TA arm shares the new torso coordinates; the pointer is shortened
- // independently so stretching the torso cannot pull its tip outside the frame.
- const armPoints=[[13,36],[16,36],[16,41],[12,41],[12,38],[10,38],[10,35],[8,35],[8,30],[11,30],[11,33],[13,33]].map(([x,y])=>[x*2,Math.round(bodyY(y*2))]);
- const palmTop=Math.round(bodyY(58)),palmBottom=Math.round(bodyY(64)),grip=Math.round(bodyY(60));
- const arm=pose==='lecturing'?`<g transform="translate(0 24) scale(4)" shape-rendering="crispEdges"><g class="ta-lecture-arm"><path d="M${armPoints.map(([x,y])=>`${x} ${y}`).join('L')}z" fill="${top}" stroke="${topD}" stroke-width="1.2"/><path d="M18 ${grip}V${grip-6}H16V7" fill="none" stroke="#756353" stroke-width="2" class="ta-pointer"/><path d="M16 7v2" stroke="#e9e5d8" stroke-width="2"/><path d="M16 ${palmTop}h6v${palmBottom-palmTop}h-6z" fill="${skin}" stroke="${skinD}" stroke-width="1"/></g></g>`:'';
+ // The upper arm bends away from the shoulder and the forearm rises to the
+ // pointer. A shoulder pivot keeps the single animated arm attached in motion.
+ const armPoints=[[27,71],[30,73],[23,80],[18,80],[14,77],[13,73],[13,65],[18,64],[19,73],[23,73]].map(([x,y])=>[x,Math.round(bodyY(y))]);
+ const shoulderY=Math.round(bodyY(71)),palmTop=Math.round(bodyY(60)),palmBottom=Math.round(bodyY(65)),grip=Math.round(bodyY(61)),cuffY=Math.round(bodyY(64));
+ const arm=pose==='lecturing'?`<g transform="translate(0 24) scale(4)" shape-rendering="crispEdges"><g class="ta-lecture-arm" style="transform-origin:27px ${shoulderY}px"><path d="M${armPoints.map(([x,y])=>`${x} ${y}`).join('L')}z" fill="${top}" stroke="${topD}" stroke-width="1"/><path d="M15 ${Math.round(bodyY(73))}V${cuffY+2}M19 ${Math.round(bodyY(77))}L26 ${shoulderY+3}" fill="none" stroke="${topH}" stroke-width="1"/><path d="M13 ${cuffY}h5v2h-5z" fill="${outfit===0?topD:rib}"/><path d="M16 ${grip}V7" fill="none" stroke="#756353" stroke-width="1.5" class="ta-pointer"/><path d="M16 7v2" stroke="#e9e5d8" stroke-width="1.5"/><path d="M14 ${palmTop}h4l1 2v${palmBottom-palmTop-3}l-1 1h-4z" fill="${skin}" stroke="${skinD}" stroke-width=".6"/><path d="M16 ${palmTop+2}h3" stroke="${skinH}" stroke-width="1"/></g></g>`:'';
  return `<svg class="portrait" data-expression="${expression}" data-pose="${pose}" data-outfit="${outfit}"${facing==='monitor'?' data-facing="monitor"':''} data-head-scale="${STUDENT_HEAD_SCALE}" data-body-proportion="3.5"${hairStyle!=='loose'?` data-hair-style="${hairStyle}"`:''} viewBox="0 0 320 496" role="img" aria-label="${title}"><title>${title}</title><g class="hair-fringe chibi-grid ${expression==='sad'?'expression-tear':''}" shape-rendering="crispEdges" transform="translate(0 24) scale(2)">${rects}</g>${arm}</svg>`;
 }
