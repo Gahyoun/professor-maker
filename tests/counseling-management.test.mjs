@@ -15,7 +15,7 @@ const rest=['rest','rest','rest','rest'];
 const clone=x=>structuredClone(x);
 
 test('stage-specific counseling covers career, academic learning and research without ranking careers',()=>{
- const s=createState('',6),counseling=EVENTS.filter(e=>e.kind==='counseling');assert.equal(counseling.length,10);
+ const s=createState('',6),counseling=EVENTS.filter(e=>e.kind==='counseling'&&e.id!=='military-hidden');assert.equal(counseling.length,10);
  for(const e of counseling){s.month=e.minMonth;s.route=s.month>=24?'integrated':null;s.project.phase=2;assert.ok(eventEligible(s,e),e.id);s.pending={kind:'event',id:e.id};assert.ok(validateSave(s),e.id);
   for(const choice of [0,1]){const n=decide(s,choice);assert.ok(validateSave(n));assert.ok(n.hidden.rapport>=s.hidden.rapport);assert.ok(endingMemoryNotes(n.history).length);n.ending='leave';const cv=buildEndingCV(n);assert.ok(validateCVModel(cv.model));assert.ok(cv.model.memories.some(m=>m.title===e.title.ko));}
   assert.ok(e.options.every(o=>!Object.hasOwn(o.effects?.career??{},'papers')),'A conversation never invents an achievement');

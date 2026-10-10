@@ -8,18 +8,19 @@ import {DISCIPLINES,degreeTargets} from '../dist/disciplines.js';
 const copy=s=>structuredClone(s);
 const normalized=s=>Object.fromEntries(Object.keys(s.hidden).map(k=>[k,abilityScore(s,k)]));
 function setScore(s,key,value){const [lo,hi]=HIDDEN_RANGES[key];s.hidden[key]=lo+value*(hi-lo)/100;}
-function resolve(s,route='integrated') {
+function resolve(s,route='integrated',pressure=false) {
   let guard=0;
   while(s.pending&&!s.ending) {
     assert.ok(guard++<16,'decision queue must terminate');
-    const kind=s.pending.kind;if(['monthly-issue','conference-plan','failure-counsel','conversation-topic'].includes(kind)){s=decide(s,({'monthly-issue':'acknowledge','conference-plan':s.pending.scope==='domestic'?'together':'none','failure-counsel':'review','conversation-topic':'daily'})[kind]);continue;}if(kind==='story'||kind==='academic-exam'||kind==='thesis'){const c=kind==='story'?'encourage':kind==='academic-exam'?'support':({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[s.pending.step];s=decide(s,c);continue;}
+    const kind=s.pending.kind;if(['monthly-issue','conference-plan','failure-counsel','conversation-topic'].includes(kind)){s=decide(s,({'monthly-issue':'acknowledge','conference-plan':s.pending.scope==='domestic'?'together':'none','failure-counsel':pressure?'strict':'review','conversation-topic':'daily'})[kind]);continue;}if(kind==='story'||kind==='academic-exam'||kind==='thesis'){const c=kind==='story'?'encourage':kind==='academic-exam'?'support':({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[s.pending.step];s=decide(s,c);continue;}
+    if(pressure&&kind==='event'&&s.pending.id==='monthly-workload'){s=decide(s,1);continue;}
     s=decide(s,kind==='presentation-recovery'?'rehearse':kind==='external-admission'?'remain':kind==='event'?0:kind==='route'?route:kind==='masters'?'continue':kind==='qual'?'exam':kind==='sabbatical'?'home':kind==='defense'?'defend':'consult');
   }
   return s;
 }
 function strategy(s,goal='institute') {
   const plan=proposeSchedule(s),h=normalized(s);
-  if(['unemployed','unrelated'].includes(goal)&&s.career.papers>=3){plan.splice(0,4,'rest','coffee','rest',h.learning<50?'study':'language');}
+  if(['unemployed','unrelated'].includes(goal)&&s.career.papers>=3){plan.splice(0,4,'rest','coffee','rest',h.learning<50?'study':'rest');}
   else if(goal==='true') {s.publication.journal='leading';if(!s.project.submitted)s.project.journal='leading';
     plan[3]=h.learning<85?'study':h.language<75?'language':h.teaching<75?'teach':h.social<65?'coffee':'study';
     if(s.project.phase===5){plan[0]=h.teaching<75?'teach':'study';plan[1]=h.language<75?'language':'coffee';}
@@ -219,10 +220,12 @@ test('the hidden resident researcher career is reachable after a full real culti
 });
 test('sustained overwork causes leave while sustained relationship damage causes dropout',()=>{
   let s=createState('Student',6,{gender:'female',institution:'institute'});
+  // Start in graduate research to isolate overwork from undergraduate admission criteria.
+  s.month=24;s.route='integrated';
   for(let i=0;i<36&&!s.ending;i++){
     const primary=['study','experiment','experiment','analysis','paper','paper'][s.project.phase],plan=Array(4).fill(primary);
     if([4,10].includes(calendarMonth(s.month,s.locale)))plan[2]='conference';
-    s=resolve(simulateMonth(s,plan,{proposal:plan,feedback:'listen',policies:{work:'intensive',study:'research'}}));
+    s=resolve(simulateMonth(s,plan,{proposal:plan,feedback:'listen',policies:{work:'intensive',study:'research'}}),'integrated',true);
   }
   assert.equal(s.ending,'leave');assert.ok(s.history.some(h=>h.kind==='warning'&&h.reason==='health'));assert.ok(abilityScore(s,'rapport')>12);assert.ok(abilityScore(s,'rapport')>12);
 });

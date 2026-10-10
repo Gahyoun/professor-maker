@@ -1,3 +1,4 @@
+import {DILEMMAS} from "./monthly-choices.js";
 // Original fictional situations. Numeric effects are game balance, not empirical rates.
 const p = (ko, en) => ({ ko, en });
 const option = (ko, en, effects, progress = 0) => ({ label: p(ko, en), effects, ...(progress ? { progress } : {}) });
@@ -337,3 +338,7 @@ export const EVENTS = [
 for(const e of EVENTS.filter(e=>e.kind==='counseling')){e.options.push(option('우선 학생이 계획을 정하고 다음 면담에서 근거를 설명하게 한다','Ask for an independently justified plan',{hidden:{autonomy:2,rapport:-.4,stress:1},professor:{mentoring:.3}}),option('합의한 목표와 기한을 명확히 하고 보완을 요구한다','Set a clear deadline and require revisions',{hidden:{diligence:1,research:.4,stress:3,rapport:-1.4,confidence:-.5},professor:{research:.5}}));}
 
 for(const e of EVENTS.filter(e=>e.kind!=='counseling'&&e.options.length===2)){e.options.push(option('기존 계획을 유지하고 다음 면담에서 다시 검토한다','Keep the plan and revisit it next month',{hidden:{autonomy:.5,rapport:-.3,stress:.5}}),option('우선순위와 기한을 정하고 보완 보고를 요청한다','Set priorities and request a follow-up report',{hidden:{diligence:.4,rapport:-.8,stress:1},professor:{admin:.3}}));}
+
+EVENTS.push(...DILEMMAS);
+
+EVENTS.push(event('military-hidden','교수님, 지금이라도 다녀올까요?','A question about service','“교수님, 저 군대를 지금이라도 갔다 와야 할까요?” 학생은 연구를 이어 갈 시점과 병역 일정을 함께 고민한다. 교수는 잠시 말을 고른다. 나는 전문연구요원으로 병역을 이행해서, 다른 복무 경험에 대해 해 줄 말은 많지 않다. 내 경험만으로 학생의 선택을 정할 수는 없었다.','The student asks about service timing. The adviser has experience as a research service personnel, not every service route.','counseling',[option('내 경험의 범위를 밝히고 학생의 걱정부터 듣는다','State the limits of my experience and listen',{hidden:{rapport:2,stress:-2,autonomy:1},professor:{mentoring:-.5}}),option('공식 안내와 담당 상담 창구를 함께 찾는다','Look up official guidance together',{hidden:{rapport:1,autonomy:2},professor:{admin:-1}}),option('졸업·연구 일정만 비교하고 선택은 학생에게 맡긴다','Compare research timing and leave the decision to the student',{hidden:{autonomy:2,stress:1},professor:{research:.3}})],{minMonth:12,maxMonth:60,once:true,requires:'male_pair',weight:.5}));

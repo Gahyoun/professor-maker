@@ -69,9 +69,9 @@ test('email combinations use personality, final state and field without changing
  const b=clone(context);b.statistics.temperament={caution:90,curiosity:10,expression:10};const c=clone(context);c.statistics.student.stress=90;const d={...clone(context),fieldId:'055',labMode:'wet'};
  for(const variant of [b,c,d])assert.notDeepEqual(getEndingPages('institute','ko','close','학생',null,[],variant),a);assert.deepEqual(context,before);assert.equal(getEndingPages('corporate','ko','close','학생',null,[],context).join('').includes('냉동고'),false);assert.ok(!a.join('').includes('실험'));assert.ok(a.join('').includes('수학'));
 });
-test('room layouts and eight distinct fringes are cosmetic, escape labels and preserve RNG',()=>{
+test('room layouts and sixteen distinct fringes are cosmetic, escape labels and preserve RNG',()=>{
  const s=createState('학생',77),before=clone(s),halls=new Set();for(let m=0;m<16;m++)halls.add(conferenceHall({...s,month:m}));assert.equal(halls.size,4);assert.equal(figureType({...s,professorProfile:{...s.professorProfile,fieldId:'048'}}),'equation');assert.equal(figureType({...s,professorProfile:{...s.professorProfile,fieldId:'055'}}),'spectrum');
- const a={...studentAppearance(77,'female'),hairLength:5};const fringes=new Set(Array.from({length:8},(_,fringe)=>renderPortrait({...a,fringe})));assert.equal(fringes.size,8);assert.ok([...fringes].every(svg=>svg.includes('160 248')&&svg.includes('hair-fringe')));assert.ok(!renderPortrait(a,'<img>').includes('<img>'));assert.ok(roomScene(s).includes('data-props'));assert.deepEqual(s,before);
+ const a={...studentAppearance(77,'female'),hairLength:5};const fringes=new Set(Array.from({length:16},(_,fringe)=>renderPortrait({...a,fringe})));assert.equal(fringes.size,16);assert.ok([...fringes].every(svg=>svg.includes('160 248')&&svg.includes('hair-fringe')));assert.ok(!renderPortrait(a,'<img>').includes('<img>'));assert.ok(roomScene(s).includes('data-props'));assert.deepEqual(s,before);
 });
 test('well prepared graduate presentations can earn awards and appear as important issues',()=>{
  let awards=0;for(let seed=1;seed<=60;seed++){

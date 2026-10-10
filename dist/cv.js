@@ -17,7 +17,7 @@ export const CV_TEMPLATES = Object.freeze([
 ]);
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g,character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
 const integer = value => Number.isFinite(value) ? Math.max(0,Math.trunc(value)) : 0;
-const doctorateEndings = new Set(['true','institute','corporate','unrelated','startup','unemployed','youtuber','resident_researcher']);
+const doctorateEndings = new Set(['true','postdoc','institute','corporate','unrelated','startup','unemployed','youtuber','resident_researcher']);
 const hash = text => {let value=2166136261;for(const character of text)value=Math.imul(value^character.charCodeAt(0),16777619)>>>0;return value;};
 const tx = (locale,ko,en) => locale==='en'?en:ko;
 function monthLabel(month,locale) {

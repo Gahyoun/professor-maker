@@ -5,7 +5,7 @@ import {managedOptions} from './play-support.mjs';
 
 test('a demanding faculty ending remains reachable through 96 months without injected funds or abilities',()=>{
  const choices={'monthly-issue':'acknowledge','failure-counsel':'review','conversation-topic':'academic',story:'encourage','academic-exam':'support',event:0,route:'integrated','presentation-recovery':'rehearse','external-admission':'remain',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
- let s=createState('학생',14,{age:38,gender:'female'});
+ let s=createState('학생',16,{age:38,gender:'female'});
  for(let month=0;month<96&&!s.ending;month++){
   // These are player-selectable publication goals and schedules, not stat overrides.
   if(!s.project.submitted){s.publication.journal=s.career.topPapers<2?'leading':'standard';s.project.journal=s.publication.journal;}

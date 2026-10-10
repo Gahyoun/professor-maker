@@ -37,3 +37,5 @@ test('legacy relationship records normalize once in SQLite while current-version
  assert.equal((await analyticsAPI(req('/api/runs/'+session.id,{method:'POST',data:{...record,professorSurname:'남궁'},token:session.token}),env)).status,400);
  }finally{env.close();}
 });
+
+test('anonymous issue choices accept only bounded known decisions and reject injected fields',()=>{const good={...fixture(),issues:[{id:'grant-selected',choice:'reserve'}]};assert.ok(validRecord(good));assert.equal(validRecord({...good,issues:[{id:'grant-selected',choice:'<script>'}]}),false);assert.equal(validRecord({...good,issues:[{id:'grant-selected',choice:'reserve',name:'실명'}]}),false);assert.equal(validRecord({...good,issues:Array(9).fill(good.issues[0])}),false);});
