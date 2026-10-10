@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {getEndingPages,endingMemoryNotes,endingRelationship,endingLetterInsertions} from '../dist/stories.js';
+import {ENDINGS,getEndingPages,getEndingStory,endingMemoryNotes,endingRelationship,endingLetterInsertions} from '../dist/stories.js';
 import {createState} from '../dist/engine.js';
 import {endingStatistics} from '../dist/statistics.js';
 import {DISCIPLINES} from '../dist/disciplines.js';
 import {ENGLISH_ENDING_FIELDS} from '../dist/ending-context.js';
+import {reviewMeta} from '../dist/ending-review.js';
 
 const context=()=>{const s=createState('김민지',7,{fieldId:'072',labMode:'dry'});s.ending='unemployed';return {fieldId:'072',labMode:'dry',statistics:endingStatistics(s)};};
 
@@ -36,6 +37,57 @@ test('distant letters omit automated memories and keep contact boundaries in the
  assert.equal(endingRelationship(-20,'corporate'),'reserved');
 });
 
+test('a distant job-seeking letter requests a meeting before specifying its agenda',()=>{
+ const ctx=context(),history=[{kind:'event',id:'doctoral-lead',choice:0,month:85}];
+ for(const locale of ['ko','en']){
+  const page=getEndingPages('unemployed',locale,'distant','김민지',null,history,ctx).find(page=>page.includes(locale==='ko'?'― 김민지':'— 김민지'));
+  const request=page.indexOf(locale==='ko'?'함께 정리해 볼 수 있을까요?':'Could we review');
+  const agenda=page.indexOf(locale==='ko'?'면담에서는':'For our meeting,');
+  assert.ok(request>=0&&agenda>request,`${locale}: request comes before the practical agenda`);
+  assert.ok(page.indexOf(locale==='ko'?'연락 범위도':'contact boundaries')>request,`${locale}: the requested contact boundary follows the invitation`);
+  assert.doesNotMatch(page,/회의를 제가 진행하기 시작했을 때부터|Chairing the meetings/,'distant rapport does not inject a warm leadership recollection');
+ }
+});
+
+test('company reunion tone and displayed title follow rapport without changing the original story',()=>{
+ const before=JSON.stringify(ENDINGS.corporate),ctx=context(),titles=[];
+ for(const relationship of ['close','reserved','distant']){
+  const story=getEndingStory('corporate',{...ctx,relationship});titles.push(story.title.ko);
+  const record={ending:'corporate',name:'김민지',month:96,relationship,fieldId:ctx.fieldId,labMode:ctx.labMode,statistics:ctx.statistics};
+  assert.equal(reviewMeta(record).title,story.title.ko,'the reader shows the same rapport-specific title as the story API');
+  const korean=getEndingPages('corporate','ko',relationship,'김민지',null,[],ctx).join('\n');
+  const english=getEndingPages('corporate','en',relationship,'Minji',null,[],ctx).join('\n');
+  if(relationship==='close'){
+   assert.doesNotMatch(korean,/딱 알맞은 거리/);assert.doesNotMatch(english,/just the right distance/i);
+   assert.match(korean,/첫 잔이 비었는데도/,'a close reunion lasts beyond the first coffee');
+   assert.match(korean,/가까워/,'the ending recognizes the closer relationship');
+  }
+  if(relationship==='reserved')assert.match(korean,/커피는 정말로 한 잔뿐이었다/,'the original tentative reunion remains reserved');
+  if(relationship!=='distant'){
+   assert.match(korean,/메일은 이렇게 이어졌다/,'the resumed mail is visibly separated from the professor’s intervening reflection');
+   assert.match(english,/The email continued/i);
+  }
+  const opening=getEndingPages('corporate','ko',relationship,'김민지',null,[],ctx)[0];
+  assert.doesNotMatch(opening,/에서 배운 방법은|분야의 새로운 일정|성능·재현성을 검증하는 기업 연구팀에서/,'the first scene has no appended job-description paragraph');
+ }
+ assert.equal(new Set(titles).size,3,'each relationship has a corresponding title');
+ assert.equal(JSON.stringify(ENDINGS.corporate),before,'metadata variants cannot alter the original text');
+});
+
+test('startup variants retain the eight-year opening and a short next-work question',()=>{
+ const base=context();
+ for(const labMode of ['wet','dry'])for(const relationship of ['close','reserved','distant'])for(const withStatistics of [false,true]){
+  const ctx={fieldId:labMode==='wet'?'056':'090',labMode,...(withStatistics?{statistics:base.statistics}:{})};
+  const pages=getEndingPages('startup','ko',relationship,'김민지',null,[],ctx);
+  assert.ok(pages[0].startsWith('학부연구생과 석박사, 8년이라는 시간이 흘렀다.'),'the tailored introduction retains the common time passage');
+  assert.doesNotMatch(pages[0],/분야에서 현장의 요구와 기술의 적용 범위를 살피며 사업 방향/,'no appended industry-summary narration');
+  const question=pages.at(-1).match(/“(다음 [^”]*\?)”/)?.[1];
+  assert.ok(question&&question.length<=22,'the final question is brief enough to carry the scene');
+  if(labMode==='wet')assert.equal(question,'다음 실험은 무엇입니까?');
+  else assert.doesNotMatch(question,/실험/,'a dry lab gets a short research question rather than a wet experiment');
+ }
+});
+
 test('English field descriptions cover all majors and dry epilogues do not inherit wet storage or paper-letter props',()=>{
  assert.deepEqual(Object.keys(ENGLISH_ENDING_FIELDS).sort(),DISCIPLINES.map(d=>d.id).sort());
  for(const d of DISCIPLINES.filter(d=>d.labModes.includes('dry'))){
@@ -47,5 +99,5 @@ test('English field descriptions cover all majors and dry epilogues do not inher
    if(ending==='corporate')assert.doesNotMatch(text,/handwriting|envelope|put it in the drawer/i);
   }
  }
- assert.match(getEndingPages('corporate','en','close','Minji',null,[],context()).join('\n'),/architecture|design drawings/);
+ assert.match(getEndingPages('institute','en','close','Minji',null,[],context()).join('\n'),/design drawings|structural and environmental analysis/,'the research proposal retains meaningful field work after corporate job-description prose is removed');
 });

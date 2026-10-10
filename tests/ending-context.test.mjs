@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {formatStudentName,withParticle,replaceNounWithParticle} from '../dist/korean.js';
 import {DISCIPLINES} from '../dist/disciplines.js';
-import {ENDING_FIELDS,researchSetting,fieldWorkplace,careerDescription,adaptResearchText} from '../dist/ending-context.js';
+import {ENDING_FIELDS,researchSetting,englishResearchSetting,fieldWorkplace,careerDescription,adaptResearchText} from '../dist/ending-context.js';
+import {endingVoiceCandidates,endingVoice,letterClosing} from '../dist/ending-voice.js';
 import {ENDINGS,getEndingPages} from '../dist/stories.js';
 import {createState} from '../dist/engine.js';
 import {endingStatistics} from '../dist/statistics.js';
@@ -23,12 +24,55 @@ test('field-specific equipment substitutions recompute all attached Korean parti
  const dry=adaptResearchText(source,{fieldId:'090',labMode:'dry'});
  assert.equal(dry,'오래된 워크스테이션이 멈췄다. 오래된 워크스테이션을 고친다. 오래된 워크스테이션으로 확인한다. 오래된 워크스테이션과 기록. 오래된 워크스테이션은 남았다. 그 워크스테이션이요. 기사님을 부르는 워크스테이션이 있다.');
  for(const d of DISCIPLINES)for(const labMode of d.labModes){
-  const context={fieldId:d.id,labMode},equipment=researchSetting(context).equipment;
+  const context={fieldId:d.id,labMode},equipment=researchSetting(context).equipmentName;
   assert.equal(adaptResearchText('오래된 기계가 멈췄다.',context),withParticle('오래된 '+equipment,'이/가')+' 멈췄다.');
   assert.equal(adaptResearchText('오래된 기계로 확인한다.',context),withParticle('오래된 '+equipment,'으로/로')+' 확인한다.');
  }
  assert.equal(replaceNounWithParticle('장치였다. 장치라고 기록했다.','장치','서버'),'서버였다. 서버라고 기록했다.');
  assert.equal(replaceNounWithParticle('기계였다. 기계라고 기록했다.','기계','워크스테이션'),'워크스테이션이었다. 워크스테이션이라고 기록했다.');
+});
+
+test('equipment descriptions and brief spoken names remain separate and correctly inflected',()=>{
+ const context={fieldId:'112',labMode:'wet'},setting=researchSetting(context);
+ assert.equal(setting.equipment,'건강 지표 측정 장비');assert.equal(setting.equipmentName,'분석 장비');
+ assert.equal(adaptResearchText('계절별로 기사님을 불러야 하던 그 기계요.',context),'계절별로 기사님을 불러야 하던 그 분석 장비요.');
+ assert.equal(adaptResearchText('오래된 기계로 확인했습니다.',context),'오래된 분석 장비로 확인했습니다.');
+ assert.equal(englishResearchSetting(context).equipmentName,'research instrument');
+ assert.equal(adaptResearchText('Our old machine stopped.',context,'en'),'Our old research instrument stopped.');
+ const math={fieldId:'048',labMode:'dry'};
+ assert.equal(researchSetting(math).equipmentName,'워크스테이션');
+ assert.equal(adaptResearchText('오래된 기계가 있습니다. 그 기계로 확인했습니다.',math),'오래된 워크스테이션이 있습니다. 그 워크스테이션으로 확인했습니다.');
+});
+
+test('voice candidate and compatibility APIs share ending context exclusions',()=>{
+ const state=createState('김민지',6);state.ending='corporate';const statistics=endingStatistics(state);
+ statistics.temperament={curiosity:50,caution:50,expression:50};
+ statistics.student.learning=999;statistics.student.diligence=0;statistics.student.stress=80;
+ const base={statistics,relationship:'close'},before=JSON.stringify(base);
+ for(const locale of ['ko','en']){
+  const ordinary=endingVoiceCandidates({...base,ending:'corporate'},locale);
+  assert.ok(ordinary.some(c=>c.tags.includes('newcomer')));
+  for(const ending of ['true','postdoc','institute','resident_researcher']){
+   const candidates=endingVoiceCandidates({...base,ending},locale);
+   assert.ok(candidates.length>0,ending);
+   assert.ok(candidates.every(c=>!c.tags.includes('newcomer')),ending);
+   if(ending==='resident_researcher')assert.ok(candidates.some(c=>c.tags.includes('recovery')));
+   else assert.ok(candidates.every(c=>!c.tags.includes('recovery')),ending);
+   assert.doesNotMatch(endingVoice({...base,ending},locale).join('\n'),/기초부터 다시|새 일의 하루|fundamentals|this new work/);
+  }
+  for(const ending of ['leave','dropout','gameover','unfinished','dismissed','youtuber']){
+   assert.deepEqual(endingVoiceCandidates({...base,ending},locale),[],ending);
+   assert.deepEqual(endingVoice({...base,ending},locale),[],ending);
+  }
+ }
+ assert.equal(JSON.stringify(base),before);
+});
+
+test('closing lines do not repeat the postdoc visit promise or leave return decision',()=>{
+ for(const locale of ['ko','en']){
+  assert.equal(letterClosing('postdoc','close',{},locale),locale==='ko'?'건강하세요.':'Please take care.');
+  assert.doesNotMatch(letterClosing('leave','reserved',{},locale),/복학|연락|return|decid|get in touch/);
+ }
 });
 
 test('name particles tolerate closing punctuation, decomposed Hangul, numbers and research acronyms',()=>{
@@ -56,12 +100,12 @@ test('all Korean ending paths use the saved name and dry stories omit wet-only p
   for(const id of ['corporate','institute','unrelated'])for(const name of ['김지훈','김민지'])for(const distance of ['close','reserved','distant']){
    const text=getEndingPages(id,'ko',distance,name,null,[],context).join('\n');
    assert.ok(!text.includes('{name}')&&!text.includes('□'));assert.ok(text.includes(name));
-   if(labMode==='dry')assert.ok(!/실험|냉동고|튜브|배양/.test(text),d.label+'/'+id);
-   if(['072','073','074','075','076'].includes(d.id))assert.ok(!/화학 공정|냉동고|튜브|후보 물질/.test(text),d.label+'/'+id);
+   if(labMode==='dry')assert.ok(!/실험|냉동고|(?<!유)튜브|배양/.test(text),d.label+'/'+id);
+   if(['072','073','074','075','076'].includes(d.id))assert.ok(!/화학 공정|냉동고|(?<!유)튜브|후보 물질/.test(text),d.label+'/'+id);
    assert.ok(!text.includes('김지훈는')&&!text.includes('김지훈가')&&!text.includes('김민지은')&&!text.includes('김민지이었다'));
   }assert.deepEqual(context,copy);
  }
- for(const id of Object.keys(ENDINGS)){const text=getEndingPages(id,'ko','close','김민지',null,[],{fieldId:'072',labMode:'dry'}).join('\n');assert.ok(!/실험|냉동고|튜브|\{name\}|□/.test(text),id);}
+ for(const id of Object.keys(ENDINGS)){const text=getEndingPages(id,'ko','close','김민지',null,[],{fieldId:'072',labMode:'dry'}).join('\n');assert.ok(!/실험|냉동고|(?<!유)튜브|\{name\}|□/.test(text),id);}
  assert.equal(JSON.stringify(ENDINGS),before);
 });
 

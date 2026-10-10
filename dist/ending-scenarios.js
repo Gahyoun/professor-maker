@@ -35,7 +35,7 @@ export const VIDEO_SCENES=[
  p('영어 자막판은 해외 연구자들에게도 알려졌다. 영상에는 연구 내용과 한계를 함께 설명했다.\n\n구독자 수는 피인용 수보다 먼저 늘었다.','English subtitles reached researchers abroad. The videos explained both findings and limitations. Subscribers grew faster than citations.'),
  p('학회에서 한 연구자가 다가와 물었다.\n\n“Are you THE professor?”\n\n그 THE가 무엇인지는 묻지 않았다.','At a conference, a researcher asked: Are you THE professor? I did not ask what THE meant.'),
  p('1년 뒤 메일이 도착했다.\n\n교수님께.\n「박사인데요」 출연을 요청드립니다. 촬영 범위와 대본은 먼저 확인받겠습니다. 출연료도 있습니다.\n― {name} 올림','An email arrived a year later. Dear Professor, please appear on the channel. We will agree on the script and filming boundaries beforehand. There is an appearance fee. — {name}'),
- p('거절 메일을 세 번 썼다가 지웠다. 연구비 잔액을 확인했다.\n\n학과에 물어보니 담당자는 이미 구독자였다.','I wrote and deleted a refusal three times, then checked the lab funds. The department contact was already a subscriber.'),
+ p('거절 메일을 세 번 썼다가 지웠다. 올해 대학원 지원자 수를 확인했다.\n\n학과에 물어보니 담당자는 이미 구독자였다.\n\n출연 신고서의 활동 유형 칸에 “유튜브”는 없었다. “기타”에 체크했다.','I wrote and deleted a refusal three times, then checked this year’s graduate applications. The department contact was already a subscriber. The appearance form had no YouTube category. I checked Other.'),
  p('동의를 마친 뒤 「지도교수님이 직접 반박합니다」가 공개되었다. 조회수 300만.\n\nh-index는 크게 달라지지 않았다. 연구실 문의는 늘었다.\n\n구독, 좋아요, 그리고 인용 부탁드립니다.','After agreeing on the production, we released The professor responds. Three million fictional views. My h-index barely changed, but lab inquiries grew. Subscribe, like, and cite responsibly.')
 ];
 export function workplaceScene(field,kind,dry,fieldId){

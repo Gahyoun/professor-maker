@@ -87,12 +87,16 @@ const VOICE_BANK={
  ],
 };
 export const VOICE_PASSAGE_IDS=Object.freeze(Object.values(VOICE_BANK).flat().map(p=>p.id));
+const NO_VOICE_ENDINGS=new Set(['leave','dropout','gameover','unfinished','dismissed','youtuber']);
+const NO_NEWCOMER_ENDINGS=new Set(['true','postdoc','institute','resident_researcher']);
+const NO_RECOVERY_ENDINGS=new Set(['true','postdoc','institute']);
+const eligibleVoice=(candidate,ending)=>!(NO_NEWCOMER_ENDINGS.has(ending)&&candidate.tags.includes('newcomer'))&&!(NO_RECOVERY_ENDINGS.has(ending)&&candidate.tags.includes('recovery'));
 
 // Candidates are alternatives, not paragraphs to append. The story composer owns
 // the shared memory/voice budget, context filtering and the position in a letter.
 export function endingVoiceCandidates(context={},locale='ko'){
  const h=context?.statistics?.student,t=context?.statistics?.temperament;
- if(!h||!t||context.ending==='youtuber'||context.relationship==='distant')return [];
+ if(!h||!t||NO_VOICE_ENDINGS.has(context.ending)||context.relationship==='distant')return [];
  const normalized=key=>{const range=HIDDEN_RANGES[key];return range&&Number.isFinite(h[key])?(h[key]-range[0])*100/(range[1]-range[0]):0;};
  const candidates=[];
  const add=(key,group,priority)=>{for(const row of VOICE_BANK[key])candidates.push({id:row.id,text:line(locale,row.ko,row.en),tags:[...row.tags],group,priority});};
@@ -104,14 +108,13 @@ export function endingVoiceCandidates(context={},locale='ko'){
  if(h.stress>=65||normalized('stamina')<35)add('recovery','trait',65);
  const skills=['research','learning','language','social','autonomy','teaching','industry','enterprise','outreach','intuition'].map(key=>({key,score:normalized(key)})).filter(skill=>skill.score>=60).sort((a,b)=>b.score-a.score).slice(0,2);
  for(const skill of skills)add(skill.key,'skill',90+skill.score/100);
- return candidates;
+ return candidates.filter(candidate=>eligibleVoice(candidate,context.ending));
 }
 
 // Compatibility helper for callers outside the story composer.
 export function endingVoice(context={},locale='ko'){
- const budget=context.relationship==='close'?2:context.relationship==='distant'||context.ending==='youtuber'?0:1;
- const advanced=['true','postdoc','institute'].includes(context.ending);
- const candidates=endingVoiceCandidates(context,locale).filter(c=>!advanced||!c.tags.some(tag=>tag==='newcomer'||tag==='recovery')).sort((a,b)=>b.priority-a.priority);
+ const budget=context.relationship==='distant'||NO_VOICE_ENDINGS.has(context.ending)?0:context.relationship==='close'?2:1;
+ const candidates=endingVoiceCandidates(context,locale).sort((a,b)=>b.priority-a.priority);
  const groups=new Set(),notes=[];
  for(const candidate of candidates){if(notes.length>=budget)break;if(groups.has(candidate.group))continue;groups.add(candidate.group);notes.push(candidate.text);}
  return notes;
@@ -123,6 +126,7 @@ export function letterClosing(id,distance,context,locale='ko'){
  if(distance==='distant')return '';
  const close=distance==='close';
  const endings={
+ postdoc:close?['건강하세요.','Please take care.']:['긴 안부를 쓰는 일은 아직 조금 어색합니다. 그래도 이 소식은 직접 전하고 싶었습니다.','A long personal letter still feels a little awkward. Even so, I wanted you to hear this news from me.'],
  youtuber:close?['다음 촬영 전에 대본부터 보내겠습니다. 이번에는 “응”의 뜻을 제가 먼저 여쭤볼게요.','I will send the script before we film. This time, I will ask what your Hmm means.']:['대본 검토는 메일로 부탁드립니다. 6번 “응”은 편집으로 살릴 수 없습니다.','Please review the script by email. Editing cannot fix Hmm number six.'],
  bachelor:close?['다음에 뵐 때 새로 배우는 일도 들려드릴게요.','I will tell you what I am learning when we next meet.']:['다음 계획이 정해지면 짧게 소식 전하겠습니다.','I will send a short update when my next plan is settled.'],
  masters:close?['다음에 뵐 때 연구실 밖에서 배운 이야기도 들려드릴게요.','I will tell you what I have learned beyond the lab next time.']:['새 생활에 익숙해지면 다시 소식 전하겠습니다.','I will send an update once I have settled into this new routine.'],
@@ -131,7 +135,7 @@ export function letterClosing(id,distance,context,locale='ko'){
  institute:close?['다음에 뵐 때 교수님 안부도 듣고 싶습니다.','I hope to hear how you are doing when we meet.']:['공동연구 범위와 일정은 회의 전에 메일로 정리하겠습니다.','I will send the collaboration scope and schedule before the meeting.'],
  startup:close?['다음에 만나면 첫 고객에게 배운 이야기도 들려드릴게요.','Next time, I will tell you what our first customer taught us.']:['협업이 필요한 일은 범위와 비용부터 정리해 연락드리겠습니다.','For any collaboration, I will write after setting out its scope and cost.'],
  resident_researcher:close?['회의 뒤에는 연구 말고 서로의 안부도 나누면 좋겠습니다.','After the meeting, I hope we can catch up beyond research.']:['다음 회의의 안건과 역할을 먼저 정리해 공유하겠습니다.','I will share the agenda and responsibilities before the next meeting.'],
- leave:close?['여유가 생기면 산책 이야기부터 들려드릴게요.','When I have room for it, I will tell you about my walks.']:['복학 여부는 제가 정리한 뒤 먼저 연락드리겠습니다.','I will get in touch after deciding whether to return.'],
+ leave:close?['여유가 생기면 산책 이야기부터 들려드릴게요.','When I have room for it, I will tell you about my walks.']:['교수님도 건강히 지내시길 바랍니다.','I hope you are keeping well.'],
  dropout:close?['다른 일을 시작하더라도 함께 배운 시간을 기억하겠습니다.','I will remember what we learned together as I begin something else.']:['남은 인계가 끝나면 제 생활을 정리할 시간을 갖겠습니다.','After the handover, I will take time to organize my own life.'],
  unfinished:close?['남은 일을 정리하고 제가 원하는 다음 계획을 말씀드릴게요.','I will review the remaining work and tell you about my next plan.']:['다음 계획은 조금 더 살펴본 뒤 말씀드리겠습니다.','I will share my next plan after considering it further.'],
  gameover:close?['필요한 정리를 마친 뒤, 새로운 계획으로 다시 인사드릴게요.','After finishing the arrangements, I will share my new plans.']:['남은 절차를 확인하고 이후 계획은 제 속도로 정하겠습니다.','I will check the remaining procedures and decide what comes next at my own pace.'],

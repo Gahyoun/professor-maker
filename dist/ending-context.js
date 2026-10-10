@@ -49,7 +49,19 @@ const groups=[
  ['098','에너지','에너지 시스템과 변환·저장 기술을 개발하는 기업 연구팀','에너지 효율과 변환·저장 기술을 연구하는 공공 연구팀','에너지 시스템과 성능 모형','에너지 장치와 운전 조건의 시험','에너지 성능 시험 장비'],
  ['158','교통·이동 서비스','교통 계획과 이동 서비스를 분석하는 기업 연구팀','교통 흐름과 이동 정책을 연구하는 공공 연구팀','교통 자료와 이동 모형','교통 현장 조건의 조사','교통 자료 처리 장비'],
 ];
-export const ENDING_FIELDS=Object.fromEntries(groups.flatMap(([ids,sector,company,institute,dryTask,wetTask,equipment])=>ids.split(' ').map(id=>[id,{sector,company,institute,dryTask,wetTask,equipment}])));
+// Descriptive equipment labels belong in a setting. A recalled object needs a
+// shorter name, so dialogue does not sound like an equipment specification.
+const equipmentNames={
+ '재배 환경 측정 장비':'측정 장비','수목·목재 측정 장비':'목재 시험 장비','생산 시스템 시험 장비':'시험 장비',
+ '식품 성분 분석 장비':'성분 분석 장비','섬유 성능 시험 장비':'섬유 시험 장비','실내 환경 측정 장비':'환경 측정 장비',
+ '물리 측정 장비':'측정 장비','관측 자료 처리 장비':'자료 처리 장치','지반·암석 시험 장비':'지반 시험 장비',
+ '건강 지표 측정 장비':'분석 장비','회로·계측 시험 장비':'계측 장비','생체 신호 측정 장비':'신호 분석 장비',
+ '구조·환경 시험 장비':'구조 시험 장비','공간 자료 처리 장비':'자료 처리 장치','안전 성능 시험 장비':'시험 장비',
+ '구조·지반 시험 장비':'구조 시험 장비','기계 성능 시험 장비':'시험 장비','선박 성능 시험 장비':'시험 장비',
+ '항공 성능 시험 장비':'시험 장비','철도 성능 시험 장비':'시험 장비','공정·물성 분석 장비':'분석 장비',
+ '에너지 성능 시험 장비':'시험 장비','교통 자료 처리 장비':'자료 처리 장치',
+};
+export const ENDING_FIELDS=Object.fromEntries(groups.flatMap(([ids,sector,company,institute,dryTask,wetTask,equipment])=>ids.split(' ').map(id=>[id,{sector,company,institute,dryTask,wetTask,equipment,equipmentName:equipmentNames[equipment]||equipment}])));
 export function researchSetting(context={}){
  // Current IDs are authoritative. Resolve legacy entries by an exact label only.
  const exact=context.field&&DISCIPLINES.find(d=>d.label===context.field);
@@ -59,6 +71,7 @@ export function researchSetting(context={}){
  const cold=!dry&&['056','100','156','110','111','065','163','107','108','109'].includes(d?.id);
  return {...profile,field,dry,task:dry?profile.dryTask:profile.wetTask,
   equipment:dry?'워크스테이션':profile.equipment,
+  equipmentName:dry?'워크스테이션':profile.equipmentName||profile.equipment,
   record:dry?(/건축|주거|조경|토목/.test(field)?'설계 노트':'연구 노트'):'실험 노트',
   material:dry?'원자료와 분석 파일':cold?'시료':'측정 자료와 시험 기록',
   storage:dry?'프로젝트 보관 폴더':cold?'냉동고 맨 아래 칸':'연구 자료 보관함',
@@ -114,17 +127,18 @@ export const ENGLISH_ENDING_FIELDS=Object.fromEntries(englishGroups.flatMap(([id
 export function englishResearchSetting(context={}){
  const p=researchSetting(context),id=context.fieldId||DISCIPLINES.find(d=>d.label===context.field)?.id;
  const en=ENGLISH_ENDING_FIELDS[id]||{sector:'their research field',dryTask:'data and analytical methods',wetTask:'measurement data and verification procedures'};
- return {...p,...en,task:p.dry?en.dryTask:en.wetTask,equipment:p.dry?'workstation':'research instrument',storage:p.dry?'project archive':p.storage==='냉동고 맨 아래 칸'?'bottom freezer drawer':'research archive',material:p.dry?'raw data and analysis files':p.storage==='냉동고 맨 아래 칸'?'samples':'measurement data and test records',archive:p.dry?'documented data and analysis files':p.storage==='냉동고 맨 아래 칸'?'labeled tubes':'organized measurement data and test records'};
+ return {...p,...en,task:p.dry?en.dryTask:en.wetTask,equipment:p.dry?'workstation':'research instrument',equipmentName:p.dry?'workstation':'research instrument',storage:p.dry?'project archive':p.storage==='냉동고 맨 아래 칸'?'bottom freezer drawer':'research archive',material:p.dry?'raw data and analysis files':p.storage==='냉동고 맨 아래 칸'?'samples':'measurement data and test records',archive:p.dry?'documented data and analysis files':p.storage==='냉동고 맨 아래 칸'?'labeled tubes':'organized measurement data and test records'};
 }
 export function adaptResearchText(text,context={},locale='ko'){
  if(!context.fieldId&&!context.field&&!context.labMode)return String(text);
  if(locale==='en'){
   const p=englishResearchSetting(context);let result=String(text)
+   .replaceAll('I used our equipment to run the experiment we could not finish back then.','Here, I have continued our work on '+p.task+'.')
    .replaceAll('freezer samples',p.material)
    .replaceAll('samples in the bottom freezer drawer',p.material)
    .replaceAll('bottom freezer drawer',p.storage)
    .replaceAll('labeled tubes',p.archive)
-   .replaceAll('old machine','old '+p.equipment);
+   .replaceAll('old machine','old '+p.equipmentName);
   if(p.storage!=='bottom freezer drawer')result=result.replace(/freezer/gi,'research archive');
   if(p.dry)result=result.replace(/lab coat/gi,'everyday clothes').replace(/experiment notebooks?/gi,'research notes').replace(/experiments?/gi,'study').replace(/cultivation schedule/gi,'analysis schedule').replace(/tubes/gi,'analysis files');
   return result;
@@ -140,7 +154,7 @@ export function adaptResearchText(text,context={},locale='ko'){
   .replaceAll('이곳의 장비로 연구를 이어 가다 보면','이곳에서 '+withParticle(p.task,'을/를')+' 이어 가다 보면')
   .replaceAll('최고급 기계로 실험을 하다 보면',withParticle(p.task,'을/를')+' 이어 가다 보면')
   .replaceAll('실험 노트',p.record);
- for(const source of ['오래된 기계','그 기계','기사님을 부르는 기계'])result=replaceNounWithParticle(result,source,source.replace(/기계$/,p.equipment));
+ for(const source of ['오래된 기계','그 기계','기사님을 부르는 기계'])result=replaceNounWithParticle(result,source,source.replace(/기계$/,p.equipmentName));
  if(p.storage!=='냉동고 맨 아래 칸')result=result.replaceAll('냉동고',p.dry?'자료 보관함':'연구 자료 보관함');
  if(p.dry)result=result.replaceAll('실험복','평상복').replaceAll('실험','연구').replaceAll('배양 일정','분석 일정');
  return result;

@@ -26,13 +26,22 @@ test('archived passage IDs freeze a letter across later collection and rereading
   assert.equal(input.statistics.student.research,before.statistics.student.research);
 });
 
-test('frozen empty IDs remain empty for distant or comedy letters',()=>{
-  for(const input of [fixture('distant','institute','distant'),fixture('comedy','youtuber','close')]){
+test('frozen empty IDs remain empty for distant, recovery, withdrawal and comedy letters',()=>{
+  for(const input of [fixture('distant','institute','distant'),...['leave','dropout','gameover','unfinished','youtuber'].map(ending=>fixture(ending,ending,'close'))]){
     const record=prepareLetterPassages(input);
     assert.deepEqual(record.passageIds,[]);
     const reread=prepareLetterPassages({...record,relationship:'close'},[]);
     assert.deepEqual(reread.passageIds,[]);
   }
+});
+
+test('a legacy dry archive cannot reintroduce a wet equipment recollection on reread',()=>{
+  const input={...fixture('legacy-dry','postdoc'),fieldId:'048',labMode:'dry',memories:[{kind:'event',id:'equipment',choice:0,month:20}],passageIds:['memory.equipment.0']},before=structuredClone(input);
+  assert.ok(validLetterPassages(input),'the ID is known even though its setting is no longer eligible');
+  const record=prepareLetterPassages(input);
+  assert.deepEqual(record.passageIds,input.passageIds,'archive identity remains intact while rendering applies the current content contract');
+  assert.doesNotMatch(pages(record).join('\n'),/장비가 멈춘 날|공동기기실에서 다시 배운/,'the dry letter excludes a previously selected wet memory');
+  assert.deepEqual(input,before);
 });
 
 test('legacy letters migrate oldest first without mutating their stored order or values',()=>{

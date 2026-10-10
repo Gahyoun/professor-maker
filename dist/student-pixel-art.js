@@ -2,6 +2,7 @@ import {EXPRESSIONS,normalizeExpression} from './student-reaction.js';
 
 const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const mix=(a,b,t)=>'#'+a.slice(1).match(/../g).map((v,i)=>Math.round(parseInt(v,16)*(1-t)+parseInt(b.slice(1+i*2,3+i*2),16)*t).toString(16).padStart(2,'0')).join('');
+export const STUDENT_HEAD_SCALE=.5;
 
 // Integer raster art: the public 320 × 496 frame is shared by every activity.
 // Cosmetics are read from saved appearance fields and never consume game RNG.
@@ -9,7 +10,8 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  expression=normalizeExpression(expression);
  pose=['standing','seated','experiment','lecturing'].includes(pose)?pose:'standing';
  facing=pose==='seated'&&facing==='monitor'?'monitor':'front';
- const W=80,H=118,pixels=Array.from({length:H},()=>Array(W).fill(null));
+ const W=80,H=118,raster=()=>Array.from({length:H},()=>Array(W).fill(null));
+ const backHead=raster(),body=raster(),frontHead=raster();let pixels=backHead;
  const put=(x,y,c)=>{if(x>=0&&x<W&&y>=0&&y<H)pixels[y][x]=c;};
  const row=(y,x0,x1,c)=>{for(let x=x0;x<=x1;x++)put(x,y,c);};
  const box=(x0,y0,x1,y1,c)=>{for(let y=y0;y<=y1;y++)row(y,x0,x1,c);};
@@ -41,6 +43,7 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  if(!l){oval(40,26,25,18,mix(hair,'#c0a295',.38));oval(39,24,23,16,mix(hair,'#c8b2a0',.5));for(let x=19;x<=60;x+=4)put(x,25+(x%3),hairM);}
 
  // Short torso, roomy shoulders and sleeves; two compact trouser legs.
+ pixels=body;
  box(35,64,44,68,skinD);row(65,36,43,skin);
  poly([[31,68],[49,68],[54,71],[56,88],[54,94],[26,94],[24,88],[26,71]],top);
  poly([[26,71],[24,74],[22,86],[24,91],[30,90],[30,74]],top);
@@ -87,6 +90,7 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  if(pose==='lecturing')box(21,72,29,92,null);
 
  // Crown highlights follow grouped locks instead of straight horizontal bands.
+ pixels=frontHead;
  if(l){
   const crown=fringe%4===0?[[14,30],[14,21],[19,16],[25,11],[36,9],[39,6],[45,10],[54,12],[61,19],[65,26],[65,34]]:
    fringe%4===1?[[13,31],[16,20],[23,14],[32,11],[46,10],[57,15],[63,22],[66,31],[64,36]]:
@@ -145,10 +149,12 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  // Desk work needs a rear three-quarter view, rather than a mirrored front
  // portrait. The face and both forearms point towards the screen at upper right.
  if(facing==='monitor'){
-  for(const r of pixels)r.fill(null);
+  for(const layer of [backHead,body,frontHead])for(const r of layer)r.fill(null);
+  pixels=backHead;
   const end=[0,0,0,68,79,91,99][l];
   if(l>=3){poly([[18,32],[57,32],[60,end-7],[56,end],[52,end-4],[48,end],[23,end],[19,end-4],[16,end-9]],hairD);for(const x of [20,25,49,54])poly([[x,43],[x+3,42],[x+2,end-5],[x,end-2]],hairM);}
   // A short back and bent legs keep the hips on the chair, feet under its front.
+  pixels=body;
   box(35,63,45,68,skinD);
   poly([[27,68],[39,65],[50,67],[54,74],[54,91],[49,96],[28,94],[24,87],[24,75]],top);
   poly([[27,70],[32,68],[31,88],[28,91],[25,86],[25,74]],topH);
@@ -159,14 +165,15 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
   else if(outfit===4){for(const y of [77,85]){row(y,27,51,shirt);row(y+1,27,51,shirt);}}
   else if(outfit===5){poly([[30,68],[36,66],[42,67],[43,72],[36,73]],topH);box(42,73,43,92,topD);}
   // Forearms reach the desktop, with the hands immediately above the keyboard.
-  poly([[28,73],[32,74],[33,78],[45,76],[47,78],[45,81],[31,83],[27,79]],topH);
-  poly([[50,71],[55,72],[58,75],[63,74],[64,78],[57,81],[52,77]],top);
-  box(45,76,50,79,skin);row(79,45,50,skinD);box(63,74,68,77,skin);row(77,63,68,skinD);
+  poly([[28,73],[32,74],[33,80],[45,84],[47,86],[45,88],[31,84],[27,78]],topH);
+  poly([[50,71],[55,73],[58,79],[63,84],[64,87],[57,85],[52,78]],top);
+  box(45,84,50,86,skin);row(86,45,50,skinD);box(63,84,68,86,skin);row(86,63,68,skinD);
   poly([[30,94],[49,94],[56,96],[55,101],[43,101],[37,104],[29,101]],pants);
   poly([[31,99],[38,101],[37,107],[29,107]],pants);poly([[47,99],[54,99],[57,107],[49,108]],pantsD);
   row(97,41,53,pantsH);box(31,101,33,105,pantsH);
   box(28,107,39,110,'#39303e');box(49,108,60,111,'#39303e');row(107,29,37,'#726174');row(108,50,58,'#726174');
   // One eye and a stepped cheek silhouette make the viewing direction clear.
+  pixels=frontHead;
   oval(43,40,21,23,skinD);poly([[45,24],[56,29],[61,35],[61,40],[66,43],[63,46],[63,54],[57,61],[47,63],[39,58],[37,39]],skin);
   row(59,49,58,skinD);put(65,44,skinH);box(60,51,63,54,'#edb0ac');put(61,51,'#ffe0d5');
   const closed=['happy','delighted','relieved'].includes(expression),eyeBottom=['tired','sad'].includes(expression)?47:50;
@@ -186,13 +193,32 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
   oval(44,48,4,5,skinD);oval(45,47,3,4,skin);box(44,46,45,49,skinD);
  }
 
+ // About 3.5 head heights when standing: a 30px skull, a 38px torso and 36px
+ // legs. Seated hips stay on the chair; the hands still meet the desktop.
+ // A finer integer output grid preserves eyes/glasses as the skull gets smaller.
+ const seated=pose==='seated',neck=seated?45:37,hip=seated?88:75,foot=111,precision=2;
+ const bodyY=y=>y<=94?neck+(y-66)*(hip-neck)/28:hip+(y-94)*(foot-hip)/17;
+ const outputW=W*precision,outputH=H*precision,composite=Array.from({length:outputH},()=>Array(outputW).fill(null));
+ const overlay=(source,head)=>{for(let y=0;y<outputH;y++)for(let x=0;x<outputW;x++){
+  const px=x/precision,py=y/precision;
+  const tail=py>neck;
+  const headWidth=STUDENT_HEAD_SCALE+(tail?.15*Math.min(1,(py-neck)/8):0);
+  const sx=Math.round(head?40+(px-40)/headWidth:px);
+  const sy=Math.round(head?66+(py-neck)/(tail?1.5:STUDENT_HEAD_SCALE):py<=hip?66+(py-neck)*28/(hip-neck):94+(py-hip)*17/(foot-hip));
+  const color=source[sy]?.[sx];if(color)composite[y][x]=color;
+ }};
+ overlay(backHead,true);overlay(body,false);overlay(frontHead,true);pixels=composite;
+
  // A single pixel coloured contour keeps the delicate edges readable at 80%.
  const outlined=pixels.map(r=>r.slice());
- for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(!pixels[y][x]){const n=[pixels[y-1]?.[x],pixels[y+1]?.[x],pixels[y][x-1],pixels[y][x+1]].find(Boolean);if(n)outlined[y][x]=mix(n,edge,.65);}
- let rects='';for(let y=0;y<H;y++){let x=0;while(x<W){const c=outlined[y][x];if(!c){x++;continue;}let end=x;while(end+1<W&&outlined[y][end+1]===c)end++;rects+=`<rect x="${x}" y="${y}" width="${end-x+1}" height="1" fill="${c}"/>`;x=end+1;}}
+ for(let y=0;y<outputH;y++)for(let x=0;x<outputW;x++)if(!pixels[y][x]){const n=[pixels[y-1]?.[x],pixels[y+1]?.[x],pixels[y][x-1],pixels[y][x+1]].find(Boolean);if(n)outlined[y][x]=mix(n,edge,.65);}
+ let rects='';for(let y=0;y<outputH;y++){let x=0;while(x<outputW){const c=outlined[y][x];if(!c){x++;continue;}let end=x;while(end+1<outputW&&outlined[y][end+1]===c)end++;rects+=`<rect x="${x}" y="${y}" width="${end-x+1}" height="1" fill="${c}"/>`;x=end+1;}}
  const styles=['까까머리','크롭컷','짧은 머리','중간 길이 머리','단발','어깨 길이 머리','긴 머리'];
  const title=escape(`${label} · ${EXPRESSIONS[expression]} · ${styles[l]}${a.curly&&l?' · 곱슬머리':''}${a.glasses?' · 안경':''}${l?` · 앞머리 ${fringe+1}`:''}${pose==='lecturing'?' · 칠판 앞에서 강의':''}${facing==='monitor'?' · 모니터를 바라보며 앉음':''}`);
- // Keep TA arm's animation coordinates in its established 40 × 62 grid.
- const arm=pose==='lecturing'?`<g transform="translate(0 24) scale(8)" shape-rendering="crispEdges"><g class="ta-lecture-arm"><path d="M13 36h3v5h-4v-3h-2v-3H8v-5h3v3h2z" fill="${top}" stroke="${topD}" stroke-width=".7"/><path d="M9 30V24H8V14" fill="none" stroke="#756353" stroke-width="1" class="ta-pointer"/><path d="M8 14v2" stroke="#e9e5d8" stroke-width="1"/><path d="M8 29h3v3H8z" fill="${skin}" stroke="${skinD}" stroke-width=".5"/></g></g>`:'';
- return `<svg class="portrait" data-expression="${expression}" data-pose="${pose}" data-outfit="${outfit}"${facing==='monitor'?' data-facing="monitor"':''} viewBox="0 0 320 496" role="img" aria-label="${title}"><title>${title}</title><g class="hair-fringe chibi-grid ${expression==='sad'?'expression-tear':''}" shape-rendering="crispEdges" transform="translate(0 24) scale(4)">${rects}</g>${arm}</svg>`;
+ // The raised TA arm shares the new torso coordinates; the pointer is shortened
+ // independently so stretching the torso cannot pull its tip outside the frame.
+ const armPoints=[[13,36],[16,36],[16,41],[12,41],[12,38],[10,38],[10,35],[8,35],[8,30],[11,30],[11,33],[13,33]].map(([x,y])=>[x*2,Math.round(bodyY(y*2))]);
+ const palmTop=Math.round(bodyY(58)),palmBottom=Math.round(bodyY(64)),grip=Math.round(bodyY(60));
+ const arm=pose==='lecturing'?`<g transform="translate(0 24) scale(4)" shape-rendering="crispEdges"><g class="ta-lecture-arm"><path d="M${armPoints.map(([x,y])=>`${x} ${y}`).join('L')}z" fill="${top}" stroke="${topD}" stroke-width="1.2"/><path d="M18 ${grip}V${grip-6}H16V7" fill="none" stroke="#756353" stroke-width="2" class="ta-pointer"/><path d="M16 7v2" stroke="#e9e5d8" stroke-width="2"/><path d="M16 ${palmTop}h6v${palmBottom-palmTop}h-6z" fill="${skin}" stroke="${skinD}" stroke-width="1"/></g></g>`:'';
+ return `<svg class="portrait" data-expression="${expression}" data-pose="${pose}" data-outfit="${outfit}"${facing==='monitor'?' data-facing="monitor"':''} data-head-scale="${STUDENT_HEAD_SCALE}" data-body-proportion="3.5" viewBox="0 0 320 496" role="img" aria-label="${title}"><title>${title}</title><g class="hair-fringe chibi-grid ${expression==='sad'?'expression-tear':''}" shape-rendering="crispEdges" transform="translate(0 24) scale(2)">${rects}</g>${arm}</svg>`;
 }

@@ -1,6 +1,6 @@
-import {POSTDOC_STORY,OUTSIDE_SCENES,VIDEO_SCENES,workplaceScene} from './ending-scenarios.js';
+import {POSTDOC_STORY,OUTSIDE_SCENES,VIDEO_SCENES} from './ending-scenarios.js';
 import {endingVoiceCandidates,VOICE_PASSAGE_IDS,letterClosing} from './ending-voice.js';
-import {adaptResearchText,researchSetting,englishResearchSetting,fieldWorkplace} from './ending-context.js';
+import {adaptResearchText,researchSetting,englishResearchSetting} from './ending-context.js';
 import {formatStudentName} from './korean.js';
 import {postdocScenes,postdocLetter} from './postdoc-career.js';
 // Original epilogues. The professor/corporate letters adapt Gahyoun Gim's supplied story.
@@ -54,7 +54,7 @@ export const ENDINGS={
     p('학부연구생과 석박사, 8년이라는 시간이 흘렀다. 그리고 다시 몇 해가 지났다.\n\n연구실 우편함에 작은 초대장이 들어 있었다. 대표이사 {name}.\n\n명함에 적힌 이름만 낯익고, 나머지는 모두 새로운 것이었다.','An undergraduate researcher, then a graduate student. Eight years had passed. And then, a few more.\n\nA small invitation arrived in the lab mailbox. Founder and CEO: {name}.\n\nOnly the name on the business card was familiar. Everything else was new.'),
     p('교수님께.\n\n논문에서는 “가능성을 보였다”고 쓰면 됐는데, 여기서는 누군가 실제로 돈을 내야 합니다.\n\n첫 제품은 실패했습니다. 두 번째는 조금 덜 실패했고요. 실험 노트는 여전히 씁니다. 이제는 고객 인터뷰가 들어갈 뿐입니다.\n\n다음 주 발표에 와 주실 수 있을까요? 제품과 연구의 다음 계획에 대해 의견을 듣고 싶습니다.\n― {name} 드림','Dear Professor,\n\nIn a paper, I could write “we demonstrated the potential.” Here, someone actually has to pay.\n\nThe first product failed. The second failed a little less. I still keep an experiment notebook. It just has customer interviews now.\n\nCould you come to our pitch next week? Please keep the questions reasonably easy.\n— {name}'),
     p('발표자료 마지막에는 연구실 사진이 있었다. 투자를 받았는지는 아직 모른다. 성공이라 말하기에도 이르다.\n\n하지만 예전에는 내 뒤에 서 있던 학생이, 이제는 자기 팀 앞에 서 있었다.','The final slide had a photograph of our lab. I did not yet know whether they would get funding. It was too early to call this success.\n\nBut the student who once stood behind me was now standing in front of a team of their own.'),
-    p('질문 시간이 되자 손을 들었다.\n\n“다음 연구에서는 무엇을 살펴볼 계획입니까?”\n\n{name}은 조금 웃고, 기다렸다는 듯 대답을 시작했다.\n\n나는 끝까지 들었다.','When it was time for questions, I raised my hand.\n\n“What will you investigate in your next study?”\n\n{name} smiled a little and began answering, as if waiting for that question.\n\nI listened to the end.')
+    p('질문 시간이 되자 손을 들었다.\n\n“다음 실험은 무엇입니까?”\n\n{name}은 조금 웃고, 기다렸다는 듯 대답을 시작했다.\n\n나는 끝까지 들었다.','When it was time for questions, I raised my hand.\n\n“What is your next experiment?”\n\n{name} smiled a little and began answering, as if waiting for that question.\n\nI listened to the end.')
   ]},
   unemployed:{type:'EPILOGUE',title:p('아직 쓰지 않은 다음 장','The next chapter, still unwritten'),career:p('구직 중 · 다음 일을 준비하는 시간','Seeking work · preparing the next chapter'),time:p('졸업 1년 후 · 늦은 밤의 메일','One year later · a late-night email'),pages:[
     p("학부연구생과 석박사, 8년이라는 시간이 흘렀다. 그리고 다시 시간이 지났다.\n\n어느 저녁, {name}에게서 메일이 왔다. 졸업 뒤의 생활과 다음 일을 찾는 이야기가 담겨 있었다.","An undergraduate researcher, then a graduate student. Eight years passed, followed by more time.\n\nOne evening, an email arrived from {name}. It described life after graduation and the search for the next position."),
@@ -103,6 +103,11 @@ export const ENDINGS={
 // Each replay gets fresh metadata and pages; the collected ending ID stays the same.
 export function getEndingStory(id,context={}){
  const story=ENDINGS[id];
+ if(id==='corporate'&&story){
+  const distance=endingRelationship(context.relationship,id);
+  const title=distance==='close'?p('커피가 식을 때까지','Until the coffee cooled'):distance==='distant'?p('서로의 자리에서','From our own places'):story.title;
+  return {...story,title};
+ }
  return id==='postdoc'&&story?postdocScenes(story,context,researchSetting(context),englishResearchSetting(context)):story;
 }
 
@@ -168,7 +173,7 @@ function insertLetterClosing(pages,note,locale){
  const signature=locale==='en'?'— {name}':'― {name}',index=pages.findIndex(text=>text.includes(signature));
  if(index<0||!note)return;
  const text=pages[index],at=text.indexOf(signature);
- const prefix=text.slice(0,at).trimEnd().replace(locale==='en'?/(?:\s*Please take care\.)$/:/(?:\s*건강하세요\.)$/,'').trimEnd();
+ const prefix=text.slice(0,at).trimEnd().replace(locale==='en'?/(?:\s*Please take care\.)$/:/(?:\s*(?:교수님도\s+)?건강하세요\.)$/,'').trimEnd();
  pages[index]=(prefix?prefix+'\n\n':'')+note+'\n\n'+text.slice(at);
 }
 function insertLetterPassages(pages,id,notes,locale,reason){
@@ -231,16 +236,20 @@ function memoryCandidates(history,locale='ko'){
  const found=Array.isArray(history)?history.filter(h=>h?.kind==='event'&&Object.hasOwn(eventMemories,h.id)&&Number.isInteger(h.choice)&&h.choice>=0&&h.choice<4):[];
  const unique=[...new Map(found.map(h=>[h.id,h])).values()].reverse();
  return unique.map((h,index)=>({id:`memory.${h.id}.${h.choice}`,group:'memory',priority:100-index,
-  tags:['counsel-daily-life','caregiving','support-without-assumptions'].includes(h.id)?['recovery']:['counsel-coursework','undergrad-record'].includes(h.id)?['newcomer']:[],
+  tags:[...(['counsel-daily-life','caregiving','support-without-assumptions'].includes(h.id)?['recovery']:['counsel-coursework','undergrad-record'].includes(h.id)?['newcomer']:[]),
+   ...(h.id==='equipment'||h.id==='funding-cut'&&h.choice===1||h.id==='undergrad-record'&&h.choice===1?['wet']:['wet','dry'])],
   text:locale==='en'?(englishMemories[h.id]?.[h.choice]??(h.choice===2?'We agreed to review the evidence for my plan at the next meeting.':'We agreed on a deadline and the work that needed revision.')):(eventMemories[h.id][h.choice]??(h.choice===2?'다음 면담에서 제 계획의 근거를 검토하기로 했던 약속이 남아 있습니다.':'기한과 보완할 범위를 분명히 정했던 면담이 떠오릅니다.'))}));
 }
 export function validPassageIds(ids){const known=new Set([...VOICE_PASSAGE_IDS,...Object.keys(eventMemories).flatMap(id=>[0,1,2,3].map(choice=>`memory.${id}.${choice}`))]);return Array.isArray(ids)&&ids.length<=known.size&&new Set(ids).size===ids.length&&ids.every(id=>typeof id==='string'&&known.has(id));}
 const passageHash=text=>{let n=2166136261;for(const c of text)n=Math.imul(n^c.charCodeAt(0),16777619);return n>>>0;};
 export function endingLetterInsertions(id,relationship,history=[],context={},locale='ko'){
  const distance=endingRelationship(relationship,id),budget=distance==='close'?2:distance==='reserved'?1:0;
- if(!budget||['youtuber','dismissed'].includes(id))return [];
+ if(!budget||['leave','dropout','gameover','unfinished','youtuber','dismissed'].includes(id))return [];
  const advanced=['true','postdoc','institute'].includes(id),ctx={...context,ending:id,relationship:distance};
- const candidates=[...memoryCandidates(history,locale),...endingVoiceCandidates(ctx,locale)].filter(note=>!advanced||!note.tags.some(tag=>['newcomer','recovery'].includes(tag)));
+ const candidates=[...memoryCandidates(history,locale),...endingVoiceCandidates(ctx,locale)].filter(note=>
+  (!advanced||!note.tags.some(tag=>['newcomer','recovery'].includes(tag)))&&
+  (id!=='resident_researcher'||!note.tags.includes('newcomer'))&&
+  (!['wet','dry'].includes(context.labMode)||!note.tags.some(tag=>['wet','dry'].includes(tag))||note.tags.includes(context.labMode)));
  const clean=note=>({...note,tags:[...note.tags],text:adaptResearchText(note.text,context,locale)});
  if(Array.isArray(context.passageIds)){
   const frozen=context.passageIds.map(key=>candidates.find(n=>n.id===key)).filter(Boolean).slice(0,budget);
@@ -265,7 +274,7 @@ export function endingMemoryNotes(history,relationship='reserved'){
 // Return fresh strings: gallery replays and locale switches cannot alter source stories.
 export function getEndingPages(id, lang = 'ko', relationship, name, reason, history = [], context) {
   const locale = lang === 'en' ? 'en' : 'ko';
-  const story = getEndingStory(id,context);
+  const story = getEndingStory(id,{...context,relationship});
   if (!story) return [];
   const distance = endingRelationship(relationship, id);
   if(id==='dismissed'){const closing={close:['학생은 이후에도 필요한 절차를 함께 확인하기로 했다. 다음 계획이 정해지면 학생이 먼저 연락하기로 했다.','They agreed to review the remaining procedures and get in touch when plans were ready.'],reserved:['필요한 서류와 연락 방법을 정리했다. 이후의 계획을 재촉하지 않았다.','They reviewed the documents and contact details without pressing for plans.'],distant:['행정상 필요한 연락만 남기고, 더 이야기하고 싶지 않다는 학생의 뜻을 존중했다.','Only administrative contact remained, respecting the student’s wish for privacy.']};return story.pages.map((p,i)=>p[locale]+(i===story.pages.length-1?'\n\n'+closing[distance][locale==='en'?1:0]:'')).map(p=>formatStudentName(p,name,locale));}
@@ -281,23 +290,25 @@ export function getEndingPages(id, lang = 'ko', relationship, name, reason, hist
       p('함께 확인할 서류와 연구 기록을 정리했다. 더 설명하고 싶지 않은 사정은 묻지 않았다. 과정은 여기서 끝났지만, 학생이 해 온 일을 없던 것으로 기록하지는 않았다.','We organized the documents and research records. I did not ask about circumstances the student did not wish to explain. The program ended here; the work they had done remained.')
     ].map(page=>page[locale]);
   }
-  if(id==='startup'&&locale==='ko'&&context?.statistics){const close=distance==='close';pages[0]=close?'졸업 뒤 {name}는 연구실에서 발전시킨 연구를 바탕으로 회사를 시작했다. 기술이전과 장비 사용 범위는 별도로 계약했다. 교수는 합의된 범위에서 기술 자문을 맡았다.':'졸업 뒤 {name}는 새로운 문제를 찾아 독립적으로 회사를 시작했다. 연구실의 기술이나 장비를 당연히 사용할 수 있다고 생각하지 않았다. 고객과 이야기하며 방향을 바꾸고 팀의 일을 배웠다.';pages[1]=close?'교수님께.\n\n첫 고객과의 계약을 마쳤습니다. 연구실 장비를 사용할 일이 생기면 계약 범위와 비용부터 확인하겠습니다. 연구와 회사의 업무가 섞이지 않도록 일정을 나누고 있습니다.\n― {name} 드림':'교수님께.\n\n처음 계획한 제품은 고객의 문제와 달랐습니다. 면담 기록을 다시 살펴 서비스를 바꾸었습니다. 이제는 팀과 고객이 함께 검토할 수 있는 자료를 만들고 있습니다.\n― {name} 드림';pages[1]=pages[1].replace('\n― {name}', '\n\n다음 주 발표에 와 주실 수 있을까요? 제품과 연구의 다음 계획에 대해 의견을 듣고 싶습니다.\n― {name}');}
+  if(id==='startup'&&locale==='ko'&&context?.statistics){const close=distance==='close';pages[0]='학부연구생과 석박사, 8년이라는 시간이 흘렀다. 그리고 다시 몇 해가 지났다.\n\n'+(close?'졸업 뒤 {name}는 연구실에서 발전시킨 연구를 바탕으로 회사를 시작했다. 기술이전과 장비 사용 범위는 별도로 계약했다. 교수는 합의된 범위에서 기술 자문을 맡았다.':'졸업 뒤 {name}는 새로운 문제를 찾아 독립적으로 회사를 시작했다. 연구실의 기술이나 장비를 당연히 사용할 수 있다고 생각하지 않았다. 고객과 이야기하며 방향을 바꾸고 팀의 일을 배웠다.');pages[1]=close?'교수님께.\n\n첫 고객과의 계약을 마쳤습니다. 연구실 장비를 사용할 일이 생기면 계약 범위와 비용부터 확인하겠습니다. 연구와 회사의 업무가 섞이지 않도록 일정을 나누고 있습니다.\n― {name} 드림':'교수님께.\n\n처음 계획한 제품은 고객의 문제와 달랐습니다. 면담 기록을 다시 살펴 서비스를 바꾸었습니다. 이제는 팀과 고객이 함께 검토할 수 있는 자료를 만들고 있습니다.\n― {name} 드림';pages[1]=pages[1].replace('\n― {name}', '\n\n다음 주 발표에 와 주실 수 있을까요? 제품과 연구의 다음 계획에 대해 의견을 듣고 싶습니다.\n― {name}');}
 
   if(id==='postdoc'&&distance==='distant')pages[6]=p('필요한 서류와 연구 기록에 관한 연락은 메일로 부탁드립니다.\n― {name} 올림','Please contact me by email about the necessary documents and research records. — {name}')[locale];
-  if(id==='unemployed'&&distance==='distant')pages[1]=pages[1].replace(locale==='en'?'Could we review the research I have done':'제가 해 온 연구와 앞으로 해 보고 싶은 일을',p('면담에서는 지원에 필요한 연구 기록과 서류를 중심으로 의논하고 싶습니다. 연락 범위도 제가 정리해서 말씀드리겠습니다.\n\n제가 해 온 연구와 앞으로 해 보고 싶은 일을','For our meeting, I would like to focus on the research record and documents needed for applications. I will also explain the contact boundaries that work for me.\n\nCould we review the research I have done')[locale]);
+  if(id==='unemployed'&&distance==='distant'){
+    const request=p('제가 해 온 연구와 앞으로 해 보고 싶은 일을 함께 정리해 볼 수 있을까요? 교수님 일정이 괜찮다면 면담을 부탁드리고 싶습니다.','Could we review the research I have done and the work I would like to try? If your schedule allows, I would appreciate a meeting.')[locale];
+    const agenda=p('면담에서는 지원에 필요한 연구 기록과 서류를 중심으로 의논하고 싶습니다. 연락 범위도 제가 정리해서 말씀드리겠습니다.','For our meeting, I would like to focus on the research record and documents needed for applications. I will also explain the contact boundaries that work for me.')[locale];
+    pages[1]=pages[1].replace(request,request+'\n\n'+agenda);
+  }
   if(id==='youtuber')pages[7]=pages[7].replace(locale==='en'?'— {name}':'― {name}',p('교수님 출연분만은 대본에 검토란을 세 칸 만들어 두었습니다.\n― {name}','For your scenes, the script has three separate review boxes.\n— {name}')[locale]);
   if(id==='unrelated'&&distance==='distant'&&context?.statistics){pages=OUTSIDE_SCENES.map(p=>p[locale]);if(locale==='ko'&&context.recommendation==='alternate')pages[3]+='\n\n마감 사흘 전 추천서 부탁도 망설였다. 다른 추천인에게 연락했지만, 지도교수 추천서가 비어 있던 임용 서류는 통과하지 못했다.';return pages.map(p=>formatStudentName(adaptResearchText(p,context,locale),name,locale));}
   if(id==='unrelated'&&distance==='close'){
     pages[pages.length-1]=p('나는 다음 안부를 재촉하지 않고 답장을 썼다. “새로운 일을 배우고 있군요. 다음에 만나면 회사 밖의 이야기도 들려주세요.”\n\n연구를 직업으로 이어 가지 않아도, 함께 배운 시간을 이야기할 수 있었다.','I replied without pressing for another update. We could talk about what we had learned together, even though research was no longer their job.')[locale];
   }
-  if(locale==='ko'&&id==='corporate'&&(context?.fieldId||context?.field))pages[0]+='\n\n'+workplaceScene(researchSetting(context).field,id,context.labMode==='dry',context.fieldId);
-  if(locale==='en'&&id==='corporate'&&(context?.fieldId||context?.field))pages[0]+='\n\n'+fieldWorkplace(context,id,locale);
-  if(locale==='ko'&&id==='startup'&&(context?.fieldId||context?.field))pages[0]+='\n\n'+researchSetting(context).sector+' 분야에서 현장의 요구와 기술의 적용 범위를 살피며 사업 방향을 정했다.';
 
   if (id === 'corporate' && distance === 'close') {
     pages[0] = pages[0].replace(locale === 'ko' ? '그날의 커피는 정말로 한 잔뿐이었다.' : 'There really was only one cup of coffee.', locale === 'ko' ? '커피가 식는 동안에도 이야기는 끝나지 않았다.' : 'The conversation continued long after the coffee cooled.');
     pages[4] = p('학회에서 뵙게 되면 커피를 사겠습니다. 그때는 교수님 이야기도 오래 듣고 싶습니다.\n\n추신. 교수님 논문 인용은 계속하겠습니다. 다음에는 그 논문에서 시작한 제 실험도 보여 드릴게요.\n― {name} 올림\n\n나는 마지막 문장을 한 번 더 읽었다. 이제는 검토를 받기 위해서만 연락하는 사이가 아니었다.\n\n함께 했던 연구가 다른 자리에서도 이어진다는 사실을 오래 생각했다.', 'If we meet at a conference, I will buy the coffee. This time I would like to hear more about you too.\n\nP.S. I will keep citing your papers. Next time, I will show you the experiment I began from one of them.\n— {name}\n\nI reread the last sentence. We no longer kept in touch only for my review.\n\nI thought about how our shared research continued elsewhere.')[locale];
     pages[5] = pages[5].replace(locale === 'ko' ? '커피는 정말로 한 잔뿐이었다.' : 'there really was only one cup of coffee.', locale === 'ko' ? '첫 잔이 비었는데도 두 사람은 자리에서 일어나지 않았다.' : 'we stayed seated after the first cup was empty.');
+    pages[5] = pages[5].replace(locale === 'ko' ? '그것이 이 사제에게는 딱 알맞은 거리였다.' : 'For the two of us, that was just the right distance.', locale === 'ko' ? '거리는 처음보다 조금 가까워져 있었다.' : 'The distance between us had grown a little smaller.');
   } else if (id === 'corporate' && distance === 'distant') {
     pages[0] = pages[0].replace(locale === 'ko' ? '그날의 커피는 정말로 한 잔뿐이었다.' : 'There really was only one cup of coffee.', locale === 'ko' ? '두 사람은 세션이 끝난 뒤 짧게 인사를 나누었다.' : 'We exchanged a brief greeting after the session.');
     pages[4] = p('자료 인계 때문에 한 가지를 덧붙입니다. 냉동고 샘플은 보존 여부를 결정하신 뒤 메일로 알려 주세요.\n\n교수님 논문은 계속 인용하겠습니다. 함께 지낸 시간과는 별개로, 연구에 필요한 논문이라서요.\n― {name} 올림\n\n메일로 알려 달라는 문장을 다시 읽었다. 그 거리를 줄이겠다는 답장은 쓰지 않았다.\n\n연구 기록을 확인하고, 필요한 답만 보내기로 했다.', 'One more detail for the handover: please email me once you decide whether to retain the freezer samples.\n\nI will keep citing your papers. Whatever our time together was like, the papers remain useful to my work.\n— {name}\n\nI reread the request for an email. I did not reply with an attempt to close that distance.\n\nI would check the records and send the information needed.')[locale];
@@ -309,6 +320,8 @@ export function getEndingPages(id, lang = 'ko', relationship, name, reason, hist
   } else if (id !== 'corporate' && id !== 'true') {
     const closing=letterClosing(id,distance,context,locale);if(closing)insertLetterClosing(pages,closing,locale);
   }
+  if(id==='corporate')pages[4]=p('메일은 이렇게 이어졌다.','The email continued.')[locale]+'\n\n'+pages[4];
+  if(id==='startup'&&context?.labMode==='dry')pages=pages.map(text=>text.replace(locale==='ko'?'다음 실험은 무엇입니까?':'What is your next experiment?',locale==='ko'?'다음 연구는 무엇입니까?':'What is your next study?'));
   const slotReason=id==='gameover'&&suppliedReason==='qual_failure'&&history.filter(h=>h.kind==='qual'&&!h.passed).length<2?'qual_withdrawal':suppliedReason;
   insertLetterPassages(pages,id,endingLetterInsertions(id,distance,history,context??{},locale),locale,slotReason);
   pages=pages.map(text=>adaptResearchText(text,context,locale));

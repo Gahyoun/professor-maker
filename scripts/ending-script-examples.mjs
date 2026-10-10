@@ -43,7 +43,7 @@ export function entryFromState(original,{rename=false}={}){
  return {name:s.name,ending:s.ending,fieldId:s.professorProfile.fieldId,labMode:s.professorProfile.labMode,month:s.month,relationship:rapport>=70?'close':rapport>=40?'reserved':'distant',endingReason:s.endingReason,career:{...s.career},statistics:endingStatistics(s),evidence:endingEvidence(s),memories:s.history.filter(h=>h.kind==='event'&&EVENTS.some(e=>e.id===h.id)&&Number.isInteger(h.choice)&&h.choice>=0&&h.choice<EVENTS.find(e=>e.id===h.id).options.length).slice(-16).map(h=>({kind:'event',id:h.id,choice:h.choice,month:h.month}))};
 }
 export function exampleMetadata(entry){
- const context={statistics:entry.statistics,fieldId:entry.fieldId,labMode:entry.labMode},base=getEndingStory(entry.ending,context);
+ const context={statistics:entry.statistics,fieldId:entry.fieldId,labMode:entry.labMode,relationship:entry.relationship},base=getEndingStory(entry.ending,context);
  const meta={title:adaptResearchText(base.title.ko,context),career:careerDescription(entry.ending,context,'ko',base.career.ko),time:base.time.ko};
  if(entry.ending==='unrelated'&&entry.relationship==='distant'){meta.title='연구실 밖의 길';meta.time='졸업 2년 뒤 · 메일 없이 남은 후일담';}
  if(entry.ending==='gameover'){

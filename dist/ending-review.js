@@ -20,7 +20,7 @@ export function reviewRecord(sample){
  return {id:`audit-${sample.run??sample.seed}-${s.ending}-${field.id}`,ending:s.ending,name:s.name,month:s.month,fieldId:field.id,field:field.label,labMode:s.professorProfile.labMode,relationship:rapport>=70?'close':rapport>=40?'reserved':'distant',rapport,endingReason:s.endingReason??null,statistics:endingStatistics(s),evidence:endingEvidence(s),memories:s.history.filter(h=>h.kind==='event'&&EVENTS.some(e=>e.id===h.id&&Number.isInteger(h.choice)&&h.choice>=0&&h.choice<e.options.length)).slice(-16).map(h=>({kind:'event',id:h.id,choice:h.choice,month:h.month})),career:{papers:s.career.papers,awards:s.career.awards,conferences:s.career.conferences},hIndex:s.impact?.hIndex??0,appearance:weeklyAppearance(s),source:{seed:sample.seed,run:sample.run??null,policy:sample.policy}};
 }
 export function reviewMeta(record){
- const context={statistics:record.statistics,fieldId:record.fieldId,field:record.field,labMode:record.labMode},story=getEndingStory(record.ending,context);
+ const context={statistics:record.statistics,fieldId:record.fieldId,field:record.field,labMode:record.labMode,relationship:record.relationship},story=getEndingStory(record.ending,context);
  const meta={title:adaptResearchText(story.title.ko,context),career:careerDescription(record.ending,context,'ko',story.career.ko),time:story.time.ko,type:record.ending==='true'?'TRUE ENDING':record.ending==='youtuber'?'SPECIAL ENDING':MAIN_ENDINGS.includes(record.ending)?'EPILOGUE':'ENDING'};
  if(record.ending==='unrelated'&&record.relationship==='distant'){meta.title='연구실 밖의 길';meta.time='졸업 2년 뒤 · 메일 없이 남은 후일담';}
  if(record.ending==='gameover'){
@@ -38,7 +38,7 @@ export function reviewCollection(records){
 const paragraphHTML=text=>text.split('\n\n').map(p=>`<p>${escape(p).replaceAll('\n','<br>')}</p>`).join('');
 const sourceLine=record=>`자동 플레이 실제 종료 · 전략 ${escape(record.source.policy)} · seed ${escape(record.source.seed)} · ${record.month}개월 수행`;
 function sceneHTML(record,body,meta){
- const mail=/교수님께\.|Dear Professor,/.test(body);
+ const mail=/교수님께\.|Dear Professor,|메일은 이렇게 이어졌다\.|The email continued\./.test(body);
  return `<div class="vn-scene ${mail?'vn-mail':'vn-memory'}" aria-label="${mail?'편지를 읽는 교수의 책상':'연구실을 돌아보는 장면'}"><div class="vn-window"></div><div class="vn-desk"><span class="vn-screen">${mail?'도착한 편지':'함께한 기록'}</span><span class="vn-cup"></span></div>${renderPortrait(record.appearance,`${record.name}의 학생 도트`)}<div class="vn-scene-caption">${escape(meta.time)}</div></div>`;
 }
 function retirementSceneHTML(){return `<div class="vn-scene review-retirement" aria-label="퇴임식 강당"><div class="vn-window"></div><div class="vn-desk"><span class="vn-screen">퇴임식 · 함께한 시간</span></div><div class="review-audience" aria-hidden="true">${Array.from({length:8},()=>'<i></i>').join('')}</div><div class="vn-scene-caption">여러 회차에서 함께한 제자들의 마지막 기록</div></div>`;}
