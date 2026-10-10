@@ -22,10 +22,28 @@ const FIELD_PROFILES=Object.freeze({
 const KCI_FIELDS=new Set(['058','059','060','061','062','063','064','066','067','068','069','057','112','113','114','115','116','118','163','065','107','108','109','110','111','072','073','074','075','076','077','102','103','104','078','079','080','081','082','083','084','085','086','091','101','158','159','160','161','162']);
 export function journalProfile(fieldId){const d=getDiscipline(fieldId);return {...IF_PROFILES[FIELD_PROFILES[d.id]??'physics'],id:FIELD_PROFILES[d.id]??'physics',kci:KCI_FIELDS.has(d.id)};}
 export function getJournal(id='standard',fieldId){const base=JOURNALS[id]??JOURNALS.standard,profile=journalProfile(fieldId);return {...base,impactFactor:id==='kci'?null:profile.values[['standard','established','leading'].indexOf(id)<0?0:['standard','established','leading'].indexOf(id)]};}
+// A fictional annual journal metric. This hash never advances simulation RNG.
+// The submitted manuscript keeps its recorded value throughout review and replay.
+export function journalMetricRecord(state,journalId=state.project?.journal??'standard',projectId=state.project?.id??1,month=state.project?.submittedAt??state.month??1){
+ const fieldId=state.professorProfile?.fieldId,venue=getJournal(journalId,fieldId);
+ const recorded=(state.history??[]).filter(entry=>['submission','paper'].includes(entry.kind)&&entry.projectId===projectId&&(entry.journal??'standard')===journalId);
+ const previous=recorded.find(entry=>Number.isFinite(entry.impactFactor)&&entry.impactFactor>=0&&entry.impactFactor<=100)??recorded[0];
+ let impactFactor=venue.impactFactor;
+ if(journalId!=='kci'){
+  if(Number.isFinite(previous?.impactFactor)&&previous.impactFactor>=0&&previous.impactFactor<=100)impactFactor=previous.impactFactor;
+  else if(!previous&&!(projectId===state.project?.id&&state.project.submitted)){
+   const year=Math.floor(Math.max(0,Number(month)-1)/12)+1;
+   const identity=`${Number(state.creationSeed??state.seed)>>>0}|${fieldId}|${journalId}|${projectId}|${year}`;
+   let hash=2166136261;for(const character of identity)hash=Math.imul(hash^character.charCodeAt(0),16777619)>>>0;
+   impactFactor=Math.max(.1,Math.min(100,Math.round(venue.impactFactor*(.86+(hash/4294967296)*.28)*10)/10));
+  }
+ }
+ return {journal:journalId,impactFactor,citationWeight:venue.citationWeight};
+}
 export function journalOptions(fieldId){return Object.entries(JOURNALS).filter(([id])=>id!=='kci'||journalProfile(fieldId).kci).map(([id])=>[id,getJournal(id,fieldId)]);}
 export const isAvailableJournal=(id,fieldId)=>Object.hasOwn(JOURNALS,id)&&(id!=='kci'||journalProfile(fieldId).kci);
 export function publicationMetric(id,impactFactor){return id==='kci'?'KCI 등재 · 가상 학술지':Number.isFinite(impactFactor)?`가상 IF ${impactFactor}`:'가상 IF 미기록';}
-export function journalDescription(id,fieldId){const v=getJournal(id,fieldId);return `${v.label} · ${publicationMetric(id,v.impactFactor)}`;}
+export function journalDescription(id,fieldId,state){const v=getJournal(id,fieldId),metric=state?journalMetricRecord(state,id,state.project?.id,state.project?.submittedAt??((state.month??0)+1)).impactFactor:v.impactFactor;return `${v.label} · ${publicationMetric(id,metric)}`;}
 export const CONFERENCE_TIERS=Object.freeze({regular:{label:'분야 학술대회 · C',work:1,acceptance:0,learning:1},selective:{label:'선별 학술대회 · B',work:1.18,acceptance:-.09,learning:1.15},flagship:{label:'주요 학술대회 · A',work:1.4,acceptance:-.18,learning:1.3}});
 export const DEFAULT_PUBLICATION=Object.freeze({journal:'standard',conference:'regular'});
 export const validPublication=(p,fieldId)=>p&&Object.keys(p).length===2&&Object.hasOwn(JOURNALS,p.journal)&&(fieldId===undefined||isAvailableJournal(p.journal,fieldId))&&Object.hasOwn(CONFERENCE_TIERS,p.conference);

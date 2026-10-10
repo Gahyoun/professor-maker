@@ -2,12 +2,17 @@
 import {Worker,isMainThread,parentPort,workerData} from 'node:worker_threads';
 import fs from 'node:fs/promises';
 import {createHash} from 'node:crypto';
-import {createState,proposeSchedule,abilityScore,calendarMonth,projectWork,projectThresholds,qualificationStudy,studentTrainingActive,EVENTS,ACTIVITIES,validateSave} from '../dist/engine.js';
+import {createState,proposeSchedule,abilityScore,calendarMonth,projectWork,projectThresholds,qualificationStudy,studentTrainingActive,EVENTS,ACTIVITIES,validateSave,canDefend} from '../dist/engine.js';
 import {DISCIPLINES} from '../dist/disciplines.js';
 import {availableActivities,weekContext} from '../dist/academic-calendar.js';
 import {dilemmaOptions} from '../dist/monthly-choices.js';
 import {managedOptions,affordableEventChoice} from '../tests/play-support.mjs';
-const policies=['random','default','research','faculty','industry'],skills=['learning','research','autonomy','language','industry','teaching'];
+const policies=['random','default','research','faculty','industry'],skills=['learning','research','autonomy','language','industry','teaching','intuition','manners'];
+function distribution(values){
+ const ordered=[...values].sort((a,b)=>a-b),n=ordered.length;
+ const q=p=>n?Number(ordered[Math.max(0,Math.ceil(n*p)-1)].toFixed(3)):null;
+ return {count:n,min:q(0),p50:q(.5),p95:q(.95),max:q(1),atLeast95:ordered.filter(x=>x>=95).length,atLeast99:ordered.filter(x=>x>=99).length};
+}
 if(isMainThread){
  const runsPerPolicy=Number(process.argv[2]??250),output=process.argv[3];
  if(!Number.isSafeInteger(runsPerPolicy)||runsPerPolicy<1||!output)throw Error('Usage: node scripts/growth-balance-audit.mjs runs-per-policy output.json');
@@ -18,7 +23,7 @@ if(isMainThread){
 }else{
  let reply;globalThis.self={postMessage:r=>{reply=r;}};await import('../dist/simulation-worker.js');
  const execute=(type,state,more={})=>{reply=null;self.onmessage({data:{id:1,type,state,...more}});if(reply.error)throw Error(reply.error);return reply.state;};
- const {policy,runs}=workerData,result={policy,runs,outcomes:{},doctoralCount:0,doctoralMeans:{},errors:[],samples:[]},totals=Object.fromEntries(skills.map(k=>[k,0]));
+ const {policy,runs}=workerData,result={policy,runs,outcomes:{},doctoralCount:0,doctoralMeans:{},errors:[],samples:[]},totals=Object.fromEntries(skills.map(k=>[k,0])),arrivals=Object.fromEntries(skills.map(k=>[k,[]])),doctoralPapers=[];
  for(let i=0;i<runs;i++){
   const seed=16+7919*i,field=DISCIPLINES[i%DISCIPLINES.length];let rng=seed^0xc01d;
   const draw=()=>((rng=(Math.imul(rng,1664525)+1013904223)>>>0)/4294967296),pick=items=>items[Math.floor(draw()*items.length)];
@@ -53,8 +58,11 @@ if(isMainThread){
    outcome=s.ending??'incomplete';
   }catch(e){outcome=e.message.includes('Budget exceeds')?'budget-blocked':'error';if(outcome==='error')result.errors.push({run:i,seed,month:s.month,message:e.message});}
   result.outcomes[outcome]=(result.outcomes[outcome]??0)+1;
-  if(s.month===96){result.doctoralCount++;for(const key of skills)totals[key]+=abilityScore(s,key);}
+  if(s.month===96){result.doctoralCount++;for(const key of skills){const value=abilityScore(s,key);totals[key]+=value;arrivals[key].push(value);}if(s.ending&&canDefend(s))doctoralPapers.push(s.career.papers);}
   if(result.samples.length<3&&['true','institute','corporate'].includes(outcome))result.samples.push({run:i,seed,fieldId:field.id,outcome,month:s.month,papers:s.career.papers,skills:Object.fromEntries(skills.map(k=>[k,abilityScore(s,k)]))});
  }
- result.doctoralMeans=Object.fromEntries(skills.map(k=>[k,result.doctoralCount?Number((totals[k]/result.doctoralCount).toFixed(3)):null]));parentPort.postMessage(result);
+ result.doctoralMeans=Object.fromEntries(skills.map(k=>[k,result.doctoralCount?Number((totals[k]/result.doctoralCount).toFixed(3)):null]));
+ result.arrivalAbilityDistributions=Object.fromEntries(skills.map(k=>[k,distribution(arrivals[k])]));
+ result.freshDoctoralPapers={...distribution(doctoralPapers),mean:doctoralPapers.length?Number((doctoralPapers.reduce((sum,n)=>sum+n,0)/doctoralPapers.length).toFixed(3)):null};
+ parentPort.postMessage(result);
 }

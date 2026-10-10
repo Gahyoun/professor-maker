@@ -1,7 +1,7 @@
 import {DILEMMAS,dilemmaOptions,monthlyIssueOptions} from "./monthly-choices.js";
-import {mergeRelationship,scoreAfterChange} from './relationship.js';
+import {mergeRelationship,scoreAfterChange,abilityAfterChange} from './relationship.js';
 import {chooseTopic,validTopicId,topicById} from './research-topics.js';
-import {JOURNALS,CONFERENCE_TIERS,DEFAULT_PUBLICATION,validPublication,getJournal,isAvailableJournal} from './venues.js';
+import {JOURNALS,CONFERENCE_TIERS,DEFAULT_PUBLICATION,validPublication,getJournal,isAvailableJournal,journalMetricRecord} from './venues.js';
 import {academicWeeks,weekContext,examWindow} from './academic-calendar.js';
 import {CHAPTERS,THESIS_STEPS} from './main-story.js';
 import {initialTravel,validTravel,abstractAcceptance,canTravel,studentAttends,conferenceCosts} from './travel.js';
@@ -15,12 +15,13 @@ import { initialGrants, advanceGrants, validateGrants } from './grants.js';
 import { getDiscipline, degreeTargets } from './disciplines.js';
 export { EVENTS };
 export const VERSION = 4;
+export const GROWTH_VERSION = 2;
 export const MONTHS = 96;
 export const WORK_POLICIES={free:'라이프 우선 · 자율 출근',core:'할 때는 열심히 · 코어 타임',regular:'매일 성실하게 · 9–6',intensive:'연구를 충실히 · 9–9'};
 export const STUDY_POLICIES={study:'열심히 공부하세요',learn:'배움을 우선',research:'연구를 우선',intensive:'열심히 연구하세요'};
 export const DEFAULT_POLICIES={work:'core',study:'learn'};
 const validPolicies=p=>p&&Object.keys(p).every(k=>['work','study'].includes(k))&&Object.hasOwn(WORK_POLICIES,p.work)&&Object.hasOwn(STUDY_POLICIES,p.study);
-export function projectThresholds(s){const mode=getDiscipline(s.professorProfile.fieldId).graduation;const venue=getJournal(s.project?.journal??'standard',s.professorProfile.fieldId);const factor=(mode==='conference'?.9:mode==='mixed'?1:1.1)*venue.work;return {phaseTargets:PROJECT_PHASES.map(p=>p.target*factor),conference:(mode==='conference'?34:mode==='mixed'?44:54)*CONFERENCE_TIERS[s.publication?.conference??'regular'].work,submission:PROJECT_PHASES.slice(0,5).reduce((n,p)=>n+p.target*factor,0)};}
+export function projectThresholds(s){const mode=getDiscipline(s.professorProfile.fieldId).graduation;const venue=getJournal(s.project?.journal??'standard',s.professorProfile.fieldId);const complexity=1+Math.min(4,Math.max(0,(s.project?.id??1)-1))*.18;const factor=(mode==='conference'?.9:mode==='mixed'?1:1.1)*venue.work*complexity;return {phaseTargets:PROJECT_PHASES.map(p=>p.target*factor),conference:(mode==='conference'?34:mode==='mixed'?44:54)*CONFERENCE_TIERS[s.publication?.conference??'regular'].work,submission:PROJECT_PHASES.slice(0,5).reduce((n,p)=>n+p.target*factor,0)};}
 export function projectWork(s){const targets=projectThresholds(s).phaseTargets;return targets.slice(0,s.project.phase).reduce((n,p)=>n+p,0)+(s.project.phase===5?0:s.project.progress);}
 export function developmentalStage(s){const level=s.month<24?'undergrad':s.month<48?'masters':stage(s);return {level,independence:level==='undergrad'?.78:level==='masters'?.94:1.05,errorRate:level==='undergrad'?BALANCE.undergraduateMistakeRate:level==='masters'?BALANCE.masterMistakeRate:BALANCE.doctoralMistakeRate};}
 
@@ -72,7 +73,7 @@ export const HIDDEN_RANGES = Object.fromEntries([
 const HIDDEN_KEYS = Object.keys(HIDDEN_RANGES);
 // Skills accumulate through practice; condition recovery and temperamental tendencies
 // retain their ordinary changes. Output counts, project progress and money are separate.
-const SATURATING_SKILLS=new Set(['rapport','learning','research','language','social','autonomy','teaching','industry','enterprise','outreach','intuition']);
+const SATURATING_SKILLS=new Set(['rapport','learning','research','language','social','autonomy','teaching','industry','enterprise','outreach','intuition','manners']);
 const GROWING_ABILITIES=new Set([...SATURATING_SKILLS].filter(key=>key!=='rapport').concat('manners'));
 // Public engine helper, not a display permission: the UI still keeps student values hidden.
 export function abilityScore(stateOrHidden,key) { const h=stateOrHidden.hidden??stateOrHidden;const [lo,hi]=HIDDEN_RANGES[key]??[0,100];return (h[key]-lo)*100/(hi-lo); }
@@ -97,9 +98,14 @@ function shift(s,group,effects={}) { for (const [k,n] of Object.entries(effects)
   // Effects are normalized game points, then translated to each stored spectrum.
   const buffered=group==='hidden'&&k==='stress'&&n>0?n*(1.4-abilityScore(s,'resilience')/125):group==='professor'&&n<0&&s.month<=12&&s.professorProfile?.institution==='institute'?n*.65:n;
   const change=group==='hidden'&&buffered>0&&GROWING_ABILITIES.has(k)?buffered*BALANCE.abilityGrowthScale:buffered;
-  s[group][k]=group==='hidden'&&SATURATING_SKILLS.has(k)?lo+scoreAfterChange(abilityScore(s,k),change)*(hi-lo)/100:clamp(s[group][k]+change*(group==='hidden'?(hi-lo)/100:1),lo,hi);
+  s[group][k]=group==='hidden'&&SATURATING_SKILLS.has(k)?lo+(k==='rapport'?scoreAfterChange:abilityAfterChange)(abilityScore(s,k),change)*(hi-lo)/100:clamp(s[group][k]+change*(group==='hidden'?(hi-lo)/100:1),lo,hi);
 } }
 function log(s,entry) { const topicId=entry.projectId===s.project?.id?s.project.topicId:null;s.history.push({month:s.month,...(topicId?{topicId}:{}),...entry}); }
+function updateGrowthRules(s){
+ if(s.growthVersion===GROWTH_VERSION)return;
+ const fromVersion=s.growthVersion??1;s.growthVersion=GROWTH_VERSION;s.growthLegacyThrough??=s.month;
+ if(!s.ending)log(s,{kind:'growth-rules',fromVersion,toVersion:GROWTH_VERSION,legacyThrough:s.growthLegacyThrough});
+}
 function finish(s,ending,reason=null) { s.ending=ending;s.endingReason=reason;s.pending=null;s.pendingQueue=[];log(s,{kind:'ending',ending,...(reason?{reason}:{})});return s; }
 export function projectTitle(s,id=s.project.id,locale=s.locale){const topicId=id===s.project?.id?s.project.topicId:s.history.find(h=>h.projectId===id&&h.topicId)?.topicId;const topic=topicById(topicId);return locale==='ko'&&topic?topic.title:PROJECT_TITLES[(id-1)%PROJECT_TITLES.length][locale==='en'?'en':'ko'];}
 function newProject(s,id) { return {id,...(chooseTopic(s,id)?{topicId:chooseTopic(s,id).id}:{}),journal:s.publication?.journal??'standard',titleIndex:(id-1)%PROJECT_TITLES.length,phase:0,progress:0,conference:false,reviewMonths:0,submitted:false,submittedAt:null,revisions:0}; }
@@ -107,7 +113,7 @@ export function createState(name='김하늘',seed=Date.now(),{gender,professorGe
   const requested=professorProfile??{gender:professorGender,age,fieldId,labMode,institution};
   const discipline=getDiscipline(requested.fieldId??fieldId);
   const profile={gender:['male','female','other'].includes(requested.gender)?requested.gender:'other',age:Number.isFinite(requested.age)?clamp(Math.round(requested.age),30,55):42,fieldId:discipline.id,labMode:discipline.labModes.includes(requested.labMode)?requested.labMode:discipline.labModes[0],institution:['national','private','institute'].includes(requested.institution)?requested.institution:'national'};
-  const s={version:VERSION,name:String(name).trim().slice(0,24)||'김하늘',gender:'unspecified',professorGender:profile.gender,professorProfile:profile,professorEnergy:100,locale:locale==='en'?'en':'ko',month:0,route:null,started:false,
+  const s={version:VERSION,growthVersion:GROWTH_VERSION,name:String(name).trim().slice(0,24)||'김하늘',gender:'unspecified',professorGender:profile.gender,professorProfile:profile,professorEnergy:100,locale:locale==='en'?'en':'ko',month:0,route:null,started:false,
     hidden:{learning:299.7,research:249.75,language:299.7,social:-30,stamina:849.15,resilience:649.35,manners:599.4,creativity:0,diligence:20,rapport:25,luck:0,motivation:70,stress:12,autonomy:20,teaching:10,industry:0,enterprise:0,outreach:0,intuition:28,confidence:55},
     temperament:{curiosity:50,caution:50,expression:50},professor:{research:55,teaching:55,admin:55,mentoring:55},lab:{financeRules:1,initialFunding:seededInitialFunding(seed,profile.institution).total,funds:profile.institution==='institute'?600:profile.institution==='private'?270:300,pool:profile.institution==='institute'?0:profile.institution==='private'?90:100,debt:0,creditEnabled:false,budget:{salary:60,environment:2,performance:3,publicity:0},equipment:100},
     career:{submissions:0,papers:0,conferences:0,festivalAttendance:0,recommendations:0,awards:0,topPapers:0,completedProjects:0,qual:'not_due',qualAttempts:0},
@@ -283,7 +289,7 @@ function weekly(s,id,index) {
   if(id==='coffee')shift(s,'hidden',{rapport:3.24,motivation:3,stamina:8,stress:-7,social:1.2,resilience:BALANCE.conversationResilienceRecovery});
   else {
     shift(s,'hidden',{stamina:-7*(.8+h.diligence/250)*(1+s.month/(12*160)),stress:2.6,motivation:-.35,autonomy:.25});
-    if(id==='coursework'){const chance=clamp(.65+h.learning*.002-developmentalStage(s).errorRate+(h.luck-50)*.0006,.3,.94),roll=random(s);result.successRate=roll<chance?clamp(1-Math.pow(roll/chance,4),0,1):0;result.successProbability=chance;result.weight=0;result.researchGrade=researchGrade(result.successRate);if(result.successRate<.4){result.scienceFailures++;result.outcome='inconclusive';shift(s,'hidden',{stress:1.5,confidence:-.4});}shift(s,'hidden',{learning:3.5*result.successRate,intuition:.3*result.successRate,confidence:.5*result.successRate});}
+    if(id==='coursework'){const chance=clamp(.65+h.learning*.002-developmentalStage(s).errorRate+(h.luck-50)*.0006,.3,.94),roll=random(s);result.successRate=roll<chance?clamp(1-Math.pow(roll/chance,4),0,1):0;result.successProbability=chance;result.weight=0;result.researchGrade=researchGrade(result.successRate);if(result.successRate<.4){result.scienceFailures++;result.outcome='inconclusive';shift(s,'hidden',{stress:1.5,confidence:-.4});}shift(s,'hidden',{learning:2.6*result.successRate,intuition:.3*result.successRate,confidence:.5*result.successRate});}
     scienceProgress(s,id,result);
     // Failed research still teaches, but contributes less than a successful week.
     const practice=Number.isFinite(result.successRate)?.35+.65*result.successRate:1;
@@ -294,7 +300,9 @@ function weekly(s,id,index) {
     if(id==='paper')practiceShift({research:.6,language:1.1,autonomy:.7});
     if(id==='language')shift(s,'hidden',{language:3,social:.5});
     if(id==='presentation')shift(s,'hidden',{language:1,social:1.5,confidence:1});
-    if(id==='industry')practiceShift({enterprise:Math.min(3,Math.max(.15,(h.creativity-60)/8)),industry:4.5*(.75+h.social/200),research:.6,autonomy:1,social:1,manners:.4});
+    // Creative RA work can develop prototypes as well as employment skills.
+    // Keep this avenue distinct when advanced skills share a tighter growth curve.
+    if(id==='industry')practiceShift({enterprise:Math.min(3.5,Math.max(.15,(h.creativity-60)/7)),industry:4.5*(.75+h.social/200),research:.6,autonomy:1,social:1,manners:.4});
     if(id==='startup')shift(s,'hidden',{enterprise:4.5*(.75+h.social/200),industry:.7,autonomy:1.3,social:1,creativity:.5});
     if(id==='video')shift(s,'hidden',{outreach:4.5,language:1,social:1.3});
     if(id==='teach')shift(s,'hidden',{teaching:4,learning:.5,social:1.4,autonomy:.9,manners:.5});
@@ -311,7 +319,7 @@ function weekly(s,id,index) {
 }
 function advanceProject(s,reviewTick=false) {
   const p=s.project,venue=getJournal(p.journal??'standard',s.professorProfile.fieldId);
-  const venueRecord={journal:p.journal??'standard',impactFactor:venue.impactFactor,citationWeight:venue.citationWeight};
+  const venueRecord=journalMetricRecord(s,p.journal??'standard',p.id,p.submittedAt??s.month);
   while(p.phase<5&&p.progress>=projectThresholds(s).phaseTargets[p.phase]){p.progress-=projectThresholds(s).phaseTargets[p.phase];p.phase++;log(s,{kind:'project-phase',projectId:p.id,phase:PROJECT_PHASES[p.phase].id});}
   if(p.phase===5&&!p.submitted) {
     p.progress=0;p.submitted=true;p.submittedAt=s.month;p.reviewMonths=0;s.career.submissions++;log(s,{kind:'submission',projectId:p.id,...venueRecord});return;
@@ -393,6 +401,7 @@ export function simulateMonth(state,plan,options={}) {
   const credit=availableCredit(state);if(operating>state.lab.funds+credit||cost>state.lab.funds+(state.lab.pool??0)+credit)throw new Error('Budget exceeds available funds before new grants.');
   if(!FEEDBACK.includes(type)||!FACULTY_ACTIONS.includes(action))throw new Error('Invalid mentoring choice.');
   const s=structuredClone(state);
+  updateGrowthRules(s);
   if(FACULTY_KEYS.some(k=>s.professor[k]===0))return finish(s,'gameover');
   s.travel??=initialTravel();if(action==='abstract'){const earlier=s.history.find(e=>e.kind==='paper'&&!s.history.some(h=>h.kind==='conference'&&h.projectId===e.projectId));s.travel={status:'review',tier:s.publication?.conference??'regular',submittedAt:s.month,decidedAt:null,conferenceMonth:s.month+2,projectId:earlier?.projectId??s.project.id};log(s,{kind:'abstract-submission',month:s.month+1,projectId:s.travel.projectId});}
   s.workload={...capacity};s.started=true;s.attendance={...attendance,overseas:'none'};s.policies={...policies};s.month++;s.plan=[...plan];s.allocation={...allocation};s.lab.budget={...budget};const borrowed=Math.max(0,operating-s.lab.funds,cost-s.lab.funds-(s.lab.pool??0));if(borrowed){s.lab.debt=(s.lab.debt??0)+borrowed;s.lab.funds+=borrowed;log(s,{kind:'operating-advance',amount:borrowed,debt:s.lab.debt});}s.stipendLock=budget.salary;s.feedback=type;s.facultyAction=action;ensureFunding(s);const pooledPayment=Math.min(s.lab.pool,stipend);s.lab.pool-=pooledPayment;s.lab.funds-=cost-pooledPayment;log(s,{kind:'stipend-payment',amount:stipend,fromPool:pooledPayment});
@@ -617,11 +626,12 @@ export function migrateSave(raw) {
     if(eventEligible(s,EVENTS.find(e=>e.id===previous.id)))s.pending=previous;
     else {log(s,{kind:'event-migration',id:previous.id});nextPending(s);}
   }
-  if(!validateSave(s))return null;migrateFinance(s);ensureFunding(s);s.impact??=initialImpact();s.travel??=initialTravel();if(['abroad_student','abroad_together'].includes(s.facultyAction)){s.attendance.overseas=s.facultyAction==='abroad_student'?'student':'together';s.facultyAction='routine';}if(s.attendance.overseas!=='none'&&(![8,2].includes(calendarMonth(s.month,s.locale))||studentAttends(s.attendance.overseas)&&!canTravel(s)))s.attendance.overseas='none';s.plan=s.plan.map(currentActivity);if(!s.ending)s.allocation=allocateCredits(s.allocation,facultyCapacity(s).credits);return validateSave(s)?s:null;
+  if(!validateSave(s))return null;updateGrowthRules(s);migrateFinance(s);ensureFunding(s);s.impact??=initialImpact();s.travel??=initialTravel();if(['abroad_student','abroad_together'].includes(s.facultyAction)){s.attendance.overseas=s.facultyAction==='abroad_student'?'student':'together';s.facultyAction='routine';}if(s.attendance.overseas!=='none'&&(![8,2].includes(calendarMonth(s.month,s.locale))||studentAttends(s.attendance.overseas)&&!canTravel(s)))s.attendance.overseas='none';s.plan=s.plan.map(currentActivity);if(!s.ending)s.allocation=allocateCredits(s.allocation,facultyCapacity(s).credits);return validateSave(s)?s:null;
 }
 export function validateSave(s) {
   if(!plain(s)||s.version!==VERSION||typeof s.name!=='string'||!s.name.trim()||s.name.length>24||!integer(s.month,0,MONTHS)||!integer(s.seed,0,4294967295)||!['male','female','unspecified'].includes(s.gender)||!['male','female','other','unspecified'].includes(s.professorGender)||!['ko','en'].includes(s.locale)||![null,'masters','integrated'].includes(s.route)||typeof s.started!=='boolean'||!(s.ending===null||ENDINGS.includes(s.ending)))return false;
   if(s.policies!==undefined&&!validPolicies(s.policies)||s.professorName!==undefined&&(typeof s.professorName!=='string'||!s.professorName.trim()||s.professorName.length>40))return false;
+  if(s.growthVersion!==undefined&&!integer(s.growthVersion,1,GROWTH_VERSION)||s.growthLegacyThrough!==undefined&&!integer(s.growthLegacyThrough,0,s.month))return false;
   const p=s.professorProfile;
   if(!plain(p)||!['male','female','other'].includes(p.gender)||!(p.gender===s.professorGender||p.gender==='other'&&s.professorGender==='unspecified')||!integer(p.age,30,55)||typeof p.fieldId!=='string'||getDiscipline(p.fieldId).id!==p.fieldId||!getDiscipline(p.fieldId).labModes.includes(p.labMode)||!['national','private','institute'].includes(p.institution)||!number(s.professorEnergy)||!(s.endingReason===null||['graduation_requirements','time_limit','qual_failure'].includes(s.endingReason)))return false;
   if(s.stipendLock!==undefined&&!integer(s.stipendLock,0,100)||s.sabbatical?.start!==undefined&&![24,36,48,60,72].includes(s.sabbatical.start))return false;

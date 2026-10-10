@@ -9,6 +9,21 @@ export function scoreAfterChange(score,gain){
  return base+(100-base)*-Math.expm1(-(gain-linear)/50);
 }
 export const rapportAfterChange=scoreAfterChange;
+// Advanced skills need increasingly more practice than a familiar relationship.
+// Match the original curve through 70, then make growth proportional to the
+// square of the remaining room. Losses and condition recovery stay ordinary.
+export function abilityAfterChange(score,gain){
+ const current=Math.max(0,Math.min(100,score));
+ if(gain<=0)return Math.max(0,current+gain);
+ const linear=Math.min(gain,Math.max(0,50-current));let base=current+linear,remaining=gain-linear;
+ if(base<70){
+  const practiceToAdvanced=50*Math.log((100-base)/30);
+  if(remaining<=practiceToAdvanced)return scoreAfterChange(base,remaining);
+  remaining-=practiceToAdvanced;base=70;
+ }
+ const room=100-base;
+ return 100-room/(1+room*remaining/1500);
+}
 export function mergeRelationship(hidden){
  if(!hidden||typeof hidden!=='object'||Array.isArray(hidden))return hidden;
  const out={...hidden};

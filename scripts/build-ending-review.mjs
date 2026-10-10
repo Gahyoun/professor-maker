@@ -8,10 +8,10 @@ const root=new URL('../',import.meta.url),input=new URL('docs/ending-audit-sampl
 const bytes=await readFile(input),audit=JSON.parse(bytes);
 if(!Array.isArray(audit.samples)||!audit.samples.length)throw new Error('No actual audit ending samples');
 let seenPassageIds=[];
-const records=audit.samples.map(sample=>{if(!validateSave(sample.state))throw new Error(`Invalid audit state ${sample.run}`);if(sample.endingId!==sample.state.ending)throw new Error(`Ending mismatch ${sample.run}`);const record=prepareLetterPassages(reviewRecord(sample),seenPassageIds);seenPassageIds=collectSeenPassageIds([record],seenPassageIds);return record;});
+const records=audit.samples.map(sample=>{if(!validateSave(sample.state))throw new Error(`Invalid audit state ${sample.run}`);if(sample.endingId!==sample.state.ending)throw new Error(`Ending mismatch ${sample.run}`);const record=prepareLetterPassages(reviewRecord(sample),seenPassageIds);record.source.engineVersion=sample.sourceEngineVersion??audit.engineVersion;record.source.kind=sample.sourceAudit?.kind??'main-10000-audit';seenPassageIds=collectSeenPassageIds([record],seenPassageIds);return record;});
 const collection=reviewCollection(records);
 if(!collection.complete)throw new Error(`Main ending collection incomplete: ${collection.count} / ${collection.total}`);
-const data={version:1,engineVersion:audit.engineVersion,generatedAt:audit.generatedAt,sourceCommit:audit.sourceCommit,sourceHashes:audit.sourceHashes,sampleSha256:createHash('sha256').update(bytes).digest('hex'),source:'simulation-worker',seenPassageIds,records};
+const data={version:1,engineVersion:audit.engineVersion,generatedAt:audit.generatedAt,sourceCommit:audit.sourceCommit,sourceHashes:audit.sourceHashes,sampleSha256:createHash('sha256').update(bytes).digest('hex'),source:'simulation-worker',sourceMethod:audit.method,sources:audit.sources??[],seenPassageIds,records};
 const output=new URL('dist/ending-review-data.json',root);
 await writeFile(output,JSON.stringify(data));
 console.log(`Ending review: ${records.length} actual endings, ${collection.count} main endings, ${collection.pages.length} retirement scenes; ${fileURLToPath(output)}`);

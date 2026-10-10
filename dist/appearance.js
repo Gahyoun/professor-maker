@@ -12,9 +12,15 @@ export function studentAppearance(seed,gender){
  const rare=rand();return {hairLength:rare<(gender==='male'?.006:0)?0:Math.max(1,Math.min(6,gender==='female'?1+Math.floor(rare*6):Math.round(mean+gaussian*.85))),hair:['#282827','#3b302b','#49392f','#242836','#675046','#352e2d'][Math.floor(rand()*6)],skin:skinTone(rand()),shirt:['#456c87','#597a68','#906b71','#6c6587'][Math.floor(rand()*4)],glasses:rand()<.3,eyes:Math.floor(rand()*3),face:Math.floor(rand()*3),outfit:Math.floor(rand()*6),fringe:Math.floor(rand()*16),brows:Math.floor(rand()*3),glassesShape:Math.floor(rand()*2),curly:((Math.imul(Number(seed)^0x37ac,2654435761)>>>0)%5)===0};
 }
 export const renderPortrait=renderStudentPortrait;
+// A render-only choice: the original saved hair length remains unchanged.
+export function labHairStyle(seed,hairLength,labMode){
+ if(labMode!=='wet'||hairLength<5)return 'loose';
+ return (Math.imul((Number(seed)^0x7b3d)>>>0,2654435761)>>>0)%2?'ponytail':'braided-bun';
+}
 
 export function weeklyAppearance(state,index=0){
  const a=studentAppearance(state.creationSeed??state.seed,state.gender),month=state.visualMonth??state.month;
  const sequence=(a.outfit+Math.max(0,state.month-1)*5+index),outfit=state.professorProfile?.labMode==='dry'?1+sequence%5:sequence%6;
- return {...a,...(state.gender==='male'&&state.service?.trainingReturnMonth!==undefined&&(month>=state.service.trainingReturnMonth&&month<state.service.trainingReturnMonth+2||month===state.service.trainingStartMonth&&index>=3)?{hairLength:0}:{}),outfit,shirt:['#456c87','#597a68','#906b71','#6c6587','#ba8659','#548b98'][(a.outfit+index+state.month)%6]};
+ const haircut=state.gender==='male'&&state.service?.trainingReturnMonth!==undefined&&(month>=state.service.trainingReturnMonth&&month<state.service.trainingReturnMonth+2||month===state.service.trainingStartMonth&&index>=3),hairLength=haircut?0:a.hairLength,labMode=state.professorProfile?.labMode;
+ return {...a,hairLength,labMode,hairStyle:labHairStyle(state.creationSeed??state.seed,hairLength,labMode),outfit,shirt:['#456c87','#597a68','#906b71','#6c6587','#ba8659','#548b98'][(a.outfit+index+state.month)%6]};
 }
