@@ -1,6 +1,6 @@
 import {abilityScore,TRUE_REQUIREMENTS,TRUE_RESEARCH_REQUIREMENTS,degreeRequirements,careerScores,recommendationCandidate} from './engine.js';
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const labels={learning:'학습',research:'연구수행',language:'어학·전달',social:'의사소통',autonomy:'자율성',teaching:'교육 경험',rapport:'라포',resilience:'정신력',manners:'예의범절',motivation:'의욕',papers:'논문 게재',conferences:'학술 발표',recommendations:'추천서',faculty:'교수 업무 최저값'};
+const labels={learning:'학습',research:'연구수행',language:'어학·전달',social:'의사소통',autonomy:'자율성',teaching:'교육 경험',rapport:'라포',resilience:'정신력',manners:'예의범절',motivation:'의욕',submissions:'논문 제출',papers:'논문 게재',conferences:'학술 발표',recommendations:'추천서',faculty:'교수 업무 최저값'};
 export function endingEvidence(s){
  if(!s.ending)return null;
  const metrics=[{label:'지도기간(개월)',value:s.month},{label:'논문 게재',value:s.career.papers},{label:'학술 발표',value:s.career.conferences},{label:'수상',value:s.career.awards},{label:'h-index',value:s.impact?.hIndex??0},{label:'라포(0–100)',value:abilityScore(s,'rapport')}];

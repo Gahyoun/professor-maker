@@ -131,7 +131,7 @@ export function letterClosing(id,distance,context,locale='ko'){
  bachelor:close?['다음에 뵐 때 새로 배우는 일도 들려드릴게요.','I will tell you what I am learning when we next meet.']:['다음 계획이 정해지면 짧게 소식 전하겠습니다.','I will send a short update when my next plan is settled.'],
  masters:close?['다음에 뵐 때 연구실 밖에서 배운 이야기도 들려드릴게요.','I will tell you what I have learned beyond the lab next time.']:['새 생활에 익숙해지면 다시 소식 전하겠습니다.','I will send an update once I have settled into this new routine.'],
  external_masters:close?['새 연구실에서 배운 이야기를 다음 방학에 들려드릴게요.','I will tell you about my new lab during the next break.']:['수업과 연구가 자리를 잡으면 다음 소식 전하겠습니다.','I will send news once my courses and research have settled.'],
- external_phd:close?['다음 학회에서 만나면 바뀐 연구 질문부터 들려드릴게요.','At the next conference, I will tell you about my new research question.']:['시험과 연구 일정이 정리되면 다시 연락드리겠습니다.','I will write again after organizing my exam and research schedule.'],
+ external_phd:close?['건강하세요.','Please take care.']:['시험과 연구 일정이 정리되면 다시 연락드리겠습니다.','I will write again after organizing my exam and research schedule.'],
  institute:close?['다음에 뵐 때 교수님 안부도 듣고 싶습니다.','I hope to hear how you are doing when we meet.']:['공동연구 범위와 일정은 회의 전에 메일로 정리하겠습니다.','I will send the collaboration scope and schedule before the meeting.'],
  startup:close?['다음에 만나면 첫 고객에게 배운 이야기도 들려드릴게요.','Next time, I will tell you what our first customer taught us.']:['협업이 필요한 일은 범위와 비용부터 정리해 연락드리겠습니다.','For any collaboration, I will write after setting out its scope and cost.'],
  resident_researcher:close?['회의 뒤에는 연구 말고 서로의 안부도 나누면 좋겠습니다.','After the meeting, I hope we can catch up beyond research.']:['다음 회의의 안건과 역할을 먼저 정리해 공유하겠습니다.','I will share the agenda and responsibilities before the next meeting.'],

@@ -28,7 +28,7 @@ export const OUTSIDE_SCENES=[
 ];
 export const VIDEO_SCENES=[
  p('학부연구생과 석박사, 8년이라는 시간이 흘렀다.\n\n{name} 박사는 졸업 한 달 뒤 링라이트를 샀다. 채널 이름은 「박사인데요」였다.','Eight years passed. A month after graduation, Dr. {name} bought a ring light and opened a channel called I Have a PhD.'),
- p('첫 영상은 「연구 미팅을 무사히 끝내는 법」. 조회수 120만.\n\n영상 속 교수와 연구실은 모두 재연이었다. 그런데 익숙한 안경테가 눈에 걸렸다.','The first video, How to survive a research meeting, reached 1.2 million fictional views. The lab and professor were dramatized, but the glasses looked familiar.'),
+ p('첫 영상은 「연구 미팅을 무사히 끝내는 법」. 조회수 120만.\n\n영상 속 교수와 연구실은 모두 재연이었다. 그런데 익숙한 안경테가 눈에 걸렸다.','The first video, How to survive a research meeting, reached 1.2 million views. The lab and professor were dramatized, but the glasses looked familiar.'),
  p('조교가 휴대폰을 들고 왔다. “교수님, 이거 교수님 같아요.”\n\n화이트보드 낙서까지 닮았다. 재연이라고 써 놓은 글씨가 유난히 작았다.','An assistant showed me the video. The whiteboard looked familiar too. The dramatization label seemed unusually small.'),
  p('영상은 시리즈가 되었다.\n\n「리뷰어 2 성대모사」\n「교수님 ‘응’의 7가지 의미」\n「계절마다 기사님을 부르는 기계와 친해지는 법」\n\n댓글에는 “우리 연구실도요”가 쌓였다.','The series grew: Reviewer Two impressions, Seven meanings of a professor’s Hmm, and Befriending equipment that needs a technician every season. Viewers said their labs were the same.'),
  p('‘응’의 7가지 의미를 끝까지 봤다. 정확하다. 너무 정확하다.\n\n6번 “응(아직 안 읽음)”은 반박할 수가 없다.','I watched all seven meanings. They were accurate. Too accurate. I could not dispute number six: Hmm, meaning I have not read it yet.'),
@@ -36,7 +36,7 @@ export const VIDEO_SCENES=[
  p('학회에서 한 연구자가 다가와 물었다.\n\n“Are you THE professor?”\n\n그 THE가 무엇인지는 묻지 않았다.','At a conference, a researcher asked: Are you THE professor? I did not ask what THE meant.'),
  p('1년 뒤 메일이 도착했다.\n\n교수님께.\n「박사인데요」 출연을 요청드립니다. 촬영 범위와 대본은 먼저 확인받겠습니다. 출연료도 있습니다.\n― {name} 올림','An email arrived a year later. Dear Professor, please appear on the channel. We will agree on the script and filming boundaries beforehand. There is an appearance fee. — {name}'),
  p('거절 메일을 세 번 썼다가 지웠다. 올해 대학원 지원자 수를 확인했다.\n\n학과에 물어보니 담당자는 이미 구독자였다.\n\n출연 신고서의 활동 유형 칸에 “유튜브”는 없었다. “기타”에 체크했다.','I wrote and deleted a refusal three times, then checked this year’s graduate applications. The department contact was already a subscriber. The appearance form had no YouTube category. I checked Other.'),
- p('동의를 마친 뒤 「지도교수님이 직접 반박합니다」가 공개되었다. 조회수 300만.\n\nh-index는 크게 달라지지 않았다. 연구실 문의는 늘었다.\n\n구독, 좋아요, 그리고 인용 부탁드립니다.','After agreeing on the production, we released The professor responds. Three million fictional views. My h-index barely changed, but lab inquiries grew. Subscribe, like, and cite responsibly.')
+ p('동의를 마친 뒤 「지도교수님이 직접 반박합니다」가 공개되었다. 조회수 300만.\n\nh-index는 크게 달라지지 않았다. 연구실 문의는 늘었다.\n\n구독, 좋아요, 그리고 인용 부탁드립니다.','After agreeing on the production, we released The professor responds. Three million views. My h-index barely changed, but lab inquiries grew. Subscribe, like, and cite responsibly.')
 ];
 export function workplaceScene(field,kind,dry,fieldId){
  return fieldWorkplace({field,fieldId,labMode:dry?'dry':'wet'},kind);

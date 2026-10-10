@@ -20,25 +20,21 @@ policy=policy.replaceAll("'./play-support.mjs'",JSON.stringify(file('tests/play-
 policy=`import {generateKoreanName} from ${JSON.stringify(file('dist/names.js').href)};\n`+policy;
 const {play}=await import('data:text/javascript;base64,'+Buffer.from(policy).toString('base64'));
 const extra=[];
-for(const [goal,seed]of [['startup',63352],['true',2],['true',11],['true',13]]){
+for(const [goal,seed]of [['startup',63352],['true',2],['true',11],['true',13],['youtuber',6]]){
  const state=play(goal,seed),d=getDiscipline(state.professorProfile.fieldId);
  if(state.ending!==goal||!validateSave(state)||!canDefend(state))throw Error(`Actual ${goal} play failed at seed ${seed}`);
- extra.push({endingId:goal,run:`integration-${goal}-${seed}`,policy:goal==='true'?'integration-faculty':'integration-creative-RA',seed,field:{id:d.id,label:d.label},labMode:state.professorProfile.labMode,
+ extra.push({endingId:goal,run:`integration-${goal}-${seed}`,policy:goal==='true'?'integration-faculty':goal==='youtuber'?'integration-video':'integration-creative-RA',seed,field:{id:d.id,label:d.label},labMode:state.professorProfile.labMode,
   sourceEngineVersion:raw.engineVersion,sourceAudit:{kind:'independent-actual-play',policySource:'tests/engine.test.mjs',policySourceSha256:hash(engineTestBytes),name:'Seeded Korean name supplied at new-game creation'},state});
 }
 const focused=JSON.parse(await fs.readFile(file('docs/focused-faculty-sample.json'),'utf8'));
 const focusedSample=focused.sample;
 if(focused.sourceHashes['dist/engine.js']!==raw.sourceHashes['dist/engine.js']||!validateSave(focusedSample.state)||focusedSample.endingId!=='true')throw Error('Focused sample does not match the final audited engine');
 extra.push({...focusedSample,run:`focused-${focusedSample.seed}`,policy:'focused-faculty',sourceEngineVersion:focused.engineVersion,sourceAudit:{kind:'independent-1000-policy-audit',path:'docs/focused-faculty-sample.json'}});
-const historical=JSON.parse(await fs.readFile(file('docs/ending-audit-samples-4.13.0.json'),'utf8'));
-const video=historical.samples.find(s=>s.endingId==='youtuber');
-if(!video||!validateSave(video.state))throw Error('Missing valid historical actual video ending');
-extra.push({...video,run:`historical-${video.run}`,sourceEngineVersion:historical.engineVersion,sourceAudit:{kind:'historical-actual-play',path:'docs/ending-audit-samples-4.13.0.json',sourceHashes:historical.sourceHashes}});
-const corpus={...raw,corpusKind:'review',generatedAt:new Date().toISOString(),method:'Real current 10,000-policy samples, separate actual faculty/creative-RA/focused plays, and one explicitly historical video sample. Supplemental samples never enter the 10,000-run distribution.',sources:[{path:'docs/ending-audit-10000-samples.json',version:raw.engineVersion,count:raw.samples.length,kind:'main-10000-audit'},{kind:'independent-current-plays',version:raw.engineVersion,count:extra.filter(s=>s.sourceEngineVersion===raw.engineVersion).length},{path:'docs/ending-audit-samples-4.13.0.json',version:historical.engineVersion,count:1,kind:'historical-video'}],samples:[...raw.samples,...extra]};
+const corpus={...raw,corpusKind:'review',generatedAt:new Date().toISOString(),method:'Real current 10,000-policy samples and separate current actual faculty/creative-RA/video/focused plays. Supplemental samples never enter the 10,000-run distribution.',sources:[{path:'docs/ending-audit-10000-samples.json',version:raw.engineVersion,count:raw.samples.length,kind:'main-10000-audit'},{kind:'independent-current-plays',version:raw.engineVersion,count:extra.filter(s=>s.sourceEngineVersion===raw.engineVersion).length}],samples:[...raw.samples,...extra]};
 await fs.writeFile(reviewPath,JSON.stringify(corpus,null,2)+'\n');
 const reportPath=file('docs/ending-balance-audit.json'),report=JSON.parse(await fs.readFile(reportPath,'utf8'));
 report.samples.path='docs/ending-audit-10000-samples.json';
-report.reviewCorpus={path:'docs/ending-audit-samples.json',count:corpus.samples.length,mainAuditSamples:raw.samples.length,independentCurrentSamples:extra.filter(s=>s.sourceEngineVersion===raw.engineVersion).length,historicalSamples:1,excludedFromRunCounts:true};
-report.supplementalCoverage={startup:{kind:'independent-actual-play',seed:63352,path:'docs/ending-audit-samples.json'},true:{kind:'independent-actual-play',seeds:[2,11,13,16]},youtuber:{kind:'historical-actual-play',version:historical.engineVersion,path:'docs/ending-audit-samples-4.13.0.json'},excludedFromRunCounts:true};
+report.reviewCorpus={path:'docs/ending-audit-samples.json',count:corpus.samples.length,mainAuditSamples:raw.samples.length,independentCurrentSamples:extra.filter(s=>s.sourceEngineVersion===raw.engineVersion).length,historicalSamples:0,excludedFromRunCounts:true};
+report.supplementalCoverage={startup:{kind:'independent-actual-play',seed:63352,path:'docs/ending-audit-samples.json'},true:{kind:'independent-actual-play',seeds:[2,11,13,16]},youtuber:{kind:'independent-actual-play',seed:6,version:raw.engineVersion,path:'docs/ending-audit-samples.json'},excludedFromRunCounts:true};
 await fs.writeFile(reportPath,JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify({rawCount:raw.samples.length,reviewCount:corpus.samples.length,extra:extra.map(s=>({ending:s.endingId,seed:s.seed,version:s.sourceEngineVersion})),path:fileURLToPath(reviewPath)}));

@@ -133,8 +133,11 @@ export function studentTrainingActive(s){return s.service?.trainingStartMonth!==
 export function studentRestRequest(s){
   if(s.ending||studentTrainingActive(s))return null;
   const h=scores(s),physical=h.stamina<=45,mental=h.resilience<=35;
-  if(!(h.stress>=65&&(physical||mental)))return null;
-  return {weeks:h.stress>=80||h.stamina<=25||h.resilience<=20?2:1,reason:physical&&mental?'both':physical?'physical':'mental'};
+  // Acute exhaustion still warrants recovery when the student reports little stress.
+  // This changes the proposal only; the agreed schedule remains the player's choice.
+  const exhausted=h.stamina<=25||h.resilience<=20;
+  if(!exhausted&&!(h.stress>=65&&(physical||mental)))return null;
+  return {weeks:h.stress>=80||exhausted?2:1,reason:physical&&mental?'both':physical?'physical':'mental'};
 }
 export function winterTrainingMonth(s){
  const preferred=(Math.imul((s.creationSeed??s.seed)^0x741,2654435761)>>>0)%4===0?2:1;
@@ -144,7 +147,9 @@ export function winterTrainingMonth(s){
 export function salaryBase(s) { return s.month<24?13:s.route==='masters'&&(s.month<48||s.mastersExtended&&s.month<54)?22:30; }
 export const OPERATING_ADVANCE_LIMIT=100; // 1,000만원 fictional institutional bridge, not a personal loan.
 export function availableCredit(s){return s.lab.creditEnabled?Math.max(0,OPERATING_ADVANCE_LIMIT-(s.lab.debt??0)):0;}
-export function monthlyBudgetCost(s,budget=s.lab.budget,plan=s.plan) { const wet=s.professorProfile.labMode==='wet',experiments=wet?plan.filter((id,i)=>id==='experiment'&&(!studentTrainingActive(s)||i>=3)).length:0;return salaryBase(s)*budget.salary/100+budget.environment*(wet?3.5:2)+budget.performance*2+(wet?6+experiments*2:0); }
+// Moderate relief applies to adjustable support costs, not stipends or wet supplies.
+export const OPERATING_SUPPORT_COST_FACTOR=.88;
+export function monthlyBudgetCost(s,budget=s.lab.budget,plan=s.plan) { const wet=s.professorProfile.labMode==='wet',experiments=wet?plan.filter((id,i)=>id==='experiment'&&(!studentTrainingActive(s)||i>=3)).length:0;return salaryBase(s)*budget.salary/100+(budget.environment*(wet?3.5:2)+budget.performance*2)*OPERATING_SUPPORT_COST_FACTOR+(wet?6+experiments*2:0); }
 export function proposeSchedule(s) {
   if(studentTrainingActive(s))return academicWeeks(s).map(()=> 'free');
   const phase=s.project?.phase||0;const recent=s.lastReport?.results??[];
@@ -225,7 +230,7 @@ function facultyMonth(s,professorTravel=false) {
   const capacity=s.workload??facultyCapacity({...s,month:Math.max(0,s.month-1)});
   const institution=INSTITUTION_RULES[s.professorProfile.institution];
   const exempt=k=>capacity.sabbatical&&['teaching','admin'].includes(k);
-  for(const k of FACULTY_KEYS){const allotted=absent&&k==='mentoring'?0:s.allocation[k],decay=exempt(k)?0:k==='teaching'&&!capacity.teachingRequired?-.35:absent&&k==='mentoring'?-.35:allotted===0?-7:allotted===1?-2:0;const gain=allotted>=2?(.85+(allotted-2)*2.3)*capacity.efficiency:0;shift(s,'professor',{[k]:decay+gain});}
+  for(const k of FACULTY_KEYS){const allotted=absent&&k==='mentoring'?0:s.allocation[k],decay=exempt(k)?0:k==='teaching'&&!capacity.teachingRequired?-.35:absent&&k==='mentoring'?-.35:allotted===0?-7:allotted===1?-2:0;const gain=allotted>=2?((k==='mentoring'?.35:.85)+(allotted-2)*2.3)*capacity.efficiency:0;shift(s,'professor',{[k]:decay+gain});}
   if(capacity.teachingRequired){shift(s,'professor',{teaching:-1-Math.max(0,3-s.allocation.teaching)*1.3,admin:-.4});}
   shift(s,'professor',{admin:exempt('admin')?0:-institution.adminLoad,research:-institution.researchLoad});
   if(professorTravel)shift(s,'professor',{research:2});
@@ -337,7 +342,7 @@ function advanceProject(s,reviewTick=false) {
 }
 function required(s,req) {
   const list=Array.isArray(req)?req:req?[req]:[];
-  return list.every(r=>r==='paper'?s.career.papers>0:r==='top_paper'?s.career.topPapers>0:r==='conference'?s.career.conferences>0:r==='submission'?s.career.submissions>0:r==='revision'?s.project.submitted===true&&s.project.phase===5&&s.project.revisions>0:r==='low_motivation'?s.hidden.motivation<45:r==='stress'?s.hidden.stress>45:r==='graduate'?stage(s)!=='undergrad':r==='early_graduate'?developmentalStage(s).level==='masters':r==='sabbatical'?s.sabbatical.active:r==='away_sabbatical'?s.sabbatical.active&&s.sabbatical.mode==='away':r==='research'?s.project.phase>=1:r==='male_pair'?s.locale==='ko'&&s.gender==='male'&&s.professorProfile.gender==='male':r==='female_pair'?s.locale==='ko'&&s.gender==='female'&&s.professorProfile.gender==='female':r==='young_professor'?professorAge(s)<=37:r==='national'?s.professorProfile.institution==='national':r==='institute'?s.professorProfile.institution==='institute':false);
+  return list.every(r=>r==='paper'?s.career.papers>0:r==='top_paper'?s.career.topPapers>0:r==='conference'?s.career.conferences>0:r==='submission'?s.career.submissions>0:r==='revision'?s.project.submitted===true&&s.project.phase===5&&s.project.revisions>0:r==='low_motivation'?s.hidden.motivation<45:r==='stress'?s.hidden.stress>45:r==='graduate'?stage(s)!=='undergrad':r==='qual_preparation'?stage(s)!=='undergrad'&&s.career.qual!=='passed':r==='grading_period'?[6,12].includes(calendarMonth(Math.max(0,s.month-1),s.locale)):r==='early_graduate'?developmentalStage(s).level==='masters':r==='sabbatical'?s.sabbatical.active:r==='away_sabbatical'?s.sabbatical.active&&s.sabbatical.mode==='away':r==='research'?s.project.phase>=1:r==='male_pair'?s.locale==='ko'&&s.gender==='male'&&s.professorProfile.gender==='male':r==='female_pair'?s.locale==='ko'&&s.gender==='female'&&s.professorProfile.gender==='female':r==='young_professor'?professorAge(s)<=37:r==='national'?s.professorProfile.institution==='national':r==='institute'?s.professorProfile.institution==='institute':false);
 }
 export function eventEligible(s,e) {
   if(studentTrainingActive(s)||!e.options.some(o=>Math.max(0,-(o.effects.lab?.funds??0))<=s.lab.funds))return false;
@@ -347,15 +352,16 @@ export function eventEligible(s,e) {
 const SOCIAL_EVENTS = new Set(['collaboration','seminar','internship']);
 // Fictional opportunity weights, not measured probabilities of academic collaborations.
 export function eventWeight(s,eventOrId) {
-  const id=typeof eventOrId==='string'?eventOrId:eventOrId.id;
-  if(SOCIAL_EVENTS.has(id))return clamp(.5+abilityScore(s,'social')/100,.5,1.5);
-  if(['stipend-delay','funding-cut','authorship','ethics','annual-report'].includes(id)&&s.professorProfile.institution==='national')return 1.25;
-  if(id==='new-pi-mistake')return Math.max(1,1+(37-professorAge(s))*.03);
-  return 1;
+  const event=typeof eventOrId==='string'?EVENTS.find(e=>e.id===eventOrId):eventOrId,id=event?.id??eventOrId;
+  const declared=Number.isFinite(event?.weight)&&event.weight>0?event.weight:1;
+  if(SOCIAL_EVENTS.has(id))return declared*clamp(.5+abilityScore(s,'social')/100,.5,1.5);
+  if(['stipend-delay','funding-cut','authorship','ethics','annual-report'].includes(id)&&s.professorProfile.institution==='national')return declared*1.25;
+  if(id==='new-pi-mistake')return declared*Math.max(1,1+(37-professorAge(s))*.03);
+  return declared;
 }
-function selectWeightedEvent(s,eligible) {
+function selectWeightedEvent(s,eligible,unitDraw=random(s)) {
   const weights=eligible.map(e=>eventWeight(s,e));
-  let draw=random(s)*weights.reduce((sum,weight)=>sum+weight,0);
+  let draw=unitDraw*weights.reduce((sum,weight)=>sum+weight,0);
   for(let index=0;index<eligible.length;index++){draw-=weights[index];if(draw<0)return eligible[index];}
   return eligible.at(-1);
 }
@@ -450,7 +456,7 @@ export function simulateMonth(state,plan,options={}) {
   if(s.sabbatical.active&&s.month>=s.sabbatical.until)s.sabbatical.active=false;
   advanceImpact(s);checkFailure(s);if(s.ending)return s;
   academicDue(s);monthlyIssues(s);
-  if(!s.pendingQueue.length&&s.month<MONTHS){const latest=s.history.filter(h=>h.kind==='event'&&EVENTS.find(e=>e.id===h.id)?.kind==='counseling').at(-1)?.month??0;if(s.month-latest>=6){const pool=EVENTS.filter(e=>e.kind==='counseling'&&eventEligible(s,e));if(pool.length)queue(s,{kind:'event',id:pool[(Math.imul((s.creationSeed??s.seed)^s.month,2654435761)>>>0)%pool.length].id});}}
+  if(!s.pendingQueue.length&&s.month<MONTHS){const latest=s.history.filter(h=>h.kind==='event'&&EVENTS.find(e=>e.id===h.id)?.kind==='counseling').at(-1)?.month??0;if(s.month-latest>=6){const pool=EVENTS.filter(e=>e.kind==='counseling'&&eventEligible(s,e));if(pool.length)queue(s,{kind:'event',id:selectWeightedEvent(s,pool,(Math.imul((s.creationSeed??s.seed)^s.month,2654435761)>>>0)/4294967296).id});}}
   if(!s.pendingQueue.length&&s.month<MONTHS&&random(s)<BALANCE.randomEventProbability){const eligible=EVENTS.filter(e=>e.kind!=='counseling'&&e.kind!=='dilemma'&&eventEligible(s,e));if(eligible.length){const e=selectWeightedEvent(s,eligible);queue(s,{kind:'event',id:e.id});}}
   if(!s.pendingQueue.length&&s.month<MONTHS){const pool=DILEMMAS.filter(e=>eventEligible(s,e));if(pool.length){const id=pool[(Math.imul((s.creationSeed??s.seed)^s.month,2246822519)>>>0)%pool.length].id;queue(s,{kind:'event',id});}}
   nextPending(s);return s;
@@ -614,9 +620,9 @@ export function migrateSave(raw) {
     log(s,{kind:'save-migration',fromVersion:3});
   }
   s.sabbatical.start??=s.history.find(h=>h.kind==='sabbatical')?.month??(s.pending?.kind==='sabbatical'||s.pendingQueue?.some(p=>p.kind==='sabbatical')?s.month:Math.min(72,Math.max(24,Math.ceil(s.month/12)*12+12)));s.stipendLock??=s.lab.budget.salary;s.lab.budget.publicity=0;s.hidden=mergeRelationship(s.hidden);s.publication??={...DEFAULT_PUBLICATION};s.attendance??={domestic:'together',overseas:'none'};if(s.facultyAction==='abroad_shared')s.facultyAction='abroad_together';s.policies??={...DEFAULT_POLICIES};s.professorName??='지도교수';s.creationSeed??=s.seed;
-  // Retire only previously scheduled events whose conditions were tightened in 4.12.
+  // Retire only previously scheduled events whose conditions were tightened.
   // Validate the rest of the save before consulting its state; never reset a run.
-  const revisedEvents=new Set(['teaching','grading','reviewer-two','sabbatical-contact']);
+  const revisedEvents=new Set(['teaching','grading','reviewer-two','sabbatical-contact','counsel-qual']);
   const revised=p=>p?.kind==='event'&&revisedEvents.has(p.id);
   const previous=revised(s.pending)&&!s.ending?s.pending:null;
   if(previous)s.pending=null;

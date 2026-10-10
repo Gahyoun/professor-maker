@@ -48,9 +48,12 @@
 
 [실제 종료 기록과 퇴임식 검토 화면](https://gahyoun.github.io/professor-maker/ending-review.html#retirement)에서 전공별 대표 후일담을 볼 수 있습니다. 이 화면은 자동 플레이의 실제 종료 표본을 사용하며 현재 플레이 저장이나 엔딩 수집 기록을 변경하지 않습니다.
 
-[v4.14 성장량 전후 비교](docs/growth-balance-audit.md) · [v4.13의 10,000회 worker 감사](docs/ending-balance-audit.md) · [대표 엔딩 스크립트](docs/ending-script-examples.md) · [5개 에이전트의 정합성 검토와 수정 현황](docs/story-integrity-review.md)
+[성장량 전후 비교](docs/growth-balance-audit.md) · [10,000회 worker 감사](docs/ending-balance-audit.md) · [대표 엔딩 스크립트](docs/ending-script-examples.md) · [5개 에이전트의 정합성 검토와 수정 현황](docs/story-integrity-review.md)
 
-[v4.15 편지 삽입·중복 검사](docs/letter-content-audit.md) · [29개 샘플 전체 원문](docs/letter-content-samples.md) · [시나리오 조합 구조](docs/ending-design.md)
+[편지 삽입·중복 검사](docs/letter-content-audit.md) · [실제 샘플 전체 원문](docs/letter-content-samples.md) · [시나리오 조합 구조](docs/ending-design.md)
+
+[4.16 메인스토리 검수](docs/main-story-review-4.16.0.md) · [분기·이벤트 검수](docs/event-branch-review-4.16.0.md) · [밸런스 비교](docs/balance-review-4.16.0.md) · [UI/UX 검수](docs/uiux-review-4.16.0.md) · [전공별 연구실·계절](docs/lab-visual-review-4.16.0.md)
+- [CV 연구실 장면·저장·인쇄 검수](docs/cv-lab-scene-review-4.16.0.md)
 
 ## 개발
 

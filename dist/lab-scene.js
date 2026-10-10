@@ -4,6 +4,7 @@ import {weeklyAppearance,renderPortrait} from './appearance.js';
 import {miniRoomArt,roomDecorations} from './mini-room.js';
 import {recoveryArt} from './recovery-art.js';
 export {roomDecorations} from './mini-room.js';
+export {labSeason} from './lab-season.js';
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function researchText(text,state){return state?.professorProfile?.labMode==='dry'?String(text).replace(/예비 실험/g,'예비 계산').replace(/실험실/g,'연구실').replace(/실험 노트/g,'연구 노트').replace(/실험/g,'연구'):text;}
 export function supplyLevel(state){if(state.lab.funds<40||state.lab.budget.environment===0)return 'sparse';if(state.lab.funds>=140&&state.lab.budget.environment>=3&&state.lab.equipment>=45)return 'rich';return 'balanced';}
@@ -21,6 +22,11 @@ function roomArt(kind,state,result={},index=0,options={}){
  return `<svg class="pixel-room-art" viewBox="0 0 600 255" aria-hidden="true" preserveAspectRatio="xMidYMid slice"><g shape-rendering="crispEdges">${art}</g></svg>`;
 }
 export function sceneKind(state,result={actual:'idle'}){if(state.pending?.kind==='thesis'&&result.actual==='idle')return 'defense';if(result.actual==='conference'||result.abroad)return 'conference';if(result.actual==='rest')return 'rest';if(result.actual==='travel')return 'travel';return state.professorProfile.labMode;}
+// Standalone outer SVG, including nested portraits/windows, for persistent CV snapshots.
+export function renderLabScene(state,result={actual:'idle'},index=0,options={idle:true}){
+ const svg=roomArt(sceneKind(state,result),state,result,index,{...options,stock:options.stock??supplyLevel(state)}),height=svg.match(/viewBox="0 0 600 (\d+)"/)?.[1]??'360';
+ return svg.replace('<svg ',`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="${height}" `);
+}
 export function roomScene(state,result={actual:'idle'},index=0,{idle=false}={}){
  const kind=sceneKind(state,result),stock=kind==='wet'?supplyLevel(state):null,label=({wet:'Wet lab · 연구실',dry:'Dry lab · 계산·분석 공간',rest:'잠시 쉬어 가는 방',travel:'연구실 밖의 하루',conference:result.abroad?'해외학회장':'학술대회장',defense:'학위심사실'})[kind];
  const mini=['wet','dry','rest'].includes(kind)&&result.destination!=='bed';

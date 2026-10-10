@@ -1,6 +1,7 @@
 import {careerDescription} from './ending-context.js';
 import {JOURNALS,CONFERENCE_TIERS,getJournal,publicationMetric} from './venues.js';
 import {researchText} from './lab-scene.js';
+import {createCVLabScene,validateCVLabScene} from './cv-lab-scene.js';
 import {CHAPTERS,THESIS_SCENES} from './main-story.js';
 import {hIndex} from './impact.js';
 import {endingStatistics,validStatistics,renderStatistics} from './statistics.js';
@@ -218,9 +219,10 @@ const allowedKeys=(value,keys)=>Object.keys(value).every(key=>keys.includes(key)
 
 /** Imported snapshots are data, never a source of trusted HTML. */
 export function validateCVModel(model) {
-  if(!plain(model)||!allowedKeys(model,['version','templateId','locale','name','ending','careerPath','field','months','duration','period','education','outputs','projects','memories','qual','advisor','statistics','impact','publications','milestones','growthVersion','growthLegacyThrough']))return false;
+  if(!plain(model)||!allowedKeys(model,['version','templateId','locale','name','ending','careerPath','field','months','duration','period','education','outputs','projects','memories','qual','advisor','statistics','impact','publications','milestones','growthVersion','growthLegacyThrough','labScene']))return false;
   if(![1,2,3].includes(model.version)||!CV_TEMPLATES.some(template=>template.id===model.templateId)||!['ko','en'].includes(model.locale)||!boundedText(model.name,128)||!model.name.trim()||!Object.hasOwn(ENDINGS,model.ending)||model.ending==='gameover')return false;
   if(!boundedInteger(model.months,96)||!boundedText(model.careerPath,200)||!boundedText(model.field,100)||!boundedText(model.duration,80)||!boundedText(model.period,120)||!(model.qual===null||boundedText(model.qual,100)))return false;
+  if(model.labScene!==undefined&&(!validateCVLabScene(model.labScene,model.months)||getDiscipline(model.labScene.fieldId).label!==model.field))return false;
   if(model.impact!==undefined&&(!plain(model.impact)||!allowedKeys(model.impact,['hIndex','citations'])||!boundedInteger(model.impact.hIndex,model.outputs?.acceptedPapers??0)||!Array.isArray(model.impact.citations)||model.impact.citations.length>(model.outputs?.acceptedPapers??0)||!model.impact.citations.every(n=>boundedInteger(n,100000))||model.impact.hIndex!==hIndex(model.impact.citations)))return false;
   if(model.version===1&&(Object.hasOwn(model,'advisor')||Object.hasOwn(model,'statistics')||Object.hasOwn(model,'impact')))return false;
   if(model.version>=2&&(!plain(model.advisor)||!allowedKeys(model.advisor,['name','gender','age','institution'])||!boundedText(model.advisor.name,40)||!model.advisor.name.trim()||!['male','female','other'].includes(model.advisor.gender)||!Number.isInteger(model.advisor.age)||model.advisor.age<30||model.advisor.age>55||!['national','private','institute'].includes(model.advisor.institution)||!validStatistics(model.statistics)))return false;
@@ -258,7 +260,8 @@ export function validateCVModel(model) {
 export function renderCV(model) {
   if(!validateCVModel(model))throw new Error('Invalid CV snapshot.');
   const fullParts=renderParts(model),parts=renderParts(model,{summary:true});
-  const catalog=fullParts.publicationSection||fullParts.milestoneSection?`<div class="cv-publication-catalog">${fullParts.publicationSection}${fullParts.publicationSection?`<p class="cv-note">${escapeHTML(tx(model.locale,'학술지명과 IF는 게임의 가상 지표입니다. 투고 당시 기록을 유지하며, 확인할 수 없는 과거 날짜는 미기록으로 표시합니다.','Journal labels and IF values are fictional game metrics. Values are preserved at submission; unknown past dates are marked as unrecorded.'))}</p>`:''}${fullParts.milestoneSection}</div>`:'';
+  const labRecord=model.labScene?`<figure class="cv-lab-record"><img class="cv-lab-image" src="${escapeHTML(model.labScene.image)}" width="600" height="360" alt="${escapeHTML(tx(model.locale,`${model.field} 연구실`,`${model.field} laboratory`))}"><figcaption><strong>${escapeHTML(tx(model.locale,'지도 종료 당시 연구실','Lab at the end of advising'))}</strong><span>${escapeHTML(model.field)} · ${model.labScene.labMode==='wet'?'Wet lab':'Dry lab'} · ${escapeHTML(monthLabel(model.months,model.locale))}</span></figcaption></figure>`:'';
+  const catalog=labRecord||fullParts.publicationSection||fullParts.milestoneSection?`<div class="cv-publication-catalog">${labRecord}${fullParts.publicationSection}${fullParts.publicationSection?`<p class="cv-note">${escapeHTML(tx(model.locale,'학술지명과 IF는 게임의 가상 지표입니다. 투고 당시 기록을 유지하며, 확인할 수 없는 과거 날짜는 미기록으로 표시합니다.','Journal labels and IF values are fictional game metrics. Values are preserved at submission; unknown past dates are marked as unrecorded.'))}</p>`:''}${fullParts.milestoneSection}</div>`:'';
   return `<article class="cv-document cv-${model.templateId}" lang="${model.locale}" aria-label="${escapeHTML(tx(model.locale,`${model.name}의 경력 기록`,`${model.name}’s career record`))}"><span class="cv-watermark" aria-hidden="true">PROFESSOR MAKER · GAME RECORD</span><div class="cv-summary">${renderers[model.templateId](model,parts)}${model.impact?`<p class="cv-impact">h-index ${model.impact.hIndex} · 가상 학술 인용 ${model.impact.citations.reduce((a,b)=>a+b,0)}회</p>`:''}</div>${catalog}${model.statistics?`<div class="research-report"><header><small>PROFESSOR MAKER · SIMULATION REPORT</small><h1>지도 종료 기록: 상태 변수 및 수행 이력</h1><p>가상의 단일 플레이 기록 · 재현 가능한 시뮬레이션 결과</p></header>${renderStatistics(model.statistics)}<p class="report-methods">자료: 해당 게임 종료 시점의 저장 상태. 막대는 각 변수의 값을 표시하며 오차막대는 표시하지 않는다. 각 척도의 범위는 게임 설계에 의해 정의된다. 실제 사람을 측정한 자료가 아니다.</p><section class="report-appendix"><h2>부록 · 연구 활동 및 주요 경험</h2>${fullParts.projectSection}${fullParts.memorySection}</section></div>`:''}</article>`;
 }
 
@@ -266,6 +269,7 @@ export function renderCV(model) {
 export function buildEndingCV(state) {
   if(!state||typeof state!=='object'||!state.ending||state.ending==='gameover'||!Object.hasOwn(ENDINGS,state.ending))return null;
   const model=makeModel(state),index=hash(`${Number(state.seed)>>>0}|${state.month}|${state.ending}`)%CV_TEMPLATES.length;
+  model.labScene=createCVLabScene(state);
   model.templateId=CV_TEMPLATES[index].id;for(const p of model.projects){p.title=researchText(p.title,state);p.phase=researchText(p.phase,state);}for(const p of model.publications)p.title=researchText(p.title,state);for(const m of [...model.memories,...model.milestones]){m.title=researchText(m.title,state);m.detail=researchText(m.detail,state);}
   return {templateId:model.templateId,html:renderCV(model),model};
 }
@@ -284,5 +288,8 @@ export function upgradeCVModel(model,state) {
   projects.push(...current.projects.filter(project=>!projects.some(old=>old.id===project.id)));
   const memories=model.memories.map(memory=>({...memory,...(memory.kind==='conference'?{title:tx(model.locale,'학술발표를 마치다','A conference presentation')}:{})}));
   const upgraded={...current,...structuredClone(model),version:3,projects:projects.sort((a,b)=>a.id-b.id),publications:publicationsFrom(projects),milestones:current.milestones,memories};
+  // Original room pixels are absent from older archives. History supplementation
+  // must not invent a picture of the past from the current rendering rules.
+  if(!Object.hasOwn(model,'labScene'))delete upgraded.labScene;
   return validateCVModel(upgraded)?upgraded:model;
 }

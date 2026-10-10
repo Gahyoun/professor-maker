@@ -46,13 +46,13 @@ export const ENDINGS={
   ]},
   unrelated:{type:'EPILOGUE',title:p('다른 종류의 질문','A different kind of question'),career:p('기업 취업 · 새로운 분야','Company employment · a new field'),time:p('졸업 2년 후 · 새 직장에서 온 메일','Two years later · an email from a new workplace'),pages:[
     p('학부연구생과 석박사, 8년이라는 시간이 흘렀다. 그리고 다시 몇 해가 지났다.\n\n수업 준비를 하던 오후, 전공과는 아무 관련 없는 회사에서 메일이 왔다. 보낸 사람은 {name}이었다.','An undergraduate researcher, then a graduate student. Eight years had passed. And then, a few more.\n\nOne afternoon, while preparing a lecture, I received an email from a company with nothing to do with our field. It was from {name}.'),
-    p('교수님께.\n\n요즘은 실험 대신 고객 데이터를 보고 있습니다. 새로운 분야에서 일하면서, 연구실에서 배운 것을 다른 방식으로 쓰고 있습니다.\n\n관찰하고, 가설을 세우고, 틀렸다는 걸 받아들이는 일. 연구실에서 배운 걸 여기서도 쓰고 있습니다.\n\n일하는 일정과 의논하는 방식은 달라졌습니다. 새로운 동료들과 필요한 기준을 함께 배우고 있습니다.\n― {name} 올림','Dear Professor,\n\nThese days I study customer data instead of experiments. Working in a new field, I am using what I learned in the lab in different ways.\n\nObserve. Form a hypothesis. Accept being wrong. I use what I learned in the lab here too.\n\nThe schedules and ways of discussing work have changed. I am learning the necessary standards with new colleagues.\n— {name}'),
+    p('교수님께.\n\n요즘은 다른 업종의 회사에서 고객 데이터를 보고 있습니다.\n\n관찰하고, 가설을 세우고, 틀렸다는 걸 받아들이는 일. 연구실에서 배운 걸 여기서도 쓰고 있습니다.\n\n일하는 일정과 의논하는 방식은 달라졌습니다. 새로운 동료들과 필요한 기준을 함께 배우고 있습니다.\n― {name} 올림','Dear Professor,\n\nThese days I work with customer data at a company in a different industry.\n\nObserve. Form a hypothesis. Accept being wrong. I use what I learned in the lab here too.\n\nThe schedules and ways of discussing work have changed. I am learning the necessary standards with new colleagues.\n— {name}'),
     p('교수는 메일에 적힌 새로운 일의 이야기를 읽었다.\n\n메일을 다시 읽었다. 새로운 분야의 질문을 자기 방식으로 풀어 가고 있었다.\n\n서랍에서 예전 실험 노트를 찾았다. 첫 장에는 같은 이름이, 조금 더 삐뚤게 쓰여 있었다.','I read about the work they were doing in their new field.\n\nI read the email again. They were finding their own way to work on a different set of questions.\n\nI found an old notebook in the drawer. On its first page was the same name, in a less steady hand.'),
-    p('답장은 짧게 썼다.\n\n“그곳의 질문도 잘 풀어 보세요. 근처에 오면 커피나 합시다.”\n\n그리고 다음 소식을 정해진 때에 보내 달라고 요구하지는 않았다.','The reply was short.\n\n“Keep working on the questions there. If you are nearby, let us have coffee.”\n\nAnd this time, I did not ask for a citation.')
+    p('답장은 짧게 썼다.\n\n“그곳의 질문도 잘 풀어 보세요. 근처에 오면 커피나 합시다.”\n\n그리고 다음 소식을 정해진 때에 보내 달라고 요구하지는 않았다.','The reply was short.\n\n“Keep working on the questions there. If you are nearby, let us have coffee.”\n\nI did not ask for another update on a fixed schedule.')
   ]},
   startup:{type:'EPILOGUE',title:p('실험실 밖의 첫 실험','The first experiment outside the lab'),career:p('스타트업 창업자','Startup founder'),time:p('졸업 2년 후 · 투자설명회 초대장','Two years later · an invitation to a pitch'),pages:[
     p('학부연구생과 석박사, 8년이라는 시간이 흘렀다. 그리고 다시 몇 해가 지났다.\n\n연구실 우편함에 작은 초대장이 들어 있었다. 대표이사 {name}.\n\n명함에 적힌 이름만 낯익고, 나머지는 모두 새로운 것이었다.','An undergraduate researcher, then a graduate student. Eight years had passed. And then, a few more.\n\nA small invitation arrived in the lab mailbox. Founder and CEO: {name}.\n\nOnly the name on the business card was familiar. Everything else was new.'),
-    p('교수님께.\n\n논문에서는 “가능성을 보였다”고 쓰면 됐는데, 여기서는 누군가 실제로 돈을 내야 합니다.\n\n첫 제품은 실패했습니다. 두 번째는 조금 덜 실패했고요. 실험 노트는 여전히 씁니다. 이제는 고객 인터뷰가 들어갈 뿐입니다.\n\n다음 주 발표에 와 주실 수 있을까요? 제품과 연구의 다음 계획에 대해 의견을 듣고 싶습니다.\n― {name} 드림','Dear Professor,\n\nIn a paper, I could write “we demonstrated the potential.” Here, someone actually has to pay.\n\nThe first product failed. The second failed a little less. I still keep an experiment notebook. It just has customer interviews now.\n\nCould you come to our pitch next week? Please keep the questions reasonably easy.\n— {name}'),
+    p('교수님께.\n\n논문에서는 “가능성을 보였다”고 쓰면 됐는데, 여기서는 누군가 실제로 돈을 내야 합니다.\n\n첫 제품은 실패했습니다. 두 번째는 조금 덜 실패했고요. 실험 노트는 여전히 씁니다. 이제는 고객 인터뷰가 들어갈 뿐입니다.\n\n다음 주 발표에 와 주실 수 있을까요? 제품과 연구의 다음 계획에 대해 의견을 듣고 싶습니다.\n― {name} 드림','Dear Professor,\n\nIn a paper, I could write “we demonstrated the potential.” Here, someone actually has to pay.\n\nThe first product failed. The second failed a little less. I still keep an experiment notebook. It just has customer interviews now.\n\nCould you come to our pitch next week? I would like your thoughts on the next plans for the product and our research.\n— {name}'),
     p('발표자료 마지막에는 연구실 사진이 있었다. 투자를 받았는지는 아직 모른다. 성공이라 말하기에도 이르다.\n\n하지만 예전에는 내 뒤에 서 있던 학생이, 이제는 자기 팀 앞에 서 있었다.','The final slide had a photograph of our lab. I did not yet know whether they would get funding. It was too early to call this success.\n\nBut the student who once stood behind me was now standing in front of a team of their own.'),
     p('질문 시간이 되자 손을 들었다.\n\n“다음 실험은 무엇입니까?”\n\n{name}은 조금 웃고, 기다렸다는 듯 대답을 시작했다.\n\n나는 끝까지 들었다.','When it was time for questions, I raised my hand.\n\n“What is your next experiment?”\n\n{name} smiled a little and began answering, as if waiting for that question.\n\nI listened to the end.')
   ]},
@@ -84,7 +84,7 @@ export const ENDINGS={
     p('나는 인계 서류의 마지막 줄을 확인했다. 학생의 다음 면담 일시가 적혀 있었다.\n\n내가 할 마지막 지도는, 다음 지도가 끊기지 않게 하는 일이었다.','I checked the last line of the handover notes. It held the date of the student’s next meeting.\n\nMy final act of advising was to make sure the next act could begin.')
   ]},
   unfinished:{type:'EPILOGUE',title:p('마지막 페이지의 여백','The space on the final page'),career:p('8년 내 박사학위 미완료','Doctorate not completed within eight years'),time:p('8년의 지도기간 종료 후 · 계획을 다시 쓰는 메일','After eight years · an email to rethink the plan'),pages:[
-    p('학부연구생과 석박사, 8년이라는 시간이 흘렀다. 하지만 논문의 마지막 장은 아직 끝나지 않았다.\n\n이 게임의 시간은 끝났다. 한 사람의 시간까지 끝난 것은 아니었다.','An undergraduate researcher, then a graduate student. Eight years had passed. But the dissertation’s final chapter was still unfinished.\n\nThe time in this game had ended. A person’s time had not.'),
+    p('학부연구생과 석박사, 8년이라는 시간이 흘렀다. 하지만 논문의 마지막 장은 아직 끝나지 않았다.\n\n마지막 학기의 면담에서, 학생은 남은 일과 이후의 일정을 다시 적었다.','An undergraduate researcher, then a graduate student. Eight years had passed. But the dissertation’s final chapter was still unfinished.\n\nAt the last meeting of the term, the student wrote down the remaining work and a revised schedule.'),
     p('교수님께.\n\n지금까지 한 연구를 다시 정리했습니다. 무엇이 부족한지 이제는 조금 보입니다. 계속할지, 다른 길을 택할지 제 생각을 먼저 써 보려고 합니다.\n\n다음 면담에서는 진도보다 앞으로의 계획을 이야기하고 싶습니다.\n― {name} 드림','Dear Professor,\n\nI have reorganized the work so far. I can see a little more clearly what is missing. Before deciding whether to continue or take a different path, I want to write down what I think.\n\nAt our next meeting, I would like to talk about the future, rather than the progress report.\n— {name}'),
     p('나는 면담 일정에 새 제목을 적었다.\n\n다음 계획.\n\n8년 안에 쓰지 못한 문장이었다.','I wrote a new title in the meeting calendar.\n\nThe next plan.\n\nA sentence we had not written in those eight years.')
   ]},
@@ -95,7 +95,7 @@ export const ENDINGS={
   ]},
   external_phd:{type:'EPILOGUE',title:p("연구를 이어 갈 또 다른 곳","Another place to continue research"),career:p("외부·해외 박사과정 진학","A doctoral program elsewhere or abroad"),time:p("석사 졸업 2년 후 · 박사과정 소식 메일","Two years after the master’s · news from doctoral study"),pages:[
     p("학부연구생과 석사과정, 네 해의 시간이 흘렀다. 그리고 다시 몇 해가 지났다.\n\n학생이 다른 학교의 박사과정에 지원하고 싶다고 했던 면담이 떠올랐다. 더 넓은 연구 환경에서 배워 보고 싶다는 말에, 나는 지원을 함께 준비했다.","Four years of undergraduate and master’s research passed, followed by a few more. I remembered helping the student prepare an application to a doctoral program elsewhere."),
-    p("교수님께.\n\n이곳에서 자격시험을 준비하고 있습니다. 연구 주제도 조금 바뀌었습니다. 논문 초고에 의견을 적어 주시던 방식이 생각나서, 제 글을 소리 내어 다시 읽어 봅니다.\n\n떠나는 선택을 응원해 주셔서 감사합니다. 다음 학회에서는 새 연구 이야기를 들고 인사드리겠습니다.\n― {name} 올림","Dear Professor,\n\nI am preparing for my qualifying exam. My topic has changed a little. Your comments on my drafts still help me read my work carefully. Thank you for supporting my choice.\n— {name}"),
+    p("교수님께.\n\n이곳에서 자격시험을 준비하고 있습니다. 연구 주제도 조금 바뀌었습니다. 논문 초고에 의견을 적어 주시던 방식이 생각나서, 제 글을 소리 내어 다시 읽어 봅니다.\n\n떠나는 선택을 응원해 주셔서 감사합니다. 다음 학회에서는 새 연구 이야기를 들고 인사드리겠습니다.\n― {name} 올림","Dear Professor,\n\nI am preparing for my qualifying exam. My topic has changed a little. Your comments on my drafts still help me read my work carefully.\n\nThank you for supporting my choice. At the next conference, I will bring news of my new research.\n— {name}"),
     p("아직 박사학위를 마친 것은 아니었다. 메일에는 해야 할 일과 새로 만난 사람들의 이야기가 나란히 적혀 있었다.\n\n나는 시험 준비를 응원하는 답장을 썼다.\n\n지도는 마무리되었고, 새로운 배움은 계속되고 있었다.","The doctorate was still in progress. I sent encouragement for the coming exam. Our advising had ended, and their learning continued.")
   ]}
 };
@@ -125,16 +125,39 @@ const relationshipNotes = {
   reserved: p('긴 안부를 쓰는 일은 아직 조금 어색합니다. 그래도 이 소식은 직접 전하고 싶었습니다.', 'A long personal letter still feels a little awkward. Even so, I wanted you to hear this news from me.'),
   distant: p('오랜만에 소식을 전합니다. 당분간은 이렇게 필요한 이야기를 메일로 나누면 좋겠습니다.', 'It has been a while. For now, I would prefer to keep in touch by email about what we need to discuss.'),
 };
+const alternateRecommendation=p(
+ '마감 사흘 전, 학생은 지도교수에게 추천서를 부탁하려다 망설였다. 다른 추천인에게 연락했지만, 지원했던 전임교원 공고에서 요구한 지도교수 추천서는 제출하지 못했다. 지원은 최종 심사까지 이어지지 않았다. 나는 다음에는 필요한 서류와 기한부터 함께 확인하기로 했다.',
+ 'Three days before the deadline, the student hesitated to ask me for a recommendation and contacted another referee. The faculty opening they applied for also required the dissertation adviser’s letter, which they could not submit. The application did not reach the final review. I decided we should check the required documents and deadlines together next time.'
+);
+const doctorateCareerEndings=new Set(['corporate','institute','unrelated','startup','unemployed','resident_researcher','youtuber']);
+const hasAlternateRecommendation=(id,context)=>context?.recommendation==='alternate'&&doctorateCareerEndings.has(id);
+function startupScenes(pages,distance,locale){
+ const opening=p(
+  '학부연구생과 석박사, 8년이라는 시간이 흘렀다. 그리고 다시 몇 해가 지났다.\n\n졸업 뒤 {name}는 새로운 문제를 찾아 독립적으로 회사를 시작했다. 연구실의 기술이나 장비를 사용할 때는 계약 범위와 비용을 별도로 확인하기로 했다. 고객과 이야기하며 방향을 바꾸고 팀의 일을 배웠다.',
+  'Eight years of undergraduate and graduate research passed, followed by a few more.\n\nAfter graduation, {name} independently started a company around a new problem. Any use of the lab’s technology or equipment would require a separate agreement on scope and cost. They learned to adjust direction through conversations with customers and their team.'
+ );
+ const news=p(
+  '교수님께.\n\n처음 계획한 제품은 고객의 문제와 달랐습니다. 면담 기록을 다시 살펴 서비스를 바꾸었습니다. 이제는 팀과 고객이 함께 검토할 수 있는 자료를 만들고 있습니다.',
+  'Dear Professor,\n\nThe product we first planned did not fit the customer’s problem. We revisited our interview notes and changed the service. We are now preparing material our team and customers can review together.'
+ );
+ const contact={
+  close:p('연구와 회사의 업무를 나누어 계획하고 있습니다. 교수님께는 제가 놓친 가정이 없는지 먼저 여쭤보고 싶습니다.','I am planning the research and company work separately. I would first like to ask whether I have overlooked an assumption.'),
+  reserved:p('발표 자료와 질문을 미리 정리해 보내겠습니다. 의논할 범위를 확인한 뒤 짧게 의견을 듣고 싶습니다.','I will send the presentation material and questions in advance. After agreeing on the scope, I would appreciate your comments.'),
+  distant:p('초대장과 검토를 부탁드릴 자료는 메일로 보내겠습니다. 가능하신 범위에서 의견을 주시면 팀과 함께 살펴보겠습니다.','I will send the invitation and material by email. We will review any comments you can offer within the scope that works for you.')
+ };
+ const request=p('다음 주 발표에 와 주실 수 있을까요? 제품과 연구의 다음 계획에 대해 의견을 듣고 싶습니다.\n― {name} 드림','Could you come to our pitch next week? I would like your thoughts on the next plans for the product and our research.\n— {name}');
+ pages[0]=opening[locale];pages[1]=[news[locale],contact[distance][locale],request[locale]].join('\n\n');
+}
 const failurePages = {
   graduation_requirements: [
     p('학위를 마칠 시점이 왔지만, 필요한 연구와 학술발표를 모두 채우지는 못했다. 연구실 운영이 중단된 것은 아니었다. 다만 학생의 졸업에 필요한 준비가 끝나지 않았다.\n\n나는 성과표의 빈칸을 보고, 끝났다고 말할 수 없었던 시간을 생각했다.', 'The degree review arrived before all the required research and presentations were complete. The lab had not closed. The student’s preparation for graduation was unfinished.\n\nI looked at the gaps in the record and thought about the time I could not call complete.'),
     p('교수님께.\n\n지금까지 한 일과 남은 일을 정리했습니다. 해 온 연구가 없어지는 것은 아니지만, 학위를 받았다고 말할 수는 없다는 걸 알고 있습니다.\n\n계속할지 다른 길로 갈지, 다음 계획은 제가 먼저 써 보고 싶습니다.\n― {name} 드림', 'Dear Professor,\n\nI have listed what I completed and what remains. The work I did does not disappear, but I know I cannot say I earned the degree.\n\nBefore deciding whether to continue or take another path, I would like to draft my next plan myself.\n— {name}'),
-    p('성적이나 일정만으로는 채울 수 없는 칸들이 있었다. 나는 다음 면담의 제목을 바꿨다.\n\n졸업을 서두르는 면담 대신, 남은 선택을 함께 살피는 면담.\n\n이 게임의 지도기간은 여기서 끝났다.', 'Some gaps could not be filled just by grades or a calendar. I changed the title of our next meeting.\n\nInstead of rushing graduation, we would examine the choices that remained.\n\nThe advising period in this game ended here.'),
+    p('성적이나 일정만으로는 채울 수 없는 칸들이 있었다. 나는 다음 면담의 제목을 바꿨다.\n\n졸업을 서두르는 면담 대신, 남은 선택을 함께 살피는 면담.\n\n학생이 적어 온 계획을 면담 자료에 넣었다.', 'Some gaps could not be filled just by grades or a calendar. I changed the title of our next meeting.\n\nInstead of rushing graduation, we would examine the choices that remained.\n\nI added the student’s plan to the material for that meeting.'),
   ],
   time_limit: [
-    p('학부연구생과 석박사, 8년이라는 시간이 흘렀다. 하지만 학위를 마칠 준비는 끝나지 않았다. 연구실 문은 여전히 열려 있었다.\n\n여덟 해라는 이 게임의 시간이 먼저 끝난 것이다.', 'An undergraduate researcher, then a graduate student. Eight years had passed, but the preparation for a degree was not complete. The lab door was still open.\n\nThe eight years allowed by this game had ended first.'),
+    p('학부연구생과 석박사, 8년이라는 시간이 흘렀다. 하지만 학위를 마칠 준비는 끝나지 않았다. 연구실 문은 여전히 열려 있었다.\n\n마지막 학기의 일정표 옆에, 남은 연구와 다음 계획을 나란히 적었다.', 'An undergraduate researcher, then a graduate student. Eight years had passed, but the preparation for a degree was not complete. The lab door was still open.\n\nBeside the final term’s schedule, we listed the remaining research and plans for what came next.'),
     p('교수님께.\n\n마지막 진도표를 다시 읽었습니다. 시작할 때는 여덟 해면 충분할 거라고 생각했습니다. 이제는 남은 일을 얼마나 오래 걸릴지보다 왜 하고 싶은지부터 써 보려고 합니다.\n\n다음 선택을 정리할 시간이 필요합니다.\n― {name} 드림', 'Dear Professor,\n\nI reread the final progress sheet. At the start, I thought eight years would be enough. Now I want to write why I want to do the remaining work before asking how long it will take.\n\nI need time to decide what comes next.\n— {name}'),
-    p('나는 아직 남은 파일을 닫지 않았다. 끝난 것은 게임의 기간이지, 그동안의 연구를 없애는 일이 아니었다.\n\n다음 계획을 적을 빈 페이지를 한 장 남겨 두었다.', 'I did not close the remaining files. The game’s period had ended; the work we had done had not vanished.\n\nI left one blank page for the next plan.'),
+    p('나는 아직 남은 파일을 닫지 않았다. 어디까지 했는지 함께 확인한 기록을 첫 장에 붙였다.\n\n다음 계획을 적을 빈 페이지를 한 장 남겨 두었다.', 'I did not close the remaining files. I attached our record of the completed work to the first page.\n\nI left one blank page for the next plan.'),
   ],
   qual_failure: [
     p('자격시험을 다시 준비했지만, 이번에도 통과하지 못했다. 연구실을 운영하지 못해서 끝난 것은 아니었다. 박사과정을 이어가기 위한 관문을 넘지 못한 것이다.\n\n나는 시험 결과와 학생이 해 온 연구를 같은 말로 묶지 않으려 했다.', 'We prepared for the qualifying exam again, but did not pass. This ending was not a failure to operate the lab. The requirement for continuing the doctoral program remained unmet.\n\nI tried not to use the same words for the exam result and all the research the student had done.'),
@@ -192,16 +215,16 @@ const eventMemories={
  'counsel-coursework':['놓쳤던 기초를 돌아보고 공부 시간을 다시 잡았던 경험이 지금도 도움이 됩니다.','제가 짠 공부 계획을 설명하고 확인했던 방식은 새로운 일을 배울 때도 쓰고 있습니다.'],
  'counsel-small-question':['다들 알 것 같은 작은 질문도 꺼내 볼 수 있었던 면담을 기억합니다.','어디까지 이해했는지 먼저 설명해 보던 습관이 아직 남아 있습니다.'],
  'counsel-results':['예상과 다른 그래프도 함께 놓고 원자료부터 확인했던 시간을 기억합니다.','다른 설명을 작은 검증으로 확인해 보던 방법을 지금도 쓰고 있습니다.'],
- 'counsel-master-career':['석사 뒤의 일과 생활을 함께 의논했던 시간이 제 선택에 도움이 됐습니다.','관심 있던 길을 간 선배에게 하루가 어떤지 물어볼 기회를 기억합니다.'],
+ 'counsel-master-career':['석사 뒤의 일과 생활을 함께 의논했던 시간이 제 선택에 도움이 됐습니다.','관심 있던 길을 간 선배에게 물어볼 질문을 준비하던 때가 떠오릅니다.'],
  'counsel-qual':['퀄 준비 범위를 함께 나누니, 모르는 것을 하나씩 물을 수 있었습니다.','시험 답을 소리 내어 설명하다가 막히는 부분을 다시 찾던 연습이 기억납니다.'],
  'counsel-independent':['제 질문으로 시작한 작은 검증을 믿고 맡겨 주셨던 일을 기억합니다.','반례와 필요한 자원을 놓고 독립 연구의 범위를 의논했던 시간을 기억합니다.'],
- 'counsel-phd-career':['어떤 진로든 제가 원하는 생활을 먼저 생각해 보라고 하셨던 면담을 기억합니다.','관심 있는 일을 하는 분께 이야기를 들으며 다음 경험을 준비했던 일이 떠오릅니다.'],
+ 'counsel-phd-career':['어떤 진로든 제가 원하는 생활을 먼저 생각해 보라고 하셨던 면담을 기억합니다.','관심 있는 일을 하는 분께 무엇을 묻고 어떤 경험을 준비할지 의논했던 일이 떠오릅니다.'],
  'counsel-feedback':['잘한 점과 보완할 점을 따로 짚어 주셨던 메모가 아직 남아 있습니다.','다음 면담의 확인 기준을 함께 정한 뒤 스스로 계획을 돌아보기 쉬워졌습니다.'],
  'equipment': ['장비가 멈춘 날, 제 실수인지부터 물었던 것을 기억합니다. 함께 점검 기록을 확인했던 방법을 지금도 쓰고 있습니다.','공동기기실에서 다시 배운 기록과 예약 습관이 새 자리에서도 도움이 됩니다.'],
  'authorship':['기여 내역을 함께 적었던 일이 기억납니다. 지금도 새로운 협업을 시작하면 역할부터 의논합니다.','원고를 잠시 멈추고 모두의 의견을 들었던 경험이 남았습니다. 저도 합의할 시간을 먼저 잡으려고 합니다.'],
  'caregiving':['개인적인 설명을 길게 하지 않아도 일정을 의논할 수 있었던 날을 기억합니다. 자세한 이야기는 이 메일에도 남기지 않겠습니다.','제가 가능한 시간을 먼저 정해 보았던 경험 덕분에, 이제도 필요한 지원을 구체적으로 요청하려고 합니다.'],
- 'best-paper':['공동연구자들과 함께 축하했던 날의 사진이 아직 남아 있습니다.','수상 발표를 준비하며 제 연구를 제 말로 설명했던 기억이 납니다.'],
- 'best-presentation':['질의응답을 잘했다고 짚어 주신 부분을 기억합니다. 다음 발표에서도 그때의 메모를 꺼내 보았습니다.','발표 워크숍을 맡았을 때는 긴장했지만, 누군가의 질문을 듣는 법도 배웠습니다.'],
+ 'best-paper':['공동연구자들과 함께 축하했던 날의 사진이 아직 남아 있습니다.','수상 발표에서 제 연구를 어떻게 설명할지 함께 준비하던 때가 떠오릅니다.'],
+ 'best-presentation':['질의응답을 잘했다고 짚어 주신 부분을 기억합니다. 다음 발표에서도 그때의 메모를 꺼내 보았습니다.','발표 워크숍을 맡겨 주셨을 때, 다른 사람의 질문을 받을 시간도 계획해 두었습니다.'],
  'data-loss':['폴더가 열리지 않던 날 이후로 백업을 확인하는 습관이 생겼습니다.','분석 과정을 다시 만들었던 기록을 보며, 재현할 수 있다는 말의 의미를 생각합니다.'],
  'funding-cut':['연구비가 줄었던 때에도 약속한 인건비를 먼저 확인해 주셨던 일을 기억합니다.','빠듯한 예산을 함께 살펴보고 공동 장비를 찾았던 기억이 납니다.'],
  'support-without-assumptions':['사정을 다 설명하기 전에 필요한 도움부터 물어보셨던 대화를 기억합니다.','지원 창구를 알려 주시고 결정은 제게 맡겨 주셨던 일을 기억합니다.'],
@@ -215,16 +238,16 @@ const englishMemories={
  'counsel-coursework':['Revisiting the basics and setting aside study time still helps me.','I still explain and check my study plan when learning something new.'],
  'counsel-small-question':['I could ask the small questions that everyone else seemed to understand.','I still start by explaining what I understand so far.'],
  'counsel-results':['We put the unexpected graphs on the table too and checked the raw evidence.','I still test another explanation with a small check first.'],
- 'counsel-master-career':['Discussing work and life after the master’s helped me make my choice.','I had a chance to ask a graduate on that path what an ordinary day was like.'],
+ 'counsel-master-career':['Discussing work and life after the master’s helped me make my choice.','I remember preparing questions for a graduate working on the path I was considering.'],
  'counsel-qual':['Dividing up the exam material made it possible to ask one question at a time.','Explaining answers aloud helped me find what I had not understood.'],
  'counsel-independent':['You entrusted me with a small test that began with my own question.','We discussed counterexamples and resources before setting the scope of my independent work.'],
- 'counsel-phd-career':['You asked me to consider the life I wanted alongside the career.','Talking to people doing the work helped me prepare my next experience.'],
+ 'counsel-phd-career':['You asked me to consider the life I wanted alongside the career.','We discussed what to ask people doing the work and which experience to prepare next.'],
  'counsel-feedback':['I still have the notes separating what worked from what needed revision.','Agreeing on what to check at the next meeting helped me review my own plan.'],
  equipment:['When the equipment stopped, we checked the maintenance record together. I still use that approach.','What I learned in the shared facility still helps me keep records and arrange access.'],
  authorship:['We wrote down everyone’s contributions. I still discuss roles before a new collaboration.','Pausing the manuscript to hear everyone’s views taught me to allow time for agreement.'],
  caregiving:['I could discuss a schedule without explaining every personal detail. I will keep those details out of this email too.','Setting out when I was available helped me request the support I needed.'],
- 'best-paper':['I still have the photograph of us celebrating with our collaborators.','Preparing the award presentation helped me describe the research in my own words.'],
- 'best-presentation':['I used the notes about what went well in the questions at my next presentation.','Leading the presentation workshop taught me to listen to another person’s question.'],
+ 'best-paper':['I still have the photograph of us celebrating with our collaborators.','We prepared how I would explain my work in the award presentation.'],
+ 'best-presentation':['I used the notes about what went well in the questions at my next presentation.','When you asked me to lead the presentation workshop, I planned time for other people’s questions.'],
  'data-loss':['After the folder stopped opening, I began checking the backups.','Rebuilding the analysis made reproducibility a concrete responsibility.'],
  'funding-cut':['You checked the stipend we had agreed on even when funding fell.','We looked at the limited budget together and found shared equipment.'],
  'support-without-assumptions':['You asked what support I needed before asking me to explain my circumstances.','You showed me the support office and left the decision with me.'],
@@ -290,7 +313,7 @@ export function getEndingPages(id, lang = 'ko', relationship, name, reason, hist
       p('함께 확인할 서류와 연구 기록을 정리했다. 더 설명하고 싶지 않은 사정은 묻지 않았다. 과정은 여기서 끝났지만, 학생이 해 온 일을 없던 것으로 기록하지는 않았다.','We organized the documents and research records. I did not ask about circumstances the student did not wish to explain. The program ended here; the work they had done remained.')
     ].map(page=>page[locale]);
   }
-  if(id==='startup'&&locale==='ko'&&context?.statistics){const close=distance==='close';pages[0]='학부연구생과 석박사, 8년이라는 시간이 흘렀다. 그리고 다시 몇 해가 지났다.\n\n'+(close?'졸업 뒤 {name}는 연구실에서 발전시킨 연구를 바탕으로 회사를 시작했다. 기술이전과 장비 사용 범위는 별도로 계약했다. 교수는 합의된 범위에서 기술 자문을 맡았다.':'졸업 뒤 {name}는 새로운 문제를 찾아 독립적으로 회사를 시작했다. 연구실의 기술이나 장비를 당연히 사용할 수 있다고 생각하지 않았다. 고객과 이야기하며 방향을 바꾸고 팀의 일을 배웠다.');pages[1]=close?'교수님께.\n\n첫 고객과의 계약을 마쳤습니다. 연구실 장비를 사용할 일이 생기면 계약 범위와 비용부터 확인하겠습니다. 연구와 회사의 업무가 섞이지 않도록 일정을 나누고 있습니다.\n― {name} 드림':'교수님께.\n\n처음 계획한 제품은 고객의 문제와 달랐습니다. 면담 기록을 다시 살펴 서비스를 바꾸었습니다. 이제는 팀과 고객이 함께 검토할 수 있는 자료를 만들고 있습니다.\n― {name} 드림';pages[1]=pages[1].replace('\n― {name}', '\n\n다음 주 발표에 와 주실 수 있을까요? 제품과 연구의 다음 계획에 대해 의견을 듣고 싶습니다.\n― {name}');}
+  if(id==='startup'&&context?.statistics)startupScenes(pages,distance,locale);
 
   if(id==='postdoc'&&distance==='distant')pages[6]=p('필요한 서류와 연구 기록에 관한 연락은 메일로 부탁드립니다.\n― {name} 올림','Please contact me by email about the necessary documents and research records. — {name}')[locale];
   if(id==='unemployed'&&distance==='distant'){
@@ -299,9 +322,9 @@ export function getEndingPages(id, lang = 'ko', relationship, name, reason, hist
     pages[1]=pages[1].replace(request,request+'\n\n'+agenda);
   }
   if(id==='youtuber')pages[7]=pages[7].replace(locale==='en'?'— {name}':'― {name}',p('교수님 출연분만은 대본에 검토란을 세 칸 만들어 두었습니다.\n― {name}','For your scenes, the script has three separate review boxes.\n— {name}')[locale]);
-  if(id==='unrelated'&&distance==='distant'&&context?.statistics){pages=OUTSIDE_SCENES.map(p=>p[locale]);if(locale==='ko'&&context.recommendation==='alternate')pages[3]+='\n\n마감 사흘 전 추천서 부탁도 망설였다. 다른 추천인에게 연락했지만, 지도교수 추천서가 비어 있던 임용 서류는 통과하지 못했다.';return pages.map(p=>formatStudentName(adaptResearchText(p,context,locale),name,locale));}
+  if(id==='unrelated'&&distance==='distant'&&context?.statistics){pages=OUTSIDE_SCENES.map(p=>p[locale]);if(hasAlternateRecommendation(id,context))pages[3]+='\n\n'+alternateRecommendation[locale];return pages.map(p=>formatStudentName(adaptResearchText(p,context,locale),name,locale));}
   if(id==='unrelated'&&distance==='close'){
-    pages[pages.length-1]=p('나는 다음 안부를 재촉하지 않고 답장을 썼다. “새로운 일을 배우고 있군요. 다음에 만나면 회사 밖의 이야기도 들려주세요.”\n\n연구를 직업으로 이어 가지 않아도, 함께 배운 시간을 이야기할 수 있었다.','I replied without pressing for another update. We could talk about what we had learned together, even though research was no longer their job.')[locale];
+    pages[pages.length-1]=p('나는 다음 안부를 재촉하지 않고 답장을 썼다. “새로운 일을 배우고 있군요. 다음에 만나면 회사 밖의 이야기도 들려주세요.”\n\n연구를 직업으로 이어 가지 않아도, 함께 배운 시간을 이야기할 수 있었다.','I replied without pressing for another update. “You are learning new work. When we next meet, tell me about life outside the company too.”\n\nWe could talk about what we had learned together, even though research was no longer their job.')[locale];
   }
 
   if (id === 'corporate' && distance === 'close') {
@@ -326,6 +349,6 @@ export function getEndingPages(id, lang = 'ko', relationship, name, reason, hist
   insertLetterPassages(pages,id,endingLetterInsertions(id,distance,history,context??{},locale),locale,slotReason);
   pages=pages.map(text=>adaptResearchText(text,context,locale));
   // Add the recommendation prologue after positional scene replacements.
-  if(locale==='ko'&&context?.recommendation==='alternate')pages.unshift('마감 사흘 전, 학생은 지도교수에게 추천서를 부탁하려다 망설였다. 다른 추천인에게 연락했지만, 이 이야기의 임용 서류에서는 지도교수 추천서가 비어 있어 심사를 통과하지 못했다. 그 뒤 어떤 길을 택할지는 학생의 몫이었다.');
+  if(hasAlternateRecommendation(id,context))pages.unshift(alternateRecommendation[locale]);
   return pages.map(text=>formatStudentName(text,name,locale));
 }

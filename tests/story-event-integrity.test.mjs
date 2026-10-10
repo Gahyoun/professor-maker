@@ -39,7 +39,8 @@ test('TA teaching and grading events obey the same graduate-school gate as weekl
   for(const id of ['teaching','grading'])assert.equal(eventEligible(undergrad,event(id)),false,id);
   assert.throws(()=>simulateMonth(undergrad,['teach','rest','rest','rest']),/TA unlocks in graduate school/);
   for(const route of ['masters','integrated']){
-    const graduate=ready(24);graduate.route=route;
+    // Month 28 follows June, the semester-end grading window.
+    const graduate=ready(28);graduate.route=route;
     for(const id of ['teaching','grading']){
       assert.ok(eventEligible(graduate,event(id)),`${route} ${id}`);
       graduate.pending={kind:'event',id};

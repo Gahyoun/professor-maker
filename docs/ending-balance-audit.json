@@ -1,22 +1,22 @@
 {
   "runs": 10000,
   "genderAssignment": "Math.floor(run / 12) % 2; both genders cycle within every policy",
-  "engineVersion": "4.15.4",
-  "sourceCommit": "a0138ac9a5a541605a4677df83a8d20456c20023",
+  "engineVersion": "4.16.0",
+  "sourceCommit": "24437bd8ca9c90b8f254278ca456fc6e4b38f134",
   "sourceHashes": {
     "scripts/ending-balance-audit.mjs": "df423d490e1a8e45396321270ddd839d146005b6a5474821cdfd4873b2b2e2a4",
     "tests/play-support.mjs": "374b02c0011d19bfb2895e0c2fd3df1a32129def32337cba5315f2a109dc7fca",
     "dist/simulation-worker.js": "42f7d76ed7e1bf032f148e0529154d0c74fcdeb8bbd6b8ae66b7eaf8fabdabc1",
-    "dist/engine.js": "41ac033c370d5e9edb5817aa9de7cdeba1c224643041683904361589e2a43ca1",
+    "dist/engine.js": "0d780a31b127bef2e910925f96b6a8dd888201dd095e22e6a055979f30736993",
     "dist/balance.js": "b277d938f545e37ce9504d3c67410f79d67423af4bc611b6712740abd554f266",
     "dist/funding.js": "3fa08411f447a8c4301bc7144897e3fa3baf498c021c6687f42654a0a85fb19d",
-    "dist/workload.js": "b384c8e2364c2c5abc4e1fc5e3f7e7104d24c5445a44e99d00ec58fd6b371c7a",
+    "dist/workload.js": "e39f3d63b03cb27af3654ac3f86cff8e2bc68fd27606e19cb167b4f35e4f2e92",
     "dist/impact.js": "570773136271fe9af48e3f972a627bba5fac7ce02902671fa0506ff3acd3d3d9",
     "dist/disciplines.js": "4ea4655ed46843175b4460a14459a4d8ccafeb5f0c3acf6e96baa1cf6e16f5a3",
-    "dist/events.js": "e6b19127217cfe19f158ec3ae6239c1f8ac4720282ea46271235ff69efba85bb",
+    "dist/events.js": "3274c0c1b12b0027ba806fb137abf9d6e3eb80010eb7b7ef5134ef97a804cbba",
     "dist/monthly-choices.js": "312863e5e64963f6f701d2df9df9460527bf15bed91e52bb1ee42dd1be59bf03",
     "dist/academic-calendar.js": "b876e6a34a89f9c02f1c15275eeeaafed5e2adcfa45c16437709ca35e5bce741",
-    "dist/main-story.js": "facd92a44199dfad0e6d5be79b00912497a191ba5ddf8812b46869fef01ef502",
+    "dist/main-story.js": "8efa33109e1b805b1b5c51d5172ea265dc347281e5120ed5be9f95266f487614",
     "dist/travel.js": "9ad34619e88765df171cee03506328af1d538392d80ade55774bcf11d7e1fb11",
     "dist/grants.js": "41025c602683cf4ef2166232e1e8577714143bc794570447c960412e594b376d",
     "dist/research-topics.js": "28416581b17218f09172144efdf20a0d8f6975e35a79d3d2043b77d5550a7e4f",
@@ -62,33 +62,33 @@
     "doctoralDefense": 1
   },
   "endings": {
-    "unemployed": 972,
-    "corporate": 957,
-    "resident_researcher": 10,
-    "institute": 2661,
-    "unrelated": 709,
-    "dismissed": 701,
-    "bachelor": 939,
-    "gameover": 359,
-    "leave": 847,
-    "postdoc": 108,
-    "true": 7,
-    "masters": 817
+    "unemployed": 971,
+    "corporate": 987,
+    "institute": 2713,
+    "dismissed": 720,
+    "unrelated": 702,
+    "bachelor": 931,
+    "resident_researcher": 12,
+    "gameover": 347,
+    "leave": 880,
+    "postdoc": 135,
+    "masters": 820,
+    "true": 3
   },
   "outcomes": {
-    "budget-blocked": 913,
-    "unemployed": 972,
-    "corporate": 957,
-    "resident_researcher": 10,
-    "institute": 2661,
-    "unrelated": 709,
-    "dismissed": 701,
-    "bachelor": 939,
-    "gameover": 359,
-    "leave": 847,
-    "postdoc": 108,
-    "true": 7,
-    "masters": 817
+    "budget-blocked": 779,
+    "unemployed": 971,
+    "corporate": 987,
+    "institute": 2713,
+    "dismissed": 720,
+    "unrelated": 702,
+    "bachelor": 931,
+    "resident_researcher": 12,
+    "gameover": 347,
+    "leave": 880,
+    "postdoc": 135,
+    "masters": 820,
+    "true": 3
   },
   "byPolicy": {
     "guided": {
@@ -98,25 +98,25 @@
         "female": 417
       },
       "outcomes": {
-        "budget-blocked": 202,
-        "resident_researcher": 4,
-        "unemployed": 86,
-        "institute": 523,
-        "bachelor": 11,
-        "dismissed": 7,
+        "budget-blocked": 185,
+        "institute": 537,
+        "unemployed": 83,
+        "bachelor": 10,
+        "dismissed": 11,
+        "resident_researcher": 7,
         "gameover": 1
       },
       "papers": {
-        "count": 632,
-        "total": 2397,
+        "count": 649,
+        "total": 2458,
         "histogram": {
-          "0": 11,
-          "1": 7,
-          "3": 86,
-          "4": 508,
-          "5": 20
+          "0": 10,
+          "1": 11,
+          "3": 83,
+          "4": 527,
+          "5": 18
         },
-        "mean": 3.7927,
+        "mean": 3.7874,
         "min": 0,
         "p10": 3,
         "median": 4,
@@ -124,14 +124,14 @@
         "max": 5
       },
       "freshDoctoralPapers": {
-        "count": 613,
-        "total": 2386,
+        "count": 627,
+        "total": 2443,
         "histogram": {
-          "3": 86,
-          "4": 507,
-          "5": 20
+          "3": 83,
+          "4": 526,
+          "5": 18
         },
-        "mean": 3.8923,
+        "mean": 3.8963,
         "min": 3,
         "p10": 3,
         "median": 4,
@@ -139,44 +139,44 @@
         "max": 5
       },
       "facultyAudit": {
-        "evaluated": 614,
+        "evaluated": 628,
         "recommendationCandidates": 0,
         "trueEndings": 0,
         "unmet": {
           "learning": 0,
-          "research": 54,
-          "language": 602,
+          "research": 47,
+          "language": 610,
           "social": 1,
-          "autonomy": 3,
-          "teaching": 614,
-          "rapport": 295,
-          "resilience": 117,
-          "manners": 308,
-          "motivation": 1,
+          "autonomy": 2,
+          "teaching": 628,
+          "rapport": 293,
+          "resilience": 120,
+          "manners": 311,
+          "motivation": 2,
           "papers": 0,
           "conferences": 0,
-          "recommendations": 614,
+          "recommendations": 628,
           "faculty": 0,
-          "leadingPaper": 614,
+          "leadingPaper": 628,
           "hIndex": 0,
           "doctoralDefense": 1
         }
       },
       "endings": {
-        "resident_researcher": 4,
-        "unemployed": 86,
-        "institute": 523,
-        "bachelor": 11,
-        "dismissed": 7,
+        "institute": 537,
+        "unemployed": 83,
+        "bachelor": 10,
+        "dismissed": 11,
+        "resident_researcher": 7,
         "gameover": 1
       },
       "percentOfRuns": {
-        "budget-blocked": 24.2206,
-        "resident_researcher": 0.4796,
-        "unemployed": 10.3118,
-        "institute": 62.7098,
-        "bachelor": 1.3189,
-        "dismissed": 0.8393,
+        "budget-blocked": 22.1823,
+        "institute": 64.3885,
+        "unemployed": 9.952,
+        "bachelor": 1.199,
+        "dismissed": 1.3189,
+        "resident_researcher": 0.8393,
         "gameover": 0.1199
       }
     },
@@ -187,25 +187,25 @@
         "female": 417
       },
       "outcomes": {
-        "unemployed": 31,
-        "institute": 519,
-        "dismissed": 82,
-        "budget-blocked": 186,
-        "resident_researcher": 2,
-        "bachelor": 13
+        "unemployed": 28,
+        "budget-blocked": 185,
+        "institute": 517,
+        "dismissed": 90,
+        "bachelor": 11,
+        "resident_researcher": 2
       },
       "papers": {
-        "count": 647,
-        "total": 2323,
+        "count": 648,
+        "total": 2310,
         "histogram": {
-          "0": 13,
-          "1": 75,
-          "2": 7,
-          "3": 31,
-          "4": 464,
-          "5": 57
+          "0": 11,
+          "1": 84,
+          "2": 6,
+          "3": 28,
+          "4": 465,
+          "5": 54
         },
-        "mean": 3.5904,
+        "mean": 3.5648,
         "min": 0,
         "p10": 1,
         "median": 4,
@@ -213,58 +213,58 @@
         "max": 5
       },
       "freshDoctoralPapers": {
-        "count": 552,
-        "total": 2234,
+        "count": 547,
+        "total": 2214,
         "histogram": {
-          "3": 31,
-          "4": 464,
-          "5": 57
+          "3": 28,
+          "4": 465,
+          "5": 54
         },
-        "mean": 4.0471,
+        "mean": 4.0475,
         "min": 3,
         "p10": 4,
         "median": 4,
-        "p90": 5,
+        "p90": 4,
         "max": 5
       },
       "facultyAudit": {
-        "evaluated": 552,
+        "evaluated": 547,
         "recommendationCandidates": 0,
         "trueEndings": 0,
         "unmet": {
           "learning": 0,
-          "research": 3,
-          "language": 535,
-          "social": 5,
-          "autonomy": 240,
-          "teaching": 552,
-          "rapport": 399,
+          "research": 5,
+          "language": 525,
+          "social": 3,
+          "autonomy": 246,
+          "teaching": 547,
+          "rapport": 393,
           "resilience": 134,
-          "manners": 282,
-          "motivation": 27,
+          "manners": 283,
+          "motivation": 24,
           "papers": 0,
           "conferences": 0,
-          "recommendations": 552,
+          "recommendations": 547,
           "faculty": 0,
-          "leadingPaper": 552,
+          "leadingPaper": 547,
           "hIndex": 0,
           "doctoralDefense": 0
         }
       },
       "endings": {
-        "unemployed": 31,
-        "institute": 519,
-        "dismissed": 82,
-        "resident_researcher": 2,
-        "bachelor": 13
+        "unemployed": 28,
+        "institute": 517,
+        "dismissed": 90,
+        "bachelor": 11,
+        "resident_researcher": 2
       },
       "percentOfRuns": {
-        "unemployed": 3.7215,
-        "institute": 62.3049,
-        "dismissed": 9.8439,
-        "budget-blocked": 22.3289,
-        "resident_researcher": 0.2401,
-        "bachelor": 1.5606
+        "unemployed": 3.3613,
+        "budget-blocked": 22.2089,
+        "institute": 62.0648,
+        "dismissed": 10.8043,
+        "bachelor": 1.3205,
+        "resident_researcher": 0.2401
       }
     },
     "venture": {
@@ -274,26 +274,26 @@
         "female": 417
       },
       "outcomes": {
-        "corporate": 388,
-        "unrelated": 122,
-        "budget-blocked": 177,
-        "dismissed": 110,
-        "institute": 23,
-        "bachelor": 12,
+        "corporate": 418,
+        "dismissed": 109,
+        "unrelated": 124,
+        "budget-blocked": 151,
+        "institute": 19,
+        "bachelor": 11,
         "gameover": 1
       },
       "papers": {
-        "count": 656,
-        "total": 2143,
+        "count": 682,
+        "total": 2263,
         "histogram": {
-          "0": 15,
-          "1": 105,
-          "2": 2,
-          "3": 117,
-          "4": 402,
-          "5": 15
+          "0": 11,
+          "1": 108,
+          "2": 1,
+          "3": 107,
+          "4": 443,
+          "5": 12
         },
-        "mean": 3.2668,
+        "mean": 3.3182,
         "min": 0,
         "p10": 1,
         "median": 4,
@@ -301,14 +301,14 @@
         "max": 5
       },
       "freshDoctoralPapers": {
-        "count": 533,
-        "total": 2030,
+        "count": 561,
+        "total": 2150,
         "histogram": {
-          "3": 117,
-          "4": 401,
-          "5": 15
+          "3": 106,
+          "4": 443,
+          "5": 12
         },
-        "mean": 3.8086,
+        "mean": 3.8324,
         "min": 3,
         "p10": 3,
         "median": 4,
@@ -316,44 +316,44 @@
         "max": 5
       },
       "facultyAudit": {
-        "evaluated": 534,
+        "evaluated": 562,
         "recommendationCandidates": 0,
         "trueEndings": 0,
         "unmet": {
           "learning": 1,
-          "research": 95,
-          "language": 526,
+          "research": 98,
+          "language": 552,
           "social": 0,
           "autonomy": 0,
-          "teaching": 534,
-          "rapport": 402,
-          "resilience": 138,
-          "manners": 92,
-          "motivation": 16,
+          "teaching": 562,
+          "rapport": 414,
+          "resilience": 145,
+          "manners": 101,
+          "motivation": 12,
           "papers": 0,
           "conferences": 0,
-          "recommendations": 534,
+          "recommendations": 562,
           "faculty": 0,
-          "leadingPaper": 534,
+          "leadingPaper": 562,
           "hIndex": 0,
           "doctoralDefense": 1
         }
       },
       "endings": {
-        "corporate": 388,
-        "unrelated": 122,
-        "dismissed": 110,
-        "institute": 23,
-        "bachelor": 12,
+        "corporate": 418,
+        "dismissed": 109,
+        "unrelated": 124,
+        "institute": 19,
+        "bachelor": 11,
         "gameover": 1
       },
       "percentOfRuns": {
-        "corporate": 46.5786,
-        "unrelated": 14.6459,
-        "budget-blocked": 21.2485,
-        "dismissed": 13.2053,
-        "institute": 2.7611,
-        "bachelor": 1.4406,
+        "corporate": 50.1801,
+        "dismissed": 13.0852,
+        "unrelated": 14.886,
+        "budget-blocked": 18.1273,
+        "institute": 2.2809,
+        "bachelor": 1.3205,
         "gameover": 0.12
       }
     },
@@ -364,26 +364,26 @@
         "female": 417
       },
       "outcomes": {
-        "institute": 279,
-        "budget-blocked": 158,
-        "gameover": 147,
-        "dismissed": 130,
-        "postdoc": 106,
-        "leave": 2,
-        "true": 7,
-        "bachelor": 5
+        "gameover": 136,
+        "institute": 300,
+        "budget-blocked": 120,
+        "dismissed": 134,
+        "postdoc": 135,
+        "leave": 1,
+        "bachelor": 5,
+        "true": 3
       },
       "papers": {
-        "count": 676,
-        "total": 1601,
+        "count": 714,
+        "total": 1722,
         "histogram": {
-          "0": 44,
-          "1": 92,
-          "2": 123,
-          "3": 405,
-          "4": 12
+          "0": 45,
+          "1": 95,
+          "2": 110,
+          "3": 449,
+          "4": 15
         },
-        "mean": 2.3683,
+        "mean": 2.4118,
         "min": 0,
         "p10": 1,
         "median": 3,
@@ -391,13 +391,13 @@
         "max": 4
       },
       "freshDoctoralPapers": {
-        "count": 392,
-        "total": 1185,
+        "count": 438,
+        "total": 1325,
         "histogram": {
-          "3": 383,
-          "4": 9
+          "3": 427,
+          "4": 11
         },
-        "mean": 3.023,
+        "mean": 3.0251,
         "min": 3,
         "p10": 3,
         "median": 3,
@@ -405,47 +405,47 @@
         "max": 4
       },
       "facultyAudit": {
-        "evaluated": 539,
-        "recommendationCandidates": 113,
-        "trueEndings": 7,
+        "evaluated": 574,
+        "recommendationCandidates": 138,
+        "trueEndings": 3,
         "unmet": {
           "learning": 0,
-          "research": 210,
-          "language": 43,
+          "research": 220,
+          "language": 37,
           "social": 0,
           "autonomy": 0,
           "teaching": 0,
-          "rapport": 522,
-          "resilience": 170,
-          "manners": 132,
-          "motivation": 57,
-          "papers": 122,
+          "rapport": 562,
+          "resilience": 169,
+          "manners": 141,
+          "motivation": 52,
+          "papers": 110,
           "conferences": 1,
           "recommendations": 0,
-          "faculty": 9,
+          "faculty": 11,
           "leadingPaper": 0,
           "hIndex": 0,
-          "doctoralDefense": 147
+          "doctoralDefense": 136
         }
       },
       "endings": {
-        "institute": 279,
-        "gameover": 147,
-        "dismissed": 130,
-        "postdoc": 106,
-        "leave": 2,
-        "true": 7,
-        "bachelor": 5
+        "gameover": 136,
+        "institute": 300,
+        "dismissed": 134,
+        "postdoc": 135,
+        "leave": 1,
+        "bachelor": 5,
+        "true": 3
       },
       "percentOfRuns": {
-        "institute": 33.4532,
-        "budget-blocked": 18.9448,
-        "gameover": 17.6259,
-        "dismissed": 15.5875,
-        "postdoc": 12.7098,
-        "leave": 0.2398,
-        "true": 0.8393,
-        "bachelor": 0.5995
+        "gameover": 16.307,
+        "institute": 35.9712,
+        "budget-blocked": 14.3885,
+        "dismissed": 16.0671,
+        "postdoc": 16.1871,
+        "leave": 0.1199,
+        "bachelor": 0.5995,
+        "true": 0.3597
       }
     },
     "graduate": {
@@ -519,25 +519,25 @@
         "female": 417
       },
       "outcomes": {
-        "leave": 533,
-        "budget-blocked": 73,
-        "unemployed": 67,
-        "dismissed": 125,
+        "leave": 557,
+        "unemployed": 64,
+        "gameover": 13,
+        "budget-blocked": 59,
+        "dismissed": 121,
         "institute": 10,
-        "gameover": 15,
-        "bachelor": 10
+        "bachelor": 9
       },
       "papers": {
-        "count": 760,
-        "total": 2019,
+        "count": 774,
+        "total": 2069,
         "histogram": {
-          "0": 11,
-          "1": 123,
+          "0": 10,
+          "1": 120,
           "2": 3,
-          "3": 602,
-          "4": 21
+          "3": 621,
+          "4": 20
         },
-        "mean": 2.6566,
+        "mean": 2.6731,
         "min": 0,
         "p10": 1,
         "median": 3,
@@ -545,13 +545,13 @@
         "max": 4
       },
       "freshDoctoralPapers": {
-        "count": 91,
-        "total": 286,
+        "count": 87,
+        "total": 274,
         "histogram": {
-          "3": 78,
+          "3": 74,
           "4": 13
         },
-        "mean": 3.1429,
+        "mean": 3.1494,
         "min": 3,
         "p10": 3,
         "median": 3,
@@ -559,45 +559,45 @@
         "max": 4
       },
       "facultyAudit": {
-        "evaluated": 106,
+        "evaluated": 100,
         "recommendationCandidates": 0,
         "trueEndings": 0,
         "unmet": {
           "learning": 0,
-          "research": 84,
+          "research": 80,
           "language": 0,
-          "social": 1,
-          "autonomy": 88,
-          "teaching": 106,
-          "rapport": 103,
-          "resilience": 36,
-          "manners": 58,
-          "motivation": 54,
-          "papers": 2,
+          "social": 0,
+          "autonomy": 73,
+          "teaching": 100,
+          "rapport": 96,
+          "resilience": 32,
+          "manners": 49,
+          "motivation": 52,
+          "papers": 3,
           "conferences": 0,
-          "recommendations": 106,
+          "recommendations": 100,
           "faculty": 0,
-          "leadingPaper": 106,
+          "leadingPaper": 100,
           "hIndex": 0,
-          "doctoralDefense": 15
+          "doctoralDefense": 13
         }
       },
       "endings": {
-        "leave": 533,
-        "unemployed": 67,
-        "dismissed": 125,
+        "leave": 557,
+        "unemployed": 64,
+        "gameover": 13,
+        "dismissed": 121,
         "institute": 10,
-        "gameover": 15,
-        "bachelor": 10
+        "bachelor": 9
       },
       "percentOfRuns": {
-        "leave": 63.9856,
-        "budget-blocked": 8.7635,
-        "unemployed": 8.0432,
-        "dismissed": 15.006,
+        "leave": 66.8667,
+        "unemployed": 7.6831,
+        "gameover": 1.5606,
+        "budget-blocked": 7.0828,
+        "dismissed": 14.5258,
         "institute": 1.2005,
-        "gameover": 1.8007,
-        "bachelor": 1.2005
+        "bachelor": 1.0804
       }
     },
     "formal-faculty": {
@@ -607,24 +607,23 @@
         "female": 417
       },
       "outcomes": {
-        "institute": 422,
-        "budget-blocked": 79,
-        "dismissed": 131,
-        "gameover": 194,
-        "bachelor": 6,
-        "postdoc": 2
+        "institute": 447,
+        "dismissed": 129,
+        "budget-blocked": 56,
+        "gameover": 196,
+        "bachelor": 6
       },
       "papers": {
-        "count": 755,
-        "total": 1767,
+        "count": 778,
+        "total": 1844,
         "histogram": {
-          "0": 70,
+          "0": 68,
           "1": 67,
-          "2": 166,
-          "3": 440,
-          "4": 12
+          "2": 165,
+          "3": 465,
+          "4": 13
         },
-        "mean": 2.3404,
+        "mean": 2.3702,
         "min": 0,
         "p10": 1,
         "median": 3,
@@ -632,13 +631,13 @@
         "max": 4
       },
       "freshDoctoralPapers": {
-        "count": 424,
-        "total": 1282,
+        "count": 447,
+        "total": 1351,
         "histogram": {
-          "3": 414,
+          "3": 437,
           "4": 10
         },
-        "mean": 3.0236,
+        "mean": 3.0224,
         "min": 3,
         "p10": 3,
         "median": 3,
@@ -646,43 +645,41 @@
         "max": 4
       },
       "facultyAudit": {
-        "evaluated": 618,
-        "recommendationCandidates": 113,
+        "evaluated": 643,
+        "recommendationCandidates": 137,
         "trueEndings": 0,
         "unmet": {
           "learning": 0,
-          "research": 265,
-          "language": 30,
+          "research": 273,
+          "language": 31,
           "social": 0,
           "autonomy": 0,
           "teaching": 0,
-          "rapport": 618,
+          "rapport": 643,
           "resilience": 183,
           "manners": 164,
-          "motivation": 79,
-          "papers": 166,
-          "conferences": 1,
+          "motivation": 68,
+          "papers": 165,
+          "conferences": 2,
           "recommendations": 0,
-          "faculty": 17,
+          "faculty": 24,
           "leadingPaper": 0,
           "hIndex": 2,
-          "doctoralDefense": 194
+          "doctoralDefense": 196
         }
       },
       "endings": {
-        "institute": 422,
-        "dismissed": 131,
-        "gameover": 194,
-        "bachelor": 6,
-        "postdoc": 2
+        "institute": 447,
+        "dismissed": 129,
+        "gameover": 196,
+        "bachelor": 6
       },
       "percentOfRuns": {
-        "institute": 50.5995,
-        "budget-blocked": 9.4724,
-        "dismissed": 15.7074,
-        "gameover": 23.2614,
-        "bachelor": 0.7194,
-        "postdoc": 0.2398
+        "institute": 53.5971,
+        "dismissed": 15.4676,
+        "budget-blocked": 6.7146,
+        "gameover": 23.5012,
+        "bachelor": 0.7194
       }
     },
     "masters": {
@@ -692,19 +689,19 @@
         "female": 417
       },
       "outcomes": {
-        "masters": 817,
-        "bachelor": 15,
+        "masters": 820,
+        "bachelor": 12,
         "leave": 1
       },
       "papers": {
         "count": 833,
-        "total": 813,
+        "total": 816,
         "histogram": {
-          "0": 23,
-          "1": 807,
-          "2": 3
+          "0": 19,
+          "1": 812,
+          "2": 2
         },
-        "mean": 0.976,
+        "mean": 0.9796,
         "min": 0,
         "p10": 1,
         "median": 1,
@@ -747,13 +744,13 @@
         }
       },
       "endings": {
-        "masters": 817,
-        "bachelor": 15,
+        "masters": 820,
+        "bachelor": 12,
         "leave": 1
       },
       "percentOfRuns": {
-        "masters": 98.0792,
-        "bachelor": 1.8007,
+        "masters": 98.4394,
+        "bachelor": 1.4406,
         "leave": 0.12
       }
     },
@@ -764,24 +761,23 @@
         "female": 417
       },
       "outcomes": {
-        "unrelated": 461,
-        "budget-blocked": 21,
-        "leave": 311,
-        "bachelor": 12,
-        "dismissed": 8,
-        "institute": 19,
-        "gameover": 1
+        "unrelated": 455,
+        "leave": 321,
+        "institute": 22,
+        "bachelor": 11,
+        "dismissed": 12,
+        "budget-blocked": 12
       },
       "papers": {
-        "count": 812,
-        "total": 2415,
+        "count": 821,
+        "total": 2437,
         "histogram": {
-          "0": 12,
-          "1": 8,
-          "3": 761,
+          "0": 11,
+          "1": 12,
+          "3": 767,
           "4": 31
         },
-        "mean": 2.9741,
+        "mean": 2.9683,
         "min": 0,
         "p10": 3,
         "median": 3,
@@ -789,13 +785,13 @@
         "max": 4
       },
       "freshDoctoralPapers": {
-        "count": 480,
-        "total": 1459,
+        "count": 477,
+        "total": 1453,
         "histogram": {
-          "3": 461,
-          "4": 19
+          "3": 455,
+          "4": 22
         },
-        "mean": 3.0396,
+        "mean": 3.0461,
         "min": 3,
         "p10": 3,
         "median": 3,
@@ -803,45 +799,43 @@
         "max": 4
       },
       "facultyAudit": {
-        "evaluated": 481,
+        "evaluated": 477,
         "recommendationCandidates": 0,
         "trueEndings": 0,
         "unmet": {
           "learning": 1,
-          "research": 405,
-          "language": 476,
+          "research": 402,
+          "language": 471,
           "social": 2,
-          "autonomy": 109,
-          "teaching": 481,
-          "rapport": 481,
-          "resilience": 13,
-          "manners": 189,
+          "autonomy": 94,
+          "teaching": 477,
+          "rapport": 477,
+          "resilience": 15,
+          "manners": 183,
           "motivation": 0,
           "papers": 0,
           "conferences": 0,
-          "recommendations": 481,
+          "recommendations": 477,
           "faculty": 0,
-          "leadingPaper": 481,
+          "leadingPaper": 477,
           "hIndex": 0,
-          "doctoralDefense": 1
+          "doctoralDefense": 0
         }
       },
       "endings": {
-        "unrelated": 461,
-        "leave": 311,
-        "bachelor": 12,
-        "dismissed": 8,
-        "institute": 19,
-        "gameover": 1
+        "unrelated": 455,
+        "leave": 321,
+        "institute": 22,
+        "bachelor": 11,
+        "dismissed": 12
       },
       "percentOfRuns": {
-        "unrelated": 55.3421,
-        "budget-blocked": 2.521,
-        "leave": 37.3349,
-        "bachelor": 1.4406,
-        "dismissed": 0.9604,
-        "institute": 2.2809,
-        "gameover": 0.12
+        "unrelated": 54.6218,
+        "leave": 38.5354,
+        "institute": 2.6411,
+        "bachelor": 1.3205,
+        "dismissed": 1.4406,
+        "budget-blocked": 1.4406
       }
     },
     "industry": {
@@ -852,25 +846,25 @@
       },
       "outcomes": {
         "corporate": 569,
-        "dismissed": 82,
-        "institute": 37,
-        "unrelated": 126,
-        "bachelor": 10,
-        "budget-blocked": 6,
-        "resident_researcher": 4
+        "dismissed": 89,
+        "institute": 34,
+        "unrelated": 123,
+        "budget-blocked": 7,
+        "bachelor": 9,
+        "resident_researcher": 3
       },
       "papers": {
-        "count": 828,
-        "total": 2966,
+        "count": 827,
+        "total": 2945,
         "histogram": {
-          "0": 10,
-          "1": 79,
-          "2": 3,
+          "0": 9,
+          "1": 88,
+          "2": 1,
           "3": 81,
-          "4": 637,
-          "5": 18
+          "4": 628,
+          "5": 20
         },
-        "mean": 3.5821,
+        "mean": 3.5611,
         "min": 0,
         "p10": 1,
         "median": 4,
@@ -878,14 +872,14 @@
         "max": 5
       },
       "freshDoctoralPapers": {
-        "count": 736,
-        "total": 2881,
+        "count": 729,
+        "total": 2855,
         "histogram": {
           "3": 81,
-          "4": 637,
-          "5": 18
+          "4": 628,
+          "5": 20
         },
-        "mean": 3.9144,
+        "mean": 3.9163,
         "min": 3,
         "p10": 3,
         "median": 4,
@@ -893,45 +887,45 @@
         "max": 5
       },
       "facultyAudit": {
-        "evaluated": 736,
+        "evaluated": 729,
         "recommendationCandidates": 0,
         "trueEndings": 0,
         "unmet": {
           "learning": 1,
-          "research": 80,
-          "language": 713,
+          "research": 86,
+          "language": 704,
           "social": 0,
           "autonomy": 0,
-          "teaching": 736,
-          "rapport": 464,
-          "resilience": 173,
-          "manners": 123,
-          "motivation": 4,
+          "teaching": 729,
+          "rapport": 463,
+          "resilience": 171,
+          "manners": 120,
+          "motivation": 7,
           "papers": 0,
           "conferences": 0,
-          "recommendations": 736,
+          "recommendations": 729,
           "faculty": 0,
-          "leadingPaper": 736,
+          "leadingPaper": 729,
           "hIndex": 0,
           "doctoralDefense": 0
         }
       },
       "endings": {
         "corporate": 569,
-        "dismissed": 82,
-        "institute": 37,
-        "unrelated": 126,
-        "bachelor": 10,
-        "resident_researcher": 4
+        "dismissed": 89,
+        "institute": 34,
+        "unrelated": 123,
+        "bachelor": 9,
+        "resident_researcher": 3
       },
       "percentOfRuns": {
         "corporate": 68.2254,
-        "dismissed": 9.8321,
-        "institute": 4.4365,
-        "unrelated": 15.1079,
-        "bachelor": 1.199,
-        "budget-blocked": 0.7194,
-        "resident_researcher": 0.4796
+        "dismissed": 10.6715,
+        "institute": 4.0767,
+        "unrelated": 14.7482,
+        "budget-blocked": 0.8393,
+        "bachelor": 1.0791,
+        "resident_researcher": 0.3597
       }
     },
     "low-contact": {
@@ -941,22 +935,22 @@
         "female": 417
       },
       "outcomes": {
-        "institute": 798,
-        "dismissed": 16,
-        "unemployed": 16,
-        "budget-blocked": 3
+        "institute": 794,
+        "dismissed": 19,
+        "unemployed": 19,
+        "budget-blocked": 1
       },
       "papers": {
-        "count": 830,
-        "total": 3318,
+        "count": 832,
+        "total": 3321,
         "histogram": {
-          "1": 15,
+          "1": 18,
           "2": 1,
-          "3": 16,
-          "4": 737,
-          "5": 61
+          "3": 19,
+          "4": 726,
+          "5": 68
         },
-        "mean": 3.9976,
+        "mean": 3.9916,
         "min": 1,
         "p10": 4,
         "median": 4,
@@ -964,14 +958,14 @@
         "max": 5
       },
       "freshDoctoralPapers": {
-        "count": 814,
+        "count": 813,
         "total": 3301,
         "histogram": {
-          "3": 16,
-          "4": 737,
-          "5": 61
+          "3": 19,
+          "4": 726,
+          "5": 68
         },
-        "mean": 4.0553,
+        "mean": 4.0603,
         "min": 3,
         "p10": 4,
         "median": 4,
@@ -979,39 +973,39 @@
         "max": 5
       },
       "facultyAudit": {
-        "evaluated": 814,
+        "evaluated": 813,
         "recommendationCandidates": 0,
         "trueEndings": 0,
         "unmet": {
           "learning": 0,
-          "research": 39,
-          "language": 777,
-          "social": 2,
-          "autonomy": 1,
-          "teaching": 814,
-          "rapport": 814,
-          "resilience": 229,
-          "manners": 403,
+          "research": 47,
+          "language": 776,
+          "social": 3,
+          "autonomy": 0,
+          "teaching": 813,
+          "rapport": 813,
+          "resilience": 222,
+          "manners": 402,
           "motivation": 0,
           "papers": 0,
           "conferences": 0,
-          "recommendations": 814,
+          "recommendations": 813,
           "faculty": 0,
-          "leadingPaper": 814,
+          "leadingPaper": 813,
           "hIndex": 0,
           "doctoralDefense": 0
         }
       },
       "endings": {
-        "institute": 798,
-        "dismissed": 16,
-        "unemployed": 16
+        "institute": 794,
+        "dismissed": 19,
+        "unemployed": 19
       },
       "percentOfRuns": {
-        "institute": 95.7983,
-        "dismissed": 1.9208,
-        "unemployed": 1.9208,
-        "budget-blocked": 0.3601
+        "institute": 95.3181,
+        "dismissed": 2.2809,
+        "unemployed": 2.2809,
+        "budget-blocked": 0.12
       }
     },
     "job-search": {
@@ -1021,22 +1015,22 @@
         "female": 417
       },
       "outcomes": {
-        "unemployed": 772,
-        "dismissed": 10,
-        "institute": 31,
-        "bachelor": 12,
-        "budget-blocked": 8
+        "unemployed": 777,
+        "dismissed": 6,
+        "institute": 33,
+        "bachelor": 14,
+        "budget-blocked": 3
       },
       "papers": {
-        "count": 825,
-        "total": 2450,
+        "count": 830,
+        "total": 2469,
         "histogram": {
-          "0": 12,
-          "1": 10,
-          "3": 772,
-          "4": 31
+          "0": 14,
+          "1": 6,
+          "3": 777,
+          "4": 33
         },
-        "mean": 2.9697,
+        "mean": 2.9747,
         "min": 0,
         "p10": 3,
         "median": 3,
@@ -1044,13 +1038,13 @@
         "max": 4
       },
       "freshDoctoralPapers": {
-        "count": 803,
-        "total": 2440,
+        "count": 810,
+        "total": 2463,
         "histogram": {
-          "3": 772,
-          "4": 31
+          "3": 777,
+          "4": 33
         },
-        "mean": 3.0386,
+        "mean": 3.0407,
         "min": 3,
         "p10": 3,
         "median": 3,
@@ -1058,56 +1052,56 @@
         "max": 4
       },
       "facultyAudit": {
-        "evaluated": 803,
+        "evaluated": 810,
         "recommendationCandidates": 0,
         "trueEndings": 0,
         "unmet": {
           "learning": 2,
           "research": 756,
-          "language": 801,
-          "social": 44,
-          "autonomy": 705,
-          "teaching": 803,
-          "rapport": 803,
-          "resilience": 9,
-          "manners": 395,
+          "language": 806,
+          "social": 42,
+          "autonomy": 702,
+          "teaching": 810,
+          "rapport": 810,
+          "resilience": 7,
+          "manners": 401,
           "motivation": 0,
           "papers": 0,
           "conferences": 0,
-          "recommendations": 803,
+          "recommendations": 810,
           "faculty": 0,
-          "leadingPaper": 803,
+          "leadingPaper": 810,
           "hIndex": 0,
           "doctoralDefense": 0
         }
       },
       "endings": {
-        "unemployed": 772,
-        "dismissed": 10,
-        "institute": 31,
-        "bachelor": 12
+        "unemployed": 777,
+        "dismissed": 6,
+        "institute": 33,
+        "bachelor": 14
       },
       "percentOfRuns": {
-        "unemployed": 92.6771,
-        "dismissed": 1.2005,
-        "institute": 3.7215,
-        "bachelor": 1.4406,
-        "budget-blocked": 0.9604
+        "unemployed": 93.2773,
+        "dismissed": 0.7203,
+        "institute": 3.9616,
+        "bachelor": 1.6807,
+        "budget-blocked": 0.3601
       }
     }
   },
   "papers": {
-    "count": 9087,
-    "total": 24212,
+    "count": 9221,
+    "total": 24654,
     "histogram": {
-      "0": 1054,
-      "1": 1388,
-      "2": 308,
-      "3": 3311,
-      "4": 2855,
-      "5": 171
+      "0": 1041,
+      "1": 1421,
+      "2": 289,
+      "3": 3397,
+      "4": 2901,
+      "5": 172
     },
-    "mean": 2.6645,
+    "mean": 2.6737,
     "min": 0,
     "p10": 0,
     "median": 3,
@@ -1115,14 +1109,14 @@
     "max": 5
   },
   "freshDoctoralPapers": {
-    "count": 5438,
-    "total": 19484,
+    "count": 5536,
+    "total": 19829,
     "histogram": {
-      "3": 2439,
-      "4": 2828,
-      "5": 171
+      "3": 2487,
+      "4": 2877,
+      "5": 172
     },
-    "mean": 3.5829,
+    "mean": 3.5818,
     "min": 3,
     "p10": 3,
     "median": 4,
@@ -1130,27 +1124,27 @@
     "max": 5
   },
   "facultyAudit": {
-    "evaluated": 5797,
-    "recommendationCandidates": 226,
-    "trueEndings": 7,
+    "evaluated": 5883,
+    "recommendationCandidates": 275,
+    "trueEndings": 3,
     "unmet": {
       "learning": 5,
-      "research": 1991,
-      "language": 4503,
-      "social": 55,
-      "autonomy": 1146,
-      "teaching": 4640,
-      "rapport": 4901,
-      "resilience": 1202,
-      "manners": 2146,
-      "motivation": 238,
-      "papers": 290,
-      "conferences": 2,
-      "recommendations": 4640,
-      "faculty": 26,
-      "leadingPaper": 4640,
+      "research": 2014,
+      "language": 4512,
+      "social": 51,
+      "autonomy": 1117,
+      "teaching": 4666,
+      "rapport": 4964,
+      "resilience": 1198,
+      "manners": 2155,
+      "motivation": 217,
+      "papers": 278,
+      "conferences": 3,
+      "recommendations": 4666,
+      "faculty": 35,
+      "leadingPaper": 4666,
       "hIndex": 2,
-      "doctoralDefense": 359
+      "doctoralDefense": 347
     }
   },
   "nearMissFacultySamples": [
@@ -1164,23 +1158,53 @@
         "rapport"
       ],
       "values": {
-        "learning": 83.763970452573,
-        "research": 82.3470491125721,
-        "language": 71.88490826317125,
-        "social": 83.43446371251028,
-        "autonomy": 82.89013435656818,
+        "learning": 84.01814187677826,
+        "research": 83.05288797395909,
+        "language": 72.14594800552692,
+        "social": 83.10800119004666,
+        "autonomy": 82.15745379253678,
         "teaching": 65.11618369644846,
-        "rapport": 67.39065405406284,
-        "resilience": 77.14688732896411,
+        "rapport": 67.79705342382847,
+        "resilience": 77.36688732896411,
         "manners": 63.398190522022446,
         "motivation": 99.5,
         "papers": 3,
         "conferences": 3,
         "recommendations": 4,
-        "faculty": 48.96635000000012,
+        "faculty": 46.34335000000014,
         "leadingPaper": 2,
         "award": 0,
         "hIndex": 2,
+        "doctoralDefense": 1
+      }
+    },
+    {
+      "run": 193,
+      "seed": 1536286,
+      "fieldId": "049",
+      "labMode": "dry",
+      "ending": "postdoc",
+      "missing": [
+        "rapport"
+      ],
+      "values": {
+        "learning": 84.93383224018453,
+        "research": 83.72594057614151,
+        "language": 70.24690387663723,
+        "social": 74.90623815810869,
+        "autonomy": 82.18923273632592,
+        "teaching": 65.11618369644846,
+        "rapport": 71.92404010377761,
+        "resilience": 62.236669027029265,
+        "manners": 67.69872936519697,
+        "motivation": 95.10000000000002,
+        "papers": 3,
+        "conferences": 3,
+        "recommendations": 4,
+        "faculty": 44.89055000000013,
+        "leadingPaper": 2,
+        "award": 0,
+        "hIndex": 3,
         "doctoralDefense": 1
       }
     },
@@ -1194,20 +1218,50 @@
         "rapport"
       ],
       "values": {
-        "learning": 87.27564498841195,
-        "research": 85.65669528845912,
-        "language": 74.34439324716962,
-        "social": 78.06647595026335,
-        "autonomy": 81.11633167325596,
+        "learning": 86.90188400601966,
+        "research": 85.8689132362483,
+        "language": 73.34127270529736,
+        "social": 77.90493507092928,
+        "autonomy": 80.80828316014504,
         "teaching": 65.11618369644846,
-        "rapport": 70.38841927151927,
-        "resilience": 61.770242905876394,
+        "rapport": 78.60550689493382,
+        "resilience": 63.8202429058764,
         "manners": 73.98665005010136,
         "motivation": 98.10000000000002,
         "papers": 3,
         "conferences": 4,
         "recommendations": 4,
-        "faculty": 45.13565000000011,
+        "faculty": 46.81615000000012,
+        "leadingPaper": 2,
+        "award": 0,
+        "hIndex": 3,
+        "doctoralDefense": 1
+      }
+    },
+    {
+      "run": 217,
+      "seed": 1726342,
+      "fieldId": "051",
+      "labMode": "dry",
+      "ending": "postdoc",
+      "missing": [
+        "rapport"
+      ],
+      "values": {
+        "learning": 81.88960944606717,
+        "research": 83.42588226724719,
+        "language": 73.50301321298637,
+        "social": 84.09949685918669,
+        "autonomy": 81.48347459380693,
+        "teaching": 65.11618369644846,
+        "rapport": 69.64884994315108,
+        "resilience": 68.07906213556724,
+        "manners": 70.11443995433095,
+        "motivation": 94.75000000000001,
+        "papers": 3,
+        "conferences": 4,
+        "recommendations": 4,
+        "faculty": 40.16875000000012,
         "leadingPaper": 2,
         "award": 0,
         "hIndex": 3,
@@ -1224,20 +1278,80 @@
         "rapport"
       ],
       "values": {
-        "learning": 86.4286958929961,
-        "research": 83.60831843891867,
-        "language": 73.62973827282508,
-        "social": 84.30680248575113,
-        "autonomy": 83.86554080584763,
+        "learning": 86.30403677590047,
+        "research": 83.4412414289621,
+        "language": 73.15784856708748,
+        "social": 84.46928685173305,
+        "autonomy": 83.77829800957298,
         "teaching": 65.11618369644846,
-        "rapport": 74.15857153150345,
-        "resilience": 72.76172274354103,
+        "rapport": 64.04072622071956,
+        "resilience": 74.48172274354103,
         "manners": 63.05086515963802,
         "motivation": 98.10000000000002,
         "papers": 3,
         "conferences": 4,
         "recommendations": 4,
-        "faculty": 48.244650000000114,
+        "faculty": 47.20785000000013,
+        "leadingPaper": 2,
+        "award": 0,
+        "hIndex": 3,
+        "doctoralDefense": 1
+      }
+    },
+    {
+      "run": 253,
+      "seed": 2011426,
+      "fieldId": "112",
+      "labMode": "wet",
+      "ending": "postdoc",
+      "missing": [
+        "rapport"
+      ],
+      "values": {
+        "learning": 86.44757003949181,
+        "research": 82.5275781232298,
+        "language": 72.8441451884003,
+        "social": 79.40914964780897,
+        "autonomy": 82.20296848373324,
+        "teaching": 65.11618369644846,
+        "rapport": 77.27735631416111,
+        "resilience": 86.4549109947568,
+        "manners": 61.50940540630136,
+        "motivation": 99.15,
+        "papers": 3,
+        "conferences": 4,
+        "recommendations": 4,
+        "faculty": 47.57105000000012,
+        "leadingPaper": 2,
+        "award": 1,
+        "hIndex": 2,
+        "doctoralDefense": 1
+      }
+    },
+    {
+      "run": 277,
+      "seed": 2201482,
+      "fieldId": "114",
+      "labMode": "wet",
+      "ending": "postdoc",
+      "missing": [
+        "rapport"
+      ],
+      "values": {
+        "learning": 84.5604262981114,
+        "research": 82.43664119899628,
+        "language": 73.24240302030934,
+        "social": 80.83961645124106,
+        "autonomy": 81.92960906428821,
+        "teaching": 65.11618369644846,
+        "rapport": 74.78851302667117,
+        "resilience": 95.68010953620278,
+        "manners": 73.6025444314633,
+        "motivation": 98.10000000000002,
+        "papers": 3,
+        "conferences": 4,
+        "recommendations": 4,
+        "faculty": 45.82715000000013,
         "leadingPaper": 2,
         "award": 0,
         "hIndex": 3,
@@ -1254,140 +1368,20 @@
         "rapport"
       ],
       "values": {
-        "learning": 86.96297190581895,
-        "research": 83.08363832147113,
-        "language": 74.22810862304013,
-        "social": 83.76762989521774,
-        "autonomy": 81.61397859955277,
+        "learning": 87.11422467825855,
+        "research": 83.11970201771145,
+        "language": 74.55597889706902,
+        "social": 84.1952118464447,
+        "autonomy": 82.01087668700245,
         "teaching": 65.11618369644846,
-        "rapport": 73.27209417688545,
-        "resilience": 92.74892676357832,
+        "rapport": 73.69110928769327,
+        "resilience": 92.16892676357833,
         "manners": 68.46750181448353,
-        "motivation": 99.15,
+        "motivation": 97.60000000000002,
         "papers": 3,
         "conferences": 4,
         "recommendations": 4,
         "faculty": 47.04485000000013,
-        "leadingPaper": 2,
-        "award": 2,
-        "hIndex": 3,
-        "doctoralDefense": 1
-      }
-    },
-    {
-      "run": 301,
-      "seed": 2391538,
-      "fieldId": "116",
-      "labMode": "dry",
-      "ending": "postdoc",
-      "missing": [
-        "rapport"
-      ],
-      "values": {
-        "learning": 84.97508233237131,
-        "research": 83.27503386881607,
-        "language": 73.13741372619339,
-        "social": 83.59584683451777,
-        "autonomy": 82.325643405457,
-        "teaching": 65.11618369644846,
-        "rapport": 76.60158582715671,
-        "resilience": 86.53489557720872,
-        "manners": 63.03543681524804,
-        "motivation": 97.60000000000002,
-        "papers": 3,
-        "conferences": 4,
-        "recommendations": 4,
-        "faculty": 46.44225000000013,
-        "leadingPaper": 2,
-        "award": 0,
-        "hIndex": 3,
-        "doctoralDefense": 1
-      }
-    },
-    {
-      "run": 409,
-      "seed": 3246790,
-      "fieldId": "088",
-      "labMode": "wet",
-      "ending": "postdoc",
-      "missing": [
-        "rapport"
-      ],
-      "values": {
-        "learning": 85.86946987776454,
-        "research": 82.7878258711425,
-        "language": 74.25631186267988,
-        "social": 80.60247677995557,
-        "autonomy": 83.11166812504845,
-        "teaching": 65.11618369644846,
-        "rapport": 73.98216655319099,
-        "resilience": 66.15202214645882,
-        "manners": 67.56125716988602,
-        "motivation": 97.60000000000002,
-        "papers": 3,
-        "conferences": 4,
-        "recommendations": 4,
-        "faculty": 45.89305000000013,
-        "leadingPaper": 2,
-        "award": 0,
-        "hIndex": 3,
-        "doctoralDefense": 1
-      }
-    },
-    {
-      "run": 445,
-      "seed": 3531874,
-      "fieldId": "091",
-      "labMode": "dry",
-      "ending": "postdoc",
-      "missing": [
-        "rapport"
-      ],
-      "values": {
-        "learning": 85.7920763705502,
-        "research": 82.6343378029823,
-        "language": 73.8501816236555,
-        "social": 81.89271286986227,
-        "autonomy": 81.5427138272538,
-        "teaching": 65.11618369644846,
-        "rapport": 76.00537693456818,
-        "resilience": 75.81844264385535,
-        "manners": 63.373374252899474,
-        "motivation": 95.10000000000002,
-        "papers": 3,
-        "conferences": 4,
-        "recommendations": 4,
-        "faculty": 46.61715000000012,
-        "leadingPaper": 2,
-        "award": 0,
-        "hIndex": 3,
-        "doctoralDefense": 1
-      }
-    },
-    {
-      "run": 469,
-      "seed": 3721930,
-      "fieldId": "072",
-      "labMode": "dry",
-      "ending": "postdoc",
-      "missing": [
-        "rapport"
-      ],
-      "values": {
-        "learning": 86.65503183927743,
-        "research": 84.65267014317594,
-        "language": 73.435798324491,
-        "social": 77.23170420770512,
-        "autonomy": 81.9946816924361,
-        "teaching": 65.11618369644846,
-        "rapport": 75.28531811155545,
-        "resilience": 83.26984202207801,
-        "manners": 66.28513812571067,
-        "motivation": 97.75000000000001,
-        "papers": 3,
-        "conferences": 4,
-        "recommendations": 4,
-        "faculty": 45.934450000000126,
         "leadingPaper": 2,
         "award": 0,
         "hIndex": 3,
@@ -1396,41 +1390,41 @@
     }
   ],
   "errors": [],
-  "seconds": 154.816,
-  "completedRuns": 9087,
+  "seconds": 287.401,
+  "completedRuns": 9221,
   "unresolved": {
-    "budgetBlocked": 913,
+    "budgetBlocked": 779,
     "incomplete": 0,
     "errors": 0
   },
   "accountedRuns": 10000,
   "endingPercentOfRuns": {
-    "unemployed": 9.72,
-    "corporate": 9.57,
-    "resident_researcher": 0.1,
-    "institute": 26.61,
-    "unrelated": 7.09,
-    "dismissed": 7.01,
-    "bachelor": 9.39,
-    "gameover": 3.59,
-    "leave": 8.47,
-    "postdoc": 1.08,
-    "true": 0.07,
-    "masters": 8.17
+    "unemployed": 9.71,
+    "corporate": 9.87,
+    "institute": 27.13,
+    "dismissed": 7.2,
+    "unrelated": 7.02,
+    "bachelor": 9.31,
+    "resident_researcher": 0.12,
+    "gameover": 3.47,
+    "leave": 8.8,
+    "postdoc": 1.35,
+    "masters": 8.2,
+    "true": 0.03
   },
   "endingPercentOfCompleted": {
-    "unemployed": 10.6966,
-    "corporate": 10.5315,
-    "resident_researcher": 0.11,
-    "institute": 29.2836,
-    "unrelated": 7.8024,
-    "dismissed": 7.7143,
-    "bachelor": 10.3334,
-    "gameover": 3.9507,
-    "leave": 9.321,
-    "postdoc": 1.1885,
-    "true": 0.077,
-    "masters": 8.9909
+    "unemployed": 10.5303,
+    "corporate": 10.7038,
+    "institute": 29.422,
+    "dismissed": 7.8083,
+    "unrelated": 7.6131,
+    "bachelor": 10.0965,
+    "resident_researcher": 0.1301,
+    "gameover": 3.7631,
+    "leave": 9.5434,
+    "postdoc": 1.464,
+    "masters": 8.8927,
+    "true": 0.0325
   },
   "majorEndingCoverage": {
     "seen": [
@@ -1446,89 +1440,22 @@
       "startup"
     ]
   },
-  "comparison": {
-    "engineVersion": "4.15.3",
-    "sourceCommit": "a0138ac9a5a541605a4677df83a8d20456c20023",
-    "sourceHashes": {
-      "scripts/ending-balance-audit.mjs": "3809b62be4dcce3fbf22bed35abc6f5fc5b94c7853d957530e95b3fa41aa8230",
-      "tests/play-support.mjs": "374b02c0011d19bfb2895e0c2fd3df1a32129def32337cba5315f2a109dc7fca",
-      "dist/simulation-worker.js": "42f7d76ed7e1bf032f148e0529154d0c74fcdeb8bbd6b8ae66b7eaf8fabdabc1",
-      "dist/engine.js": "672b2406d9b0fe909f8ee758b40c34dfc374863aa5b4b839bbe311a3af3e0001",
-      "dist/balance.js": "63d7f191bddc62b89a8785cf7ef32fd4103ab6377e87f779f3461f2858c66eda",
-      "dist/funding.js": "3fa08411f447a8c4301bc7144897e3fa3baf498c021c6687f42654a0a85fb19d",
-      "dist/workload.js": "b384c8e2364c2c5abc4e1fc5e3f7e7104d24c5445a44e99d00ec58fd6b371c7a",
-      "dist/impact.js": "570773136271fe9af48e3f972a627bba5fac7ce02902671fa0506ff3acd3d3d9",
-      "dist/disciplines.js": "4ea4655ed46843175b4460a14459a4d8ccafeb5f0c3acf6e96baa1cf6e16f5a3",
-      "dist/events.js": "e6b19127217cfe19f158ec3ae6239c1f8ac4720282ea46271235ff69efba85bb",
-      "dist/monthly-choices.js": "312863e5e64963f6f701d2df9df9460527bf15bed91e52bb1ee42dd1be59bf03",
-      "dist/academic-calendar.js": "b876e6a34a89f9c02f1c15275eeeaafed5e2adcfa45c16437709ca35e5bce741",
-      "dist/main-story.js": "facd92a44199dfad0e6d5be79b00912497a191ba5ddf8812b46869fef01ef502",
-      "dist/travel.js": "9ad34619e88765df171cee03506328af1d538392d80ade55774bcf11d7e1fb11",
-      "dist/grants.js": "41025c602683cf4ef2166232e1e8577714143bc794570447c960412e594b376d",
-      "dist/research-topics.js": "28416581b17218f09172144efdf20a0d8f6975e35a79d3d2043b77d5550a7e4f",
-      "dist/venues.js": "e5ec516bf0a2f89039c283947fca3fc34d49460a971a6e6f08e9e1e88accbf03",
-      "dist/relationship.js": "795c973b329a40d75f1fc5091178a797f111038bd7d36051047113dea7d45cc2",
-      "dist/names.js": "5ad4c46408183aabdbc3e63f504df28eb3993f82a8052d422bd1c2a8e5a56a0f"
-    },
-    "runs": 10000,
-    "freshDoctoralPapers": {
-      "count": 5796,
-      "total": 24391,
-      "histogram": {
-        "3": 2016,
-        "4": 1032,
-        "5": 2286,
-        "6": 449,
-        "7": 13
-      },
-      "mean": 4.2082,
-      "min": 3,
-      "p10": 3,
-      "median": 4,
-      "p90": 5,
-      "max": 7
-    },
-    "faculty": {
-      "runs": 834,
-      "true": 5,
-      "truePercent": 0.5995,
-      "papers": {
-        "count": 538,
-        "total": 1866,
-        "histogram": {
-          "3": 300,
-          "4": 224,
-          "5": 14
-        },
-        "mean": 3.4684,
-        "min": 3,
-        "p10": 3,
-        "median": 3,
-        "p90": 4,
-        "max": 5
-      }
-    },
-    "paperMeanRatioPercent": 85.1409,
-    "baselinePath": "docs/ending-balance-baseline-4.15.3.json",
-    "policyComparable": true,
-    "limitation": "Same seeds, genders, policy implementation and financial support. State-responsive policies can choose different actual actions after gameplay changes. This is a bundled growth/publication update, not a single-factor effect or a player probability."
-  },
   "samples": {
     "path": "docs/ending-audit-10000-samples.json",
     "count": 26,
     "endingIds": [
       "unemployed",
       "corporate",
-      "resident_researcher",
       "institute",
-      "unrelated",
       "dismissed",
+      "unrelated",
       "bachelor",
+      "resident_researcher",
       "gameover",
       "leave",
       "postdoc",
-      "true",
-      "masters"
+      "masters",
+      "true"
     ],
     "fields": [
       "048",
@@ -1536,24 +1463,24 @@
       "058",
       "090",
       "156",
-      "060",
-      "056",
       "055",
       "062",
       "094",
-      "063",
-      "059",
+      "056",
+      "115",
+      "107",
       "050",
-      "114",
-      "097"
+      "158",
+      "066",
+      "086"
     ]
   },
   "reviewCorpus": {
     "path": "docs/ending-audit-samples.json",
     "count": 32,
     "mainAuditSamples": 26,
-    "independentCurrentSamples": 5,
-    "historicalSamples": 1,
+    "independentCurrentSamples": 6,
+    "historicalSamples": 0,
     "excludedFromRunCounts": true
   },
   "supplementalCoverage": {
@@ -1572,9 +1499,10 @@
       ]
     },
     "youtuber": {
-      "kind": "historical-actual-play",
-      "version": "4.13.0",
-      "path": "docs/ending-audit-samples-4.13.0.json"
+      "kind": "independent-actual-play",
+      "seed": 6,
+      "version": "4.16.0",
+      "path": "docs/ending-audit-samples.json"
     },
     "excludedFromRunCounts": true
   }

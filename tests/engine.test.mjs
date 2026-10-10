@@ -83,8 +83,8 @@ test('Korean calendar starts March, English September; April/October week 3 is m
   for(const locale of ['ko','en']){const s=createState('Student',1,{locale});s.month=1;assert.equal(proposeSchedule(s)[2],'conference');assert.throws(()=>simulateMonth(s,['study','study','rest','coffee']));const n=simulateMonth(s,['rest','rest','conference','rest']);assert.equal(n.career.festivalAttendance,1);assert.equal(n.career.conferences,0);assert.ok(n.history.some(h=>h.kind==='conference-festival'&&h.week===3));}
 });
 test('annual grants, degree stipends, monthly stipend adjustment and funding timing use actual costs',()=>{
-  let s=createState('Student',1);const initial=s.lab.funds;assert.equal(s.lab.funds+s.lab.pool,s.lab.initialFunding);assert.equal(salaryBase(s),13);assert.equal(monthlyBudgetCost(s),17.8);
-  const first=simulateMonth(s,s.plan);assert.ok(Math.abs(first.lab.funds-(initial-(17.8-7.8)))<1e-8);
+  let s=createState('Student',1);const initial=s.lab.funds;assert.equal(s.lab.funds+s.lab.pool,s.lab.initialFunding);assert.equal(salaryBase(s),13);assert.ok(Math.abs(monthlyBudgetCost(s)-16.6)<1e-8);
+  const first=simulateMonth(s,s.plan);assert.ok(Math.abs(first.lab.funds-(initial-(16.6-7.8)))<1e-8);
   assert.throws(()=>simulateMonth({...first,pending:null,pendingQueue:[]},proposeSchedule(first),{budget:{...first.lab.budget,salary:73}}),/March/);
   s.month=12;s.lab.funds=0;assert.throws(()=>simulateMonth(s,proposeSchedule(s),{facultyAction:'funding'}));
   s.lab.funds=25;s.grants.reportYears=[1];const grant=simulateMonth(s,proposeSchedule(s));assert.ok(grant.history.some(h=>h.kind==='annual-grant'));assert.ok(grant.lab.funds+grant.lab.pool>200);
@@ -173,7 +173,9 @@ test('advanced doctoral preparation remains attainable through actual practice u
 });
 test('all six normal careers are reachable through play with managed finances',()=>{
   // The RA founder fixture uses seed 8 × 7919, also exercised by lab-play.test.mjs.
-  const seeds={startup:63352,unemployed:1};
+  // Institute seed 1 earns four accepted papers through the unchanged policy;
+  // seed 6 now graduates with three ordinary papers after event weights are respected.
+  const seeds={institute:1,startup:63352,unemployed:1};
   for(const goal of ['institute','corporate','unrelated','startup','unemployed','youtuber']){const s=play(goal,seeds[goal]??6);assert.equal(s.month,96,goal);assert.ok(canDefend(s),goal);assert.equal(s.ending,goal,JSON.stringify({goal,ending:s.ending,month:s.month,hidden:s.hidden,career:s.career,professor:s.professor}));}
 });
 test('saved games reject old versions, malformed weeks, impossible career counts and invalid events',()=>{
@@ -332,7 +334,7 @@ test('dropout requires low rapport, severe stress and low resilience together',(
 });
 test('wet supplies and instrument wear differ from dry compute-environment support',()=>{
   const dry=createState('Student',6,{labMode:'dry'}),wet=createState('Student',6,{labMode:'wet'}),plan=['experiment','experiment','rest','rest'];
-  const costDifference=monthlyBudgetCost(wet,wet.lab.budget,plan)-monthlyBudgetCost(dry,dry.lab.budget,plan);assert.equal(costDifference,13);
+  const costDifference=monthlyBudgetCost(wet,wet.lab.budget,plan)-monthlyBudgetCost(dry,dry.lab.budget,plan);assert.ok(Math.abs(costDifference-12.64)<1e-8);
   const a=simulateMonth(dry,plan,{proposal:plan}),b=simulateMonth(wet,plan,{proposal:plan});assert.ok(b.lab.equipment<a.lab.equipment);assert.ok(Math.abs(a.lab.funds-b.lab.funds-costDifference)<1e-8);
   let dryEquipmentLoss=0,wetEquipmentLoss=0,dryManaged=0,dryNeglected=0;
   for(let seed=1;seed<=300;seed++)for(const mode of ['dry','wet']){

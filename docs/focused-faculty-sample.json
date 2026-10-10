@@ -1,21 +1,21 @@
 {
-  "engineVersion": "4.15.4",
+  "engineVersion": "4.16.0",
   "sourceHashes": {
     "scripts/focused-faculty-audit.mjs": "f150e287636cb7cc34620c8f92227e65bcb66faebc02795dc00fddb4987baa8f",
     "tests/play-support.mjs": "374b02c0011d19bfb2895e0c2fd3df1a32129def32337cba5315f2a109dc7fca",
     "dist/simulation-worker.js": "42f7d76ed7e1bf032f148e0529154d0c74fcdeb8bbd6b8ae66b7eaf8fabdabc1",
-    "dist/engine.js": "41ac033c370d5e9edb5817aa9de7cdeba1c224643041683904361589e2a43ca1",
+    "dist/engine.js": "0d780a31b127bef2e910925f96b6a8dd888201dd095e22e6a055979f30736993",
     "dist/balance.js": "b277d938f545e37ce9504d3c67410f79d67423af4bc611b6712740abd554f266",
     "dist/funding.js": "3fa08411f447a8c4301bc7144897e3fa3baf498c021c6687f42654a0a85fb19d",
     "dist/grants.js": "41025c602683cf4ef2166232e1e8577714143bc794570447c960412e594b376d",
     "dist/relationship.js": "b1811893b26ef5ca08bfd41ee0e59555fb99b09754a3388370cb8d6886d881f7",
     "dist/disciplines.js": "4ea4655ed46843175b4460a14459a4d8ccafeb5f0c3acf6e96baa1cf6e16f5a3",
-    "dist/events.js": "e6b19127217cfe19f158ec3ae6239c1f8ac4720282ea46271235ff69efba85bb",
+    "dist/events.js": "3274c0c1b12b0027ba806fb137abf9d6e3eb80010eb7b7ef5134ef97a804cbba",
     "dist/monthly-choices.js": "312863e5e64963f6f701d2df9df9460527bf15bed91e52bb1ee42dd1be59bf03",
     "dist/academic-calendar.js": "b876e6a34a89f9c02f1c15275eeeaafed5e2adcfa45c16437709ca35e5bce741",
-    "dist/main-story.js": "facd92a44199dfad0e6d5be79b00912497a191ba5ddf8812b46869fef01ef502",
+    "dist/main-story.js": "8efa33109e1b805b1b5c51d5172ea265dc347281e5120ed5be9f95266f487614",
     "dist/travel.js": "9ad34619e88765df171cee03506328af1d538392d80ade55774bcf11d7e1fb11",
-    "dist/workload.js": "b384c8e2364c2c5abc4e1fc5e3f7e7104d24c5445a44e99d00ec58fd6b371c7a",
+    "dist/workload.js": "e39f3d63b03cb27af3654ac3f86cff8e2bc68fd27606e19cb167b4f35e4f2e92",
     "dist/impact.js": "570773136271fe9af48e3f972a627bba5fac7ce02902671fa0506ff3acd3d3d9",
     "dist/venues.js": "3e1055d7543c06446dd0c530ca328ccea033889b2a7fa3b871c97789b3365e36",
     "dist/research-topics.js": "28416581b17218f09172144efdf20a0d8f6975e35a79d3d2043b77d5550a7e4f",
@@ -51,25 +51,25 @@
       "route": "integrated",
       "started": true,
       "hidden": {
-        "learning": 865.973371826116,
-        "research": 876.1486074142132,
-        "language": 729.0189745556053,
-        "social": 61.869724558208475,
-        "stamina": 430.4878823470027,
-        "resilience": 972.0764095614796,
+        "learning": 865.2617748479371,
+        "research": 878.5371017193717,
+        "language": 742.8632322552529,
+        "social": 62.229771858838944,
+        "stamina": 478.4172549944205,
+        "resilience": 973.0754095614797,
         "manners": 658.6802575009543,
-        "creativity": 40.45605787029925,
+        "creativity": 40.05605787029925,
         "diligence": 8.638724276968247,
-        "rapport": 95.83518039592812,
+        "rapport": 95.6686213706461,
         "luck": 16.14009244239027,
         "motivation": 97.60000000000002,
-        "stress": 6.948932847176318,
-        "autonomy": 82.95139123170908,
+        "stress": 6.9399728471763185,
+        "autonomy": 82.80481423430035,
         "teaching": 65.11618369644846,
         "industry": 2,
         "enterprise": 0,
         "outreach": 0,
-        "intuition": 84.69593984238138,
+        "intuition": 84.9846769744991,
         "confidence": 100
       },
       "temperament": {
@@ -78,16 +78,16 @@
         "expression": 45.28546960289058
       },
       "professor": {
-        "research": 90.17934999999977,
-        "teaching": 45.401400000000116,
-        "admin": 57.5941000000002,
+        "research": 95.99279999999978,
+        "teaching": 44.90260000000012,
+        "admin": 61.64035000000021,
         "mentoring": 100
       },
       "lab": {
         "financeRules": 1,
         "initialFunding": 800,
-        "funds": 341.79999999999984,
-        "pool": 79,
+        "funds": 227.8800000000022,
+        "pool": 26,
         "debt": 0,
         "creditEnabled": true,
         "budget": {
@@ -96,7 +96,7 @@
           "performance": 3,
           "publicity": 0
         },
-        "equipment": 100
+        "equipment": 92.89999999999992
       },
       "career": {
         "submissions": 4,
@@ -146,23 +146,14 @@
           {
             "id": 1,
             "role": "pi",
-            "start": 73,
-            "end": 109,
-            "annual": 150,
-            "titleIndex": 1,
-            "lastPaymentMonth": 85
-          },
-          {
-            "id": 2,
-            "role": "pi",
             "start": 85,
             "end": 121,
             "annual": 150,
-            "titleIndex": 2
+            "titleIndex": 1
           }
         ],
         "applicationYears": 3,
-        "lastApplicationMonth": 85
+        "lastApplicationMonth": 91
       },
       "project": {
         "id": 5,
@@ -170,7 +161,7 @@
         "journal": "standard",
         "titleIndex": 4,
         "phase": 1,
-        "progress": 15.367543368478138,
+        "progress": 19.63124073513241,
         "conference": false,
         "reviewMonths": 0,
         "submitted": false,
@@ -3370,7 +3361,7 @@
         {
           "month": 33,
           "kind": "event",
-          "id": "counsel-master-career",
+          "id": "counsel-coursework",
           "choice": 0
         },
         {
@@ -3402,8 +3393,8 @@
               "outcome": "completed",
               "progress": 0,
               "scienceFailures": 0,
-              "successRate": 0.9665206342767253,
-              "successProbability": 0.7581325492743825,
+              "successRate": 0.9666468304644668,
+              "successProbability": 0.7588486580446068,
               "weight": 0,
               "researchGrade": "완전성공",
               "assigned": "coursework"
@@ -3414,12 +3405,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 3.071729420597152,
+              "progress": 3.0717303155511333,
               "scienceFailures": 1,
-              "successProbability": 0.7890043688319321,
-              "successRate": 0.29656698855631725,
+              "successProbability": 0.789004390364854,
+              "successRate": 0.2965670653465995,
               "researchGrade": "약간실패",
-              "weight": 10.357624210133014,
+              "weight": 10.357624545939334,
               "assigned": "analysis"
             },
             {
@@ -3428,12 +3419,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 3.814109581432683,
+              "progress": 3.8141104187365245,
               "scienceFailures": 1,
-              "successProbability": 0.7896028325405271,
-              "successRate": 0.36791022521816785,
+              "successProbability": 0.789602854046676,
+              "successRate": 0.3679102940822361,
               "researchGrade": "약간실패",
-              "weight": 10.36695726293268,
+              "weight": 10.366957598321472,
               "assigned": "analysis"
             },
             {
@@ -3458,7 +3449,7 @@
               "assigned": "free"
             }
           ],
-          "progress": 6.885839002029835,
+          "progress": 6.885840734287658,
           "papers": 0,
           "feedback": "critique",
           "facultyAction": "conversation"
@@ -3508,12 +3499,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 1.812907655869178,
+              "progress": 1.8129089106643201,
               "scienceFailures": 1,
-              "successProbability": 0.792185599917935,
-              "successRate": 0.1393574801980959,
+              "successProbability": 0.7921856210960914,
+              "successRate": 0.13935757223117806,
               "researchGrade": "약간실패",
-              "weight": 13.009044460994412,
+              "weight": 13.009044873836595,
               "assigned": "analysis"
             },
             {
@@ -3522,12 +3513,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 3.1116748845459847,
+              "progress": 3.111676041878857,
               "scienceFailures": 1,
-              "successProbability": 0.792657514617326,
-              "successRate": 0.23902416625346845,
+              "successProbability": 0.7926575357940582,
+              "successRate": 0.2390242475747455,
               "researchGrade": "약간실패",
-              "weight": 13.018243859268484,
+              "weight": 13.018244272082907,
               "assigned": "analysis"
             },
             {
@@ -3536,12 +3527,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 11.856186870145445,
+              "progress": 11.856187370581475,
               "scienceFailures": 0,
-              "successProbability": 0.7931962192879141,
-              "successRate": 0.910002202528355,
+              "successProbability": 0.7931962404458011,
+              "successRate": 0.910002212130837,
               "researchGrade": "완전성공",
-              "weight": 13.028745246114957,
+              "weight": 13.028745658562018,
               "assigned": "analysis"
             },
             {
@@ -3555,7 +3546,7 @@
               "assigned": "teach"
             }
           ],
-          "progress": 16.78076941056061,
+          "progress": 16.78077232312465,
           "papers": 0,
           "feedback": "critique",
           "facultyAction": "conversation"
@@ -3608,12 +3599,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 12.944242395275058,
+              "progress": 12.944242809901667,
               "scienceFailures": 0,
-              "successProbability": 0.7960595925440728,
-              "successRate": 0.9892758513587022,
+              "successProbability": 0.7960596132859854,
+              "successRate": 0.9892758524764041,
               "researchGrade": "완전성공",
-              "weight": 13.084563195894283,
+              "weight": 13.084563600232432,
               "assigned": "analysis"
             },
             {
@@ -3622,12 +3613,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 13.10420184904972,
+              "progress": 13.104202250608711,
               "scienceFailures": 0,
-              "successProbability": 0.7970815857377307,
-              "successRate": 0.9999783394240298,
+              "successProbability": 0.7970816063360182,
+              "successRate": 0.9999783394262689,
               "researchGrade": "완전성공",
-              "weight": 13.104485699757769,
+              "weight": 13.104486101296116,
               "assigned": "analysis"
             },
             {
@@ -3652,7 +3643,7 @@
               "assigned": "teach"
             }
           ],
-          "progress": 26.048444244324777,
+          "progress": 26.048445060510378,
           "papers": 0,
           "feedback": "critique",
           "facultyAction": "conversation"
@@ -3701,8 +3692,8 @@
               "outcome": "inconclusive",
               "progress": 0,
               "scienceFailures": 1,
-              "successRate": 0.11468968163786641,
-              "successProbability": 0.7605853388264003,
+              "successRate": 0.11767944183093504,
+              "successProbability": 0.7612288362287478,
               "weight": 0,
               "researchGrade": "약간실패",
               "assigned": "coursework"
@@ -3831,7 +3822,7 @@
               "progress": 0,
               "scienceFailures": 1,
               "successRate": 0,
-              "successProbability": 0.761037109174505,
+              "successProbability": 0.7616700444599629,
               "weight": 0,
               "researchGrade": "실패",
               "autonomous": "coursework",
@@ -3931,7 +3922,7 @@
         {
           "month": 39,
           "kind": "event",
-          "id": "counsel-coursework",
+          "id": "counsel-daily-life",
           "choice": 0
         },
         {
@@ -4221,8 +4212,8 @@
               "outcome": "completed",
               "progress": 0,
               "scienceFailures": 0,
-              "successRate": 0.9047504048926192,
-              "successProbability": 0.7639619951230718,
+              "successRate": 0.9047515301862878,
+              "successProbability": 0.7639642515314669,
               "weight": 0,
               "researchGrade": "완전성공",
               "assigned": "coursework"
@@ -4235,8 +4226,8 @@
               "outcome": "inconclusive",
               "progress": 0,
               "scienceFailures": 1,
-              "successRate": 0.11514703096945933,
-              "successProbability": 0.7646068588455386,
+              "successRate": 0.11515715267937199,
+              "successProbability": 0.7646090454190211,
               "weight": 0,
               "researchGrade": "약간실패",
               "assigned": "coursework"
@@ -4247,12 +4238,12 @@
               "actual": "study",
               "performed": true,
               "outcome": "progress",
-              "progress": 10.771469965648404,
+              "progress": 10.77153048266485,
               "scienceFailures": 0,
-              "successProbability": 0.8446101967956574,
-              "successRate": 0.9357927228726549,
+              "successProbability": 0.8446134741333187,
+              "successRate": 0.9357937194359782,
               "researchGrade": "완전성공",
-              "weight": 11.510529738447445,
+              "weight": 11.510582149618475,
               "assigned": "study"
             },
             {
@@ -4277,7 +4268,7 @@
               "assigned": "free"
             }
           ],
-          "progress": 10.771469965648404,
+          "progress": 10.77153048266485,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "recommend"
@@ -4322,8 +4313,8 @@
               "outcome": "completed",
               "progress": 0,
               "scienceFailures": 0,
-              "successRate": 0.9918657461720864,
-              "successProbability": 0.765227621512496,
+              "successRate": 0.9918658366000782,
+              "successProbability": 0.7652297482741914,
               "weight": 0,
               "researchGrade": "완전성공",
               "assigned": "coursework"
@@ -4336,8 +4327,8 @@
               "outcome": "completed",
               "progress": 0,
               "scienceFailures": 0,
-              "successRate": 0.9867451823437574,
-              "successProbability": 0.7658908283206916,
+              "successRate": 0.9867453246851172,
+              "successProbability": 0.7658928845291679,
               "weight": 0,
               "researchGrade": "완전성공",
               "assigned": "coursework"
@@ -4401,10 +4392,10 @@
               "outcome": "inconclusive",
               "progress": 0,
               "scienceFailures": 1,
-              "successProbability": 0.8475188079946308,
+              "successProbability": 0.8475217770313146,
               "successRate": 0,
               "researchGrade": "실패",
-              "weight": 13.787837242728768,
+              "weight": 13.78789388851521,
               "assigned": "study"
             },
             {
@@ -4413,12 +4404,12 @@
               "actual": "study",
               "performed": true,
               "outcome": "progress",
-              "progress": 13.733730794758564,
+              "progress": 13.733787775648903,
               "scienceFailures": 0,
-              "successProbability": 0.8477098496844195,
-              "successRate": 0.9950661305962138,
+              "successProbability": 0.8477127989647106,
+              "successRate": 0.9950661992576184,
               "researchGrade": "완전성공",
-              "weight": 13.801827207735151,
+              "weight": 13.801883518800224,
               "assigned": "study"
             },
             {
@@ -4427,12 +4418,12 @@
               "actual": "study",
               "performed": true,
               "outcome": "progress",
-              "progress": 5.363872902610876,
+              "progress": 5.364009799179362,
               "scienceFailures": 1,
-              "successProbability": 0.8482470207619222,
-              "successRate": 0.38805553432284956,
+              "successProbability": 0.8482499148684166,
+              "successRate": 0.38806388574550277,
               "researchGrade": "약간실패",
-              "weight": 13.822436296317084,
+              "weight": 13.822491595358471,
               "assigned": "study"
             },
             {
@@ -4446,7 +4437,7 @@
               "assigned": "teach"
             }
           ],
-          "progress": 19.09760369736944,
+          "progress": 19.097797574828263,
           "papers": 0,
           "feedback": "listen",
           "facultyAction": "recommend"
@@ -4459,7 +4450,7 @@
         {
           "month": 45,
           "kind": "event",
-          "id": "counsel-daily-life",
+          "id": "counsel-coursework",
           "choice": 0
         },
         {
@@ -4494,8 +4485,8 @@
               "outcome": "completed",
               "progress": 0,
               "scienceFailures": 0,
-              "successRate": 0.9971961315865832,
-              "successProbability": 0.7674653668310749,
+              "successRate": 0.9972028698898717,
+              "successProbability": 0.7679271570426167,
               "weight": 0,
               "researchGrade": "완전성공",
               "assigned": "coursework"
@@ -4506,12 +4497,12 @@
               "actual": "study",
               "performed": true,
               "outcome": "progress",
-              "progress": 11.588273322095645,
+              "progress": 11.600221024498186,
               "scienceFailures": 0,
-              "successProbability": 0.849668157289102,
-              "successRate": 0.9677047951633467,
+              "successProbability": 0.8503391354747671,
+              "successRate": 0.9678066074521522,
               "researchGrade": "완전성공",
-              "weight": 11.975008680348191,
+              "weight": 11.986094055543731,
               "assigned": "study"
             },
             {
@@ -4547,7 +4538,7 @@
               "assigned": "free"
             }
           ],
-          "progress": 11.588273322095645,
+          "progress": 11.600221024498186,
           "papers": 0,
           "feedback": "critique",
           "facultyAction": "recommend"
@@ -4593,12 +4584,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 11.851670491878822,
+              "progress": 11.851679168023432,
               "scienceFailures": 0,
-              "successProbability": 0.8178430401978041,
-              "successRate": 0.9581596000014926,
+              "successProbability": 0.8178434821106599,
+              "successRate": 0.9581596904334448,
               "researchGrade": "완전성공",
-              "weight": 12.369202888391829,
+              "weight": 12.369210775984598,
               "assigned": "experiment"
             },
             {
@@ -4607,12 +4598,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 11.75107878615687,
+              "progress": 11.751087488049125,
               "scienceFailures": 0,
-              "successProbability": 0.818689624857921,
-              "successRate": 0.9487654556557813,
+              "successProbability": 0.8186900591987247,
+              "successRate": 0.948765564381838,
               "researchGrade": "완전성공",
-              "weight": 12.38565202401324,
+              "weight": 12.385659776454332,
               "assigned": "experiment"
             },
             {
@@ -4621,12 +4612,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 12.202213013501847,
+              "progress": 12.202220928375558,
               "scienceFailures": 0,
-              "successProbability": 0.8195105798495528,
-              "successRate": 0.9839190115972283,
+              "successProbability": 0.8195110068694822,
+              "successRate": 0.983919045114275,
               "researchGrade": "완전성공",
-              "weight": 12.401643702049817,
+              "weight": 12.401651323822438,
               "assigned": "experiment"
             },
             {
@@ -4640,7 +4631,7 @@
               "assigned": "teach"
             }
           ],
-          "progress": 35.80496229153754,
+          "progress": 35.804987584448114,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "recommend"
@@ -4790,8 +4781,8 @@
               "outcome": "completed",
               "progress": 0,
               "scienceFailures": 0,
-              "successRate": 0.9855952653953762,
-              "successProbability": 0.8038468954617719,
+              "successRate": 0.9856259392232406,
+              "successProbability": 0.8042753991856844,
               "weight": 0,
               "researchGrade": "완전성공",
               "assigned": "coursework"
@@ -4802,12 +4793,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 8.878018653501417,
+              "progress": 8.878028277175549,
               "scienceFailures": 0,
-              "successProbability": 0.8560074536086515,
-              "successRate": 0.799547603353495,
+              "successProbability": 0.85600786925519,
+              "successRate": 0.7995479926830193,
               "researchGrade": "성공",
-              "weight": 11.10380247062823,
+              "weight": 11.103809100168977,
               "assigned": "experiment"
             },
             {
@@ -4843,7 +4834,7 @@
               "assigned": "free"
             }
           ],
-          "progress": 8.878018653501417,
+          "progress": 8.878028277175549,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "funding"
@@ -4918,8 +4909,8 @@
               "outcome": "completed",
               "progress": 0,
               "scienceFailures": 0,
-              "successRate": 0.9981474033129951,
-              "successProbability": 0.8045171053376186,
+              "successRate": 0.9981512007581738,
+              "successProbability": 0.8049299082996613,
               "weight": 0,
               "researchGrade": "완전성공",
               "autonomous": "coursework",
@@ -4967,12 +4958,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 4.875726243136795,
+              "progress": 4.875745255057341,
               "scienceFailures": 1,
-              "successProbability": 0.8577107111175104,
-              "successRate": 0.3609387737721338,
+              "successProbability": 0.8577111135204263,
+              "successRate": 0.36093997305667525,
               "researchGrade": "약간실패",
-              "weight": 13.508457936455772,
+              "weight": 13.50846572566166,
               "assigned": "experiment"
             },
             {
@@ -4981,12 +4972,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 10.203027046266962,
+              "progress": 10.203039043355592,
               "scienceFailures": 0,
-              "successProbability": 0.8581306077217992,
-              "successRate": 0.7547713218489457,
+              "successProbability": 0.8581310067981323,
+              "successRate": 0.7547717780258818,
               "researchGrade": "성공",
-              "weight": 13.518037518003261,
+              "weight": 13.518045242817387,
               "assigned": "experiment"
             },
             {
@@ -4997,10 +4988,10 @@
               "outcome": "inconclusive",
               "progress": 0,
               "scienceFailures": 1,
-              "successProbability": 0.8587564814881836,
+              "successProbability": 0.8587568751749772,
               "successRate": 0,
               "researchGrade": "실패",
-              "weight": 13.531604144529691,
+              "weight": 13.531611765019933,
               "assigned": "experiment"
             },
             {
@@ -5014,7 +5005,7 @@
               "assigned": "teach"
             }
           ],
-          "progress": 15.078753289403757,
+          "progress": 15.078784298412932,
           "papers": 0,
           "feedback": "listen",
           "facultyAction": "recommend"
@@ -5022,7 +5013,7 @@
         {
           "month": 51,
           "kind": "event",
-          "id": "counsel-feedback",
+          "id": "counsel-results",
           "choice": 0
         },
         {
@@ -5048,12 +5039,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 11.694418003274864,
+              "progress": 11.706035473066292,
               "scienceFailures": 0,
-              "successProbability": 0.8607135607492795,
-              "successRate": 0.9976871646511051,
+              "successProbability": 0.8614046080079982,
+              "successRate": 0.9976945774569037,
               "researchGrade": "완전성공",
-              "weight": 11.72152796750116,
+              "weight": 11.733085192168387,
               "assigned": "experiment"
             },
             {
@@ -5062,12 +5053,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 8.631867384512933,
+              "progress": 8.64995800482082,
               "scienceFailures": 0,
-              "successProbability": 0.8614170757113371,
-              "successRate": 0.735594363670252,
+              "successProbability": 0.862094749631251,
+              "successRate": 0.7364247579608911,
               "researchGrade": "성공",
-              "weight": 11.73454802106447,
+              "weight": 11.745881587104636,
               "assigned": "experiment"
             },
             {
@@ -5103,7 +5094,7 @@
               "assigned": "free"
             }
           ],
-          "progress": 20.3262853877878,
+          "progress": 20.35599347788711,
           "papers": 0,
           "feedback": "critique",
           "facultyAction": "recommend"
@@ -5138,10 +5129,10 @@
               "outcome": "inconclusive",
               "progress": 0,
               "scienceFailures": 1,
-              "successProbability": 0.8622684374994762,
+              "successProbability": 0.862933211037328,
               "successRate": 0,
               "researchGrade": "실패",
-              "weight": 14.684415080598534,
+              "weight": 14.698312352154218,
               "assigned": "experiment"
             },
             {
@@ -5150,12 +5141,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 14.476630760369002,
+              "progress": 14.490886895398416,
               "scienceFailures": 0,
-              "successProbability": 0.8624572926198839,
-              "successRate": 0.9854798308699795,
+              "successProbability": 0.8631176036927148,
+              "successRate": 0.9855242133808086,
               "researchGrade": "완전성공",
-              "weight": 14.68993104363086,
+              "weight": 14.703735026141977,
               "assigned": "experiment"
             },
             {
@@ -5164,12 +5155,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 14.036191248886706,
+              "progress": 14.051127871806626,
               "scienceFailures": 0,
-              "successProbability": 0.8631191119537172,
-              "successRate": 0.9544965668457711,
+              "successProbability": 0.8637670626764948,
+              "successRate": 0.9546329500183166,
               "researchGrade": "완전성공",
-              "weight": 14.70533445214025,
+              "weight": 14.718880038172815,
               "assigned": "experiment"
             },
             {
@@ -5183,7 +5174,7 @@
               "assigned": "teach"
             }
           ],
-          "progress": 28.512822009255707,
+          "progress": 28.542014767205043,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "recommend"
@@ -5223,12 +5214,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 14.653128191842411,
+              "progress": 14.666521512456624,
               "scienceFailures": 0,
-              "successProbability": 0.8641134288922241,
-              "successRate": 0.9952552464831902,
+              "successProbability": 0.8647473077344199,
+              "successRate": 0.9952691432296742,
               "researchGrade": "완전성공",
-              "weight": 14.72298512730312,
+              "weight": 14.736236536846086,
               "assigned": "experiment"
             },
             {
@@ -5237,12 +5228,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 14.735934560275783,
+              "progress": 14.748945131765685,
               "scienceFailures": 0,
-              "successProbability": 0.8647495549517537,
-              "successRate": 0.999869936899338,
+              "successProbability": 0.8653717306264295,
+              "successRate": 0.9998703105416267,
               "researchGrade": "완전성공",
-              "weight": 14.737851410927384,
+              "weight": 14.750858162571332,
               "assigned": "experiment"
             },
             {
@@ -5267,7 +5258,7 @@
               "assigned": "teach"
             }
           ],
-          "progress": 29.389062752118193,
+          "progress": 29.41546664422231,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "recommend"
@@ -5306,12 +5297,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 0.9881554269210008,
+              "progress": 1.0193942701236973,
               "scienceFailures": 1,
-              "successProbability": 0.8656553976482209,
-              "successRate": 0.083712357381452,
+              "successProbability": 0.8662639417146962,
+              "successRate": 0.08628438694451179,
               "researchGrade": "약간실패",
-              "weight": 11.804176322717495,
+              "weight": 11.81435374605205,
               "assigned": "analysis"
             },
             {
@@ -5320,12 +5311,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 11.66312838532158,
+              "progress": 11.673540239485604,
               "scienceFailures": 0,
-              "successProbability": 0.8658844515015183,
-              "successRate": 0.98773047111066,
+              "successProbability": 0.8664902251131312,
+              "successRate": 0.9877647462401966,
               "researchGrade": "완전성공",
-              "weight": 11.808007069182445,
+              "weight": 11.81813815882727,
               "assigned": "analysis"
             },
             {
@@ -5334,12 +5325,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 11.817275946640832,
+              "progress": 11.827257775048135,
               "scienceFailures": 0,
-              "successProbability": 0.866440087639647,
-              "successRate": 0.9999979942816893,
+              "successProbability": 0.8670369336904731,
+              "successRate": 0.9999979997987302,
               "researchGrade": "완전성공",
-              "weight": 11.817299648815121,
+              "weight": 11.827281431991475,
               "assigned": "analysis"
             },
             {
@@ -5364,7 +5355,7 @@
               "assigned": "free"
             }
           ],
-          "progress": 24.468559758883412,
+          "progress": 24.520192284657437,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "recommend"
@@ -5478,12 +5469,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 4.375248933332994,
+              "progress": 4.4053121236126325,
               "scienceFailures": 1,
-              "successProbability": 0.8676643750134312,
-              "successRate": 0.3052050707060556,
+              "successProbability": 0.8682418510442711,
+              "successRate": 0.307051686621456,
               "researchGrade": "약간실패",
-              "weight": 14.335439851020089,
+              "weight": 14.347135402788568,
               "assigned": "analysis"
             },
             {
@@ -5494,10 +5485,10 @@
               "outcome": "inconclusive",
               "progress": 0,
               "scienceFailures": 1,
-              "successProbability": 0.8679571150615379,
+              "successProbability": 0.8685306152750514,
               "successRate": 0,
               "researchGrade": "실패",
-              "weight": 14.34136867958525,
+              "weight": 14.352983709609315,
               "assigned": "analysis"
             },
             {
@@ -5506,12 +5497,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 14.153030757761075,
+              "progress": 14.164936669788734,
               "scienceFailures": 0,
-              "successProbability": 0.8681426585570753,
-              "successRate": 0.9866089914183418,
+              "successProbability": 0.8687132471180319,
+              "successRate": 0.986644138720312,
               "researchGrade": "완전성공",
-              "weight": 14.345126469418023,
+              "weight": 14.356682530097233,
               "assigned": "analysis"
             },
             {
@@ -5525,7 +5516,7 @@
               "assigned": "teach"
             }
           ],
-          "progress": 18.52827969109407,
+          "progress": 18.570248793401365,
           "papers": 0,
           "feedback": "listen",
           "facultyAction": "recommend"
@@ -5573,10 +5564,10 @@
               "outcome": "inconclusive",
               "progress": 0,
               "scienceFailures": 1,
-              "successProbability": 0.8695882314777648,
+              "successProbability": 0.8701363556952202,
               "successRate": 0,
               "researchGrade": "실패",
-              "weight": 12.419484608310885,
+              "weight": 12.42907595271852,
               "assigned": "analysis"
             },
             {
@@ -5585,12 +5576,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 12.377765616998333,
+              "progress": 12.387387365413153,
               "scienceFailures": 0,
-              "successProbability": 0.8697651549019021,
-              "successRate": 0.9963924658391056,
+              "successProbability": 0.870310565392769,
+              "successRate": 0.9964015004906092,
               "researchGrade": "완전성공",
-              "weight": 12.422580500520422,
+              "weight": 12.432124358819049,
               "assigned": "analysis"
             },
             {
@@ -5599,12 +5590,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 11.540767893578675,
+              "progress": 11.551703876949137,
               "scienceFailures": 0,
-              "successProbability": 0.8702643986853036,
-              "successRate": 0.9283624854287967,
+              "successProbability": 0.8708021911974373,
+              "successRate": 0.9285392899632773,
               "researchGrade": "완전성공",
-              "weight": 12.431316511295872,
+              "weight": 12.440727066493864,
               "assigned": "analysis"
             },
             {
@@ -5629,7 +5620,7 @@
               "assigned": "free"
             }
           ],
-          "progress": 23.918533510577006,
+          "progress": 23.939091242362288,
           "papers": 0,
           "feedback": "critique",
           "facultyAction": "recommend"
@@ -5683,12 +5674,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 15.54741696779354,
+              "progress": 15.558992626367182,
               "scienceFailures": 0,
-              "successProbability": 0.8708506363909143,
-              "successRate": 0.9997073352929265,
+              "successProbability": 0.8713795047999477,
+              "successRate": 0.9997080451570519,
               "researchGrade": "완전성공",
-              "weight": 15.551968480093182,
+              "weight": 15.563536476214813,
               "assigned": "analysis"
             },
             {
@@ -5697,12 +5688,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 9.582198191011095,
+              "progress": 9.60353125165765,
               "scienceFailures": 0,
-              "successProbability": 0.871335293744465,
-              "successRate": 0.6157208310689206,
+              "successProbability": 0.87185687666659,
+              "successRate": 0.6166395766421345,
               "researchGrade": "보통",
-              "weight": 15.562569442998939,
+              "weight": 15.573978082874557,
               "assigned": "analysis"
             },
             {
@@ -5711,12 +5702,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 15.415359797619898,
+              "progress": 15.42691195480829,
               "scienceFailures": 0,
-              "successProbability": 0.8716943250047502,
-              "successRate": 0.9900411967378991,
+              "successProbability": 0.8722108236411616,
+              "successRate": 0.9900647650818406,
               "researchGrade": "완전성공",
-              "weight": 15.570422572729484,
+              "weight": 15.581720003471766,
               "assigned": "analysis"
             },
             {
@@ -5730,7 +5721,7 @@
               "assigned": "teach"
             }
           ],
-          "progress": 40.54497495642453,
+          "progress": 40.58943583283312,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "recommend"
@@ -6274,12 +6265,12 @@
               "actual": "study",
               "performed": true,
               "outcome": "progress",
-              "progress": 12.806246843837902,
+              "progress": 12.815767604750153,
               "scienceFailures": 0,
-              "successProbability": 0.8921503871725567,
-              "successRate": 0.9752966787698065,
+              "successProbability": 0.8926530464358595,
+              "successRate": 0.975352274250212,
               "researchGrade": "완전성공",
-              "weight": 13.130616685777195,
+              "weight": 13.139629591372092,
               "assigned": "study"
             },
             {
@@ -6288,12 +6279,12 @@
               "actual": "study",
               "performed": true,
               "outcome": "progress",
-              "progress": 11.135903679352381,
+              "progress": 11.14788421367964,
               "scienceFailures": 0,
-              "successProbability": 0.892520487740502,
-              "successRate": 0.8470250181584289,
+              "successProbability": 0.8930154294074071,
+              "successRate": 0.8473638735391658,
               "researchGrade": "성공",
-              "weight": 13.147077643070874,
+              "weight": 13.155958805652785,
               "assigned": "study"
             },
             {
@@ -6302,12 +6293,12 @@
               "actual": "study",
               "performed": true,
               "outcome": "progress",
-              "progress": 13.127236586165594,
+              "progress": 13.136055711375466,
               "scienceFailures": 0,
-              "successProbability": 0.8928542278487002,
-              "successRate": 0.9972909451996479,
+              "successProbability": 0.8933423282501864,
+              "successRate": 0.9972968609942436,
               "researchGrade": "완전성공",
-              "weight": 13.1628955916547,
+              "weight": 13.17166054075376,
               "assigned": "study"
             },
             {
@@ -6332,7 +6323,7 @@
               "assigned": "free"
             }
           ],
-          "progress": 37.06938710935588,
+          "progress": 37.09970752980526,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "recommend"
@@ -6372,12 +6363,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 11.861043972864964,
+              "progress": 11.87179993460214,
               "scienceFailures": 0,
-              "successProbability": 0.8788994598577653,
-              "successRate": 0.8502643738311185,
+              "successProbability": 0.8793132155270715,
+              "successRate": 0.8505460038520758,
               "researchGrade": "성공",
-              "weight": 13.949830591421241,
+              "weight": 13.957857518388677,
               "assigned": "experiment"
             },
             {
@@ -6386,12 +6377,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 13.070405061327287,
+              "progress": 13.079470063946866,
               "scienceFailures": 0,
-              "successProbability": 0.8792391647116162,
-              "successRate": 0.9364179137518587,
+              "successProbability": 0.8796474666387886,
+              "successRate": 0.9365358820054824,
               "researchGrade": "완전성공",
-              "weight": 13.957875932722505,
+              "weight": 13.965797056209642,
               "assigned": "experiment"
             },
             {
@@ -6416,7 +6407,7 @@
               "assigned": "language"
             }
           ],
-          "progress": 24.93144903419225,
+          "progress": 24.95126999854901,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "funding"
@@ -6540,12 +6531,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 10.658467139328897,
+              "progress": 10.664380574657349,
               "scienceFailures": 0,
-              "successProbability": 0.879977658794519,
-              "successRate": 0.9999347025377443,
+              "successProbability": 0.8803771126610898,
+              "successRate": 0.9999348209668882,
               "researchGrade": "완전성공",
-              "weight": 10.65916315563273,
+              "weight": 10.66507571398045,
               "assigned": "experiment"
             },
             {
@@ -6567,10 +6558,10 @@
               "outcome": "inconclusive",
               "progress": 0,
               "scienceFailures": 1,
-              "successProbability": 0.8803455601611176,
+              "successProbability": 0.8807392047839913,
               "successRate": 0,
               "researchGrade": "실패",
-              "weight": 10.665718806713995,
+              "weight": 10.671545378931174,
               "assigned": "experiment"
             },
             {
@@ -6595,7 +6586,7 @@
               "assigned": "free"
             }
           ],
-          "progress": 10.658467139328897,
+          "progress": 10.664380574657349,
           "papers": 0,
           "feedback": "listen",
           "facultyAction": "recommend"
@@ -6642,10 +6633,10 @@
               "outcome": "inconclusive",
               "progress": 0,
               "scienceFailures": 1,
-              "successProbability": 0.8812143321828299,
+              "successProbability": 0.8815976642748513,
               "successRate": 0,
               "researchGrade": "실패",
-              "weight": 14.414581673960596,
+              "weight": 14.422241479742723,
               "assigned": "experiment"
             },
             {
@@ -6654,12 +6645,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 14.417416255685463,
+              "progress": 14.425037813105178,
               "scienceFailures": 0,
-              "successProbability": 0.8812886250367837,
-              "successRate": 0.9999896922276208,
+              "successProbability": 0.8816700340675365,
+              "successRate": 0.9999897100525528,
               "researchGrade": "완전성공",
-              "weight": 14.417564868662392,
+              "weight": 14.425186247513581,
               "assigned": "experiment"
             },
             {
@@ -6668,12 +6659,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 4.926367498059198,
+              "progress": 4.945129781098946,
               "scienceFailures": 1,
-              "successProbability": 0.8816359240698535,
-              "successRate": 0.3414921922130735,
+              "successProbability": 0.8820119194424101,
+              "successRate": 0.34261434308437655,
               "researchGrade": "약간실패",
-              "weight": 14.426003318358154,
+              "weight": 14.433516520588562,
               "assigned": "experiment"
             },
             {
@@ -6687,7 +6678,7 @@
               "assigned": "language"
             }
           ],
-          "progress": 19.34378375374466,
+          "progress": 19.370167594204123,
           "papers": 0,
           "feedback": "critique",
           "facultyAction": "recommend"
@@ -6726,12 +6717,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 10.948368245546254,
+              "progress": 10.954908367273998,
               "scienceFailures": 0,
-              "successProbability": 0.8826336346299757,
-              "successRate": 0.9475534774302783,
+              "successProbability": 0.8829991649598319,
+              "successRate": 0.9476402675188605,
               "researchGrade": "완전성공",
-              "weight": 11.554353929698753,
+              "weight": 11.560197200100475,
               "assigned": "experiment"
             },
             {
@@ -6742,10 +6733,10 @@
               "outcome": "inconclusive",
               "progress": 0,
               "scienceFailures": 1,
-              "successProbability": 0.8829488252239752,
+              "successProbability": 0.8833094773122425,
               "successRate": 0,
               "researchGrade": "실패",
-              "weight": 11.560591412508579,
+              "weight": 11.566356700640819,
               "assigned": "experiment"
             },
             {
@@ -6781,7 +6772,7 @@
               "assigned": "free"
             }
           ],
-          "progress": 10.948368245546254,
+          "progress": 10.954908367273998,
           "papers": 0,
           "feedback": "critique",
           "facultyAction": "recommend"
@@ -6816,10 +6807,10 @@
               "outcome": "inconclusive",
               "progress": 0,
               "scienceFailures": 1,
-              "successProbability": 0.8837487726872362,
+              "successProbability": 0.8841003997145163,
               "successRate": 0,
               "researchGrade": "실패",
-              "weight": 14.465225286729193,
+              "weight": 14.47225155662094,
               "assigned": "experiment"
             },
             {
@@ -6828,12 +6819,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 5.166649159805096,
+              "progress": 5.183870141548319,
               "scienceFailures": 1,
-              "successProbability": 0.8838102085217041,
-              "successRate": 0.3571099291210499,
+              "successProbability": 0.8841601509609527,
+              "successRate": 0.35812712488724374,
               "researchGrade": "약간실패",
-              "weight": 14.467951570323747,
+              "weight": 14.474944178496559,
               "assigned": "experiment"
             },
             {
@@ -6842,12 +6833,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 9.762115295347304,
+              "progress": 9.77419944916177,
               "scienceFailures": 0,
-              "successProbability": 0.8839606358993322,
-              "successRate": 0.6745306552942057,
+              "successProbability": 0.8843080556073257,
+              "successRate": 0.6750418248839356,
               "researchGrade": "보통",
-              "weight": 14.472456097772788,
+              "weight": 14.479398296308991,
               "assigned": "experiment"
             },
             {
@@ -6861,7 +6852,7 @@
               "assigned": "language"
             }
           ],
-          "progress": 14.9287644551524,
+          "progress": 14.958069590710089,
           "papers": 0,
           "feedback": "critique",
           "facultyAction": "recommend"
@@ -6910,18 +6901,6 @@
         },
         {
           "month": 73,
-          "kind": "portfolio-selection",
-          "awarded": true,
-          "role": "pi",
-          "years": 3,
-          "annual": 150,
-          "grantId": 1,
-          "titleIndex": 1,
-          "start": 73,
-          "end": 109
-        },
-        {
-          "month": 73,
           "kind": "month",
           "plan": [
             "experiment",
@@ -6936,12 +6915,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 11.72720748944359,
+              "progress": 13.341175157430397,
               "scienceFailures": 0,
-              "successProbability": 0.8844898025238654,
-              "successRate": 0.8746792482147581,
-              "researchGrade": "성공",
-              "weight": 13.407437656008314,
+              "successProbability": 0.8848326372775059,
+              "successRate": 0.9945872360309408,
+              "researchGrade": "완전성공",
+              "weight": 13.41378078676184,
               "assigned": "experiment"
             },
             {
@@ -6950,12 +6929,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 12.893169966643656,
+              "progress": 11.182750342488793,
               "scienceFailures": 0,
-              "successProbability": 0.8847620325079699,
-              "successRate": 0.9611825336705503,
-              "researchGrade": "완전성공",
-              "weight": 13.413862107343338,
+              "successProbability": 0.8851295427875661,
+              "successRate": 0.8332488011230053,
+              "researchGrade": "성공",
+              "weight": 13.420661784832237,
               "assigned": "experiment"
             },
             {
@@ -6980,10 +6959,10 @@
               "assigned": "language"
             }
           ],
-          "progress": 24.620377456087247,
+          "progress": 24.52392549991919,
           "papers": 0,
           "feedback": "listen",
-          "facultyAction": "funding"
+          "facultyAction": "recommend"
         },
         {
           "month": 73,
@@ -6993,17 +6972,10 @@
           "response": ""
         },
         {
-          "month": 73,
-          "kind": "issue-read",
-          "id": "grant-selected",
-          "choice": "acknowledge",
-          "response": ""
-        },
-        {
           "month": 74,
           "kind": "stipend-payment",
           "amount": 18,
-          "fromPool": 18
+          "fromPool": 0
         },
         {
           "month": 74,
@@ -7082,7 +7054,7 @@
           "month": 75,
           "kind": "stipend-payment",
           "amount": 18,
-          "fromPool": 18
+          "fromPool": 0
         },
         {
           "month": 75,
@@ -7108,12 +7080,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 4.455485880063601,
+              "progress": 8.420494126193633,
               "scienceFailures": 0,
-              "successProbability": 0.8853497801580381,
-              "successRate": 0.4149007347969247,
-              "researchGrade": "보통",
-              "weight": 10.738679174054395,
+              "successProbability": 0.8856801668307182,
+              "successRate": 0.7837706251489596,
+              "researchGrade": "성공",
+              "weight": 10.743569427079862,
               "assigned": "experiment"
             },
             {
@@ -7122,24 +7094,27 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 10.740236699771843,
+              "progress": 9.013678048660577,
               "scienceFailures": 0,
-              "successProbability": 0.885502314022236,
-              "successRate": 0.9998314715382305,
-              "researchGrade": "완전성공",
-              "weight": 10.742047040435823,
+              "successProbability": 0.8859164618424147,
+              "successRate": 0.838623886708286,
+              "researchGrade": "성공",
+              "weight": 10.748177092880697,
               "assigned": "experiment"
             },
             {
               "week": 3,
               "proposed": "experiment",
-              "actual": "unfinished",
-              "performed": false,
-              "outcome": "not_completed",
+              "actual": "experiment",
+              "performed": true,
+              "outcome": "inconclusive",
               "progress": 0,
-              "scienceFailures": 0,
-              "assigned": "experiment",
-              "deviation": "unfinished"
+              "scienceFailures": 1,
+              "successProbability": 0.8861618148008066,
+              "successRate": 0,
+              "researchGrade": "실패",
+              "weight": 10.752918830830607,
+              "assigned": "experiment"
             },
             {
               "week": 4,
@@ -7163,7 +7138,7 @@
               "assigned": "free"
             }
           ],
-          "progress": 15.195722579835444,
+          "progress": 17.43417217485421,
           "papers": 0,
           "feedback": "listen",
           "facultyAction": "recommend"
@@ -7171,14 +7146,14 @@
         {
           "month": 75,
           "kind": "event",
-          "id": "counsel-feedback",
+          "id": "counsel-results",
           "choice": 0
         },
         {
           "month": 76,
           "kind": "stipend-payment",
           "amount": 18,
-          "fromPool": 17
+          "fromPool": 0
         },
         {
           "month": 76,
@@ -7198,10 +7173,10 @@
               "outcome": "inconclusive",
               "progress": 0,
               "scienceFailures": 1,
-              "successProbability": 0.8861486385864572,
+              "successProbability": 0.8873951133296745,
               "successRate": 0,
               "researchGrade": "실패",
-              "weight": 14.513179807297101,
+              "weight": 14.538087073461599,
               "assigned": "analysis"
             },
             {
@@ -7210,12 +7185,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 13.793379118502838,
+              "progress": 13.820995694573671,
               "scienceFailures": 0,
-              "successProbability": 0.8862510504339807,
-              "successRate": 0.9502696624515862,
+              "successProbability": 0.8874927696303054,
+              "successRate": 0.9505473960436387,
               "researchGrade": "완전성공",
-              "weight": 14.515226217911145,
+              "weight": 14.540038457944672,
               "assigned": "analysis"
             },
             {
@@ -7224,12 +7199,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 14.392424177668135,
+              "progress": 14.417471156250848,
               "scienceFailures": 0,
-              "successProbability": 0.8865321050858894,
-              "successRate": 0.9911562897991992,
+              "successProbability": 0.8877608713949805,
+              "successRate": 0.9912051512112439,
               "researchGrade": "완전성공",
-              "weight": 14.520842298830521,
+              "weight": 14.54539571211149,
               "assigned": "analysis"
             },
             {
@@ -7243,9 +7218,9 @@
               "assigned": "language"
             }
           ],
-          "progress": 28.185803296170974,
+          "progress": 28.23846685082452,
           "papers": 0,
-          "feedback": "praise",
+          "feedback": "critique",
           "facultyAction": "recommend"
         },
         {
@@ -7273,7 +7248,7 @@
           "plan": [
             "analysis",
             "analysis",
-            "analysis",
+            "free",
             "language"
           ],
           "results": [
@@ -7283,12 +7258,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 14.508624197407475,
+              "progress": 14.532927659397796,
               "scienceFailures": 0,
-              "successProbability": 0.8868884423986958,
-              "successRate": 0.9986688778435299,
+              "successProbability": 0.8881010305508124,
+              "successRate": 0.9986761328748044,
               "researchGrade": "완전성공",
-              "weight": 14.527962690433082,
+              "weight": 14.552192829083728,
               "assigned": "analysis"
             },
             {
@@ -7297,27 +7272,24 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 14.528675989778112,
+              "progress": 14.55266600414242,
               "scienceFailures": 0,
-              "successProbability": 0.8871716375274987,
-              "successRate": 0.9996597164081906,
+              "successProbability": 0.8883712806021145,
+              "successRate": 0.9996615507435798,
               "researchGrade": "완전성공",
-              "weight": 14.533621542718667,
+              "weight": 14.55759301067215,
               "assigned": "analysis"
             },
             {
               "week": 3,
-              "proposed": "analysis",
-              "actual": "analysis",
+              "proposed": "free",
+              "actual": "rest",
               "performed": true,
-              "outcome": "progress",
-              "progress": 14.324343839586584,
+              "outcome": "recovered",
+              "progress": 0,
               "scienceFailures": 0,
-              "successProbability": 0.8874518976149082,
-              "successRate": 0.9852208109431575,
-              "researchGrade": "완전성공",
-              "weight": 14.539221746517725,
-              "assigned": "analysis"
+              "autonomous": "rest",
+              "assigned": "free"
             },
             {
               "week": 4,
@@ -7330,7 +7302,7 @@
               "assigned": "language"
             }
           ],
-          "progress": 43.36164402677217,
+          "progress": 29.085593663540216,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "recommend"
@@ -7361,24 +7333,30 @@
             {
               "week": 1,
               "proposed": "analysis",
-              "actual": "rest",
-              "performed": false,
-              "outcome": "not_completed",
-              "progress": 0,
+              "actual": "analysis",
+              "performed": true,
+              "outcome": "progress",
+              "progress": 11.39054370227764,
               "scienceFailures": 0,
-              "assigned": "analysis",
-              "deviation": "rest-needed"
+              "successProbability": 0.8887049978150197,
+              "successRate": 0.9776108264757242,
+              "researchGrade": "완전성공",
+              "weight": 11.651409122933325,
+              "assigned": "analysis"
             },
             {
               "week": 2,
               "proposed": "analysis",
-              "actual": "rest",
-              "performed": false,
-              "outcome": "not_completed",
+              "actual": "analysis",
+              "performed": true,
+              "outcome": "inconclusive",
               "progress": 0,
-              "scienceFailures": 0,
-              "assigned": "analysis",
-              "deviation": "rest-needed"
+              "scienceFailures": 1,
+              "successProbability": 0.8889653019395762,
+              "successRate": 0,
+              "researchGrade": "실패",
+              "weight": 11.655570275270717,
+              "assigned": "analysis"
             },
             {
               "week": 3,
@@ -7404,20 +7382,17 @@
             {
               "week": 5,
               "proposed": "free",
-              "actual": "study",
-              "performed": true,
-              "outcome": "progress",
-              "progress": 5.663113370302757,
+              "actual": "unfinished",
+              "performed": false,
+              "outcome": "not_completed",
+              "progress": 0,
               "scienceFailures": 0,
-              "successProbability": 0.8941305413591054,
-              "successRate": 0.999995665038074,
-              "researchGrade": "완전성공",
-              "weight": 5.663137919790021,
               "autonomous": "study",
-              "assigned": "free"
+              "assigned": "free",
+              "deviation": "unfinished"
             }
           ],
-          "progress": 5.663113370302757,
+          "progress": 11.39054370227764,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "recommend"
@@ -7473,12 +7448,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 8.783733663557157,
-              "scienceFailures": 0,
-              "successProbability": 0.8884287671468392,
-              "successRate": 0.6028806872217916,
-              "researchGrade": "보통",
-              "weight": 14.569605312843173,
+              "progress": 3.1482458945882774,
+              "scienceFailures": 1,
+              "successProbability": 0.8895259976103773,
+              "successRate": 0.215919199494635,
+              "researchGrade": "약간실패",
+              "weight": 14.580666758476486,
               "assigned": "analysis"
             },
             {
@@ -7486,13 +7461,13 @@
               "proposed": "analysis",
               "actual": "analysis",
               "performed": true,
-              "outcome": "progress",
-              "progress": 14.298533928591654,
-              "scienceFailures": 0,
-              "successProbability": 0.8886271448344429,
-              "successRate": 0.981127595020408,
-              "researchGrade": "완전성공",
-              "weight": 14.573572286787261,
+              "outcome": "inconclusive",
+              "progress": 0,
+              "scienceFailures": 1,
+              "successProbability": 0.8896516256053355,
+              "successRate": 0,
+              "researchGrade": "실패",
+              "weight": 14.583177078019796,
               "assigned": "analysis"
             },
             {
@@ -7500,9 +7475,13 @@
               "proposed": "analysis",
               "actual": "analysis",
               "performed": true,
-              "outcome": "completed",
-              "progress": 0,
+              "outcome": "progress",
+              "progress": 14.563095439361398,
               "scienceFailures": 0,
+              "successProbability": 0.8897409008722346,
+              "successRate": 0.9985008151930618,
+              "researchGrade": "완전성공",
+              "weight": 14.584960991289325,
               "assigned": "analysis"
             },
             {
@@ -7516,7 +7495,7 @@
               "assigned": "language"
             }
           ],
-          "progress": 23.08226759214881,
+          "progress": 17.711341333949676,
           "papers": 0,
           "feedback": "critique",
           "facultyAction": "funding"
@@ -7612,7 +7591,7 @@
           ],
           "progress": 0,
           "papers": 0,
-          "feedback": "praise",
+          "feedback": "critique",
           "facultyAction": "recommend"
         },
         {
@@ -7735,12 +7714,12 @@
               "actual": "study",
               "performed": true,
               "outcome": "progress",
-              "progress": 14.003651446765115,
+              "progress": 13.994797802246294,
               "scienceFailures": 0,
-              "successProbability": 0.8953210412600312,
-              "successRate": 0.8469789718772779,
+              "successProbability": 0.8953734147059891,
+              "successRate": 0.847014771624165,
               "researchGrade": "성공",
-              "weight": 16.533647129074367,
+              "weight": 16.522495558620584,
               "assigned": "study"
             },
             {
@@ -7749,12 +7728,12 @@
               "actual": "study",
               "performed": true,
               "outcome": "progress",
-              "progress": 2.307474123045234,
+              "progress": 2.309202663404456,
               "scienceFailures": 1,
-              "successProbability": 0.8956165614705534,
-              "successRate": 0.1394023206268199,
+              "successProbability": 0.8956682499093545,
+              "successRate": 0.13960096158573132,
               "researchGrade": "약간실패",
-              "weight": 16.552623461860033,
+              "weight": 16.541452416761008,
               "assigned": "study"
             },
             {
@@ -7774,16 +7753,16 @@
               "actual": "study",
               "performed": true,
               "outcome": "progress",
-              "progress": 15.774966168100045,
+              "progress": 15.764504126863708,
               "scienceFailures": 0,
-              "successProbability": 0.8957597279186023,
-              "successRate": 0.9521242820187619,
+              "successProbability": 0.8958111241624924,
+              "successRate": 0.9521352683539621,
               "researchGrade": "완전성공",
-              "weight": 16.56817966521433,
+              "weight": 16.55700051329593,
               "assigned": "study"
             }
           ],
-          "progress": 32.086091737910394,
+          "progress": 32.06850459251446,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "conversation"
@@ -7833,12 +7812,12 @@
               "actual": "study",
               "performed": true,
               "outcome": "progress",
-              "progress": 3.6603982467054954,
+              "progress": 3.3043759967158093,
               "scienceFailures": 1,
-              "successProbability": 0.8960925832671125,
-              "successRate": 0.2758315545666532,
+              "successProbability": 0.8936432089972164,
+              "successRate": 0.26785940020688814,
               "researchGrade": "약간실패",
-              "weight": 13.270411546844906,
+              "weight": 12.336233091553213,
               "assigned": "study"
             },
             {
@@ -7847,12 +7826,12 @@
               "actual": "study",
               "performed": true,
               "outcome": "progress",
-              "progress": 12.93902628083245,
+              "progress": 12.024623632112249,
               "scienceFailures": 0,
-              "successProbability": 0.8962607790371624,
-              "successRate": 0.9740808796239656,
+              "successProbability": 0.8938093798411155,
+              "successRate": 0.9737953602100934,
               "researchGrade": "완전성공",
-              "weight": 13.283318204364544,
+              "weight": 12.348203866485843,
               "assigned": "study"
             },
             {
@@ -7861,12 +7840,12 @@
               "actual": "study",
               "performed": true,
               "outcome": "progress",
-              "progress": 10.47619031947994,
+              "progress": 9.709783596126137,
               "scienceFailures": 0,
-              "successProbability": 0.896569793395301,
-              "successRate": 0.7877562578481851,
+              "successProbability": 0.8941176500199208,
+              "successRate": 0.7854183237485982,
               "researchGrade": "성공",
-              "weight": 13.29877130788708,
+              "weight": 12.362563111316089,
               "assigned": "study"
             },
             {
@@ -7892,7 +7871,7 @@
               "assigned": "free"
             }
           ],
-          "progress": 27.075614847017885,
+          "progress": 25.038783224954194,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "conversation"
@@ -7975,16 +7954,16 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 14.259948992051106,
+              "progress": 13.275907081861238,
               "scienceFailures": 0,
-              "successProbability": 0.891083196147493,
-              "successRate": 0.999975645274172,
+              "successProbability": 0.8747256874973737,
+              "successRate": 0.9999737717847533,
               "researchGrade": "완전성공",
-              "weight": 14.26029629765766,
+              "weight": 13.276255294342768,
               "assigned": "experiment"
             }
           ],
-          "progress": 14.259948992051106,
+          "progress": 13.275907081861238,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "conversation"
@@ -8027,19 +8006,13 @@
         },
         {
           "month": 85,
-          "kind": "portfolio-payment",
-          "grantId": 1,
-          "amount": 150
-        },
-        {
-          "month": 85,
           "kind": "portfolio-selection",
           "awarded": true,
           "role": "pi",
           "years": 3,
           "annual": 150,
-          "grantId": 2,
-          "titleIndex": 2,
+          "grantId": 1,
+          "titleIndex": 1,
           "start": 85,
           "end": 121
         },
@@ -8059,12 +8032,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 2.0787291269644097,
+              "progress": 1.2012860039365527,
               "scienceFailures": 1,
-              "successProbability": 0.8750568052937482,
-              "successRate": 0.1691703546765343,
+              "successProbability": 0.8571851633393013,
+              "successRate": 0.09768455888992733,
               "researchGrade": "약간실패",
-              "weight": 12.287786065939786,
+              "weight": 12.297603813619949,
               "assigned": "experiment"
             },
             {
@@ -8073,12 +8046,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 10.22025111455212,
+              "progress": 10.04973498753154,
               "scienceFailures": 0,
-              "successProbability": 0.8751153985194224,
-              "successRate": 0.8315887814275242,
+              "successProbability": 0.857224650818738,
+              "successRate": 0.8170831491405979,
               "researchGrade": "성공",
-              "weight": 12.290030051881898,
+              "weight": 12.2995254498906,
               "assigned": "experiment"
             },
             {
@@ -8098,16 +8071,16 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 8.154078764708187,
+              "progress": 7.803110179800644,
               "scienceFailures": 0,
-              "successProbability": 0.8752969280644582,
-              "successRate": 0.6632384833964189,
+              "successProbability": 0.8573917385121905,
+              "successRate": 0.6342141546487945,
               "researchGrade": "보통",
-              "weight": 12.29433901807305,
+              "weight": 12.303588815550375,
               "assigned": "experiment"
             }
           ],
-          "progress": 20.453059006224716,
+          "progress": 19.054131171268736,
           "papers": 0,
           "feedback": "listen",
           "facultyAction": "funding"
@@ -8167,13 +8140,12 @@
             {
               "week": 2,
               "proposed": "presentation",
-              "actual": "rest",
-              "performed": false,
-              "outcome": "not_completed",
+              "actual": "presentation",
+              "performed": true,
+              "outcome": "completed",
               "progress": 0,
               "scienceFailures": 0,
-              "assigned": "presentation",
-              "deviation": "rest-needed"
+              "assigned": "presentation"
             },
             {
               "week": 3,
@@ -8199,7 +8171,7 @@
           ],
           "progress": 0,
           "papers": 0,
-          "feedback": "praise",
+          "feedback": "critique",
           "facultyAction": "conversation"
         },
         {
@@ -8243,12 +8215,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 8.698120340553135,
+              "progress": 8.690319352641142,
               "scienceFailures": 0,
-              "successProbability": 0.8909552984898406,
-              "successRate": 0.8478354905143846,
+              "successProbability": 0.8883771047556697,
+              "successRate": 0.8460613759193676,
               "researchGrade": "성공",
-              "weight": 10.259207638590308,
+              "weight": 10.271499917128185,
               "assigned": "experiment"
             },
             {
@@ -8257,12 +8229,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 10.260348654298422,
+              "progress": 10.2723898605412,
               "scienceFailures": 0,
-              "successProbability": 0.8911345221918974,
-              "successRate": 0.999764077922449,
+              "successProbability": 0.8885408195948625,
+              "successRate": 0.9997613111559996,
               "researchGrade": "완전성공",
-              "weight": 10.262769868287176,
+              "weight": 10.274842350784194,
               "assigned": "experiment"
             },
             {
@@ -8271,12 +8243,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 5.54544818462177,
+              "progress": 5.496066117529922,
               "scienceFailures": 0,
-              "successProbability": 0.8913384067410921,
-              "successRate": 0.5401404790801128,
+              "successProbability": 0.8887281246327507,
+              "successRate": 0.5347140194643081,
               "researchGrade": "보통",
-              "weight": 10.266677650351175,
+              "weight": 10.278515089310805,
               "assigned": "experiment"
             },
             {
@@ -8285,12 +8257,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 10.267460088310381,
+              "progress": 10.279097343469788,
               "scienceFailures": 0,
-              "successProbability": 0.891456983895133,
-              "successRate": 0.9998120627384741,
+              "successProbability": 0.8888343410431323,
+              "successRate": 0.9998098347501105,
               "researchGrade": "완전성공",
-              "weight": 10.269390089361316,
+              "weight": 10.28105244237662,
               "assigned": "experiment"
             },
             {
@@ -8305,7 +8277,7 @@
               "assigned": "free"
             }
           ],
-          "progress": 34.771377267783706,
+          "progress": 34.73787267418205,
           "papers": 0,
           "feedback": "listen",
           "facultyAction": "conversation"
@@ -8333,13 +8305,6 @@
         },
         {
           "month": 88,
-          "topicId": "ERND-04044",
-          "kind": "project-phase",
-          "projectId": 4,
-          "phase": "figures"
-        },
-        {
-          "month": 88,
           "kind": "month",
           "plan": [
             "experiment",
@@ -8354,12 +8319,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 12.524867737497726,
+              "progress": 12.52219998698085,
               "scienceFailures": 0,
-              "successProbability": 0.8922544623331843,
-              "successRate": 0.9026637838808257,
+              "successProbability": 0.8895948800798976,
+              "successRate": 0.9014945464716164,
               "researchGrade": "완전성공",
-              "weight": 13.875451703234969,
+              "weight": 13.890488895348089,
               "assigned": "experiment"
             },
             {
@@ -8379,12 +8344,12 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 12.548803874540411,
+              "progress": 12.546049991639418,
               "scienceFailures": 0,
-              "successProbability": 0.8924287125046366,
-              "successRate": 0.9040816445105727,
+              "successProbability": 0.8897544925068797,
+              "successRate": 0.9029232776606003,
               "researchGrade": "완전성공",
-              "weight": 13.880166631779968,
+              "weight": 13.894923635311738,
               "assigned": "experiment"
             },
             {
@@ -8393,16 +8358,16 @@
               "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 12.274349532174014,
+              "progress": 12.267579665846819,
               "scienceFailures": 0,
-              "successProbability": 0.8926005010573177,
-              "successRate": 0.8840111918064681,
+              "successProbability": 0.889911871071597,
+              "successRate": 0.882603110365024,
               "researchGrade": "성공",
-              "weight": 13.884834995235186,
+              "weight": 13.899316149898038,
               "assigned": "experiment"
             }
           ],
-          "progress": 37.348021144212154,
+          "progress": 37.33582964446708,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "conversation"
@@ -8425,42 +8390,49 @@
         },
         {
           "month": 89,
+          "topicId": "ERND-04044",
+          "kind": "project-phase",
+          "projectId": 4,
+          "phase": "figures"
+        },
+        {
+          "month": 89,
           "kind": "month",
           "plan": [
-            "analysis",
-            "analysis",
+            "experiment",
+            "experiment",
             "free",
-            "analysis",
+            "experiment",
             "free"
           ],
           "results": [
             {
               "week": 1,
-              "proposed": "analysis",
-              "actual": "analysis",
+              "proposed": "experiment",
+              "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 10.199997735356554,
+              "progress": 10.203738053227632,
               "scienceFailures": 0,
-              "successProbability": 0.8919460352969002,
-              "successRate": 0.917960752125257,
+              "successProbability": 0.8903180645657112,
+              "successRate": 0.9173590603627917,
               "researchGrade": "완전성공",
-              "weight": 11.111583705230952,
-              "assigned": "analysis"
+              "weight": 11.12294901103644,
+              "assigned": "experiment"
             },
             {
               "week": 2,
-              "proposed": "analysis",
-              "actual": "analysis",
+              "proposed": "experiment",
+              "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 10.947804053255801,
+              "progress": 10.95818490849091,
               "scienceFailures": 0,
-              "successProbability": 0.8921458516431895,
-              "successRate": 0.9849924071603855,
+              "successProbability": 0.8904728729049094,
+              "successRate": 0.984879306676234,
               "researchGrade": "완전성공",
-              "weight": 11.114607558059257,
-              "assigned": "analysis"
+              "weight": 11.126424155943067,
+              "assigned": "experiment"
             },
             {
               "week": 3,
@@ -8475,17 +8447,17 @@
             },
             {
               "week": 4,
-              "proposed": "analysis",
-              "actual": "analysis",
+              "proposed": "experiment",
+              "actual": "experiment",
               "performed": true,
               "outcome": "progress",
-              "progress": 11.089200844842164,
+              "progress": 11.101228393251558,
               "scienceFailures": 0,
-              "successProbability": 0.8923529478796415,
-              "successRate": 0.9974328658757355,
+              "successProbability": 0.8906357716169682,
+              "successRate": 0.9974130104550547,
               "researchGrade": "완전성공",
-              "weight": 11.117741578633428,
-              "assigned": "analysis"
+              "weight": 11.130021642876695,
+              "assigned": "experiment"
             },
             {
               "week": 5,
@@ -8499,7 +8471,7 @@
               "assigned": "free"
             }
           ],
-          "progress": 32.23700263345452,
+          "progress": 32.2631513549701,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "conversation"
@@ -8543,12 +8515,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 13.895073655171082,
+              "progress": 13.91078524980749,
               "scienceFailures": 0,
-              "successProbability": 0.893064413498988,
-              "successRate": 0.9995609366755721,
+              "successProbability": 0.8860023198454998,
+              "successRate": 0.9995467697777268,
               "researchGrade": "완전성공",
-              "weight": 13.901177152225,
+              "weight": 13.917092896914555,
               "assigned": "analysis"
             },
             {
@@ -8557,12 +8529,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 13.896545297627195,
+              "progress": 13.911932875843606,
               "scienceFailures": 0,
-              "successProbability": 0.8932695425399961,
-              "successRate": 0.9993878365493107,
+              "successProbability": 0.8861947369189209,
+              "successRate": 0.9993680527391713,
               "researchGrade": "완전성공",
-              "weight": 13.905057465587362,
+              "weight": 13.920730043063056,
               "assigned": "analysis"
             },
             {
@@ -8571,12 +8543,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 13.908519121074217,
+              "progress": 13.923939144575687,
               "scienceFailures": 0,
-              "successProbability": 0.8934727369064255,
-              "successRate": 0.9999725312090082,
+              "successProbability": 0.8863853986885928,
+              "successRate": 0.9999716420787615,
               "researchGrade": "완전성공",
-              "weight": 13.908901181773706,
+              "weight": 13.924334009742834,
               "assigned": "analysis"
             },
             {
@@ -8591,7 +8563,7 @@
               "deviation": "unfinished"
             }
           ],
-          "progress": 41.700138073872495,
+          "progress": 41.746657270226784,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "conversation"
@@ -8611,7 +8583,15 @@
         },
         {
           "month": 91,
-          "kind": "advising-conversation"
+          "kind": "portfolio-selection",
+          "awarded": false,
+          "role": "pi",
+          "years": 3,
+          "annual": 0,
+          "grantId": null,
+          "titleIndex": 2,
+          "start": 91,
+          "end": 127
         },
         {
           "month": 91,
@@ -8626,16 +8606,13 @@
             {
               "week": 1,
               "proposed": "analysis",
-              "actual": "analysis",
-              "performed": true,
-              "outcome": "inconclusive",
+              "actual": "unfinished",
+              "performed": false,
+              "outcome": "not_completed",
               "progress": 0,
-              "scienceFailures": 1,
-              "successProbability": 0.8941786074073299,
-              "successRate": 0,
-              "researchGrade": "실패",
-              "weight": 12.882218074931055,
-              "assigned": "analysis"
+              "scienceFailures": 0,
+              "assigned": "analysis",
+              "deviation": "unfinished"
             },
             {
               "week": 2,
@@ -8643,12 +8620,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 12.461420903385918,
+              "progress": 12.460014442815162,
               "scienceFailures": 0,
-              "successProbability": 0.8942486366495936,
-              "successRate": 0.9672429415171861,
+              "successProbability": 0.8870785985059837,
+              "successRate": 0.9661709629063832,
               "researchGrade": "완전성공",
-              "weight": 12.883444653355996,
+              "weight": 12.896283288553427,
               "assigned": "analysis"
             },
             {
@@ -8657,12 +8634,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 10.620366190282187,
+              "progress": 10.5564319503142,
               "scienceFailures": 0,
-              "successProbability": 0.8944432615263826,
-              "successRate": 0.824124069263116,
+              "successProbability": 0.8872617985135973,
+              "successRate": 0.8183604311537704,
               "researchGrade": "성공",
-              "weight": 12.886853553225674,
+              "weight": 12.899489697261084,
               "assigned": "analysis"
             },
             {
@@ -8673,24 +8650,24 @@
               "outcome": "inconclusive",
               "progress": 0,
               "scienceFailures": 1,
-              "successProbability": 0.8946178811684673,
+              "successProbability": 0.8874256364756055,
               "successRate": 0,
               "researchGrade": "실패",
-              "weight": 12.889912056768317,
+              "weight": 12.902357226989231,
               "assigned": "analysis"
             }
           ],
-          "progress": 23.081787093668105,
+          "progress": 23.016446393129364,
           "papers": 0,
           "feedback": "listen",
-          "facultyAction": "conversation"
+          "facultyAction": "funding"
         },
         {
           "month": 91,
-          "kind": "event",
-          "id": "monthly-resources",
-          "choice": 0,
-          "response": "“예약된 시간에 맞춰 준비를 마치겠습니다.”"
+          "kind": "issue-read",
+          "id": "grant-rejected",
+          "choice": "acknowledge",
+          "response": ""
         },
         {
           "month": 92,
@@ -8777,15 +8754,14 @@
           ],
           "progress": 0,
           "papers": 0,
-          "feedback": "critique",
+          "feedback": "praise",
           "facultyAction": "conversation"
         },
         {
           "month": 92,
           "kind": "event",
-          "id": "monthly-scope",
-          "choice": 0,
-          "response": "“어디까지 확인하면 되는지 정해져서 시작할 수 있겠어요.”"
+          "id": "language",
+          "choice": 0
         },
         {
           "month": 93,
@@ -8829,12 +8805,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 13.292190240486427,
+              "progress": 12.637155229720925,
               "scienceFailures": 0,
-              "successProbability": 0.8962241785637073,
-              "successRate": 0.9800516487201534,
+              "successProbability": 0.8884984548155237,
+              "successRate": 0.9793487223908022,
               "researchGrade": "완전성공",
-              "weight": 13.562744634779872,
+              "weight": 12.903631710337962,
               "assigned": "analysis"
             },
             {
@@ -8843,12 +8819,12 @@
               "actual": "analysis",
               "performed": true,
               "outcome": "progress",
-              "progress": 6.338276300740663,
+              "progress": 5.787684609672269,
               "scienceFailures": 0,
-              "successProbability": 0.8964128920897663,
-              "successRate": 0.46721018274389936,
+              "successProbability": 0.8886795741633162,
+              "successRate": 0.44842128537470904,
               "researchGrade": "보통",
-              "weight": 13.56622037541288,
+              "weight": 12.906801702858449,
               "assigned": "analysis"
             },
             {
@@ -8856,9 +8832,13 @@
               "proposed": "analysis",
               "actual": "analysis",
               "performed": true,
-              "outcome": "completed",
-              "progress": 0,
+              "outcome": "progress",
+              "progress": 11.770565279919015,
               "scienceFailures": 0,
+              "successProbability": 0.8887964948551186,
+              "successRate": 0.9118215049765465,
+              "researchGrade": "완전성공",
+              "weight": 12.908848075722641,
               "assigned": "analysis"
             },
             {
@@ -8872,7 +8852,7 @@
               "assigned": "analysis"
             }
           ],
-          "progress": 19.63046654122709,
+          "progress": 30.19540511931221,
           "papers": 0,
           "feedback": "listen",
           "facultyAction": "conversation"
@@ -9112,12 +9092,12 @@
               "actual": "study",
               "performed": true,
               "outcome": "progress",
-              "progress": 13.904070865344353,
+              "progress": 16.668800920209744,
               "scienceFailures": 0,
-              "successProbability": 0.8988674620982056,
-              "successRate": 0.8331929604292134,
-              "researchGrade": "성공",
-              "weight": 16.687696038840475,
+              "successProbability": 0.8914948219048353,
+              "successRate": 0.9999786558007138,
+              "researchGrade": "완전성공",
+              "weight": 16.669156710012494,
               "assigned": "study"
             },
             {
@@ -9126,12 +9106,12 @@
               "actual": "study",
               "performed": true,
               "outcome": "progress",
-              "progress": 13.536403874248464,
+              "progress": 16.192053990433692,
               "scienceFailures": 0,
-              "successProbability": 0.8991154321909918,
-              "successRate": 0.8102871706376105,
-              "researchGrade": "성공",
-              "weight": 16.705687026485613,
+              "successProbability": 0.8917764373540926,
+              "successRate": 0.9702871688936172,
+              "researchGrade": "완전성공",
+              "weight": 16.687898706211787,
               "assigned": "study"
             },
             {
@@ -9140,12 +9120,12 @@
               "actual": "study",
               "performed": true,
               "outcome": "progress",
-              "progress": 16.59303850341787,
+              "progress": 15.477656841278902,
               "scienceFailures": 0,
-              "successProbability": 0.8993563520761207,
-              "successRate": 0.9921973164125857,
+              "successProbability": 0.8920489076886284,
+              "successRate": 0.9264483403223512,
               "researchGrade": "완전성공",
-              "weight": 16.723526892223504,
+              "weight": 16.70644348706325,
               "assigned": "study"
             },
             {
@@ -9154,16 +9134,16 @@
               "actual": "study",
               "performed": true,
               "outcome": "progress",
-              "progress": 16.742030125467448,
+              "progress": 16.70072898321007,
               "scienceFailures": 0,
-              "successProbability": 0.8996263357185643,
-              "successRate": 0.999999853666004,
+              "successProbability": 0.8923100151983623,
+              "successRate": 0.998564315074031,
               "researchGrade": "완전성공",
-              "weight": 16.742032575395974,
+              "weight": 16.724740440951887,
               "assigned": "study"
             }
           ],
-          "progress": 60.77554336847814,
+          "progress": 65.03924073513241,
           "papers": 0,
           "feedback": "praise",
           "facultyAction": "conversation"
@@ -9191,12 +9171,12 @@
             "actual": "study",
             "performed": true,
             "outcome": "progress",
-            "progress": 13.904070865344353,
+            "progress": 16.668800920209744,
             "scienceFailures": 0,
-            "successProbability": 0.8988674620982056,
-            "successRate": 0.8331929604292134,
-            "researchGrade": "성공",
-            "weight": 16.687696038840475,
+            "successProbability": 0.8914948219048353,
+            "successRate": 0.9999786558007138,
+            "researchGrade": "완전성공",
+            "weight": 16.669156710012494,
             "assigned": "study"
           },
           {
@@ -9205,12 +9185,12 @@
             "actual": "study",
             "performed": true,
             "outcome": "progress",
-            "progress": 13.536403874248464,
+            "progress": 16.192053990433692,
             "scienceFailures": 0,
-            "successProbability": 0.8991154321909918,
-            "successRate": 0.8102871706376105,
-            "researchGrade": "성공",
-            "weight": 16.705687026485613,
+            "successProbability": 0.8917764373540926,
+            "successRate": 0.9702871688936172,
+            "researchGrade": "완전성공",
+            "weight": 16.687898706211787,
             "assigned": "study"
           },
           {
@@ -9219,12 +9199,12 @@
             "actual": "study",
             "performed": true,
             "outcome": "progress",
-            "progress": 16.59303850341787,
+            "progress": 15.477656841278902,
             "scienceFailures": 0,
-            "successProbability": 0.8993563520761207,
-            "successRate": 0.9921973164125857,
+            "successProbability": 0.8920489076886284,
+            "successRate": 0.9264483403223512,
             "researchGrade": "완전성공",
-            "weight": 16.723526892223504,
+            "weight": 16.70644348706325,
             "assigned": "study"
           },
           {
@@ -9233,18 +9213,18 @@
             "actual": "study",
             "performed": true,
             "outcome": "progress",
-            "progress": 16.742030125467448,
+            "progress": 16.70072898321007,
             "scienceFailures": 0,
-            "successProbability": 0.8996263357185643,
-            "successRate": 0.999999853666004,
+            "successProbability": 0.8923100151983623,
+            "successRate": 0.998564315074031,
             "researchGrade": "완전성공",
-            "weight": 16.742032575395974,
+            "weight": 16.724740440951887,
             "assigned": "study"
           }
         ],
         "fundingResults": [],
         "completion": 1,
-        "progress": 60.77554336847814,
+        "progress": 65.03924073513241,
         "scienceFailures": 0,
         "published": 0,
         "conferences": 0,
@@ -9254,7 +9234,7 @@
           "accepted": 3,
           "total": 4,
           "acceptance": 0.75,
-          "rapportChange": 0.018264695522617558
+          "rapportChange": 0.018995135294943566
         }
       },
       "crisis": 0,
@@ -9264,16 +9244,16 @@
       "pendingQueue": [],
       "eventFlags": {
         "counsel-coursework": {
-          "lastMonth": 39,
-          "count": 3
+          "lastMonth": 45,
+          "count": 4
         },
         "monthly-draft": {
           "lastMonth": 50,
           "count": 5
         },
         "monthly-scope": {
-          "lastMonth": 92,
-          "count": 3
+          "lastMonth": 56,
+          "count": 2
         },
         "counsel-career-first": {
           "lastMonth": 9,
@@ -9296,20 +9276,16 @@
           "count": 5
         },
         "counsel-feedback": {
-          "lastMonth": 75,
-          "count": 3
-        },
-        "counsel-master-career": {
-          "lastMonth": 33,
+          "lastMonth": 27,
           "count": 1
         },
         "counsel-results": {
           "lastMonth": 87,
-          "count": 2
+          "count": 4
         },
         "monthly-resources": {
-          "lastMonth": 91,
-          "count": 2
+          "lastMonth": 67,
+          "count": 1
         },
         "career-talk": {
           "lastMonth": 68,
@@ -9322,14 +9298,18 @@
         "collaboration": {
           "lastMonth": 79,
           "count": 1
+        },
+        "language": {
+          "lastMonth": 92,
+          "count": 1
         }
       },
-      "seed": 75571550,
+      "seed": 746002725,
       "behavior": {
         "harsh": 0,
         "listen": 26,
-        "praise": 42,
-        "critique": 28
+        "praise": 40,
+        "critique": 30
       },
       "qualDeferredAt": null,
       "qualPreparations": 0,

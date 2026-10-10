@@ -21,16 +21,31 @@ function uncomplicatedMonth(count){
 const recoveryCount=s=>proposeSchedule(s).filter(id=>id==='recovery').length;
 const restLine=(line,lang)=>assert.match(line,lang==='ko'?/쉬|회복|휴식/:/rest|recover|break/i);
 
-test('a rest request requires high stress and either low stamina or low resilience',()=>{
+test('ordinary rest requests require high stress and either low stamina or low resilience',()=>{
   for(const input of [
-    {stress:64.99,stamina:10,resilience:10},
+    {stress:64.99,stamina:25.01,resilience:20.01},
     {stress:65,stamina:45.01,resilience:35.01},
     {stress:100,stamina:80,resilience:80},
-    {stress:0,stamina:0,resilience:0},
+    {stress:0,stamina:40,resilience:30},
   ])assert.equal(studentRestRequest(state(input)),null,JSON.stringify(input));
   assert.deepEqual(studentRestRequest(state({stress:65,stamina:45,resilience:70})),{weeks:1,reason:'physical'});
   assert.deepEqual(studentRestRequest(state({stress:65,stamina:70,resilience:35})),{weeks:1,reason:'mental'});
   assert.deepEqual(studentRestRequest(state({stress:65,stamina:45,resilience:35})),{weeks:1,reason:'both'});
+});
+
+test('acute physical or mental exhaustion requests two weeks even without high stress',()=>{
+  for(const [input,reason] of [
+    [{stress:0,stamina:25,resilience:70},'physical'],
+    [{stress:64.99,stamina:70,resilience:20},'mental'],
+    [{stress:0,stamina:0,resilience:0},'both'],
+  ]){
+    const s=state({...input,month:uncomplicatedMonth(4)}),before=JSON.stringify(s);
+    assert.deepEqual(studentRestRequest(s),{weeks:2,reason});
+    assert.equal(recoveryCount(s),2);
+    restLine(studentLine(s,'ko'),'ko');restLine(studentLine(s,'en'),'en');
+    assert.equal(JSON.stringify(s),before,'requesting recovery is a pure proposal');
+  }
+  assert.equal(studentRestRequest(state({stress:64.99,stamina:25.01,resilience:20.01})),null);
 });
 
 test('request severity uses normalized conditions and includes the second-week boundaries',()=>{

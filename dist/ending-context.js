@@ -140,7 +140,11 @@ export function adaptResearchText(text,context={},locale='ko'){
    .replaceAll('labeled tubes',p.archive)
    .replaceAll('old machine','old '+p.equipmentName);
   if(p.storage!=='bottom freezer drawer')result=result.replace(/freezer/gi,'research archive');
-  if(p.dry)result=result.replace(/lab coat/gi,'everyday clothes').replace(/experiment notebooks?/gi,'research notes').replace(/experiments?/gi,'study').replace(/cultivation schedule/gi,'analysis schedule').replace(/tubes/gi,'analysis files');
+  if(p.dry)result=result.replace(/lab coat/gi,'everyday clothes')
+   .replace(/\ban experiment notebook\b/gi,'a research notebook')
+   .replace(/\bexperiment notebook(s?)\b/gi,(_,plural)=>plural?'research notebooks':'research notebook')
+   .replace(/\bexperiments\b/gi,'studies').replace(/\bexperiment\b/gi,'study')
+   .replace(/cultivation schedule/gi,'analysis schedule').replace(/tubes/gi,'analysis files');
   return result;
  }
  const p=researchSetting(context);

@@ -1,4 +1,4 @@
-import {managedOptions} from './play-support.mjs';
+import {managedOptions,affordableEventChoice} from './play-support.mjs';
 import {facultyCapacity,allocateCredits} from '../dist/workload.js';
 // Optional end-to-end QA: PLAYWRIGHT_MODULE points to an installed package.
 import assert from 'node:assert/strict';
@@ -13,6 +13,37 @@ const errors=[],qa='/tmp/professor-maker-qa',saveKey='pm-save-v4',galleryKey='pm
 await fs.mkdir(qa,{recursive:true});
 const choices={'workshop-plan':'skip','monthly-issue':'acknowledge','conference-plan':'none','failure-counsel':'review','conversation-topic':'daily','presentation-recovery':'rehearse','external-admission':'remain',event:'0',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
 const snapshot=page=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),saveKey);
+async function applyManagedOptions(page,state){
+ const options=managedOptions(state);
+ for(const key of ['research','teaching','admin','mentoring']){
+  const current=(await snapshot(page)).allocation[key];
+  if(current>options.allocation[key])await page.locator(`[data-credit="${key}"][data-count="${options.allocation[key]+1}"]`).click();
+ }
+ for(const key of ['research','teaching','admin','mentoring']){
+  if((await snapshot(page)).allocation[key]<options.allocation[key])await page.locator(`[data-credit="${key}"][data-count="${options.allocation[key]}"]`).click();
+ }
+ const budgetKeys=['salary','environment','performance'];
+ if(options.facultyAction!==state.facultyAction||budgetKeys.some(key=>options.budget[key]!==state.lab.budget[key])){
+  if(!await page.locator('.management-controls').evaluate(el=>el.open))await page.locator('.management-controls summary').click();
+  for(const key of budgetKeys){
+   while((await snapshot(page)).lab.budget[key]!==options.budget[key]){
+    const current=(await snapshot(page)).lab.budget[key],step=key==='salary'?5:1;
+    await page.locator(`[data-adjust="budget"][data-key="${key}"][data-delta="${current>options.budget[key]?-step:step}"]`).click();
+   }
+  }
+  await page.locator('#faculty-action').selectOption(options.facultyAction);
+ }
+ const actual=await snapshot(page);
+ assert.deepEqual(actual.allocation,options.allocation,`Month ${state.month}: workload follows the player policy`);
+ assert.deepEqual(actual.lab.budget,options.budget,`Month ${state.month}: every budget selection follows the player policy`);
+ assert.equal(actual.facultyAction,options.facultyAction,`Month ${state.month}: faculty activity follows the player policy`);
+ if(!await page.locator('[data-ui="advance"]').isEnabled()){
+  const message=await page.locator('#budget-error').innerText();
+  await fs.writeFile(`${qa}/blocked-month-${state.month}.json`,JSON.stringify({state:actual,options,message},null,2));
+  console.error(JSON.stringify({month:state.month,funds:actual.lab.funds,pool:actual.lab.pool,debt:actual.lab.debt,budget:actual.lab.budget,message}));
+ }
+ assert.ok(await page.locator('[data-ui="advance"]').isEnabled(),`Month ${state.month} playable`);
+}
 async function noOverflow(page,label){await page.evaluate(()=>document.fonts.ready);const size=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));assert.ok(size.scroll<=size.width,`${label}: ${size.scroll}px > ${size.width}px`);}
 async function injectState(page,state,{clearGallery=false}={}){assert.ok(validateSave(state),'Fixture is engine-valid');await page.evaluate(({state,saveKey,galleryKey,clearGallery})=>{localStorage.setItem(saveKey,JSON.stringify(state));localStorage.setItem('pm-fast','true');if(clearGallery)localStorage.removeItem(galleryKey);},{state,saveKey,galleryKey,clearGallery});await page.reload();}
 function finalFixture(seed){const s=createState('김하늘',seed,{gender:'female',professorGender:'female'});s.started=true;s.month=96;s.route='integrated';s.ending='institute';s.career={...s.career,papers:3,completedProjects:3,submissions:4,conferences:4,awards:1,qual:'passed',qualAttempts:1};s.project={...s.project,id:4,titleIndex:3,phase:2,progress:9};s.history=[{month:24,kind:'route',route:'integrated'},{month:38,kind:'conference',projectId:1},{month:42,kind:'submission',projectId:1},{month:44,kind:'paper',projectId:1},{month:48,kind:'sabbatical',mode:'away'},{month:60,kind:'qual',passed:true,attempt:1},{month:82,kind:'recommendation'},{month:96,kind:'ending',ending:'institute'}];return s;}
@@ -41,10 +72,23 @@ try{
  for(const institution of ['national','private','institute']){const fixture=createState('소속검증',42,{professorProfile:{gender:'male',age:30,fieldId:'050',labMode:'dry',institution}});fixture.started=true;await injectState(page,fixture);assert.equal((await snapshot(page)).professorProfile.institution,institution);}
  await injectState(page,saved);await page.locator('[data-ui="settings"]').click();const exportPromise=page.waitForEvent('download');await page.locator('[data-ui="export"]').click();const exported=await exportPromise,exportData=JSON.parse(await fs.readFile(await exported.path(),'utf8'));assert.equal(exportData.version,VERSION);await page.locator('[data-ui="close"]').click();
  await page.goto(base+'#design');assert.ok(!/게임 설계|통계와 설계/.test(await page.locator('#app').innerText()));assert.equal(await page.locator('.page-title h1').innerText(),'학생 지도');await page.goto(base+'logos.html');assert.equal(await page.title(),'연구실 로고 시안 · Professor Maker');await page.goto(base+'#lab');
- // Seed 1 graduates under this unmodified player policy; seed 6 now legitimately fails qualification.
+ // Seed 1 completes the PhD under this player policy, including its March stipend adjustments.
  // This smoke follows a genuine 96-month UI run through the Worker, decisions and CV archival.
  const run=createState('이준영',1,{gender:'female',professorProfile:{gender:'male',age:38,fieldId:'050',labMode:'dry',institution:'national'}});run.started=true;await injectState(page,run,{clearGallery:true});
- for(let guard=0;guard<240;guard++){const state=await snapshot(page);if(state.ending)break;if(state.pending){if(state.pending.kind==='route')assert.ok((await page.locator('.mobile-student-summary summary').innerText()).includes('학부연구생'));const before=JSON.stringify(state);await page.locator(`[data-ui="decide"][data-choice="${((state.pending.kind==='conference-plan'?state.pending.scope==='domestic'?'together':'none':choices[state.pending.kind])??(state.pending.kind==='story'?'encourage':state.pending.kind==='academic-exam'?'support':({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[state.pending.step]))}"]`).click();await page.waitForFunction(({saveKey,before})=>localStorage.getItem(saveKey)!==before,{saveKey,before});}else{const nextOptions=managedOptions(state);for(const key of ['research','teaching','admin','mentoring']){const current=(await snapshot(page)).allocation[key];if(current>nextOptions.allocation[key])await page.locator(`[data-credit="${key}"][data-count="${nextOptions.allocation[key]+1}"]`).click();}for(const key of ['research','teaching','admin','mentoring']){if((await snapshot(page)).allocation[key]<nextOptions.allocation[key])await page.locator(`[data-credit="${key}"][data-count="${nextOptions.allocation[key]}"]`).click();}if(nextOptions.facultyAction!=='routine'||nextOptions.budget.environment!==state.lab.budget.environment||nextOptions.budget.performance!==state.lab.budget.performance){if(!await page.locator('.management-controls').evaluate(el=>el.open))await page.locator('.management-controls summary').click();for(const key of ['environment','performance']){while((await snapshot(page)).lab.budget[key]!==nextOptions.budget[key]){const current=(await snapshot(page)).lab.budget[key];await page.locator(`[data-adjust="budget"][data-key="${key}"][data-delta="${current>nextOptions.budget[key]?-1:1}"]`).click();}}await page.locator('#faculty-action').selectOption(nextOptions.facultyAction);}assert.ok(await page.locator('[data-ui="advance"]').isEnabled(),`Month ${state.month} playable`);await page.locator('[data-ui="advance"]').click();await page.waitForFunction(({saveKey,month})=>JSON.parse(localStorage.getItem(saveKey)).month>month,{saveKey,month:state.month});}}
+ for(let guard=0;guard<240;guard++){
+  const state=await snapshot(page);if(state.ending)break;
+  if(state.pending){
+   if(state.pending.kind==='route')assert.ok((await page.locator('.mobile-student-summary summary').innerText()).includes('학부연구생'));
+   const before=JSON.stringify(state),p=state.pending;
+   const choice=p.kind==='event'?affordableEventChoice(state,p.id):p.kind==='conference-plan'?p.scope==='domestic'?'together':'none':choices[p.kind]??(p.kind==='story'?'encourage':p.kind==='academic-exam'?'support':({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[p.step]);
+   await page.locator(`[data-ui="decide"][data-choice="${choice}"]`).click();
+   await page.waitForFunction(({saveKey,before})=>localStorage.getItem(saveKey)!==before,{saveKey,before});
+  }else{
+   await applyManagedOptions(page,state);
+   await page.locator('[data-ui="advance"]').click();
+   await page.waitForFunction(({saveKey,month})=>JSON.parse(localStorage.getItem(saveKey)).month>month,{saveKey,month:state.month});
+  }
+ }
  const final=await snapshot(page);await fs.writeFile(`${qa}/pm46-final-debug.json`,JSON.stringify(final,null,2));assert.equal(final.month,96);assert.notEqual(final.ending,'gameover');assert.equal(final.career.qual,'passed');assert.ok(final.career.papers>=3);
  await page.locator('.vn-modal').waitFor();await page.screenshot({path:`${qa}/ending-vn.png`,fullPage:true});assert.ok(!(await page.locator('.vn-modal').innerText()).includes('{name}'));await page.locator('[data-ui="close"]').click();await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)||'[]').some(entry=>entry.cv),galleryKey);
  const archived=await page.evaluate(key=>JSON.parse(localStorage.getItem(key))[0].cv,galleryKey);assert.equal(archived.months,96);assert.deepEqual(archived.statistics.student,final.hidden);assert.equal(archived.version,3);await page.reload();assert.deepEqual(await page.evaluate(key=>JSON.parse(localStorage.getItem(key))[0].cv,galleryKey),archived);

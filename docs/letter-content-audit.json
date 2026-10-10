@@ -1,8 +1,8 @@
 {
-  "version": "4.15.4",
+  "version": "4.16.0",
   "samples": 32,
-  "insertions": 42,
-  "distinctPassageIds": 29,
+  "insertions": 46,
+  "distinctPassageIds": 28,
   "maxRemembers": 1,
   "baselineMaxRemembers": 4,
   "wrapperCount": 0,
@@ -17,19 +17,19 @@
   "zeroBudgetInsertionCount": 0,
   "repeatedInsertions": [
     {
-      "text": "원고를 읽을 때는 결론이 어디까지 성립하는지부터 표시합니다. 그 선을 분명히 해야 다음 질문도 보입니다.",
-      "count": 4
-    },
-    {
       "text": "예상과 다른 그래프도 함께 놓고 원자료부터 확인했던 시간을 기억합니다.",
-      "count": 4
-    },
-    {
-      "text": "어떤 진로든 제가 원하는 생활을 먼저 생각해 보라고 하셨던 면담을 기억합니다.",
-      "count": 4
+      "count": 6
     },
     {
       "text": "제 질문으로 시작한 작은 검증을 믿고 맡겨 주셨던 일을 기억합니다.",
+      "count": 6
+    },
+    {
+      "text": "어떤 진로든 제가 원하는 생활을 먼저 생각해 보라고 하셨던 면담을 기억합니다.",
+      "count": 3
+    },
+    {
+      "text": "뜻밖의 결과도 원자료와 함께 남깁니다. 다시 확인할 사람이 같은 출발점에서 시작할 수 있어야 하니까요.",
       "count": 3
     },
     {
@@ -37,7 +37,15 @@
       "count": 2
     },
     {
-      "text": "좋아 보이는 결과일수록 다른 설명이 가능한지 먼저 살핍니다. 동료에게도 결론보다 확인 과정을 보여 주려 합니다.",
+      "text": "생활 시간을 함께 확인하며 다음 주 계획을 다시 정했던 면담을 기억합니다.",
+      "count": 2
+    },
+    {
+      "text": "방법을 고를 때는 정확도뿐 아니라 필요한 자료와 계산 시간도 함께 적습니다. 더 복잡한 방법이 언제 도움이 되는지 설명할 수 있어야 합니다.",
+      "count": 2
+    },
+    {
+      "text": "원고를 읽을 때는 결론이 어디까지 성립하는지부터 표시합니다. 그 선을 분명히 해야 다음 질문도 보입니다.",
       "count": 2
     }
   ],
@@ -100,38 +108,13 @@
       "texts": []
     },
     {
-      "id": "audit-3063-corporate-090",
+      "id": "audit-436-corporate-090",
       "ending": "corporate",
-      "name": "이동현",
-      "relationship": "close",
-      "passageIds": [
-        "memory.counsel-daily-life.0",
-        "voice.industry.requirements.v1"
-      ],
-      "insertions": 2,
-      "remembers": 1,
-      "baselineRemembers": null,
-      "wrapper": false,
-      "incompleteAddress": false,
-      "incompleteClosings": 0,
-      "nextPromises": 1,
-      "dryWetMemories": 0,
-      "newcomerInsertions": 0,
-      "wrongCloseDistance": false,
-      "unrenderedInsertions": 0,
-      "texts": [
-        "생활 시간을 함께 확인하며 다음 주 계획을 다시 정했던 면담을 기억합니다.",
-        "현장에서 요청이 바뀌면 일정과 요구사항부터 다시 확인합니다. 서로 다르게 이해한 채 진행하지 않도록 기록으로 남깁니다."
-      ]
-    },
-    {
-      "id": "audit-471-corporate-072",
-      "ending": "corporate",
-      "name": "박성민",
+      "name": "정수진",
       "relationship": "close",
       "passageIds": [
         "memory.counsel-feedback.0",
-        "voice.autonomy.reasons.v1"
+        "voice.industry.verification.v1"
       ],
       "insertions": 2,
       "remembers": 0,
@@ -146,161 +129,17 @@
       "unrenderedInsertions": 0,
       "texts": [
         "잘한 점과 보완할 점을 따로 짚어 주셨던 메모가 아직 남아 있습니다.",
-        "의견을 구하기 전에 제 계획과 선택한 이유를 먼저 씁니다. 조언을 받은 뒤에도 최종 판단은 제가 설명할 수 있도록 합니다."
+        "납품할 때는 잘 작동한 조건과 아직 확인하지 못한 조건을 나눠 적습니다. 사용할 사람에게 그 범위를 설명하는 일도 제 몫입니다."
       ]
     },
     {
-      "id": "audit-123-corporate-156",
+      "id": "audit-471-corporate-072",
       "ending": "corporate",
-      "name": "최지은",
-      "relationship": "close",
-      "passageIds": [
-        "memory.authorship.0",
-        "voice.learning.disagreement.v1"
-      ],
-      "insertions": 2,
-      "remembers": 0,
-      "baselineRemembers": null,
-      "wrapper": false,
-      "incompleteAddress": false,
-      "incompleteClosings": 0,
-      "nextPromises": 1,
-      "dryWetMemories": 0,
-      "newcomerInsertions": 0,
-      "wrongCloseDistance": false,
-      "unrenderedInsertions": 0,
-      "texts": [
-        "기여 내역을 함께 적었던 일이 기억납니다. 지금도 새로운 협업을 시작하면 역할부터 의논합니다.",
-        "서로 다른 설명을 읽으면 둘의 전제가 어디서 갈리는지 적어 봅니다. 하나를 바로 고르기보다 판단에 필요한 자료를 찾는 편이 도움이 됩니다."
-      ]
-    },
-    {
-      "id": "audit-24-resident_researcher-060",
-      "ending": "resident_researcher",
-      "name": "정유진",
-      "relationship": "close",
-      "passageIds": [
-        "memory.best-presentation.0",
-        "voice.research.records.v1"
-      ],
-      "insertions": 2,
-      "remembers": 1,
-      "baselineRemembers": null,
-      "wrapper": false,
-      "incompleteAddress": false,
-      "incompleteClosings": 0,
-      "nextPromises": 0,
-      "dryWetMemories": 0,
-      "newcomerInsertions": 0,
-      "wrongCloseDistance": false,
-      "unrenderedInsertions": 0,
-      "texts": [
-        "질의응답을 잘했다고 짚어 주신 부분을 기억합니다. 다음 발표에서도 그때의 메모를 꺼내 보았습니다.",
-        "뜻밖의 결과도 원자료와 함께 남깁니다. 다시 확인할 사람이 같은 출발점에서 시작할 수 있어야 하니까요."
-      ]
-    },
-    {
-      "id": "audit-1856-resident_researcher-056",
-      "ending": "resident_researcher",
-      "name": "이수빈",
-      "relationship": "close",
-      "passageIds": [
-        "memory.counsel-independent.0",
-        "voice.research.limits.v1"
-      ],
-      "insertions": 2,
-      "remembers": 1,
-      "baselineRemembers": null,
-      "wrapper": false,
-      "incompleteAddress": false,
-      "incompleteClosings": 0,
-      "nextPromises": 0,
-      "dryWetMemories": 0,
-      "newcomerInsertions": 0,
-      "wrongCloseDistance": false,
-      "unrenderedInsertions": 0,
-      "texts": [
-        "제 질문으로 시작한 작은 검증을 믿고 맡겨 주셨던 일을 기억합니다.",
-        "원고를 읽을 때는 결론이 어디까지 성립하는지부터 표시합니다. 그 선을 분명히 해야 다음 질문도 보입니다."
-      ]
-    },
-    {
-      "id": "audit-2808-resident_researcher-048",
-      "ending": "resident_researcher",
-      "name": "김지영",
-      "relationship": "close",
-      "passageIds": [
-        "memory.data-loss.0",
-        "voice.learning.reading.v1"
-      ],
-      "insertions": 2,
-      "remembers": 0,
-      "baselineRemembers": null,
-      "wrapper": false,
-      "incompleteAddress": false,
-      "incompleteClosings": 0,
-      "nextPromises": 0,
-      "dryWetMemories": 0,
-      "newcomerInsertions": 0,
-      "wrongCloseDistance": false,
-      "unrenderedInsertions": 0,
-      "texts": [
-        "폴더가 열리지 않던 날 이후로 백업을 확인하는 습관이 생겼습니다.",
-        "읽다가 이해가 어긋나는 부분은 그냥 넘기지 않습니다. 관련 근거를 옆에 놓고 다시 읽는 시간이 제 일의 일부가 되었습니다."
-      ]
-    },
-    {
-      "id": "audit-86-institute-055",
-      "ending": "institute",
-      "name": "김민수",
-      "relationship": "distant",
-      "passageIds": [],
-      "insertions": 0,
-      "remembers": 0,
-      "baselineRemembers": null,
-      "wrapper": false,
-      "incompleteAddress": false,
-      "incompleteClosings": 0,
-      "nextPromises": 0,
-      "dryWetMemories": 0,
-      "newcomerInsertions": 0,
-      "wrongCloseDistance": false,
-      "unrenderedInsertions": 0,
-      "texts": []
-    },
-    {
-      "id": "audit-56-institute-062",
-      "ending": "institute",
-      "name": "김유진",
-      "relationship": "close",
-      "passageIds": [
-        "memory.counsel-results.0",
-        "voice.research.review.v1"
-      ],
-      "insertions": 2,
-      "remembers": 1,
-      "baselineRemembers": null,
-      "wrapper": false,
-      "incompleteAddress": false,
-      "incompleteClosings": 0,
-      "nextPromises": 1,
-      "dryWetMemories": 0,
-      "newcomerInsertions": 0,
-      "wrongCloseDistance": false,
-      "unrenderedInsertions": 0,
-      "texts": [
-        "예상과 다른 그래프도 함께 놓고 원자료부터 확인했던 시간을 기억합니다.",
-        "좋아 보이는 결과일수록 다른 설명이 가능한지 먼저 살핍니다. 동료에게도 결론보다 확인 과정을 보여 주려 합니다."
-      ]
-    },
-    {
-      "id": "audit-600-institute-094",
-      "ending": "institute",
-      "name": "정지혜",
+      "name": "박성민",
       "relationship": "close",
       "passageIds": [
         "memory.counsel-phd-career.0",
-        "voice.learning.argument.v1"
+        "voice.industry.requirements.v1"
       ],
       "insertions": 2,
       "remembers": 1,
@@ -315,14 +154,112 @@
       "unrenderedInsertions": 0,
       "texts": [
         "어떤 진로든 제가 원하는 생활을 먼저 생각해 보라고 하셨던 면담을 기억합니다.",
-        "논문을 읽으면 주장과 그것을 뒷받침하는 근거를 따로 정리합니다. 결론만 읽었을 때는 보이지 않던 다음 질문이 그 사이에서 나옵니다."
+        "현장에서 요청이 바뀌면 일정과 요구사항부터 다시 확인합니다. 서로 다르게 이해한 채 진행하지 않도록 기록으로 남깁니다."
       ]
     },
     {
-      "id": "audit-474-unrelated-072",
-      "ending": "unrelated",
-      "name": "이성현",
-      "relationship": "distant",
+      "id": "audit-123-corporate-156",
+      "ending": "corporate",
+      "name": "최지은",
+      "relationship": "close",
+      "passageIds": [
+        "memory.counsel-daily-life.0",
+        "voice.learning.tradeoffs.v1"
+      ],
+      "insertions": 2,
+      "remembers": 1,
+      "baselineRemembers": null,
+      "wrapper": false,
+      "incompleteAddress": false,
+      "incompleteClosings": 0,
+      "nextPromises": 1,
+      "dryWetMemories": 0,
+      "newcomerInsertions": 0,
+      "wrongCloseDistance": false,
+      "unrenderedInsertions": 0,
+      "texts": [
+        "생활 시간을 함께 확인하며 다음 주 계획을 다시 정했던 면담을 기억합니다.",
+        "방법을 고를 때는 정확도뿐 아니라 필요한 자료와 계산 시간도 함께 적습니다. 더 복잡한 방법이 언제 도움이 되는지 설명할 수 있어야 합니다."
+      ]
+    },
+    {
+      "id": "audit-84-institute-055",
+      "ending": "institute",
+      "name": "김지훈",
+      "relationship": "close",
+      "passageIds": [
+        "memory.counsel-results.0",
+        "voice.learning.assumptions.v1"
+      ],
+      "insertions": 2,
+      "remembers": 1,
+      "baselineRemembers": null,
+      "wrapper": false,
+      "incompleteAddress": false,
+      "incompleteClosings": 0,
+      "nextPromises": 1,
+      "dryWetMemories": 0,
+      "newcomerInsertions": 0,
+      "wrongCloseDistance": false,
+      "unrenderedInsertions": 0,
+      "texts": [
+        "예상과 다른 그래프도 함께 놓고 원자료부터 확인했던 시간을 기억합니다.",
+        "익숙한 방법을 쓰더라도 그 가정이 이번 문제에 맞는지 다시 살핍니다. 배운 것을 그대로 옮기기보다 쓰일 조건을 확인합니다."
+      ]
+    },
+    {
+      "id": "audit-49-institute-062",
+      "ending": "institute",
+      "name": "이수빈",
+      "relationship": "reserved",
+      "passageIds": [
+        "memory.counsel-feedback.0"
+      ],
+      "insertions": 1,
+      "remembers": 0,
+      "baselineRemembers": null,
+      "wrapper": false,
+      "incompleteAddress": false,
+      "incompleteClosings": 0,
+      "nextPromises": 0,
+      "dryWetMemories": 0,
+      "newcomerInsertions": 0,
+      "wrongCloseDistance": false,
+      "unrenderedInsertions": 0,
+      "texts": [
+        "잘한 점과 보완할 점을 따로 짚어 주셨던 메모가 아직 남아 있습니다."
+      ]
+    },
+    {
+      "id": "audit-600-institute-094",
+      "ending": "institute",
+      "name": "정지혜",
+      "relationship": "close",
+      "passageIds": [
+        "memory.counsel-independent.0",
+        "voice.research.records.v1"
+      ],
+      "insertions": 2,
+      "remembers": 1,
+      "baselineRemembers": null,
+      "wrapper": false,
+      "incompleteAddress": false,
+      "incompleteClosings": 0,
+      "nextPromises": 1,
+      "dryWetMemories": 0,
+      "newcomerInsertions": 0,
+      "wrongCloseDistance": false,
+      "unrenderedInsertions": 0,
+      "texts": [
+        "제 질문으로 시작한 작은 검증을 믿고 맡겨 주셨던 일을 기억합니다.",
+        "뜻밖의 결과도 원자료와 함께 남깁니다. 다시 확인할 사람이 같은 출발점에서 시작할 수 있어야 하니까요."
+      ]
+    },
+    {
+      "id": "audit-4-dismissed-058",
+      "ending": "dismissed",
+      "name": "정지은",
+      "relationship": "close",
       "passageIds": [],
       "insertions": 0,
       "remembers": 0,
@@ -338,9 +275,57 @@
       "texts": []
     },
     {
+      "id": "audit-472-unrelated-072",
+      "ending": "unrelated",
+      "name": "이민수",
+      "relationship": "close",
+      "passageIds": [
+        "memory.counsel-phd-career.0",
+        "voice.industry.coordination.v1"
+      ],
+      "insertions": 2,
+      "remembers": 1,
+      "baselineRemembers": null,
+      "wrapper": false,
+      "incompleteAddress": false,
+      "incompleteClosings": 0,
+      "nextPromises": 1,
+      "dryWetMemories": 0,
+      "newcomerInsertions": 0,
+      "wrongCloseDistance": false,
+      "unrenderedInsertions": 0,
+      "texts": [
+        "어떤 진로든 제가 원하는 생활을 먼저 생각해 보라고 하셨던 면담을 기억합니다.",
+        "팀마다 다른 일정은 먼저 문서로 맞춰 봅니다. 할 수 있는 범위를 일찍 확인해야 서로의 약속도 지킬 수 있습니다."
+      ]
+    },
+    {
       "id": "audit-186-unrelated-048",
       "ending": "unrelated",
       "name": "조성민",
+      "relationship": "reserved",
+      "passageIds": [
+        "memory.counsel-results.0"
+      ],
+      "insertions": 1,
+      "remembers": 1,
+      "baselineRemembers": null,
+      "wrapper": false,
+      "incompleteAddress": false,
+      "incompleteClosings": 0,
+      "nextPromises": 0,
+      "dryWetMemories": 0,
+      "newcomerInsertions": 0,
+      "wrongCloseDistance": false,
+      "unrenderedInsertions": 0,
+      "texts": [
+        "예상과 다른 그래프도 함께 놓고 원자료부터 확인했던 시간을 기억합니다."
+      ]
+    },
+    {
+      "id": "audit-102-unrelated-056",
+      "ending": "unrelated",
+      "name": "윤지은",
       "relationship": "reserved",
       "passageIds": [
         "memory.counsel-independent.0"
@@ -361,51 +346,13 @@
       ]
     },
     {
-      "id": "audit-978-unrelated-056",
-      "ending": "unrelated",
-      "name": "최재현",
-      "relationship": "distant",
-      "passageIds": [],
-      "insertions": 0,
-      "remembers": 0,
-      "baselineRemembers": null,
-      "wrapper": false,
-      "incompleteAddress": false,
-      "incompleteClosings": 0,
-      "nextPromises": 0,
-      "dryWetMemories": 0,
-      "newcomerInsertions": 0,
-      "wrongCloseDistance": false,
-      "unrenderedInsertions": 0,
-      "texts": []
-    },
-    {
-      "id": "audit-61-dismissed-063",
-      "ending": "dismissed",
-      "name": "김성민",
-      "relationship": "reserved",
-      "passageIds": [],
-      "insertions": 0,
-      "remembers": 0,
-      "baselineRemembers": null,
-      "wrapper": false,
-      "incompleteAddress": false,
-      "incompleteClosings": 0,
-      "nextPromises": 0,
-      "dryWetMemories": 0,
-      "newcomerInsertions": 0,
-      "wrongCloseDistance": false,
-      "unrenderedInsertions": 0,
-      "texts": []
-    },
-    {
       "id": "audit-9-bachelor-058",
       "ending": "bachelor",
       "name": "정지혜",
       "relationship": "close",
       "passageIds": [
         "memory.counsel-career-first.0",
-        "voice.learning.original.v1"
+        "voice.learning.foundations.v1"
       ],
       "insertions": 2,
       "remembers": 0,
@@ -420,14 +367,89 @@
       "unrenderedInsertions": 0,
       "texts": [
         "연구가 좋은지, 대학원에 가고 싶은지는 다른 질문이라고 함께 생각했던 면담이 기억납니다.",
-        "인용된 설명이 중요해지면 원문까지 찾아 읽습니다. 문장을 옮기는 동안 생략된 조건이 없는지 확인하고 제 글에도 그 범위를 남깁니다."
+        "새 일을 배우면서 기초부터 다시 확인하고 있습니다. 모르는 부분을 나누어 공부하니 다음에 물어볼 것도 분명해집니다."
       ]
     },
     {
-      "id": "audit-14-gameover-059",
+      "id": "audit-9684-resident_researcher-062",
+      "ending": "resident_researcher",
+      "name": "박준호",
+      "relationship": "close",
+      "passageIds": [
+        "memory.authorship.0",
+        "voice.learning.application.v1"
+      ],
+      "insertions": 2,
+      "remembers": 0,
+      "baselineRemembers": null,
+      "wrapper": false,
+      "incompleteAddress": false,
+      "incompleteClosings": 0,
+      "nextPromises": 0,
+      "dryWetMemories": 0,
+      "newcomerInsertions": 0,
+      "wrongCloseDistance": false,
+      "unrenderedInsertions": 0,
+      "texts": [
+        "기여 내역을 함께 적었던 일이 기억납니다. 지금도 새로운 협업을 시작하면 역할부터 의논합니다.",
+        "새로 배운 개념은 잘 아는 문제에 먼저 적용해 봅니다. 익숙한 답과 달라지는 지점을 살펴야 새로운 문제에서도 어디까지 쓸 수 있을지 알 수 있습니다."
+      ]
+    },
+    {
+      "id": "audit-2040-resident_researcher-115",
+      "ending": "resident_researcher",
+      "name": "장지은",
+      "relationship": "close",
+      "passageIds": [
+        "memory.caregiving.0",
+        "voice.learning.compare.v1"
+      ],
+      "insertions": 2,
+      "remembers": 1,
+      "baselineRemembers": null,
+      "wrapper": false,
+      "incompleteAddress": false,
+      "incompleteClosings": 0,
+      "nextPromises": 0,
+      "dryWetMemories": 0,
+      "newcomerInsertions": 0,
+      "wrongCloseDistance": false,
+      "unrenderedInsertions": 0,
+      "texts": [
+        "개인적인 설명을 길게 하지 않아도 일정을 의논할 수 있었던 날을 기억합니다. 자세한 이야기는 이 메일에도 남기지 않겠습니다.",
+        "새 방법을 검토할 때는 기존 방법과 같은 자료로 비교합니다. 무엇이 달라졌는지 제 말로 설명할 수 있어야 선택할 수 있습니다."
+      ]
+    },
+    {
+      "id": "audit-2592-resident_researcher-107",
+      "ending": "resident_researcher",
+      "name": "김지현",
+      "relationship": "close",
+      "passageIds": [
+        "memory.counsel-daily-life.0",
+        "voice.learning.argument.v1"
+      ],
+      "insertions": 2,
+      "remembers": 1,
+      "baselineRemembers": null,
+      "wrapper": false,
+      "incompleteAddress": false,
+      "incompleteClosings": 0,
+      "nextPromises": 0,
+      "dryWetMemories": 0,
+      "newcomerInsertions": 0,
+      "wrongCloseDistance": false,
+      "unrenderedInsertions": 0,
+      "texts": [
+        "생활 시간을 함께 확인하며 다음 주 계획을 다시 정했던 면담을 기억합니다.",
+        "논문을 읽으면 주장과 그것을 뒷받침하는 근거를 따로 정리합니다. 결론만 읽었을 때는 보이지 않던 다음 질문이 그 사이에서 나옵니다."
+      ]
+    },
+    {
+      "id": "audit-1-gameover-058",
       "ending": "gameover",
-      "name": "김성현",
-      "relationship": "distant",
+      "name": "최지현",
+      "relationship": "reserved",
       "passageIds": [],
       "insertions": 0,
       "remembers": 0,
@@ -467,7 +489,7 @@
       "name": "이준영",
       "relationship": "close",
       "passageIds": [
-        "memory.counsel-results.0",
+        "memory.counsel-phd-career.0",
         "voice.social.exchange.v1"
       ],
       "insertions": 2,
@@ -482,7 +504,7 @@
       "wrongCloseDistance": false,
       "unrenderedInsertions": 0,
       "texts": [
-        "예상과 다른 그래프도 함께 놓고 원자료부터 확인했던 시간을 기억합니다.",
+        "어떤 진로든 제가 원하는 생활을 먼저 생각해 보라고 하셨던 면담을 기억합니다.",
         "다른 팀의 사람과 이야기할 때는 그쪽이 궁금해하는 것도 먼저 묻습니다. 서로 다른 관심사를 놓고 이야기해야 협업의 시작점이 보입니다."
       ]
     },
@@ -515,8 +537,8 @@
       "name": "이준영",
       "relationship": "close",
       "passageIds": [
-        "memory.counsel-results.0",
-        "voice.learning.tradeoffs.v1"
+        "memory.counsel-independent.0",
+        "voice.learning.reading.v1"
       ],
       "insertions": 2,
       "remembers": 1,
@@ -530,83 +552,8 @@
       "wrongCloseDistance": false,
       "unrenderedInsertions": 0,
       "texts": [
-        "예상과 다른 그래프도 함께 놓고 원자료부터 확인했던 시간을 기억합니다.",
-        "방법을 고를 때는 정확도뿐 아니라 필요한 자료와 계산 시간도 함께 적습니다. 더 복잡한 방법이 언제 도움이 되는지 설명할 수 있어야 합니다."
-      ]
-    },
-    {
-      "id": "audit-277-true-114",
-      "ending": "true",
-      "name": "김승현",
-      "relationship": "close",
-      "passageIds": [
-        "memory.counsel-phd-career.0",
-        "voice.learning.assumptions.v1"
-      ],
-      "insertions": 2,
-      "remembers": 1,
-      "baselineRemembers": null,
-      "wrapper": false,
-      "incompleteAddress": false,
-      "incompleteClosings": 0,
-      "nextPromises": 0,
-      "dryWetMemories": 0,
-      "newcomerInsertions": 0,
-      "wrongCloseDistance": false,
-      "unrenderedInsertions": 0,
-      "texts": [
-        "어떤 진로든 제가 원하는 생활을 먼저 생각해 보라고 하셨던 면담을 기억합니다.",
-        "익숙한 방법을 쓰더라도 그 가정이 이번 문제에 맞는지 다시 살핍니다. 배운 것을 그대로 옮기기보다 쓰일 조건을 확인합니다."
-      ]
-    },
-    {
-      "id": "audit-709-true-097",
-      "ending": "true",
-      "name": "박재현",
-      "relationship": "close",
-      "passageIds": [
-        "memory.counsel-phd-career.0",
-        "voice.learning.application.v1"
-      ],
-      "insertions": 2,
-      "remembers": 1,
-      "baselineRemembers": null,
-      "wrapper": false,
-      "incompleteAddress": false,
-      "incompleteClosings": 0,
-      "nextPromises": 0,
-      "dryWetMemories": 0,
-      "newcomerInsertions": 0,
-      "wrongCloseDistance": false,
-      "unrenderedInsertions": 0,
-      "texts": [
-        "어떤 진로든 제가 원하는 생활을 먼저 생각해 보라고 하셨던 면담을 기억합니다.",
-        "새로 배운 개념은 잘 아는 문제에 먼저 적용해 봅니다. 익숙한 답과 달라지는 지점을 살펴야 새로운 문제에서도 어디까지 쓸 수 있을지 알 수 있습니다."
-      ]
-    },
-    {
-      "id": "audit-5377-true-156",
-      "ending": "true",
-      "name": "최지현",
-      "relationship": "close",
-      "passageIds": [
-        "memory.doctoral-lead.0",
-        "voice.learning.compare.v1"
-      ],
-      "insertions": 2,
-      "remembers": 0,
-      "baselineRemembers": null,
-      "wrapper": false,
-      "incompleteAddress": false,
-      "incompleteClosings": 0,
-      "nextPromises": 0,
-      "dryWetMemories": 0,
-      "newcomerInsertions": 0,
-      "wrongCloseDistance": false,
-      "unrenderedInsertions": 0,
-      "texts": [
-        "회의를 제가 진행하기 시작했을 때부터 제 판단을 설명하는 연습을 했습니다.",
-        "새 방법을 검토할 때는 기존 방법과 같은 자료로 비교합니다. 무엇이 달라졌는지 제 말로 설명할 수 있어야 선택할 수 있습니다."
+        "제 질문으로 시작한 작은 검증을 믿고 맡겨 주셨던 일을 기억합니다.",
+        "읽다가 이해가 어긋나는 부분은 그냥 넘기지 않습니다. 관련 근거를 옆에 놓고 다시 읽는 시간이 제 일의 일부가 되었습니다."
       ]
     },
     {
@@ -615,33 +562,8 @@
       "name": "김은지",
       "relationship": "close",
       "passageIds": [
-        "memory.counsel-small-question.0",
-        "voice.learning.foundations.v1"
-      ],
-      "insertions": 2,
-      "remembers": 1,
-      "baselineRemembers": null,
-      "wrapper": false,
-      "incompleteAddress": false,
-      "incompleteClosings": 0,
-      "nextPromises": 1,
-      "dryWetMemories": 0,
-      "newcomerInsertions": 0,
-      "wrongCloseDistance": false,
-      "unrenderedInsertions": 0,
-      "texts": [
-        "다들 알 것 같은 작은 질문도 꺼내 볼 수 있었던 면담을 기억합니다.",
-        "새 일을 배우면서 기초부터 다시 확인하고 있습니다. 모르는 부분을 나누어 공부하니 다음에 물어볼 것도 분명해집니다."
-      ]
-    },
-    {
-      "id": "audit-integration-startup-63352-startup-050",
-      "ending": "startup",
-      "name": "최지원",
-      "relationship": "close",
-      "passageIds": [
-        "memory.counsel-qual.0",
-        "voice.industry.verification.v1"
+        "memory.counsel-coursework.0",
+        "voice.learning.original.v1"
       ],
       "insertions": 2,
       "remembers": 0,
@@ -655,14 +577,39 @@
       "wrongCloseDistance": false,
       "unrenderedInsertions": 0,
       "texts": [
-        "퀄 준비 범위를 함께 나누니, 모르는 것을 하나씩 물을 수 있었습니다.",
-        "납품할 때는 잘 작동한 조건과 아직 확인하지 못한 조건을 나눠 적습니다. 사용할 사람에게 그 범위를 설명하는 일도 제 몫입니다."
+        "놓쳤던 기초를 돌아보고 공부 시간을 다시 잡았던 경험이 지금도 도움이 됩니다.",
+        "인용된 설명이 중요해지면 원문까지 찾아 읽습니다. 문장을 옮기는 동안 생략된 조건이 없는지 확인하고 제 글에도 그 범위를 남깁니다."
       ]
     },
     {
-      "id": "audit-integration-true-2-true-050",
+      "id": "audit-1645-true-158",
       "ending": "true",
-      "name": "이지현",
+      "name": "장재현",
+      "relationship": "close",
+      "passageIds": [
+        "memory.counsel-results.0",
+        "voice.learning.disagreement.v1"
+      ],
+      "insertions": 2,
+      "remembers": 1,
+      "baselineRemembers": null,
+      "wrapper": false,
+      "incompleteAddress": false,
+      "incompleteClosings": 0,
+      "nextPromises": 0,
+      "dryWetMemories": 0,
+      "newcomerInsertions": 0,
+      "wrongCloseDistance": false,
+      "unrenderedInsertions": 0,
+      "texts": [
+        "예상과 다른 그래프도 함께 놓고 원자료부터 확인했던 시간을 기억합니다.",
+        "서로 다른 설명을 읽으면 둘의 전제가 어디서 갈리는지 적어 봅니다. 하나를 바로 고르기보다 판단에 필요한 자료를 찾는 편이 도움이 됩니다."
+      ]
+    },
+    {
+      "id": "audit-5389-true-066",
+      "ending": "true",
+      "name": "박현우",
       "relationship": "close",
       "passageIds": [
         "memory.funding-cut.0",
@@ -685,9 +632,153 @@
       ]
     },
     {
+      "id": "audit-6517-true-086",
+      "ending": "true",
+      "name": "김재현",
+      "relationship": "close",
+      "passageIds": [
+        "memory.counsel-independent.0",
+        "voice.research.review.v1"
+      ],
+      "insertions": 2,
+      "remembers": 1,
+      "baselineRemembers": null,
+      "wrapper": false,
+      "incompleteAddress": false,
+      "incompleteClosings": 0,
+      "nextPromises": 0,
+      "dryWetMemories": 0,
+      "newcomerInsertions": 0,
+      "wrongCloseDistance": false,
+      "unrenderedInsertions": 0,
+      "texts": [
+        "제 질문으로 시작한 작은 검증을 믿고 맡겨 주셨던 일을 기억합니다.",
+        "좋아 보이는 결과일수록 다른 설명이 가능한지 먼저 살핍니다. 동료에게도 결론보다 확인 과정을 보여 주려 합니다."
+      ]
+    },
+    {
+      "id": "audit-integration-startup-63352-startup-050",
+      "ending": "startup",
+      "name": "최지원",
+      "relationship": "close",
+      "passageIds": [
+        "memory.doctoral-lead.0",
+        "voice.enterprise.team.v1"
+      ],
+      "insertions": 2,
+      "remembers": 0,
+      "baselineRemembers": null,
+      "wrapper": false,
+      "incompleteAddress": false,
+      "incompleteClosings": 0,
+      "nextPromises": 1,
+      "dryWetMemories": 0,
+      "newcomerInsertions": 0,
+      "wrongCloseDistance": false,
+      "unrenderedInsertions": 0,
+      "texts": [
+        "회의를 제가 진행하기 시작했을 때부터 제 판단을 설명하는 연습을 했습니다.",
+        "혼자 빨리 정하는 것보다 팀이 같은 문제를 보고 있는지 먼저 확인합니다. 방향을 바꿀 때도 이유를 함께 나누려 합니다."
+      ]
+    },
+    {
+      "id": "audit-integration-true-2-true-050",
+      "ending": "true",
+      "name": "이지현",
+      "relationship": "close",
+      "passageIds": [
+        "memory.counsel-results.0",
+        "voice.learning.tradeoffs.v1"
+      ],
+      "insertions": 2,
+      "remembers": 1,
+      "baselineRemembers": null,
+      "wrapper": false,
+      "incompleteAddress": false,
+      "incompleteClosings": 0,
+      "nextPromises": 0,
+      "dryWetMemories": 0,
+      "newcomerInsertions": 0,
+      "wrongCloseDistance": false,
+      "unrenderedInsertions": 0,
+      "texts": [
+        "예상과 다른 그래프도 함께 놓고 원자료부터 확인했던 시간을 기억합니다.",
+        "방법을 고를 때는 정확도뿐 아니라 필요한 자료와 계산 시간도 함께 적습니다. 더 복잡한 방법이 언제 도움이 되는지 설명할 수 있어야 합니다."
+      ]
+    },
+    {
       "id": "audit-integration-true-11-true-050",
       "ending": "true",
       "name": "이지영",
+      "relationship": "close",
+      "passageIds": [
+        "memory.counsel-results.0",
+        "voice.research.records.v1"
+      ],
+      "insertions": 2,
+      "remembers": 1,
+      "baselineRemembers": null,
+      "wrapper": false,
+      "incompleteAddress": false,
+      "incompleteClosings": 0,
+      "nextPromises": 0,
+      "dryWetMemories": 0,
+      "newcomerInsertions": 0,
+      "wrongCloseDistance": false,
+      "unrenderedInsertions": 0,
+      "texts": [
+        "예상과 다른 그래프도 함께 놓고 원자료부터 확인했던 시간을 기억합니다.",
+        "뜻밖의 결과도 원자료와 함께 남깁니다. 다시 확인할 사람이 같은 출발점에서 시작할 수 있어야 하니까요."
+      ]
+    },
+    {
+      "id": "audit-integration-true-13-true-050",
+      "ending": "true",
+      "name": "김지원",
+      "relationship": "close",
+      "passageIds": [
+        "memory.counsel-independent.0",
+        "voice.research.records.v1"
+      ],
+      "insertions": 2,
+      "remembers": 1,
+      "baselineRemembers": null,
+      "wrapper": false,
+      "incompleteAddress": false,
+      "incompleteClosings": 0,
+      "nextPromises": 0,
+      "dryWetMemories": 0,
+      "newcomerInsertions": 0,
+      "wrongCloseDistance": false,
+      "unrenderedInsertions": 0,
+      "texts": [
+        "제 질문으로 시작한 작은 검증을 믿고 맡겨 주셨던 일을 기억합니다.",
+        "뜻밖의 결과도 원자료와 함께 남깁니다. 다시 확인할 사람이 같은 출발점에서 시작할 수 있어야 하니까요."
+      ]
+    },
+    {
+      "id": "audit-integration-youtuber-6-youtuber-050",
+      "ending": "youtuber",
+      "name": "박유진",
+      "relationship": "close",
+      "passageIds": [],
+      "insertions": 0,
+      "remembers": 0,
+      "baselineRemembers": null,
+      "wrapper": false,
+      "incompleteAddress": false,
+      "incompleteClosings": 0,
+      "nextPromises": 0,
+      "dryWetMemories": 0,
+      "newcomerInsertions": 0,
+      "wrongCloseDistance": false,
+      "unrenderedInsertions": 0,
+      "texts": []
+    },
+    {
+      "id": "audit-focused-16-true-050",
+      "ending": "true",
+      "name": "김지원",
       "relationship": "close",
       "passageIds": [
         "memory.counsel-results.0",
@@ -708,75 +799,6 @@
         "예상과 다른 그래프도 함께 놓고 원자료부터 확인했던 시간을 기억합니다.",
         "원고를 읽을 때는 결론이 어디까지 성립하는지부터 표시합니다. 그 선을 분명히 해야 다음 질문도 보입니다."
       ]
-    },
-    {
-      "id": "audit-integration-true-13-true-050",
-      "ending": "true",
-      "name": "김지원",
-      "relationship": "close",
-      "passageIds": [
-        "memory.counsel-phd-career.0",
-        "voice.research.limits.v1"
-      ],
-      "insertions": 2,
-      "remembers": 1,
-      "baselineRemembers": null,
-      "wrapper": false,
-      "incompleteAddress": false,
-      "incompleteClosings": 0,
-      "nextPromises": 0,
-      "dryWetMemories": 0,
-      "newcomerInsertions": 0,
-      "wrongCloseDistance": false,
-      "unrenderedInsertions": 0,
-      "texts": [
-        "어떤 진로든 제가 원하는 생활을 먼저 생각해 보라고 하셨던 면담을 기억합니다.",
-        "원고를 읽을 때는 결론이 어디까지 성립하는지부터 표시합니다. 그 선을 분명히 해야 다음 질문도 보입니다."
-      ]
-    },
-    {
-      "id": "audit-focused-16-true-050",
-      "ending": "true",
-      "name": "김지원",
-      "relationship": "close",
-      "passageIds": [
-        "memory.counsel-feedback.0",
-        "voice.research.review.v1"
-      ],
-      "insertions": 2,
-      "remembers": 0,
-      "baselineRemembers": null,
-      "wrapper": false,
-      "incompleteAddress": false,
-      "incompleteClosings": 0,
-      "nextPromises": 0,
-      "dryWetMemories": 0,
-      "newcomerInsertions": 0,
-      "wrongCloseDistance": false,
-      "unrenderedInsertions": 0,
-      "texts": [
-        "잘한 점과 보완할 점을 따로 짚어 주셨던 메모가 아직 남아 있습니다.",
-        "좋아 보이는 결과일수록 다른 설명이 가능한지 먼저 살핍니다. 동료에게도 결론보다 확인 과정을 보여 주려 합니다."
-      ]
-    },
-    {
-      "id": "audit-historical-3713-youtuber-050",
-      "ending": "youtuber",
-      "name": "최승현",
-      "relationship": "reserved",
-      "passageIds": [],
-      "insertions": 0,
-      "remembers": 0,
-      "baselineRemembers": null,
-      "wrapper": false,
-      "incompleteAddress": false,
-      "incompleteClosings": 0,
-      "nextPromises": 0,
-      "dryWetMemories": 0,
-      "newcomerInsertions": 0,
-      "wrongCloseDistance": false,
-      "unrenderedInsertions": 0,
-      "texts": []
     }
   ]
 }

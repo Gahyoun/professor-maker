@@ -2,6 +2,7 @@ import {studentEmotion,reactionEffects} from './student-reaction.js';
 import {weeklyAppearance,renderPortrait} from './appearance.js';
 import {activityProps,monitorMotion} from './activity-motion.js';
 import {equipmentProfile,roomEquipment} from './lab-equipment.js';
+import {labSeason,seasonalWindow} from './lab-season.js';
 // One shared axonometric projection for walls, floor, furniture and props.
 // Seeded cosmetics never consume simulation RNG or affect research outcomes.
 export const WALLPAPERS=['#faf8f2','#f3efe5','#eee5d7','#f7f4ec','#e8dfd0'];
@@ -117,15 +118,14 @@ function actor(state,result,index,u,v,idle,lift=0,facing='front'){
  const props=executing||relaxing?`<g transform="translate(${x} ${y}) scale(.8)">${activityProps(activity,{wet,index,kind:equipmentProfile(state),facing})}</g>`:'';
  return (pose==='seated'?'':plane([[u-1.3,v-.4,0],[u-.4,v-1.3,0],[u+1.3,v+.4,0],[u+.4,v+1.3,0]],'#b9b4a4'))+`<g class="mini-student pose-${pose} expression-${expression} ${idle?'mini-idle':'mini-working'} action-${activity.replace(/[^a-z_-]/g,'')}" data-floor="${u},${v}"><g class="room-reaction" transform="translate(${x} ${headCenter}) scale(.7)">${reactionEffects(expression,index)}</g>${portrait}${props}</g>`;
 }
-export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'}={}){
+export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced',student=true}={}){
  const d=roomDecorations(state),wall=WALLPAPERS[d.wallpaper],[tile,tileAlt,grout]=FLOOR_TILES[d.floor],wet=state.professorProfile.labMode==='wet';
  let art=plane([[0,0,0],[28,0,0],[28,28,0],[0,28,0]],tile);
  for(let u=0;u<28;u+=4)for(let v=0;v<28;v+=4)art+=plane([[u,v,0],[u+4,v,0],[u+4,v+4,0],[u,v+4,0]],(u/4+v/4)%2?tileAlt:tile,grout);
  art+=plane([[0,0,0],[0,28,0],[0,28,90],[0,0,90]],shade(wall,-11),'#cbc5b8')+plane([[0,0,0],[28,0,0],[28,0,90],[0,0,90]],wall,'#cbc5b8');
  art+=left(.08,0,0,28,4,'#c5baa7')+front(0,.08,0,28,4,'#d0c5b1');
  // Window, writing board and pinned papers sit on their respective wall planes.
- art+=left(.15,8,33,11,47,'#d0c5af')+left(.2,8.6,36,9.8,40,'#c5dce0')+left(.24,13.2,36,.45,40,'#f4f0e4')+left(.24,8.6,54,9.8,.8,'#f4f0e4');
- for(let i=0;i<7;i++)art+=left(.27,9+i*1.3,36,1.4,5+(i%3)*3,['#a7bca4','#b3c3ac','#b9c5af'][i%3]);
+ art+=left(.15,8,33,11,47,'#d0c5af')+seasonalWindow(state,projectRoom,{idle})+left(.24,13.2,36,.45,40,'#f4f0e4')+left(.24,8.6,54,9.8,.8,'#f4f0e4');
  art+=`<g class="window-plant-shelf" aria-label="창가 화분 선반">${box(.3,8.2,1.2,10.6,1.5,'#c7b49a',34)}`;
  for(let i=0;i<d.windowPlants;i++)art+=plant(.45,9.4+i*3.4,(d.plantType+i+1)%4,{z:35.5,small:true});
  art+='</g>';
@@ -144,7 +144,7 @@ export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'
  // Keep each seat and its occupant together. Sorting by the chair's far
  // corner alone used to paint the backrest over the student's face.
  const restSeats=[[24.3,8.5,5],[26,6.5,7],[24.1,7.5,1],[23.5,6.5,2]];
- const seat=restSeats[d.restType],restActor=resting?actor(state,result,index,seat[0],seat[1],false,seat[2]):'';
+ const seat=restSeats[d.restType],restActor=resting&&student?actor(state,result,index,seat[0],seat[1],false,seat[2]):'';
  add(22,5,4,8,`<g class="rest-seat-layer" data-seat-type="${d.restType}">${restFurniture(22,5,d.restType)}${restActor}</g>`);
  if(d.cot&&d.restType!==1)add(19,24,7,3,cot(19,24));
  if(d.printer)add(15,1,3.5,3,desk(15,1,3.5,3)+printer(15.5,1.7,26));
@@ -166,10 +166,10 @@ export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'
  // The desk is already complete behind the occupant. Its near geometry only
  // occludes the lower body: an unclipped replay would stripe the upper torso.
  const hipY=projectRoom(...ROOM_ANCHORS.deskSeat,20)[1],lowerDesk=deskWorking?`<svg class="desk-lower-occlusion" x="0" y="${hipY}" width="600" height="${360-hipY}" viewBox="0 ${hipY} 600 ${360-hipY}" overflow="hidden" aria-hidden="true">${deskLayers.front}</svg>`:'';
- objects.push({depth:44,art:`<g class="desk-seat-layer" data-layer-order="chair-rear student chair-front desk-front">${deskSeat.base}${deskWorking?actor(state,result,index,...ROOM_ANCHORS.deskSeat,false,0,'monitor'):''}${deskSeat.front}${lowerDesk}</g>`});
- const pos=lecturing?[24,3]:result.actual==='presentation'&&!idle?[24,4]:working?[17,15]:ROOM_ANCHORS.standing;if(result.outcome!=='training'&&!resting&&!deskWorking)add(...pos,1,1,actor(state,result,index,...pos,idle));
+ objects.push({depth:44,art:`<g class="desk-seat-layer" data-layer-order="chair-rear student chair-front desk-front">${deskSeat.base}${student&&deskWorking?actor(state,result,index,...ROOM_ANCHORS.deskSeat,false,0,'monitor'):''}${deskSeat.front}${lowerDesk}</g>`});
+ const pos=lecturing?[24,3]:result.actual==='presentation'&&!idle?[24,4]:working?[17,15]:ROOM_ANCHORS.standing;if(student&&result.outcome!=='training'&&!resting&&!deskWorking)add(...pos,1,1,actor(state,result,index,...pos,idle));
  objects.sort((a,b)=>a.depth-b.depth);art+=objects.map(o=>o.art).join('');
  // Front rim has the same two floor axes as the tiles, never an unrelated angle.
  art+=plane([[0,28,0],[28,28,0],[28,28,-3],[0,28,-3]],shade(tile,-18))+plane([[28,0,0],[28,28,0],[28,28,-3],[28,0,-3]],shade(tile,-28));
- return `<svg class="pixel-room-art mini-room-art" viewBox="0 0 600 360" role="img" aria-label="도트로 표현한 작은 ${wet?'Wet':'Dry'} lab 연구실" preserveAspectRatio="xMidYMid meet" data-wallpaper="${d.wallpaper}" data-floor-tile="${d.floor}" data-equipment-profile="${equipment.kind}"><g shape-rendering="crispEdges">${art}</g></svg>`;
+ return `<svg class="pixel-room-art mini-room-art" viewBox="0 0 600 360" role="img" aria-label="도트로 표현한 작은 ${wet?'Wet':'Dry'} lab 연구실" preserveAspectRatio="xMidYMid meet" data-wallpaper="${d.wallpaper}" data-floor-tile="${d.floor}" data-equipment-profile="${equipment.kind}" data-field-kit="${equipment.specialty}" data-season="${labSeason(state,{idle})}"><g shape-rendering="crispEdges">${art}</g></svg>`;
 }
