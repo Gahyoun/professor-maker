@@ -1,0 +1,31 @@
+/* Quiet pixel motions use nested groups, preserving every object's placement. */
+.scene-rest:has(.scenery-bed) .pixel-student{right:40%;bottom:15%;transform:rotate(-90deg);animation:none}
+.scene-rest:has(.scenery-bed) .pixel-student .student-reaction-art{display:none}
+.scene-active .recovery-cloud-drift{animation:recovery-cloud 14s ease-in-out infinite alternate}
+.scene-active .recovery-bird-float{animation:recovery-birds 5s steps(4,end) infinite}
+.scene-active .recovery-sun-glow{animation:recovery-light 7s ease-in-out infinite}
+.scene-active .recovery-leaf-sway{animation:recovery-leaves 4.6s steps(3,end) infinite;transform-box:fill-box;transform-origin:50% 95%}
+.scene-active .recovery-grass-sway{animation:recovery-leaves 3s steps(2,end) infinite;transform-box:fill-box;transform-origin:50% 100%}
+.scene-active .recovery-wave{animation:recovery-water 3.5s steps(4,end) infinite}
+.scene-active .recovery-wave.wave-1{animation-delay:-1.1s}
+.scene-active .recovery-wave.wave-2{animation-delay:-2.2s}
+.scene-active .recovery-shore-foam{animation:recovery-foam 5s ease-in-out infinite}
+.scene-active .recovery-boat-rock{animation:recovery-boat 4s steps(4,end) infinite}
+.scene-active .recovery-window-glow{animation:recovery-window 8s steps(2,end) infinite}
+.scene-active .recovery-fountain{animation:recovery-water 1.8s steps(3,end) infinite}
+.scene-active .recovery-steam{animation:recovery-steam 3s steps(4,end) infinite}
+.scene-active .recovery-curtain{animation:recovery-curtain 5s ease-in-out infinite}
+.scene-active .recovery-lamp-glow{animation:recovery-light 6s ease-in-out infinite}
+.scene-active .recovery-quilt-breathe{animation:recovery-quilt 3.8s steps(3,end) infinite}
+@keyframes recovery-cloud{to{transform:translateX(8px)}}
+@keyframes recovery-birds{50%{transform:translate(4px,-2px)}}
+@keyframes recovery-light{50%{opacity:.7}}
+@keyframes recovery-leaves{50%{transform:rotate(2deg)}}
+@keyframes recovery-water{50%{transform:translate(3px,1px);opacity:.65}}
+@keyframes recovery-foam{50%{transform:translateY(2px);opacity:.65}}
+@keyframes recovery-boat{50%{transform:translateY(2px)}}
+@keyframes recovery-window{50%{opacity:.72}}
+@keyframes recovery-steam{0%{opacity:.2;transform:translateY(1px)}50%{opacity:.85}100%{opacity:.2;transform:translateY(-3px)}}
+@keyframes recovery-curtain{50%{transform:translateX(1px)}}
+@keyframes recovery-quilt{50%{transform:translateY(-1px)}}
+@media(prefers-reduced-motion:reduce){.recovery-scenery *{animation:none!important}}

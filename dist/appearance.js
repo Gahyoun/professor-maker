@@ -79,15 +79,15 @@ export function renderPortrait(appearance,label='학생 도트 초상화',expres
  if(a.curly&&l>0){for(let x=8;x<=31;x+=4){box(x,7+(x%3),x+2,9+(x%3),hair);put(x+1,7+(x%3),hairHl);}for(let y=14;y<(l>=4?{4:33,5:41,6:50}[l]:25);y+=4){box(6,y,8,y+2,hair);box(31,y+1,33,y+3,hair);put(7,y,hairHl);put(32,y+1,hairHl);}}
  // brows only where the forehead shows
  [[12,15],[24,27]].forEach(([p,q])=>{for(let x=p;x<=q;x++)if(get(x,15)===skin)put(x,15,shade(a.hair,10));});
- // eyes: 0 dot · 1 line · 2 squint (simple, mini-hompy style)
+ // Open eyes keep the reference's tall pupils; closed eyes remain legible at 80% size.
  const ey=17,lash='#253247',kind=a.eyes??0;
  [[13,15],[24,26]].forEach(([x0,x1])=>{const c=x0+1;
   if(expression==='surprised'){box(c,ey+1,c,ey+4,lash);put(c-1,ey+2,lash);put(c+1,ey+2,lash);}
-  else if(['happy','delighted','relieved'].includes(expression)){put(x0,ey+3,lash);put(c,ey+2,lash);put(x1,ey+3,lash);}
-  else if(['focused','tired','sad'].includes(expression)){row(ey+3,x0,x1,lash);if(expression==='sad')put(x0,ey+2,lash);}
+  else if(['happy','delighted','relieved'].includes(expression)){row(ey+4,c-2,c-1,lash);put(c-1,ey+3,lash);put(c,ey+2,lash);put(c+1,ey+3,lash);row(ey+4,c+1,c+2,lash);}
+  else if(['focused','tired','sad'].includes(expression)){row(ey+3,c-2,c+2,lash);row(ey+4,c-1,c+1,lash);if(expression==='sad'){put(c-2,ey+2,lash);put(c+2,ey+2,lash);}}
   else if(kind===0){box(x0,ey+2,x1,ey+6,lash);row(ey+1,x0,x1,shade(a.hair,2));put(x0,ey+2,'#fff8eb');put(x0+1,ey+2,'#fff8eb');put(x1,ey+6,'#465773');}
-  else if(kind===1){box(c,ey+2,c+1,ey+5,lash);put(c,ey+2,'#fff8eb');}
-  else{put(x0,ey+4,lash);put(c,ey+3,lash);put(x1,ey+4,lash);}});
+  else if(kind===1){box(x0,ey+2,x1,ey+6,lash);put(x0,ey+2,'#fff8eb');put(x1,ey+6,'#465773');}
+  else{row(ey+4,c-2,c-1,lash);put(c-1,ey+3,lash);put(c,ey+2,lash);put(c+1,ey+3,lash);row(ey+4,c+1,c+2,lash);}});
  // cheeks, mouth
  row(24,10,12,'#f5b0b5');row(24,27,29,'#f5b0b5');row(25,10,13,'#ed919d');row(25,26,29,'#ed919d');put(11,24,'#ffe0da');put(28,24,'#ffe0da');
  put(20,24,skinSh);
@@ -111,7 +111,7 @@ export function renderPortrait(appearance,label='학생 도트 초상화',expres
  let rects='';
  for(let y=0;y<H;y++){let x=0;while(x<W){const c=out[y][x];if(!c){x++;continue;}let e=x;while(e+1<W&&out[y][e+1]===c)e++;rects+=`<rect x="${x}" y="${y}" width="${e-x+1}" height="1" fill="${c}"/>`;x=e+1;}}
  const title=`${label} · ${EXPRESSIONS[expression]} · ${styles[l]}${a.curly&&l?' · 곱슬머리':''}${a.glasses?' · 안경':''}${l?` · 앞머리 ${fringeIndex+1}`:''}`;
- const lectureArm=pose==='lecturing'?`<g transform="translate(0 24) scale(8)" shape-rendering="crispEdges"><g class="ta-lecture-arm"><path d="M10 34h3v5h-4v-3H7v-3H5v-5h4v3h2z" fill="${top}" stroke="${shade(top,-58)}" stroke-width="1"/><path d="M6 31h2v3h2v3h2" fill="none" stroke="${shade(top,-20)}"/><path class="ta-pointer" d="M7 29V23H6v-7" fill="none" stroke="#756353" stroke-width="1.2"/><path d="M6 16v2" stroke="#e9e5d8" stroke-width="1"/><path d="M5 27h4v3H5z" fill="${skin}" stroke="${skinSh}" stroke-width=".7"/></g></g>`:'';
+ const lectureArm=pose==='lecturing'?`<g transform="translate(0 24) scale(8)" shape-rendering="crispEdges"><g class="ta-lecture-arm"><path d="M10 34h3v5h-4v-3H7v-3H5v-5h4v3h2z" fill="${top}" stroke="${shade(top,-58)}" stroke-width="1"/><path d="M6 31h2v3h2v3h2" fill="none" stroke="${shade(top,-20)}"/><path class="ta-pointer" d="M7 29V23H6v-11" fill="none" stroke="#756353" stroke-width="1.2"/><path d="M6 12v2" stroke="#e9e5d8" stroke-width="1"/><path d="M5 27h4v3H5z" fill="${skin}" stroke="${skinSh}" stroke-width=".7"/></g></g>`:'';
  return `<svg class="portrait" data-expression="${expression}" data-pose="${pose}" data-outfit="${outfit}" viewBox="0 0 320 496" role="img" aria-label="${title}${pose==='lecturing'?' · 칠판 앞에서 강의':''}"><title>${title}${pose==='lecturing'?' · 칠판 앞에서 강의':''}</title><g class="hair-fringe chibi-grid ${expression==='sad'?'expression-tear':''}" shape-rendering="crispEdges" transform="translate(0 24) scale(8)">${rects}</g>${lectureArm}</svg>`;
 }
 

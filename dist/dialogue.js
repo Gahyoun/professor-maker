@@ -169,7 +169,7 @@ export const DIALOGUES = {
 영어 문장을 다 외우는 대신 핵심을 다른 말로 설명하는 연습을 했어요. | Instead of memorizing every English sentence, I practiced explaining the main point another way.
 발표를 마치고 나서야 제 이름표를 제대로 봤어요. | I only really looked at my name badge after the talk was over.
 다른 발표를 듣다 보니 우리 결과의 장점과 한계가 둘 다 보였어요. | Listening to other talks helped me see both the strengths and limits of our results.
-상보다 기억에 남는 질문이 있어요. 그 질문은 다시 생각해 보고 싶어요. | There is a question I remember more than the award. I want to think about it again.
+기억에 남는 질문이 있어요. 그 질문은 다시 생각해 보고 싶어요. | There is a question I still remember. I want to think about it again.
 `),
   graduate: lines(`
 남은 요건을 정리해 왔어요. 논문 다음에는 발표 일정부터 잡으려고요. | I summarized the remaining requirements. After the paper, I plan to arrange the presentation.

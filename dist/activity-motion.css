@@ -1,0 +1,24 @@
+/* Each tool moves locally; an animation never dislodges the room projection. */
+.scene-active .study-pencil{animation:study-write 1.25s steps(4,end) infinite}
+.scene-active .study-page{animation:study-turn 4.5s steps(3,end) infinite;transform-box:fill-box;transform-origin:left center}
+.scene-active .lab-pipette{animation:pipette-use 1.7s steps(4,end) infinite}
+.scene-active .lab-droplet{animation:pipette-drop 1.7s steps(4,end) infinite}
+.scene-active .analysis-trace{stroke-dasharray:32;animation:analysis-draw 3.2s linear infinite}
+.scene-active .analysis-cursor{animation:analysis-point 2.8s steps(4,end) infinite}
+.scene-active .analysis-status{animation:analysis-status 2s steps(2,end) infinite}
+.scene-active .cup-steam{animation:cup-steam 3s ease-in-out infinite}
+.scene-active .rest-note{animation:rest-note 3.6s steps(4,end) infinite}
+.scene-active .rehearsal-words{animation:rehearse 2s steps(3,end) infinite}
+.mini-student.action-rest.pose-seated,.mini-student.action-coffee.pose-seated{animation:rest-breathe 3.5s ease-in-out infinite}
+@keyframes study-write{0%,100%{transform:translate(0,0)}50%{transform:translate(-3px,1px)}}
+@keyframes study-turn{0%,75%,100%{transform:scaleX(1);opacity:0}80%{opacity:1;transform:scaleX(1)}90%{opacity:1;transform:scaleX(-1)}}
+@keyframes pipette-use{0%,100%{transform:translateY(0)}40%,60%{transform:translateY(2px)}}
+@keyframes pipette-drop{0%,45%,100%{opacity:0;transform:translateY(0)}50%{opacity:1}75%{opacity:1;transform:translateY(6px)}}
+@keyframes analysis-draw{0%{stroke-dashoffset:32;opacity:.5}60%,100%{stroke-dashoffset:0;opacity:1}}
+@keyframes analysis-point{0%,100%{transform:translate(0,0)}35%{transform:translate(-5px,2px)}70%{transform:translate(2px,-3px)}}
+@keyframes analysis-status{50%{opacity:.3}}
+@keyframes cup-steam{0%,100%{opacity:.3;transform:translateY(0)}60%{opacity:.8;transform:translateY(-4px)}}
+@keyframes rest-note{0%,100%{opacity:0;transform:translateY(0)}30%,70%{opacity:.65;transform:translate(2px,-5px)}}
+@keyframes rehearse{0%,100%{opacity:.3}50%{opacity:.9;transform:translateX(2px)}}
+@keyframes rest-breathe{50%{transform:translateY(-.6px)}}
+@media(prefers-reduced-motion:reduce){.scene-active [data-motion] *,.mini-student.action-rest,.mini-student.action-coffee{animation:none!important}.study-page,.lab-droplet,.rest-note{opacity:0}.analysis-trace{stroke-dashoffset:0}.cup-steam{opacity:.55}}

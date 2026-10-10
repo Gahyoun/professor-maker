@@ -1,25 +1,62 @@
 // Reproducible policy audit, not an estimate of human players or real career odds.
 import {Worker,isMainThread,parentPort,workerData} from 'node:worker_threads';
 import fs from 'node:fs/promises';
-import {createState,proposeSchedule,calendarMonth,abilityScore,projectThresholds,projectWork,studentTrainingActive,TRUE_REQUIREMENTS,recommendationCandidate,degreeRequirements} from '../dist/engine.js';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {createState,proposeSchedule,calendarMonth,abilityScore,projectThresholds,projectWork,studentTrainingActive,TRUE_REQUIREMENTS,recommendationCandidate,degreeRequirements,canDefend} from '../dist/engine.js';
 import {DISCIPLINES} from '../dist/disciplines.js';
+import {MAIN_ENDINGS} from '../dist/ending-collection.js';
+import {generateKoreanName} from '../dist/names.js';
 import {managedOptions} from '../tests/play-support.mjs';
 const policies=['guided','faculty','formal-faculty','industry','venture','communication','new-field','job-search','independent','graduate','masters','low-contact'];
+const names={true:'트루 · 교수',postdoc:'포닥',institute:'정부출연연',corporate:'기업 연구·개발',unrelated:'새로운 분야의 기업',startup:'창업',unemployed:'구직 중',resident_researcher:'교내 연구원',bachelor:'학사 졸업',masters:'석사 졸업',leave:'휴학',dismissed:'제적',youtuber:'영상 특수',withdraw:'자퇴',gameover:'업무 중단',incomplete:'96개월 후 미완료','budget-blocked':'자금 한도 도달 · 진행 대기',error:'실행 예외'};
+const criterionNames={learning:'학습',research:'연구',language:'어학·전달',social:'대인관계',autonomy:'자율성',teaching:'교육 경험',rapport:'라포',resilience:'정신력',manners:'예의',motivation:'의욕',papers:'논문',conferences:'학술대회',recommendations:'추천·협력 경험',faculty:'교수 업무 4종 최솟값',leadingPaper:'선도 논문',award:'수상',hIndex:'h-index',doctoralDefense:'박사 학위 요건·qual'};
+const criteria={...TRUE_REQUIREMENTS,leadingPaper:1,award:1,hIndex:4,doctoralDefense:1};
+const preferredFields={true:['050','090','056'],postdoc:['056','048','050'],institute:['055','062','094'],corporate:['090','072','156'],unrelated:['072','048','056'],startup:['094','157','156'],unemployed:['048','090','072'],resident_researcher:['062','050','072'],youtuber:['157','050','056']};
+const sampleRank=s=>{const rank=preferredFields[s.endingId]?.indexOf(s.field.id)??-1;return rank<0?10:rank;};
+function retainSample(pool,sample){const same=pool.findIndex(x=>x.field.id===sample.field.id);if(same>=0){if(pool[same].run<=sample.run)return;pool.splice(same,1);}pool.push(sample);pool.sort((a,b)=>sampleRank(a)-sampleRank(b)||a.run-b.run);pool.splice(MAIN_ENDINGS.includes(sample.endingId)||sample.endingId==='youtuber'?3:1);}
+const percent=(n,d)=>d?Number((100*n/d).toFixed(4)):0;
+function auditState(s){const values={};for(const key of Object.keys(TRUE_REQUIREMENTS))values[key]=key==='faculty'?Math.min(...Object.values(s.professor)):key in s.hidden?abilityScore(s,key):s.career[key];Object.assign(values,{leadingPaper:s.career.topPapers,award:s.career.awards,hIndex:s.impact?.hIndex??0,doctoralDefense:Number(canDefend(s))});return {values,missing:Object.keys(criteria).filter(k=>values[k]<criteria[k])};}
+function facultyStats(){return {evaluated:0,recommendationCandidates:0,trueEndings:0,unmet:Object.fromEntries(Object.keys(criteria).map(k=>[k,0]))};}
+function incrementFaculty(target,s,audit){target.evaluated++;target.recommendationCandidates+=Number(recommendationCandidate(s));target.trueEndings+=Number(s.ending==='true');for(const key of audit.missing)target.unmet[key]++;}
+function markdown(report){
+ const lines=[`# 엔딩 밸런스 감사 · v${report.engineVersion}`,'',`검사일: ${report.auditDate} (한국 시간). 실제 브라우저용 simulation-worker의 월 진행·결정 핸들러를 Node worker_threads에서 호출해 **${report.runs.toLocaleString('en-US')}회** 실행했습니다. 소요시간 ${report.seconds.toFixed(1)}초.`, '', '새 회차에서 시작하며 능력·연구비·논문·수상 수치를 주입하지 않았습니다. 12개 지정 전략을 거의 동일한 횟수로 섞고, 73개 분야·가능한 wet/dry 방식·3개 학교 유형을 순환했습니다. 허용된 일정·예산·업무 배분·진학·이벤트 선택만 지정했습니다. 선집행은 게임 내 한도 안에서 활성화했습니다.', '', '**전체 비율은 이 전략 혼합의 결과이며 실제 플레이어 승률이나 현실의 진로 확률이 아닙니다.** 전략별 비율을 함께 봐야 합니다. 동일한 시드·정책이므로 재실행해도 결과가 바뀌지 않습니다.', '', '## 전체 결과', '', '| 결과 | 횟수 | 전체 회차 대비 | 완료된 엔딩 대비 |', '| --- | ---: | ---: | ---: |'];
+ for(const [id,count]of Object.entries(report.endings).sort((a,b)=>b[1]-a[1]))lines.push(`| ${names[id]??id} | ${count} | ${percent(count,report.runs).toFixed(2)}% | ${percent(count,report.completedRuns).toFixed(2)}% |`);
+ lines.push('',`완료된 엔딩 **${report.completedRuns}회 / ${report.runs}회**. 자금 집행 불가 ${report.unresolved.budgetBlocked}회, 미완료 ${report.unresolved.incomplete}회, 실행 예외 ${report.unresolved.errors}회는 엔딩 비율의 완료 분모에서 제외했습니다. 모든 결과의 합은 ${report.accountedRuns}회입니다.`, '', `퇴임식 수집 대상 8종: ${report.majorEndingCoverage.seen.map(id=>names[id]).join(', ')}. 미관측: ${report.majorEndingCoverage.missing.length?report.majorEndingCoverage.missing.map(id=>names[id]).join(', '):'없음'}. 영상 특수는 퇴임식 해금 조건에 포함하지 않습니다.`, '', '## 전략별 결과', '', '| 전략 | 회차 | 관측 결과 · 전략 내 비율 |', '| --- | ---: | --- |');
+ for(const policy of policies){const row=report.byPolicy[policy];lines.push(`| ${policy} | ${row.runs} | ${Object.entries(row.outcomes).sort((a,b)=>b[1]-a[1]).map(([id,n])=>`${names[id]??id} ${n} (${percent(n,row.runs).toFixed(2)}%)`).join(', ')} |`);}
+ const targeted=report.byPolicy.faculty,ratio=percent(targeted.endings.true??0,targeted.runs);
+ lines.push('',`임용 준비 faculty 전략의 트루 도달: **${targeted.endings.true??0} / ${targeted.runs} (${ratio.toFixed(2)}%)**. 선도 논문과 추천 경험, 교육·어학, 교수 업무를 의도적으로 준비한 전략에서 실제 도달이 확인됐습니다. 조건을 낮추거나 상태를 주입하지 않았습니다. 이 수치는 2~3회 재도전의 성공을 보장하지 않으며, 이전 엔딩 수집이 확률을 올리는 메타 보너스도 사용하지 않았습니다.`, '', '`formal-faculty`는 같은 준비를 하되 마지막 8개월에 강한 지적을 반복하는 비교 전략입니다. 추천서 경력 조건을 갖춘 상태에서도 라포가 다르면 포닥 분기로 갈리는지 확인합니다. 현실의 임용 결과를 추천서 한 장으로 설명한다는 뜻은 아닙니다.', '', '`communication`은 학위 연구요건을 채운 뒤 전 주를 어학·발표에 배정하며 회복 시간을 확보하지 않는 스트레스 검사입니다. 이 전략의 휴학이 많다는 사실을 영상 엔딩의 희귀성만으로 해석하지 않습니다. `industry`와 `venture`는 RA, `graduate`는 학사 졸업, `masters`는 석사 졸업을 선택합니다. `new-field`와 `job-search`는 최소 학위 연구요건 이후 기존 연구를 더 쌓는 대신 다른 활동으로 이동합니다. `independent`는 자율 일정 중심, `low-contact`는 추가 대화 없이 통상 업무를 반복합니다. `guided`는 연구·분석과 회복을 함께 배정합니다.', '', '## 임용 조건 점검', '', `96개월까지 도달한 상태 ${report.facultyAudit.evaluated}회에서 현재 엔진의 14개 수치 조건과 선도 논문·수상·h-index·학위 요건을 각각 점검했습니다. 아래의 faculty 분모는 **${targeted.facultyAudit.evaluated}회**입니다. 조기 졸업·휴학·제적·예산 정체로 96개월에 도달하지 못한 회차는 조건 점검 분모에 포함하지 않습니다.`, '', '| 조건 | 기준 | faculty 미충족 | faculty 미충족률 | 96개월 전체 미충족 |', '| --- | ---: | ---: | ---: | ---: |');
+ for(const [key,value]of Object.entries(criteria))lines.push(`| ${criterionNames[key]} | ${key==='doctoralDefense'?'충족':value} | ${targeted.facultyAudit.unmet[key]} / ${targeted.facultyAudit.evaluated} | ${percent(targeted.facultyAudit.unmet[key],targeted.facultyAudit.evaluated).toFixed(2)}% | ${report.facultyAudit.unmet[key]} / ${report.facultyAudit.evaluated} |`);
+ lines.push('',`96개월 전체에서 라포를 제외한 추천서 경력 후보 ${report.facultyAudit.recommendationCandidates}회, 트루 ${report.facultyAudit.trueEndings}회입니다. faculty 전략에서는 후보 ${targeted.facultyAudit.recommendationCandidates}회, 트루 ${targeted.facultyAudit.trueEndings}회입니다. 각 미충족 항목은 겹칠 수 있으므로 행의 합이 분모와 같지 않습니다.`, '', '### 임용 준비 전략에서 트루에 가까웠던 미충족 사례', '', '| 회차(0부터) | 분야 · 방식 | 실제 엔딩 | 미충족 조건 (관측값 < 기준) |', '| --- | --- | --- | --- |');
+ for(const s of report.nearMissFacultySamples)lines.push(`| ${s.run} | ${s.fieldId} · ${s.labMode} | ${names[s.ending]??s.ending} | ${s.missing.map(k=>`${criterionNames[k]} ${Number(s.values[k]).toFixed(2)} < ${criteria[k]}`).join(', ')} |`);
+ lines.push('', '## 재현과 출처', '', '`node scripts/ending-balance-audit.mjs 10000`', '', `실행 시작 소스 SHA: ${report.sourceCommit}. 시작 버전 v${report.engineVersion}. 엔진 SHA-256: ${report.sourceHashes['dist/engine.js']}. 상세 원자료에는 simulation-worker와 모든 gameplay 입력 모듈의 SHA-256, 실행 정책·비율·미완료·예외를 함께 기록합니다.`, '', '상세 원자료: [ending-balance-audit.json](ending-balance-audit.json). 판정·장면 설계: [ending-design.md](ending-design.md). 실제 종료 표본: [ending-audit-samples.json](ending-audit-samples.json).', '');return lines.join('\n');
+}
 if(isMainThread){
  const total=Number(process.argv[2]??10000),jobs=Math.min(8,total),started=Date.now();
+ if(!Number.isSafeInteger(total)||total<1)throw Error('Run count must be a positive integer');
+ const engineVersion=JSON.parse(await fs.readFile(new URL('../package.json',import.meta.url),'utf8')).version,sourceCommit=execFileSync('git',['rev-parse','HEAD'],{cwd:new URL('..',import.meta.url),encoding:'utf8'}).trim();
+ const sourceHashes={};for(const file of ['scripts/ending-balance-audit.mjs','tests/play-support.mjs','dist/simulation-worker.js','dist/engine.js','dist/balance.js','dist/funding.js','dist/workload.js','dist/impact.js','dist/disciplines.js','dist/events.js','dist/monthly-choices.js','dist/academic-calendar.js','dist/main-story.js','dist/travel.js','dist/grants.js','dist/research-topics.js','dist/venues.js','dist/relationship.js','dist/names.js'])sourceHashes[file]=createHash('sha256').update(await fs.readFile(new URL('../'+file,import.meta.url))).digest('hex');
  const results=await Promise.all(Array.from({length:jobs},(_,i)=>new Promise((resolve,reject)=>{const w=new Worker(new URL(import.meta.url),{workerData:{start:i,total,stride:jobs}});w.on('message',resolve);w.on('error',reject);})));
- const report={runs:total,seedFormula:'7919 * (run + 1)',endings:{},byPolicy:{},unmetFacultyCriteria:{},errors:[],seconds:(Date.now()-started)/1000};
- for(const r of results){for(const [k,n]of Object.entries(r.endings))report.endings[k]=(report.endings[k]??0)+n;for(const [k,n]of Object.entries(r.unmet))report.unmetFacultyCriteria[k]=(report.unmetFacultyCriteria[k]??0)+n;for(const [p,v]of Object.entries(r.byPolicy)){const target=report.byPolicy[p]??={runs:0,endings:{}};target.runs+=v.runs;for(const [k,n]of Object.entries(v.endings))target.endings[k]=(target.endings[k]??0)+n;}report.errors.push(...r.errors);}
+ const report={runs:total,engineVersion,sourceCommit,sourceHashes,auditDate:new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()),seedFormula:'7919 * (run + 1)',method:'Twelve deterministic allowed-action policies; browser simulation-worker handlers run in Node worker_threads. No injected ability, funds, publications or awards. Not a human-player win-rate estimate.',policies,criteria,endings:{},outcomes:{},byPolicy:{},facultyAudit:facultyStats(),nearMissFacultySamples:[],errors:[],seconds:(Date.now()-started)/1000};
+ const mergeFaculty=(a,b)=>{for(const key of ['evaluated','recommendationCandidates','trueEndings'])a[key]+=b[key];for(const [k,n]of Object.entries(b.unmet))a.unmet[k]+=n;};
+ for(const r of results){for(const [k,n]of Object.entries(r.outcomes))report.outcomes[k]=(report.outcomes[k]??0)+n;mergeFaculty(report.facultyAudit,r.facultyAudit);for(const [p,v]of Object.entries(r.byPolicy)){const target=report.byPolicy[p]??={runs:0,outcomes:{},facultyAudit:facultyStats()};target.runs+=v.runs;mergeFaculty(target.facultyAudit,v.facultyAudit);for(const [k,n]of Object.entries(v.outcomes))target.outcomes[k]=(target.outcomes[k]??0)+n;}report.errors.push(...r.errors);report.nearMissFacultySamples.push(...r.nearMissFacultySamples);}
+ const unresolvedIds=['budget-blocked','incomplete','error'];report.endings=Object.fromEntries(Object.entries(report.outcomes).filter(([k])=>!unresolvedIds.includes(k)));report.completedRuns=Object.values(report.endings).reduce((a,b)=>a+b,0);report.unresolved={budgetBlocked:report.outcomes['budget-blocked']??0,incomplete:report.outcomes.incomplete??0,errors:report.outcomes.error??0};report.accountedRuns=Object.values(report.outcomes).reduce((a,b)=>a+b,0);if(report.accountedRuns!==total)throw Error('Not all audit runs were accounted for');report.endingPercentOfRuns=Object.fromEntries(Object.entries(report.endings).map(([k,n])=>[k,percent(n,total)]));report.endingPercentOfCompleted=Object.fromEntries(Object.entries(report.endings).map(([k,n])=>[k,percent(n,report.completedRuns)]));report.majorEndingCoverage={seen:MAIN_ENDINGS.filter(k=>report.endings[k]>0),missing:MAIN_ENDINGS.filter(k=>!report.endings[k])};report.nearMissFacultySamples.sort((a,b)=>a.missing.length-b.missing.length||a.run-b.run);report.nearMissFacultySamples=report.nearMissFacultySamples.slice(0,8);report.errors.sort((a,b)=>a.run-b.run);
+ for(const group of Object.values(report.byPolicy)){group.endings=Object.fromEntries(Object.entries(group.outcomes).filter(([k])=>!unresolvedIds.includes(k)));group.percentOfRuns=Object.fromEntries(Object.entries(group.outcomes).map(([k,n])=>[k,percent(n,group.runs)]));}
+ const samplePools={};for(const r of results)for(const sample of Object.values(r.samples).flat())retainSample(samplePools[sample.endingId]??=[],sample);
+ const samples=Object.values(samplePools).flat();report.samples={path:'docs/ending-audit-samples.json',count:samples.length,endingIds:Object.keys(samplePools),fields:[...new Set(samples.map(x=>x.field.id))]};
+ await fs.writeFile(new URL('../docs/ending-audit-samples.json',import.meta.url),JSON.stringify({version:1,engineVersion,sourceCommit,sourceHashes,generatedAt:new Date().toISOString(),method:report.method,mainEndings:MAIN_ENDINGS,samples},null,2)+'\n');
  await fs.writeFile(new URL('../docs/ending-balance-audit.json',import.meta.url),JSON.stringify(report,null,2)+'\n');
- console.log(JSON.stringify(report));
+ await fs.writeFile(new URL('../docs/ending-balance-audit.md',import.meta.url),markdown(report));
+ console.log(JSON.stringify({runs:report.runs,completedRuns:report.completedRuns,unresolved:report.unresolved,endings:report.endings,majorEndingCoverage:report.majorEndingCoverage,faculty:{runs:report.byPolicy.faculty?.runs,true:report.byPolicy.faculty?.endings.true,percent:report.byPolicy.faculty?.percentOfRuns.true},seconds:report.seconds}));
 }else{
  let result;globalThis.self={postMessage:r=>{result=r;}};await import('../dist/simulation-worker.js');
  const execute=(type,state,more={})=>{result=null;self.onmessage({data:{id:1,type,state,...more}});if(result.error)throw Error(result.error);return result.state;};
- const stats={endings:{},byPolicy:{},unmet:{},errors:[]};
+ const stats={outcomes:{},byPolicy:{},facultyAudit:facultyStats(),nearMissFacultySamples:[],samples:{},errors:[]};
  for(let i=workerData.start;i<workerData.total;i+=workerData.stride){
   const policy=policies[i%policies.length],d=DISCIPLINES[Math.floor(i/policies.length)%DISCIPLINES.length],seed=7919*(i+1);
-  let s=createState('감사학생',seed,{gender:i%2?'male':'female',fieldId:d.id,labMode:d.labModes[Math.floor(i/73)%d.labModes.length],institution:['national','private','institute'][Math.floor(i/3)%3]});s.lab.creditEnabled=true;
-  const group=stats.byPolicy[policy]??={runs:0,endings:{}};group.runs++;
+  const gender=i%2?'male':'female';let s=createState(generateKoreanName(seed,gender),seed,{gender,fieldId:d.id,labMode:d.labModes[Math.floor(i/73)%d.labModes.length],institution:['national','private','institute'][Math.floor(i/3)%3]});s.lab.creditEnabled=true;
+  const group=stats.byPolicy[policy]??={runs:0,outcomes:{},facultyAudit:facultyStats()};group.runs++;
+  const outcome=id=>{stats.outcomes[id]=(stats.outcomes[id]??0)+1;group.outcomes[id]=(group.outcomes[id]??0)+1;};
   try{
    for(let month=0;month<96&&!s.ending;month++){
     let plan=proposeSchedule(s),score=k=>abilityScore(s,k);const training=studentTrainingActive(s);
@@ -48,12 +85,13 @@ if(isMainThread){
      s=execute('decision',s,{choice});
     }
    }
-   const ending=s.ending??'incomplete';stats.endings[ending]=(stats.endings[ending]??0)+1;group.endings[ending]=(group.endings[ending]??0)+1;
-   if(s.month===96&&s.ending!=='true'){
-    for(const [k,target]of Object.entries(TRUE_REQUIREMENTS)){const value=k==='faculty'?Math.min(...Object.values(s.professor)):k in s.hidden?abilityScore(s,k):s.career[k];if(value<target)stats.unmet[k]=(stats.unmet[k]??0)+1;}
-    for(const [k,ok]of [['leadingPaper',s.career.topPapers>=1],['award',s.career.awards>=1],['hIndex',s.impact.hIndex>=4]])if(!ok)stats.unmet[k]=(stats.unmet[k]??0)+1;
+   const ending=s.ending??'incomplete';outcome(ending);
+   if(s.ending)retainSample(stats.samples[ending]??=[],{endingId:ending,run:i,policy,seed,field:{id:d.id,label:d.label},labMode:s.professorProfile.labMode,state:s});
+   if(s.month===96){
+    const audit=auditState(s);incrementFaculty(stats.facultyAudit,s,audit);incrementFaculty(group.facultyAudit,s,audit);
+    if(policy==='faculty'&&s.ending!=='true'){stats.nearMissFacultySamples.push({run:i,seed,fieldId:d.id,labMode:s.professorProfile.labMode,ending,missing:audit.missing,values:audit.values});stats.nearMissFacultySamples.sort((a,b)=>a.missing.length-b.missing.length||a.run-b.run);stats.nearMissFacultySamples=stats.nearMissFacultySamples.slice(0,8);}
    }
-  }catch(e){if(e.message.includes('Budget exceeds')){const ending='budget-blocked';stats.endings[ending]=(stats.endings[ending]??0)+1;group.endings[ending]=(group.endings[ending]??0)+1;}else stats.errors.push({run:i,policy,month:s.month,message:e.message});}
+  }catch(e){if(e.message.includes('Budget exceeds'))outcome('budget-blocked');else{outcome('error');stats.errors.push({run:i,policy,month:s.month,message:e.message});}}
  }
  parentPort.postMessage(stats);
 }

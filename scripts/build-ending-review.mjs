@@ -1,0 +1,15 @@
+import {readFile,writeFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {fileURLToPath} from 'node:url';
+import {reviewRecord,reviewCollection} from '../dist/ending-review.js';
+import {validateSave} from '../dist/engine.js';
+const root=new URL('../',import.meta.url),input=new URL('docs/ending-audit-samples.json',root);
+const bytes=await readFile(input),audit=JSON.parse(bytes);
+if(!Array.isArray(audit.samples)||!audit.samples.length)throw new Error('No actual audit ending samples');
+const records=audit.samples.map(sample=>{if(!validateSave(sample.state))throw new Error(`Invalid audit state ${sample.run}`);if(sample.endingId!==sample.state.ending)throw new Error(`Ending mismatch ${sample.run}`);return reviewRecord(sample);});
+const collection=reviewCollection(records);
+if(!collection.complete)throw new Error(`Main ending collection incomplete: ${collection.count} / ${collection.total}`);
+const data={version:1,engineVersion:audit.engineVersion,generatedAt:audit.generatedAt,sourceCommit:audit.sourceCommit,sourceHashes:audit.sourceHashes,sampleSha256:createHash('sha256').update(bytes).digest('hex'),source:'simulation-worker',records};
+const output=new URL('dist/ending-review-data.json',root);
+await writeFile(output,JSON.stringify(data));
+console.log(`Ending review: ${records.length} actual endings, ${collection.count} main endings, ${collection.pages.length} retirement scenes; ${fileURLToPath(output)}`);

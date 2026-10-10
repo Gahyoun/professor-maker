@@ -1,5 +1,5 @@
 // Original modular email passages, drawn from a completed run, with no extra RNG.
-import {researchSetting} from './ending-context.js';
+import {researchSetting,englishResearchSetting} from './ending-context.js';
 import {withParticle} from './korean.js';
 import {HIDDEN_RANGES} from './engine.js';
 const line=(locale,ko,en)=>locale==='en'?en:ko;
@@ -9,6 +9,7 @@ export function endingVoice(context,locale='ko'){
  const normalized=k=>{const [lo,hi]=HIDDEN_RANGES[k];return (h[k]-lo)/(hi-lo)*100;};
  const notes=[];
  if(context.ending==='youtuber'){return [line(locale,normalized('autonomy')>=75?'촬영 일정과 대본은 제가 정합니다. 교수님 출연분만은 검토란을 세 칸 만들어 두었습니다.':'어려운 개념을 짧게 설명하는 연습이 영상 편집에서도 도움이 됩니다. 단, 리뷰어 2의 말은 짧게 줄여도 길더군요.','Explaining difficult ideas briefly helps with editing too. Reviewer Two still takes a long time.')];}
+ if(context.relationship==='distant'&&context.ending==='unemployed')return [line(locale,'면담에서는 지원에 필요한 연구 기록과 서류를 중심으로 의논하고 싶습니다. 연락 범위도 제가 정리해서 말씀드리겠습니다.','For our meeting, I would like to focus on the research record and documents needed for applications. I will also explain the contact boundaries that work for me.')];
  if(context.relationship==='distant')return [line(locale,normalized('autonomy')>=70?'다음 일정과 연락 범위는 제가 정해 필요한 내용만 정리해 드리겠습니다.':'인계 자료는 빠짐없이 정리했습니다. 이후에는 필요한 절차에 관한 연락만 부탁드립니다.','I have organized the handover. Please keep further contact to the necessary arrangements.')];
  if(t.caution>=65)notes.push(line(locale,'이 글도 바로 보내지 못하고 한 번 더 읽었습니다. 질문을 적어 두고 자료를 확인하던 습관은 지금도 남아 있습니다.','I reread this letter before sending it. I still write questions down and check the evidence before moving ahead.'));
  else if(t.expression>=65&&normalized('social')>=55)notes.push(line(locale,'요즘도 모르는 것이 생기면 사람들에게 먼저 물어봅니다. 함께 이야기하다가 생각이 정리되는 순간을 좋아합니다.','I still ask people when I am unsure. I enjoy the moment a conversation helps an idea become clearer.'));
@@ -24,7 +25,7 @@ export function endingVoice(context,locale='ko'){
  if(normalized(expertise[0][0])>=60)notes.push(expertise[0][1]);
  const setting=researchSetting(context),field=setting.field;
  const detail=withParticle(setting.task,'을/를')+' 확인하던 시간';
- if(context.fieldId||context.field)notes.push(line(locale,`${withParticle(field,'을/를')} 공부하며 ${withParticle(detail,'을/를')} 기억합니다. 바로 쓸 수 있는 답보다, 근거를 확인하는 방식을 배운 것이 오래 남습니다.`,`I remember studying ${field} and checking assumptions, evidence and methods. Learning how to justify an answer has stayed with me.`));
+ if(context.fieldId||context.field)notes.push(line(locale,`${withParticle(field,'을/를')} 공부하며 ${withParticle(detail,'을/를')} 기억합니다. 바로 쓸 수 있는 답보다, 근거를 확인하는 방식을 배운 것이 오래 남습니다.`,`I remember studying ${englishResearchSetting(context).sector} and checking assumptions, evidence and methods. Learning how to justify an answer has stayed with me.`));
  return notes;
 }
 export function dryEndingText(text){return String(text).replaceAll('냉동고 맨 아래 칸 샘플','서버의 마지막 프로젝트 폴더').replaceAll('냉동고 맨 아래 칸을 열어','서버의 마지막 프로젝트 폴더를 열어').replaceAll('냉동고 샘플','보관 데이터').replaceAll('라벨이 붙은 튜브들','정리된 데이터 파일들').replaceAll('샘플은 라벨을 다 붙여 두었습니다','파일에는 설명과 실행 조건을 정리해 두었습니다').replaceAll('라벨을 다 붙여 두었습니다','설명과 실행 조건을 정리해 두었습니다').replaceAll('냉동고','자료 보관함').replaceAll('오래된 기계','오래된 워크스테이션').replaceAll('기계로 실험','컴퓨터로 계산').replaceAll('실험 노트','연구 노트').replaceAll('실험','연구');}

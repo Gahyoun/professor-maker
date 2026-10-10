@@ -63,8 +63,71 @@ export function researchSetting(context={}){
   storage:dry?'프로젝트 보관 폴더':cold?'냉동고 맨 아래 칸':'연구 자료 보관함',
   archive:dry?'정리된 자료와 분석 파일':cold?'라벨이 붙은 튜브들':'분류해 둔 측정 자료와 시험 기록'};
 }
-export function adaptResearchText(text,context={}){
+const englishGroups=[
+ ['058','crop and horticultural science','crop data and growth models','growing conditions and cultivation trials'],
+ ['059','forestry','forest spatial data and resource models','tree and timber properties'],
+ ['060','animal science','husbandry data and growth models','feed and growing conditions'],
+ ['061','fisheries and aquaculture','aquaculture data and environmental models','water quality and aquaculture conditions'],
+ ['062','agricultural and aquatic ecology','ecological data and spatial models','field samples and environmental conditions'],
+ ['063','agricultural biosystems','production-system design and analysis','production equipment and growing conditions'],
+ ['064 066 067','food and nutrition','food-quality data and process models','food composition and processing conditions'],
+ ['055','chemistry','molecular models and computational results','analytical conditions and material properties'],
+ ['056 100 156','biological science and biotechnology','biological data and analysis code','samples and comparison conditions'],
+ ['057 077','environmental science','environmental data and transport models','environmental samples and treatment conditions'],
+ ['068 101','clothing and textiles','clothing designs and textile-performance data','fabric properties and wearing conditions'],
+ ['069','housing and living environments','housing plans and occupancy data','indoor environmental conditions'],
+ ['048','mathematics','definitions, assumptions, proofs and counterexamples','model validity'],
+ ['049','statistics','estimation models and uncertainty analysis','data-collection procedures'],
+ ['050','physics','physical models and computational results','instrument performance and measurement uncertainty'],
+ ['051','astronomy and atmospheric observation','observation data and celestial or atmospheric models','observation conditions'],
+ ['052','geology and geotechnics','geological data and ground models','rock and ground properties'],
+ ['053','oceanography','ocean data and circulation models','marine samples and observation conditions'],
+ ['112 113 115 116','health and healthcare services','health data and service evaluations','evaluation procedures and health indicators'],
+ ['114','rehabilitation technology','rehabilitation data and effect estimates','functional evaluations and treatment conditions'],
+ ['118','skin care and cosmetics','skin-assessment data and effect estimates','skin assessments and product-use conditions'],
+ ['065 163','animal health','animal-health data and diagnostic models','specimens and diagnostic conditions'],
+ ['110 111','pharmaceutical science','pharmaceutical data and effect models','candidate compounds and analytical conditions'],
+ ['107 108 109','medical and diagnostic research','medical data and effect estimates','specimens and evaluation procedures'],
+ ['084 085 086','electrical and electronic systems','circuit models and control algorithms','circuits and instrumentation'],
+ ['087','optics','optical models and ray analysis','optical instruments and measurement conditions'],
+ ['088','biomedical engineering','biosignals and medical-device models','device performance and evaluation conditions'],
+ ['089 090 157','software and artificial intelligence','code and data-processing pipelines','system performance'],
+ ['091','information and communication systems','communication models and network performance','communication devices and connection conditions'],
+ ['072 073','architecture','design drawings and structural or environmental analysis','building materials and structural performance'],
+ ['074','landscape architecture','landscape plans and spatial-use data','planting and outdoor environmental conditions'],
+ ['075','civil infrastructure','structural and ground models and design drawings','structural and ground performance'],
+ ['076','urban planning','urban spatial data and planning models','field-use patterns'],
+ ['102','industrial and operations engineering','operational data and optimization models','system operating conditions'],
+ ['103 104','safety and disaster prevention','risk data and disaster scenarios','safety performance and response conditions'],
+ ['092 094 095 096','materials science','material models and property analysis','specimen properties and manufacturing conditions'],
+ ['093','semiconductors','device models and circuit analysis','device properties and process conditions'],
+ ['078 079 083','mechanical and automotive engineering','mechanism designs and dynamics or control models','device performance and operating conditions'],
+ ['080 160','ships and marine systems','ship and operating models','ship-model performance'],
+ ['081 161 162','aerospace systems','flight models and aerospace-system analysis','flight-device performance'],
+ ['082 159','rail and control systems','rail-operation models and control analysis','rail equipment and safety conditions'],
+ ['097 099','chemical processes and polymers','process models and polymer-property analysis','process conditions and polymer properties'],
+ ['098','energy systems','energy-system performance models','energy devices and operating conditions'],
+ ['158','transportation','transport data and mobility models','traffic and field conditions']
+];
+export const ENGLISH_ENDING_FIELDS=Object.fromEntries(englishGroups.flatMap(([ids,sector,dryTask,wetTask])=>ids.split(' ').map(id=>[id,{sector,dryTask,wetTask}])));
+export function englishResearchSetting(context={}){
+ const p=researchSetting(context),id=context.fieldId||DISCIPLINES.find(d=>d.label===context.field)?.id;
+ const en=ENGLISH_ENDING_FIELDS[id]||{sector:'their research field',dryTask:'data and analytical methods',wetTask:'measurement data and verification procedures'};
+ return {...p,...en,task:p.dry?en.dryTask:en.wetTask,equipment:p.dry?'workstation':'research instrument',storage:p.dry?'project archive':p.storage==='냉동고 맨 아래 칸'?'bottom freezer drawer':'research archive',material:p.dry?'raw data and analysis files':p.storage==='냉동고 맨 아래 칸'?'samples':'measurement data and test records',archive:p.dry?'documented data and analysis files':p.storage==='냉동고 맨 아래 칸'?'labeled tubes':'organized measurement data and test records'};
+}
+export function adaptResearchText(text,context={},locale='ko'){
  if(!context.fieldId&&!context.field&&!context.labMode)return String(text);
+ if(locale==='en'){
+  const p=englishResearchSetting(context);let result=String(text)
+   .replaceAll('freezer samples',p.material)
+   .replaceAll('samples in the bottom freezer drawer',p.material)
+   .replaceAll('bottom freezer drawer',p.storage)
+   .replaceAll('labeled tubes',p.archive)
+   .replaceAll('old machine','old '+p.equipment);
+  if(p.storage!=='bottom freezer drawer')result=result.replace(/freezer/gi,'research archive');
+  if(p.dry)result=result.replace(/lab coat/gi,'everyday clothes').replace(/experiment notebooks?/gi,'research notes').replace(/experiments?/gi,'study').replace(/cultivation schedule/gi,'analysis schedule').replace(/tubes/gi,'analysis files');
+  return result;
+ }
  const p=researchSetting(context);
  let result=String(text)
   .replaceAll('냉동고 맨 아래 칸 샘플은 라벨을 다 붙여 두었습니다',p.dry?'원자료와 분석 파일에는 설명과 실행 조건을 정리해 두었습니다':p.storage==='냉동고 맨 아래 칸'?'냉동고 맨 아래 칸 시료는 라벨을 다 붙여 두었습니다':'측정 자료와 시험 기록은 항목별로 분류해 두었습니다')
@@ -81,6 +144,6 @@ export function adaptResearchText(text,context={}){
  if(p.dry)result=result.replaceAll('실험복','평상복').replaceAll('실험','연구').replaceAll('배양 일정','분석 일정');
  return result;
 }
-export function fieldWorkplace(context,kind){const p=researchSetting(context);return `${p.field}에서 배운 방법은 ${p.sector} 분야의 새로운 일정 속에서도 이어졌다. ${kind==='corporate'?p.company:p.institute}에서 동료들과 ${withParticle(p.task,'을/를')} 검토하고 결과를 기록했다.`;}
+export function fieldWorkplace(context,kind,locale='ko'){if(locale==='en'){const p=englishResearchSetting(context);return `Their training continued in ${p.sector}. In ${kind==='corporate'?'an industrial R&D':'a public research'} team, they worked with colleagues on ${p.task} and documented the results.`;}const p=researchSetting(context);return `${p.field}에서 배운 방법은 ${p.sector} 분야의 새로운 일정 속에서도 이어졌다. ${kind==='corporate'?p.company:p.institute}에서 동료들과 ${withParticle(p.task,'을/를')} 검토하고 결과를 기록했다.`;}
 
-export function careerDescription(ending,context,locale,original){if(locale!=='ko'||(!context?.fieldId&&!context?.field))return original;const p=researchSetting(context);return ending==='corporate'?`기업 연구·개발 · ${p.sector} 분야`:ending==='institute'?`정부출연연구기관 연구원 · ${p.sector} 분야`:original;}
+export function careerDescription(ending,context,locale,original){if(!context?.fieldId&&!context?.field)return original;const p=locale==='en'?englishResearchSetting(context):researchSetting(context);return ending==='corporate'?(locale==='en'?`Industrial R&D · ${p.sector}`:`기업 연구·개발 · ${p.sector} 분야`):ending==='institute'?(locale==='en'?`Public research institution · ${p.sector}`:`정부출연연구기관 연구원 · ${p.sector} 분야`):original;}

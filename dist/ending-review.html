@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Professor Maker · 엔딩 시나리오 검토</title>
+  <link rel="icon" href="./assets/lab-mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./activity-motion.css">
+  <link rel="stylesheet" href="./recovery-art.css">
+  <link rel="stylesheet" href="./mobile.css">
+  <link rel="stylesheet" href="./ending-review.css">
+  <script type="module" src="./ending-review.js"></script>
+</head>
+<body class="ending-review">
+  <a class="skip-link" href="#reader">시나리오 본문 바로가기</a>
+  <header class="review-header">
+    <a class="brand" href="./#home"><img src="./assets/lab-mark.svg" class="lab-brand-mark" alt="Professor Maker 연구실 로고"><span class="brand-name"><span class="brand-initial-p">P</span>rofessor <span class="brand-initial-m">M</span>aker</span></a>
+    <a class="review-game-link" href="./#journal">게임으로 돌아가기 ↗</a>
+  </header>
+  <main class="review-main">
+    <div class="review-intro">
+      <p class="review-eyebrow">ENDING ARCHIVE · SPOILERS</p>
+      <h1>각자의 자리에서, 다시 만나다</h1>
+      <p>자동 플레이에서 실제 도달한 종료 기록으로 보는 엔딩 시나리오입니다. 전공과 관계에 따른 편지, 그리고 퇴임식까지 읽어 볼 수 있습니다.</p>
+    </div>
+    <div id="review-status" role="status">종료 기록을 불러오는 중입니다.</div>
+    <div id="review-layout" class="review-layout" hidden>
+      <aside class="review-sidebar" aria-label="수집한 엔딩">
+        <div id="collection-proof" class="collection-proof"></div>
+        <nav id="ending-nav" aria-label="엔딩 선택"></nav>
+        <p class="review-footnote">이 화면은 검토용입니다. 현재 플레이와 저장 기록에 영향을 주지 않습니다.</p>
+      </aside>
+      <section id="reader" class="review-reader" aria-label="엔딩 시나리오" tabindex="-1"></section>
+    </div>
+  </main>
+  <footer class="review-footer">이 작품의 이름, 인물, 사건은 허구입니다. 시뮬레이션의 엔딩 비율은 자동 플레이 전략에 따른 결과이며 실제 진로의 확률이 아닙니다.</footer>
+</body>
+</html>

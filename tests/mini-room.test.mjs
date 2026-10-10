@@ -14,8 +14,8 @@ test('cosmetic room variety is stable and never consumes gameplay state',()=>{
  }assert.equal(walls.size,WALLPAPERS.length);assert.equal(floors.size,FLOOR_TILES.length);for(const key of ['fridge','kettle','plush','cot','sofa','server','printer','plant','bag','deskLamp','clock','noticeboard'])assert.ok(props.has(key),key);
 });
 test('lab material scarcity, weekly outfit changes and conference/defense scenes survive the miniroom',()=>{
- const s=createState('',6,{labMode:'wet'});s.lab.funds=200;s.lab.budget.environment=4;s.lab.equipment=60;const rich=roomScene(s,{actual:'research'},0),nextWeek=roomScene(s,{actual:'research'},1);assert.match(rich,/data-supply="rich"/);assert.match(rich,/mini-activity-prop/);assert.notEqual(rich,nextWeek);
- s.lab.funds=10;s.lab.budget.environment=0;const sparse=roomScene(s,{actual:'research'},0);assert.match(sparse,/data-supply="sparse"/);assert.ok(sparse.length<rich.length);
+ const s=createState('',6,{labMode:'wet'});s.lab.funds=200;s.lab.budget.environment=4;s.lab.equipment=60;const rich=roomScene(s,{actual:'experiment',performed:true},0),nextWeek=roomScene(s,{actual:'experiment',performed:true},1);assert.match(rich,/data-supply="rich"/);assert.match(rich,/data-motion="measuring"/);assert.notEqual(rich,nextWeek);
+ s.lab.funds=10;s.lab.budget.environment=0;const sparse=roomScene(s,{actual:'experiment',performed:true},0);assert.match(sparse,/data-supply="sparse"/);assert.ok(sparse.length<rich.length);
  assert.match(roomScene(s,{actual:'rest'}),/data-scene="rest" data-projection="isometric"/);assert.match(roomScene(s,{actual:'conference',abroad:true}),/INTERNATIONAL CONFERENCE/);
  s.pending={kind:'thesis',step:'questions'};assert.match(roomScene(s),/THESIS DEFENSE/);assert.match(roomScene(s),/질의응답/);
 });

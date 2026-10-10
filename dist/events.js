@@ -1,4 +1,5 @@
 import {DILEMMAS} from "./monthly-choices.js";
+import {withParticle} from './korean.js';
 // Original fictional situations. Numeric effects are game balance, not empirical rates.
 const p = (ko, en) => ({ ko, en });
 const option = (ko, en, effects, progress = 0) => ({ label: p(ko, en), effects, ...(progress ? { progress } : {}) });
@@ -17,9 +18,9 @@ export const EVENTS = [
     option('우선 현재 프로젝트에 집중하자고 말한다','Prioritize the current project',{hidden:{research:1,rapport:-1,stress:1}}),
   ],{minMonth:8,cooldown:30,once:true,weight:.3}),
   event('equipment-decision','연구장비와 소모품 점검','Equipment and supplies','장비 점검에서 사용 시간이 늘어난 부품과 소모품 부족이 확인됐다. 연구비 잔액과 이번 달 계획을 살펴 집행 범위를 정한다.','The lab reviews worn parts and depleted supplies before choosing expenditure.','management',[
-    option('노후 장비를 교체한다 · 80만원','Replace aging equipment',{lab:{funds:-8,equipment:15},hidden:{research:.5}}),
+    option('노후 소형 장비·부품을 교체한다 · 80만원','Replace aging small equipment or parts',{lab:{funds:-8,equipment:15},hidden:{research:.5}}),
     option('소모품을 보충한다 · 30만원','Replenish supplies',{lab:{funds:-3,equipment:6}}),
-    option('장비·계산 자원을 증강한다 · 150만원','Expand research resources',{lab:{funds:-15,equipment:25},professor:{research:.5}}),
+    option('소형 장비·계산 자원을 증강한다 · 150만원','Expand small equipment or computing resources',{lab:{funds:-15,equipment:25},professor:{research:.5}}),
     option('현재 자원으로 우선순위를 조정한다','Adjust priorities within existing resources',{hidden:{autonomy:1,stress:1},lab:{equipment:-1}}),
   ],{minMonth:6,cooldown:12}),
 
@@ -157,7 +158,7 @@ export const EVENTS = [
     'The submitted manuscript returns with revision requests. Your student closes the laptop halfway through. Some comments are valid; others need a clearer explanation.', 'bad', [
       option('지적을 하나씩 검토해 답변 계획을 세운다', 'Review each comment and make a response plan', { hidden: { learning: 3, confidence: 3, rapport: 4, stress: -4 }, professor: { research: -2, mentoring: 3 } }, 5),
       option('학생이 답변 초안을 쓰고 함께 고친다', 'Let the student draft the response, then revise it together', { hidden: { autonomy: 5, language: 3, stress: 4 }, professor: { research: 2 } }, 7),
-    ], { minMonth: 12, requires: 'submission', cooldown: 10 }),
+    ], { minMonth: 12, requires: 'revision', cooldown: 10 }),
   event('data-loss', '열리지 않는 폴더', 'A folder will not open',
     '분석 파일 일부가 손상됐다. 원자료는 남아 있지만 지난주 처리 과정은 다시 따라가야 한다. 학생은 백업 규칙을 적다 말고 한숨을 쉰다.',
     'Some analysis files are corrupted. The raw data survives, but last week’s processing must be repeated. Your student sighs halfway through writing a backup plan.', 'bad', [
@@ -181,13 +182,13 @@ export const EVENTS = [
     'Your student is asked to lead a problem session. Preparing it could deepen their understanding, but it will take time away from experiments.', 'ordinary', [
       option('짧은 수업을 준비하고 함께 리허설한다', 'Prepare a short session and rehearse together', { hidden: { learning: 3, language: 2, confidence: 3, stamina: -3 }, professor: { teaching: 7, mentoring: -2 } }),
       option('이번에는 교수가 맡고 학생은 수업을 참관한다', 'Teach it yourself and let the student observe', { hidden: { learning: 2, stamina: 2 }, professor: { teaching: 5, research: -4 } }),
-    ], { minMonth: 8, cooldown: 10 }),
+    ], { minMonth: 24, requires: 'graduate', cooldown: 10 }),
   event('grading', '시험지와 실험 노트', 'Exam scripts and lab notes',
     '학기 말 채점 기간이 연구 마감과 겹쳤다. 학생은 조교 업무를 어디까지 맡아야 할지 묻는다.',
     'End-of-semester grading overlaps with a research deadline. Your student asks how much teaching-assistant work they should take on.', 'ordinary', [
       option('업무 시간을 정하고 연구 마감을 조정한다', 'Set a time limit and adjust the research deadline', { hidden: { rapport: 4, stress: -3 }, professor: { teaching: 6, research: -3 } }, -2),
       option('채점을 교수가 더 맡고 학생 연구 시간을 지킨다', 'Take more grading yourself and protect research time', { hidden: { motivation: 4, stamina: 2 }, professor: { teaching: 4, mentoring: 2, admin: -4 } }),
-    ], { minMonth: 10 }),
+    ], { minMonth: 24, requires: 'graduate' }),
   event('committee', '또 하나의 위원회', 'One more committee',
     '학과에서 위원회 업무를 부탁했다. 회의가 늘어나면 면담 시간을 다시 확보해야 한다. 학생은 이미 다음 미팅 날짜를 적어 두었다.',
     'The department asks you to join a committee. More meetings mean finding another protected time for supervision. Your student has already written down the next meeting date.', 'ordinary', [
@@ -219,11 +220,11 @@ export const EVENTS = [
       option('전문 교육을 예약하고 교수가 절차를 점검한다', 'Book specialist training and review the procedure yourself', { lab: { funds: -5 }, hidden: { learning: 3, stamina: 2 }, professor: { admin: 3, research: -3 } }),
     ], { minMonth: 2, cooldown: 18 }),
   event('sabbatical-contact', '연구년의 시차', 'Advising across time zones',
-    '교수의 방문 연구 일정을 준비하며 원격 면담을 논의한다. 학생은 “메일로는 작은 질문이 자꾸 뒤로 밀려요”라고 한다.',
-    'As you plan a research visit, you discuss remote supervision. “Small questions keep getting pushed back when everything is email,” your student says.', 'ordinary', [
+    '교수가 방문 연구 중인 동안 원격 면담 방식을 다시 논의한다. 학생은 “메일로는 작은 질문이 자꾸 뒤로 밀려요”라고 한다.',
+    'During your research visit, you revisit remote supervision. “Small questions keep getting pushed back when everything is email,” your student says.', 'ordinary', [
       option('정기 영상 면담과 짧은 질문 시간을 따로 둔다', 'Set regular video meetings and a separate quick-question slot', { hidden: { rapport: 5, motivation: 3 }, professor: { research: -3, mentoring: 5 } }),
       option('공동 지도자와 답변 기한을 학생과 합의한다', 'Agree on a co-mentor and response expectations', { hidden: { autonomy: 4, social: 2, rapport: 3 }, professor: { admin: -3, research: 3 } }),
-    ], { minMonth: 42, maxMonth: 72, once: true }),
+    ], { minMonth: 42, maxMonth: 72, requires: 'away_sabbatical', once: true }),
   event('peer-conflict', '같은 장비, 다른 시간표', 'One instrument, two schedules',
     '장비 예약이 겹쳐 연구실 동료 사이에 말이 날카로워졌다. 학생은 누구의 잘못인지보다 다음에도 반복될지가 걱정이라고 한다.',
     'An instrument-booking conflict strains relations between labmates. Your student worries less about blame than whether it will happen again.', 'ordinary', [
@@ -339,6 +340,79 @@ for(const e of EVENTS.filter(e=>e.kind==='counseling')){e.options.push(option('�
 
 for(const e of EVENTS.filter(e=>e.kind!=='counseling'&&e.options.length===2)){e.options.push(option('기존 계획을 유지하고 다음 면담에서 다시 검토한다','Keep the plan and revisit it next month',{hidden:{autonomy:.5,rapport:-.3,stress:.5}}),option('우선순위와 기한을 정하고 보완 보고를 요청한다','Set priorities and request a follow-up report',{hidden:{diligence:.4,rapport:-.8,stress:1},professor:{admin:.3}}));}
 
+// An award has already been announced in the scene. The response changes how
+// the adviser follows up; it cannot erase that achievement.
+for(const e of EVENTS.filter(e=>['best-paper','best-presentation'].includes(e.id))){
+  for(const o of e.options)o.effects.career={...o.effects.career,awards:1};
+}
+
 EVENTS.push(...DILEMMAS);
 
 EVENTS.push(event('military-hidden','교수님, 지금이라도 다녀올까요?','A question about service','“교수님, 저 군대를 지금이라도 갔다 와야 할까요?” 학생은 연구를 이어 갈 시점과 병역 일정을 함께 고민한다. 교수는 잠시 말을 고른다. 나는 전문연구요원으로 병역을 이행해서, 다른 복무 경험에 대해 해 줄 말은 많지 않다. 내 경험만으로 학생의 선택을 정할 수는 없었다.','The student asks about service timing. The adviser has experience as a research service personnel, not every service route.','counseling',[option('내 경험의 범위를 밝히고 학생의 걱정부터 듣는다','State the limits of my experience and listen',{hidden:{rapport:2,stress:-2,autonomy:1},professor:{mentoring:-.5}}),option('공식 안내와 담당 상담 창구를 함께 찾는다','Look up official guidance together',{hidden:{rapport:1,autonomy:2},professor:{admin:-1}}),option('졸업·연구 일정만 비교하고 선택은 학생에게 맡긴다','Compare research timing and leave the decision to the student',{hidden:{autonomy:2,stress:1},professor:{research:.3}})],{minMonth:12,maxMonth:60,once:true,requires:'male_pair',weight:.5}));
+
+const dryScenes={
+  'equipment-decision':{
+    title:'계산·저장 자원 점검',
+    body:'계산 작업이 늘면서 저장 공간과 장치의 점검이 필요해졌다. 연구비 잔액과 이번 달 계산·분석 계획을 살펴 집행 범위를 정한다.',
+    labels:{0:'계산·저장 장치의 노후 부품을 교체한다 · 80만원',1:'저장 공간을 보충한다 · 30만원',2:'계산·저장 자원을 증강한다 · 150만원'},
+  },
+  equipment:{
+    title:'계산이 멈춘 오후',
+    body:'계산·저장 장치에서 오류가 발생했다. 학생은 자기 코드의 문제인지 먼저 묻는다. 점검 기록에는 오래된 저장 장치의 교체 권고가 남아 있다.',
+  },
+  safety:{
+    title:'분석 전에 확인할 것',
+    body:'분석 절차와 데이터 보안 점검에서 오래된 안내가 발견됐다. 접근 권한과 백업 방식, 재현 조건의 설명이 부족하다. 새 학생도 같은 과정을 확인할 수 있도록 절차를 정리한다.',
+  },
+  'negative-result':{
+    title:'예상과 다른 검증 결과',
+    body:'반복 계산과 자료 검증이 가설과 다른 쪽을 가리킨다. 학생은 분석 조건을 더 확인할지, 질문을 바꿀지 고민한다. 원하는 결과가 없다는 것과 결과가 없다는 것은 다르다.',
+  },
+  'first-year-helper':{
+    body:'새 학부연구생이 학생에게 연구 노트와 분석 기록 작성법을 물었다. 학생은 예전 자기 노트를 꺼냈다가 첫 장을 슬쩍 가린다.',
+  },
+};
+const dryExact=new Map();
+for(const [id,scene] of Object.entries(dryScenes)){
+  const e=EVENTS.find(e=>e.id===id);
+  if(scene.title)dryExact.set(e.title.ko,scene.title);
+  if(scene.body)dryExact.set(e.body.ko,scene.body);
+  for(const [index,label] of Object.entries(scene.labels??{}))dryExact.set(e.options[index].label.ko,label);
+}
+const particlePairs={은:'은/는',는:'은/는',이:'이/가',가:'이/가',을:'을/를',를:'을/를',과:'과/와',와:'과/와',으로:'으로/로',로:'으로/로'};
+function replaceNoun(text,source,target){
+  return text.replace(new RegExp(source+'(으로|로|은|는|이|가|을|를|과|와)?','g'),(_,suffix='')=>suffix?withParticle(target,particlePairs[suffix]):target);
+}
+// Display only: changing lab mode never changes event effects, state or RNG.
+export function adaptEventText(text,state,locale='ko'){
+  let result=String(text??'');
+  if(state?.professorProfile?.labMode!=='dry')return result;
+  if(locale==='en')return result
+    .replaceAll('lab notebook','research notebook')
+    .replaceAll('shared instrument facility','shared computing facility')
+    .replaceAll('instrument-booking','computing-resource booking')
+    .replaceAll('control group','comparison baseline')
+    .replaceAll('experiments','computational validation')
+    .replaceAll('experiment','validation')
+    .replaceAll('Experimental','Computational')
+    .replaceAll('measurement','validation');
+  result=dryExact.get(result)??result;
+  for(const [source,target] of [
+    ['장비·계산 자원','계산·저장 자원'],
+    ['공동기기실','공용 계산 환경'],
+    ['실험실','연구 공간'],
+    ['실험 노트','연구 노트'],
+    ['실험복','평상복'],
+    ['측정 장비','계산·저장 장치'],
+    ['반복 측정','반복 검증'],
+    ['측정 조건','분석 조건'],
+    ['시료','원자료'],
+    ['대조군','비교 조건'],
+    ['소모품','저장 공간'],
+    ['장비','계산 자원'],
+    ['측정','자료 검증'],
+    ['실험','계산·검증'],
+    ['시제품','분석 도구'],
+  ])result=replaceNoun(result,source,target);
+  return result;
+}
