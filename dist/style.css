@@ -238,3 +238,25 @@ body.month-playing .lab-main{position:relative}body.month-playing .lab-main:afte
 @media(prefers-reduced-motion:reduce){.mini-student{animation:none!important}}
 
 .brand-initial-p{color:#18364a}.brand-initial-m{color:#009edb}
+
+/* Outcome reactions emerge behind the head in both room projections. */
+.student-reaction-art{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.pixel-room .pixel-student{overflow:visible}.pixel-room .pixel-student>.portrait{position:relative}
+.anime-flight{animation:anime-flight 1.4s ease-out infinite;animation-delay:var(--delay)}
+.anime-twinkle{animation:anime-twinkle 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.anime-halo{animation:anime-halo 2s ease-in-out infinite}.anime-rays{animation:anime-halo 2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.anime-gloom{animation:anime-gloom 2.4s ease-in-out infinite}.anime-rain{animation:anime-rain 2.4s steps(4,end) infinite}.anime-relief{animation:anime-relief 2.6s ease-in-out infinite}
+.pixel-room.expression-sad .pixel-room-art{filter:saturate(.55) brightness(.88)}
+.pixel-room.expression-worried .pixel-room-art{filter:saturate(.78) brightness(.95)}
+.pixel-room.expression-sad{background:#dde3ed}
+.mini-student.expression-sad,.pixel-room .pixel-student.expression-sad{animation:anime-slump 2.8s ease-in-out infinite}
+.mini-student.expression-delighted,.pixel-room .pixel-student.expression-delighted{animation:anime-hop 1.8s steps(4,end) infinite}
+@keyframes anime-flight{0%{opacity:0;transform:translate(0,0) scale(.2)}35%,80%{opacity:1;transform:translate(var(--dx),var(--dy)) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.6)}}
+@keyframes anime-twinkle{0%,100%{transform:rotate(0)}60%{transform:rotate(25deg)}}
+@keyframes anime-halo{0%,100%{opacity:.12}50%{opacity:.35}}
+@keyframes anime-gloom{0%,100%{opacity:.45}50%{opacity:.75;transform:translateY(2px)}}
+@keyframes anime-rain{0%{opacity:0;transform:translateY(-2px)}30%,70%{opacity:.8}100%{opacity:0;transform:translateY(7px)}}
+@keyframes anime-relief{0%,100%{opacity:.45;transform:translateY(0)}50%{opacity:1;transform:translateY(-2px)}}
+@keyframes anime-slump{0%,100%{transform:translateY(1px) rotate(-1deg)}50%{transform:translateY(2px) rotate(-1.5deg)}}
+@keyframes anime-hop{0%,70%,100%{transform:translateY(0)}35%{transform:translateY(-3px)}}
+@media(prefers-reduced-motion:reduce){.student-reaction *,.pixel-room .mini-student,.pixel-room .pixel-student{animation:none!important}.anime-flight{transform:translate(var(--dx),var(--dy));opacity:1}.anime-halo{opacity:.2}}
