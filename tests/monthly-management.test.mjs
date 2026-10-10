@@ -71,7 +71,7 @@ test('email combinations use personality, final state and field without changing
 });
 test('room layouts and sixteen distinct fringes are cosmetic, escape labels and preserve RNG',()=>{
  const s=createState('학생',77),before=clone(s),halls=new Set();for(let m=0;m<16;m++)halls.add(conferenceHall({...s,month:m}));assert.equal(halls.size,4);assert.equal(figureType({...s,professorProfile:{...s.professorProfile,fieldId:'048'}}),'equation');assert.equal(figureType({...s,professorProfile:{...s.professorProfile,fieldId:'055'}}),'spectrum');
- const a={...studentAppearance(77,'female'),hairLength:5};const fringes=new Set(Array.from({length:16},(_,fringe)=>renderPortrait({...a,fringe})));assert.equal(fringes.size,16);assert.ok([...fringes].every(svg=>svg.includes('160 248')&&svg.includes('hair-fringe')));assert.ok(!renderPortrait(a,'<img>').includes('<img>'));assert.ok(roomScene(s).includes('data-props'));assert.deepEqual(s,before);
+ const a={...studentAppearance(77,'female'),hairLength:5};const fringes=new Set(Array.from({length:16},(_,fringe)=>renderPortrait({...a,fringe})));assert.equal(fringes.size,16);assert.ok([...fringes].every(svg=>svg.includes('320 496')&&svg.includes('hair-fringe')));assert.ok(!renderPortrait(a,'<img>').includes('<img>'));assert.ok(roomScene(s).includes('data-props'));assert.deepEqual(s,before);
 });
 test('well prepared graduate presentations can earn awards and appear as important issues',()=>{
  let awards=0;for(let seed=1;seed<=60;seed++){

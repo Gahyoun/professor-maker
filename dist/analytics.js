@@ -23,7 +23,7 @@ export async function setAnalyticsConsent(value){
 }
 export function recordAnalytics(state){
  if(!enabled||!state.started)return Promise.resolve();
- const runKey=String(state.creationSeed??state.seed),profile={version:'4.7.0',fieldId:state.professorProfile.fieldId,institution:state.professorProfile.institution,labMode:state.professorProfile.labMode},record=analysisRecord(state);
+ const runKey=String(state.creationSeed??state.seed),profile={version:'4.7.1',fieldId:state.professorProfile.fieldId,institution:state.professorProfile.institution,labMode:state.professorProfile.labMode},record=analysisRecord(state);
  pending=pending.then(async()=>{
   if(!enabled)return;
   try{let localId=localStorage.getItem('pm-analysis-id-'+runKey);if(!localId){localId=crypto.randomUUID();localStorage.setItem('pm-analysis-id-'+runKey,localId);}

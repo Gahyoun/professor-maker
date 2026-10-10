@@ -38,7 +38,7 @@ test('wet supplies depend on available operating funds and allocation; every act
  s.professorProfile.labMode='dry';assert.ok(!researchText('예비 실험 · 실험 노트 · 실험실',s).includes('실험'));
 });
 test('full-body characters vary clothes each week, keep their face, and make bald styles uncommon',()=>{
- const s=createState('',6),first=weeklyAppearance(s,0);for(let i=1;i<5;i++){const a=weeklyAppearance(s,i);assert.notEqual(a.outfit,weeklyAppearance(s,i-1).outfit);assert.equal(a.hairLength,first.hairLength);assert.equal(a.skin,first.skin);}assert.ok(renderPortrait(first).includes('0 0 160 248'));assert.ok(!renderPortrait(first).includes('<rect width="80"'));
+ const s=createState('',6),first=weeklyAppearance(s,0);for(let i=1;i<5;i++){const a=weeklyAppearance(s,i);assert.notEqual(a.outfit,weeklyAppearance(s,i-1).outfit);assert.equal(a.hairLength,first.hairLength);assert.equal(a.skin,first.skin);}assert.ok(renderPortrait(first).includes('0 0 320 496'));assert.ok(!renderPortrait(first).includes('<rect width="80"'));
  let bald=0;for(let seed=1;seed<=5000;seed++)bald+=studentAppearance(seed*7919,'male').hairLength===0;assert.ok(bald>0&&bald<75,String(bald));
 });
 
