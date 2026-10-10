@@ -1,5 +1,6 @@
 import {counselingFollowup} from './counseling.js';
 import {examWindow,academicWeeks} from './academic-calendar.js';
+import {studentRestRequest} from './engine.js';
 // Original bilingual student voices. Abilities never appear as numeric dialogue.
 const lines = text => text.trim().split('\n').map(row => { const [ko, en] = row.trim().split(' | '); return { ko, en }; });
 export const DIALOGUES = {
@@ -357,6 +358,13 @@ function hash(text) {
 function value(source, key, fallback = 50) { const n = source?.[key]; return Number.isFinite(n) ? n : fallback; }
 // Pure and deterministic: rendering, switching locale and reloading never consume RNG.
 export function studentLine(s, lang = 'ko') {
+  const rest=studentRestRequest(s);
+  if(rest){
+    const duration=rest.weeks===2?'두 주':'한 주',durationEn=rest.weeks===2?'two weeks':'a week';
+    const reason=rest.reason==='both'?'몸도 마음도 여유가 없어요.':rest.reason==='physical'?'요즘 몸이 많이 지쳐요.':'요즘은 생각을 정리하기가 벅차요.';
+    const reasonEn=rest.reason==='both'?'I feel worn out, both physically and mentally.':rest.reason==='physical'?'I feel physically worn out.':'I am finding it hard to clear my head.';
+    return lang==='ko'?`교수님, ${reason} 이번 달에는 ${duration} 정도 쉬면서 회복하고 싶어요.`:`${reasonEn} Could I take ${durationEn} to rest and recover this month?`;
+  }
   if(s.started&&s.hidden?.rapport>=40&&academicWeeks(s).some((_,i)=>examWindow(s,i)))return lang==='ko'?'교수님, 시험 주와 그 전주에는 자율 시간을 주실 수 있을까요? 제가 공부 계획을 세워 볼게요.':'Could I plan my own time for exam week and the week before?';
   if(s.advising?.inattention>=6)return lang==='ko'?'제가 제대로 가고 있는지, 구체적으로 한 번 봐 주실 수 있을까요?':'Could we look more closely at how I am doing?';
   if(s.advising?.lastFeedback==='praise'&&s.advising.streak>=4)return lang==='ko'?'좋다고 해 주셔서 감사해요. 어떤 부분을 더 다듬으면 좋을지도 알고 싶어요.':'Thank you. I would also like to know what I can improve.';

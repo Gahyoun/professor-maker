@@ -314,3 +314,5 @@ html{scroll-behavior:smooth;scroll-padding-top:var(--lab-scroll-offset,20px)}bod
 .student-voice .student-speaker{display:inline;margin:0 0 0 .35em;font-size:.8em;white-space:nowrap;text-align:inherit;color:var(--muted);font-family:var(--body)}
 .student-voice .student-observation{grid-column:2}
 @media(max-width:650px){.student-voice{grid-template-columns:48px minmax(0,1fr);gap:8px 12px;padding:12px!important}.student-voice .voice-character{width:48px}}
+
+.proposal .rest-request{color:#547264;font-size:12px;line-height:1.65;margin-top:6px;}

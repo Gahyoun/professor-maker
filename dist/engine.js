@@ -122,6 +122,12 @@ export function stage(s) { return s.month<24?'undergrad':s.route==='masters'&&(s
 export function calendarMonth(month,locale='ko') { return ((month+(locale==='en'?8:2))%12)+1; }
 // Winter is a fictional scheduling preference, not a legal enrollment guarantee.
 export function studentTrainingActive(s){return s.service?.trainingStartMonth!==undefined&&s.month===s.service.trainingStartMonth;}
+export function studentRestRequest(s){
+  if(s.ending||studentTrainingActive(s))return null;
+  const h=scores(s),physical=h.stamina<=45,mental=h.resilience<=35;
+  if(!(h.stress>=65&&(physical||mental)))return null;
+  return {weeks:h.stress>=80||h.stamina<=25||h.resilience<=20?2:1,reason:physical&&mental?'both':physical?'physical':'mental'};
+}
 export function winterTrainingMonth(s){
  const preferred=(Math.imul((s.creationSeed??s.seed)^0x741,2654435761)>>>0)%4===0?2:1;
  for(let month=s.month;month<MONTHS;month++)if(calendarMonth(month,s.locale)===preferred)return month;
@@ -142,7 +148,15 @@ export function proposeSchedule(s) {
   const weeks=academicWeeks(s),plan=s.month<24?['coursework','coursework',care,s.month%2?'study':primary]:[primary,secondary,care,growth];
   for(let i=0;i<2;i++){const last=recent[i];if(last&&!last.performed)plan[i]=s.month<24?'coursework':last.actual==='rest'?'free':primary;else if(last?.successRate<.4)plan[i]=s.month<24?'coursework':'study';else if(s.month>=24&&last?.actual==='analysis'&&last.successRate>=.7)plan[i]='analysis';}if(weeks.length===5)plan.push(care);
   for(let i=0;i<plan.length;i++){const c=weekContext(s,i,plan.length);if(c.conference&&studentAttends(s.attendance?.domestic??'together'))plan[i]='conference';else if(examWindow(s,i,plan.length))plan[i]=h.rapport>=70?'free':'coursework';}
-  if(s.month>=24){const first=plan.indexOf('conference');if(first>=0){let needed=Math.max(0,2-presentationPractice(s));for(let i=0;i<first&&needed>0;i++)if(!examWindow(s,i,plan.length)){plan[i]='presentation';needed--;}}}return plan;
+  if(s.month>=24){const first=plan.indexOf('conference');if(first>=0){let needed=Math.max(0,2-presentationPractice(s));for(let i=0;i<first&&needed>0;i++)if(!examWindow(s,i,plan.length)){plan[i]='presentation';needed--;}}}
+  const request=studentRestRequest(s);
+  if(request){
+    // Keep fixed commitments; offer recovery in ordinary self-directed time first.
+    const eligible=plan.map((_,i)=>i).filter(i=>!examWindow(s,i,plan.length)&&!(weekContext(s,i,plan.length).conference&&studentAttends(s.attendance?.domestic))&&!(i===plan.length-1&&canTravel(s)&&studentAttends(s.attendance?.overseas)));
+    eligible.sort((a,b)=>Number(plan[b]==='free')-Number(plan[a]==='free')||a-b);
+    for(const i of eligible.slice(0,request.weeks))plan[i]='recovery';
+  }
+  return plan;
 }
 function checkAllocation(a,total) {const sum=FACULTY_KEYS.reduce((n,k)=>n+(a?.[k]??0),0);return a&&FACULTY_KEYS.every(k=>Number.isInteger(a[k])&&a[k]>=0&&a[k]<=12)&&(total===undefined?sum>=0&&sum<=12:sum<=total);}
 function checkBudget(b) { return b&&Number.isInteger(b.salary)&&b.salary>=0&&b.salary<=100&&['environment','performance','publicity'].every(k=>Number.isInteger(b[k])&&b[k]>=0&&b[k]<=6); }
