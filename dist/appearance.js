@@ -4,9 +4,9 @@ const shade=(hex,amount)=>'#'+hex.slice(1).match(/../g).map(channel=>Math.max(0,
 // Independent cosmetic RNG: appearance never changes ability or simulation rolls.
 export function studentAppearance(seed,gender){
  let n=Number(seed)>>>0;const rand=()=>{n=(Math.imul(n,1664525)+1013904223)>>>0;return (n+.5)/4294967296;};
- const mean=gender==='male'?2.8:gender==='female'?4.4:3.5;
+ const mean=gender==='male'?2:gender==='female'?3.5:3.5;
  const gaussian=Math.sqrt(-2*Math.log(rand()))*Math.cos(2*Math.PI*rand());
- const rare=rand();return {hairLength:rare<(gender==='male'?.006:0)?0:Math.max(1,Math.min(6,Math.round(mean+gaussian*1.15))),hair:['#282827','#3b302b','#49392f','#242836','#675046','#352e2d'][Math.floor(rand()*6)],skin:['#f0c8a7','#e6b99a','#d6a383','#edc2a1','#cba080'][Math.floor(rand()*5)],shirt:['#456c87','#597a68','#906b71','#6c6587'][Math.floor(rand()*4)],glasses:rand()<.3,eyes:Math.floor(rand()*3),face:Math.floor(rand()*3),outfit:Math.floor(rand()*6),fringe:Math.floor(rand()*16),brows:Math.floor(rand()*3),glassesShape:Math.floor(rand()*2),curly:((Math.imul(Number(seed)^0x37ac,2654435761)>>>0)%5)===0};
+ const rare=rand();return {hairLength:rare<(gender==='male'?.006:0)?0:Math.max(1,Math.min(6,gender==='female'?1+Math.floor(rare*6):Math.round(mean+gaussian*.85))),hair:['#282827','#3b302b','#49392f','#242836','#675046','#352e2d'][Math.floor(rand()*6)],skin:['#f0c8a7','#e6b99a','#d6a383','#edc2a1','#cba080'][Math.floor(rand()*5)],shirt:['#456c87','#597a68','#906b71','#6c6587'][Math.floor(rand()*4)],glasses:rand()<.3,eyes:Math.floor(rand()*3),face:Math.floor(rand()*3),outfit:Math.floor(rand()*6),fringe:Math.floor(rand()*16),brows:Math.floor(rand()*3),glassesShape:Math.floor(rand()*2),curly:((Math.imul(Number(seed)^0x37ac,2654435761)>>>0)%5)===0};
 }
 const FRINGES=[
   [5,6,6,5,4,3,5,6,7,6,5,3,4,5,6,5,4,3,5,6,7,6,4,3,4,5,6,6,5,4],
@@ -31,7 +31,7 @@ export function renderPortrait(appearance,label='학생 도트 초상화',expres
  label=escape(label);
  const a=appearance,l=a.hairLength??3,styles=['까까머리','크롭컷','짧은 머리','중간 길이 머리','단발','어깨 길이 머리','긴 머리'];
  const fringeIndex=(a.fringe??0)%FRINGES.length,locks=FRINGES[fringeIndex];
- // Chibi sprite on a 40×62 grid (8 viewBox units per dot), finished with a coloured outline pass.
+ // Soft miniroom sprite on a 40×62 grid (8 viewBox units per dot), finished with a coloured outline pass.
  const W=40,H=62,OY=2,g=Array.from({length:H},()=>Array(W).fill(null));
  const put=(x,y,c)=>{y+=OY;if(x>=0&&x<W&&y>=0&&y<H)g[y][x]=c;};
  const get=(x,y)=>g[y+OY]?.[x];
@@ -78,37 +78,42 @@ export function renderPortrait(appearance,label='학생 도트 초상화',expres
  // brows only where the forehead shows
  [[12,15],[24,27]].forEach(([p,q])=>{for(let x=p;x<=q;x++)if(get(x,15)===skin)put(x,15,shade(a.hair,10));});
  // eyes: 0 dot · 1 line · 2 squint (simple, mini-hompy style)
- const ey=17,lash='#2a2030',kind=a.eyes??0;
+ const ey=17,lash='#253247',kind=a.eyes??0;
  [[13,15],[24,26]].forEach(([x0,x1])=>{const c=x0+1;
   if(expression==='surprised'){box(c,ey+1,c,ey+4,lash);put(c-1,ey+2,lash);put(c+1,ey+2,lash);}
   else if(['happy','delighted','relieved'].includes(expression)){put(x0,ey+3,lash);put(c,ey+2,lash);put(x1,ey+3,lash);}
   else if(['focused','tired','sad'].includes(expression)){row(ey+3,x0,x1,lash);if(expression==='sad')put(x0,ey+2,lash);}
-  else if(kind===0){box(c,ey+2,c,ey+4,lash);}
-  else if(kind===1){row(ey+3,x0,x1,lash);}
+  else if(kind===0){box(x0,ey+2,x1,ey+6,lash);row(ey+1,x0,x1,shade(a.hair,2));put(x0,ey+2,'#fff8eb');put(x0+1,ey+2,'#fff8eb');put(x1,ey+6,'#465773');}
+  else if(kind===1){box(c,ey+2,c+1,ey+5,lash);put(c,ey+2,'#fff8eb');}
   else{put(x0,ey+4,lash);put(c,ey+3,lash);put(x1,ey+4,lash);}});
  // cheeks, mouth
- row(25,10,12,'#f4a3aa');row(25,27,29,'#f4a3aa');
- put(20,25,skinSh);
+ row(24,10,12,'#f5b0b5');row(24,27,29,'#f5b0b5');row(25,10,13,'#ed919d');row(25,26,29,'#ed919d');put(11,24,'#ffe0da');put(28,24,'#ffe0da');
+ put(20,24,skinSh);
  const mouth='#a24c55';
  if(expression==='surprised'||expression==='delighted'){box(19,26,21,28,mouth);put(20,28,'#e98a8a');}
  else if(['sad','worried','tired'].includes(expression)){row(26,19,21,mouth);put(18,27,mouth);put(22,27,mouth);if(expression==='sad')box(14,22,14,24,'#a4cedd');if(expression==='worried')box(31,17,31,19,'#a4cedd');}
  else if(['happy','relieved'].includes(expression)){put(18,26,mouth);put(21,26,mouth);row(27,19,20,mouth);}
- else if((a.face??0)===0){put(19,26,mouth);put(20,26,mouth);}
+ else if((a.face??0)===0){put(18,26,mouth);put(21,26,mouth);row(27,19,20,mouth);}
  else if(a.face===1){row(26,19,21,mouth);put(20,27,'#e98a8a');}
  else{put(18,26,mouth);put(21,26,mouth);put(19,27,mouth);put(20,27,mouth);}
- if(a.glasses){const f='#4b4560',sq=a.glassesShape===1;[[10,17],[22,29]].forEach(([p,q])=>{row(ey+1,sq?p+1:p+2,sq?q-1:q-2,f);row(ey+5,sq?p+1:p+2,sq?q-1:q-2,f);for(let y=ey+2;y<=ey+4;y++){put(p+1,y,f);put(q-1,y,f);}});row(ey+3,17,22,f);}
+ if(a.glasses){const f='#4b4560',sq=a.glassesShape===1;[[10,17],[22,29]].forEach(([p,q])=>{row(ey+1,sq?p+1:p+2,sq?q-1:q-2,f);row(ey+7,sq?p+1:p+2,sq?q-1:q-2,f);for(let y=ey+2;y<=ey+6;y++){put(p+1,y,f);put(q-1,y,f);}});row(ey+3,17,22,f);put(12,ey+2,'#ebeef3');put(24,ey+2,'#ebeef3');}
  // Bent knees, forward sleeves and hands form a real seated pose.
  if(pose==='seated'){for(let y=46;y<=58;y++)for(let x=10;x<=29;x++)put(x,y,null);
   box(13,46,26,49,pants);box(22,49,27,51,pants);box(24,51,27,54,pants);box(14,49,17,53,pants);box(14,54,18,56,'#4b3a42');box(24,55,29,57,'#4b3a42');
   box(9,36,12,41,top);box(27,36,30,41,top);box(9,41,16,43,top);box(23,41,30,43,top);box(15,42,17,43,skin);box(22,42,24,43,skin);}
  if(pose==='experiment'){box(27,36,30,41,top);box(29,39,34,41,top);box(33,39,35,40,skin);box(8,39,14,41,top);box(13,40,16,41,skin);}
  // coloured outline
+ const rounded=Array.from({length:H},()=>Array(W).fill(null));for(let y=0;y<H;y++){const yy=y<=34?y:34+Math.round((y-34)*.86);for(let x=0;x<W;x++)if(g[y][x])rounded[yy][x]=g[y][x];}g.splice(0,H,...rounded);
  const out=g.map(r=>r.slice());
  for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(!g[y][x]){const n=[g[y-1]?.[x],g[y+1]?.[x],g[y][x-1],g[y][x+1]].find(Boolean);if(n)out[y][x]=shade(n,-58);}
  let rects='';
  for(let y=0;y<H;y++){let x=0;while(x<W){const c=out[y][x];if(!c){x++;continue;}let e=x;while(e+1<W&&out[y][e+1]===c)e++;rects+=`<rect x="${x}" y="${y}" width="${e-x+1}" height="1" fill="${c}"/>`;x=e+1;}}
  const title=`${label} · ${EXPRESSIONS[expression]} · ${styles[l]}${a.curly&&l?' · 곱슬머리':''}${a.glasses?' · 안경':''}${l?` · 앞머리 ${fringeIndex+1}`:''}`;
- return `<svg class="portrait" data-expression="${expression}" data-pose="${pose}" viewBox="0 0 320 496" role="img" aria-label="${title}"><title>${title}</title><g class="hair-fringe chibi-grid ${expression==='sad'?'expression-tear':''}" shape-rendering="crispEdges" transform="scale(8)">${rects}</g></svg>`;
+ return `<svg class="portrait" data-expression="${expression}" data-pose="${pose}" data-outfit="${outfit}" viewBox="0 0 320 496" role="img" aria-label="${title}"><title>${title}</title><g class="hair-fringe chibi-grid ${expression==='sad'?'expression-tear':''}" shape-rendering="crispEdges" transform="translate(0 24) scale(8)">${rects}</g></svg>`;
 }
 
-export function weeklyAppearance(state,index=0){const a=studentAppearance(state.creationSeed??state.seed,state.gender);const month=state.visualMonth??state.month;return {...a,...(state.gender==='male'&&state.service?.trainingReturnMonth!==undefined&&month>=state.service.trainingReturnMonth&&month<state.service.trainingReturnMonth+2?{hairLength:0}:{}),outfit:(a.outfit+Math.max(0,state.month-1)*5+index)%6,shirt:['#456c87','#597a68','#906b71','#6c6587','#ba8659','#548b98'][(a.outfit+index+state.month)%6]};}
+export function weeklyAppearance(state,index=0){
+ const a=studentAppearance(state.creationSeed??state.seed,state.gender),month=state.visualMonth??state.month;
+ const sequence=(a.outfit+Math.max(0,state.month-1)*5+index),outfit=state.professorProfile?.labMode==='dry'?1+sequence%5:sequence%6;
+ return {...a,...(state.gender==='male'&&state.service?.trainingReturnMonth!==undefined&&month>=state.service.trainingReturnMonth&&month<state.service.trainingReturnMonth+2?{hairLength:0}:{}),outfit,shirt:['#456c87','#597a68','#906b71','#6c6587','#ba8659','#548b98'][(a.outfit+index+state.month)%6]};
+}
