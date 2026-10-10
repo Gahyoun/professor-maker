@@ -165,9 +165,9 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
   else if(outfit===4){for(const y of [77,85]){row(y,27,51,shirt);row(y+1,27,51,shirt);}}
   else if(outfit===5){poly([[30,68],[36,66],[42,67],[43,72],[36,73]],topH);box(42,73,43,92,topD);}
   // Forearms reach the desktop, with the hands immediately above the keyboard.
-  poly([[28,73],[32,74],[33,80],[45,84],[47,86],[45,88],[31,84],[27,78]],topH);
-  poly([[50,71],[55,73],[58,79],[63,84],[64,87],[57,85],[52,78]],top);
-  box(45,84,50,86,skin);row(86,45,50,skinD);box(63,84,68,86,skin);row(86,63,68,skinD);
+  poly([[28,73],[32,72],[37,80],[42,82],[49,80],[58,78],[60,80],[49,84],[41,87],[31,82],[27,77]],topH);
+  poly([[50,71],[55,72],[58,78],[68,79],[70,81],[66,84],[56,82],[52,77]],top);
+  box(58,78,63,80,skin);row(80,58,63,skinD);box(68,80,73,82,skin);row(82,68,73,skinD);
   poly([[30,94],[49,94],[56,96],[55,101],[43,101],[37,104],[29,101]],pants);
   poly([[31,99],[38,101],[37,107],[29,107]],pants);poly([[47,99],[54,99],[57,107],[49,108]],pantsD);
   row(97,41,53,pantsH);box(31,101,33,105,pantsH);

@@ -15,6 +15,7 @@ const line=(a,b,color,width=1)=>{const [x,y]=projectRoom(...a),[xx,yy]=projectRo
 const front=(u,v,z,w,h,color)=>plane([[u,v,z],[u+w,v,z],[u+w,v,z+h],[u,v,z+h]],color);
 const left=(u,v,z,d,h,color)=>plane([[u,v,z],[u,v+d,z],[u,v+d,z+h],[u,v,z+h]],color);
 const isLecturing=(result,idle)=>!idle&&result.actual==='teach'&&result.performed===true&&result.outcome!=='training';
+export const ROOM_ANCHORS=Object.freeze({standing:Object.freeze([23,14]),deskSeat:Object.freeze([13.5,23.5]),plant:Object.freeze([24,19])});
 function lectureDiagram(type,ink){
  const stroke=points=>`<path class="ta-board-stroke" pathLength="1" d="${points.map((p,i)=>`${i?'L':'M'}${projectRoom(...p).join(' ')}`).join('')}" fill="none" stroke="${ink}" stroke-width="1.3"/>`;
  return `<g class="ta-board-annotation" data-board-kind="${type}" aria-label="강의 개념 도표">`+
@@ -26,7 +27,17 @@ function lectureDiagram(type,ink){
 }
 export function roomDecorations(state){const seed=state.creationSeed??state.seed,draw=i=>(Math.imul(seed^(i*7919),2654435761)>>>0)/4294967296;return {fridge:draw(1)>.25,kettle:draw(2)>.2,plush:draw(3)>.45,cot:draw(4)>.65,board:true,boardType:Math.floor(draw(12)*4),chairType:Math.floor(draw(13)*4),restType:Math.floor(draw(14)*4),sofa:draw(6)>.5,server:state.professorProfile.labMode==='dry',palette:Math.floor(draw(5)*3),wallpaper:Math.floor(draw(7)*WALLPAPERS.length),floor:Math.floor(draw(8)*FLOOR_TILES.length),printer:draw(9)>.25,plant:true,bag:draw(10)>.35,deskLamp:true,clock:true,noticeboard:draw(11)>.3};}
 function desk(u,v,w,d,color='#c5ab8e'){let art='';for(const [a,b] of [[u+.5,v+.5],[u+w-1,v+.5],[u+.5,v+d-1],[u+w-1,v+d-1]])art+=box(a,b,.65,.65,23,'#a58c73');art+=box(u,v,w,d,3,color,23);return art;}
-function chair(u,v,color,type=0,facing='front'){const labels=['목재 의자','플라스틱 의자','사무용 의자','고급 등받이 의자'];let art=box(u,v,3,3,3,color,11)+box(u,v+(facing==='monitor'?2.4:0),3,.6,type===3?29:type===2?24:17,shade(color,9),14);if(type>=2){art+=box(u+1.3,v+1.3,.4,.4,11,'#77858d');for(const [a,b]of [[0,0],[2.6,0],[0,2.6],[2.6,2.6]])art+=box(u+a,v+b,.4,.4,2,'#5b6770');art+=box(u,v+1,.4,2,1,color,21)+box(u+2.6,v+1,.4,2,1,color,21);}else for(const[a,b]of [[0,0],[2.6,0],[0,2.6],[2.6,2.6]])art+=box(u+a,v+b,.4,.4,11,'#92958b');return `<g data-chair="${type}" data-chair-facing="${facing}" aria-label="${labels[type]}">${art}</g>`;}
+function chairParts(u,v,color,type=0,facing='front'){
+ const labels=['목재 의자','플라스틱 의자','사무용 의자','고급 등받이 의자'];
+ const backrest=box(u,v+(facing==='monitor'?2.4:0),3,.6,type===3?29:type===2?24:17,shade(color,9),14);
+ let base='',arms='';
+ if(type>=2){base+=box(u+1.3,v+1.3,.4,.4,11,'#77858d');for(const [a,b]of [[0,0],[2.6,0],[0,2.6],[2.6,2.6]])base+=box(u+a,v+b,.4,.4,2,'#5b6770');arms=box(u,v+1,.4,2,1,color,21)+box(u+2.6,v+1,.4,2,1,color,21);}
+ else for(const[a,b]of [[0,0],[2.6,0],[0,2.6],[2.6,2.6]])base+=box(u+a,v+b,.4,.4,11,'#92958b');
+ base+=box(u,v,3,3,3,color,11);
+ const near=facing==='monitor';
+ return {base:`<g data-chair="${type}" data-chair-facing="${facing}" aria-label="${labels[type]}">${base}${near?'':backrest+arms}</g>`,front:near?`<g class="chair-foreground" aria-hidden="true">${backrest}${arms}</g>`:''};
+}
+function chair(...args){const parts=chairParts(...args);return parts.base+parts.front;}
 function restFurniture(u,v,type){if(type===0)return `<g data-rest="sofa">${sofa(u,v)}</g>`;if(type===1)return `<g data-rest="cot">${cot(u,v)}</g>`;if(type===2)return `<g data-rest="beanbag">${box(u+.4,v+.4,4,4,6,'#c3b49b')+box(u+1,v+1,3,3,6,'#d7c8af',6)+box(u+1.6,v+.3,2,2,13,'#cabbab',6)}</g>`;return `<g data-rest="camp-chair">${chair(u,v,'#a2b4a9',1)+line([u,v,0],[u+3,v+3,14],'#798e86',2)+line([u+3,v,0],[u,v+3,14],'#798e86',2)}</g>`;}
 function plant(u,v){let art=box(u,v,2,2,10,'#b89b80');art+=box(u+.25,v+.25,1.5,1.5,1,'#7e846b',10);for(const [a,b,h] of [[.6,.5,18],[1.1,1,27],[.8,1.5,21]]){art+=box(u+a,v+b,.25,.25,h,'#839987',10)+box(u+a-.5,v+b-.35,1.2,.75,2,'#9fb49a',h+6);}return art;}
 function bookshelf(u,v,wet,stock){let art=box(u,v,5.5,2,60,'#c6b296');for(const z of [6,23,40]){art+=front(u+.4,v+2.02,z,4.7,14,'#ebe1d0');art+=front(u+.3,v+2.1,z-1,4.9,2,'#b69c80');}
@@ -48,9 +59,10 @@ function actor(state,result,index,u,v,idle,lift=0,facing='front'){
  const executing=!idle&&result.performed!==false&&!['idle','training','unfinished'].includes(activity),relaxing=!idle&&['rest','coffee'].includes(activity);
  const pose=isLecturing(result,idle)?'lecturing':relaxing||!idle&&['study','coursework','analysis','language','paper'].includes(activity)||!idle&&activity==='experiment'&&!wet?'seated':!idle&&['experiment','research'].includes(activity)&&wet?'experiment':'standing';
  const expression=studentEmotion(state,result,{idle}),appearance={...weeklyAppearance({...state,visualMonth:idle?state.month:Math.max(0,state.month-1)},index),...(pose==='experiment'?{outfit:0}:{})};
- const portrait=renderPortrait(appearance,'학생 도트 초상화',expression,pose,facing).replace('class="portrait"',`class="portrait room-portrait" x="${x-w/2}" y="${y-h+(pose==='seated'?7:2)}" width="${w}" height="${h}" style="width:${w}px;height:${h}px"`);
+ const portraitTop=y-h+(pose==='seated'?7:2),headCenter=portraitTop+(pose==='seated'?152:120)*h/496;
+ const portrait=renderPortrait(appearance,'학생 도트 초상화',expression,pose,facing).replace('class="portrait"',`class="portrait room-portrait" x="${x-w/2}" y="${portraitTop}" width="${w}" height="${h}" style="width:${w}px;height:${h}px"`);
  const props=executing||relaxing?`<g transform="translate(${x} ${y}) scale(.8)">${activityProps(activity,{wet,index,kind:equipmentProfile(state),facing})}</g>`:'';
- return (pose==='seated'?'':plane([[u-1.3,v-.4,0],[u-.4,v-1.3,0],[u+1.3,v+.4,0],[u+.4,v+1.3,0]],'#b9b4a4'))+`<g class="mini-student pose-${pose} expression-${expression} ${idle?'mini-idle':'mini-working'} action-${activity.replace(/[^a-z_-]/g,'')}" data-floor="${u},${v}"><g transform="translate(${x} ${y-h+33.6})">${reactionEffects(expression,index)}</g>${portrait}${props}</g>`;
+ return (pose==='seated'?'':plane([[u-1.3,v-.4,0],[u-.4,v-1.3,0],[u+1.3,v+.4,0],[u+.4,v+1.3,0]],'#b9b4a4'))+`<g class="mini-student pose-${pose} expression-${expression} ${idle?'mini-idle':'mini-working'} action-${activity.replace(/[^a-z_-]/g,'')}" data-floor="${u},${v}"><g class="room-reaction" transform="translate(${x} ${headCenter}) scale(.7)">${reactionEffects(expression,index)}</g>${portrait}${props}</g>`;
 }
 export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'}={}){
  const d=roomDecorations(state),wall=WALLPAPERS[d.wallpaper],[tile,tileAlt,grout]=FLOOR_TILES[d.floor],wet=state.professorProfile.labMode==='wet';
@@ -89,13 +101,13 @@ export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'
  work+=box(17.6,16.8,1,1,1,'#abb9b1',26)+box(17.9,17,.25,.25,15,'#91a39e',27)+box(17.2,16.7,1.4,1.3,2,'#b7c4b3',42);
  if(wet){const count=({sparse:1,balanced:3,rich:5})[stock];for(let i=0;i<count;i++)work+=box(14+i*.5,17.5,.25,.4,5,'#b5cecb',26)+box(14+i*.5,17.5,.25,.4,1,'#899ca3',31);if(stock==='rich')work+=box(17,18.2,1.3,1.2,7,'#c8d2cc',26);}
  add(9,16,10,6,work);
- add(24,19,2,2,plant(24,19));
+ add(...ROOM_ANCHORS.plant,2,2,`<g class="room-plant" data-floor="${ROOM_ANCHORS.plant.join(',')}">${plant(...ROOM_ANCHORS.plant)}</g>`);
  if(d.bag)add(6,23,2.2,1.7,box(6,23,2.2,1.7,9,'#b49a8c')+line([6.4,23.2,10],[7.7,23.2,10],'#85786d',2));
- const deskSeat=chair(12,22,['#b5b9b0','#a1b7bf','#879ba8','#777f99'][d.chairType],d.chairType,'monitor');
- // The chair is in front of the desk, with its back towards the viewer. Keep
- // it and its occupant in one layer so the desk cannot repaint over the head.
- objects.push({depth:44,art:`<g class="desk-seat-layer">${deskSeat}${deskWorking?actor(state,result,index,13.5,23.5,false,0,'monitor'):''}</g>`});
- const pos=lecturing?[24,3]:result.actual==='presentation'&&!idle?[24,4]:working?[17,15]:[22,17];if(result.outcome!=='training'&&!resting&&!deskWorking)add(...pos,1,1,actor(state,result,index,...pos,idle));
+ const deskSeat=chairParts(12,22,['#b5b9b0','#a1b7bf','#879ba8','#777f99'][d.chairType],d.chairType,'monitor');
+ // The occupant sits between the seat and the near backrest/armrests. Painting
+ // the whole chair first made the taller student's body pass through the chair.
+ objects.push({depth:44,art:`<g class="desk-seat-layer">${deskSeat.base}${deskWorking?actor(state,result,index,...ROOM_ANCHORS.deskSeat,false,0,'monitor'):''}${deskSeat.front}</g>`});
+ const pos=lecturing?[24,3]:result.actual==='presentation'&&!idle?[24,4]:working?[17,15]:ROOM_ANCHORS.standing;if(result.outcome!=='training'&&!resting&&!deskWorking)add(...pos,1,1,actor(state,result,index,...pos,idle));
  objects.sort((a,b)=>a.depth-b.depth);art+=objects.map(o=>o.art).join('');
  // Front rim has the same two floor axes as the tiles, never an unrelated angle.
  art+=plane([[0,28,0],[28,28,0],[28,28,-3],[0,28,-3]],shade(tile,-18))+plane([[28,0,0],[28,28,0],[28,28,-3],[28,0,-3]],shade(tile,-28));

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createState} from '../dist/engine.js';
 import {roomScene,roomDecorations} from '../dist/lab-scene.js';
-import {projectRoom,WALLPAPERS,FLOOR_TILES} from '../dist/mini-room.js';
+import {projectRoom,ROOM_ANCHORS,WALLPAPERS,FLOOR_TILES} from '../dist/mini-room.js';
 test('room floor axes have equal lengths and opposing slopes; height stays vertical',()=>{
  const delta=(a,b)=>a.map((v,i)=>v-b[i]),base=projectRoom(0,0),u=delta(projectRoom(1,0),base),v=delta(projectRoom(0,1),base);
  assert.equal(Math.hypot(...u),Math.hypot(...v));assert.equal(u[0],-v[0]);assert.equal(u[1],v[1]);
@@ -34,14 +34,33 @@ test('desk work sits in front of the monitor and faces it, with one chair and al
    assert.match(scene,/class="desk-monitor" data-floor="14.2,18.3"/);
    assert.match(scene,/class="desk-keyboard" data-floor="13.5,21.3"/);
    assert.equal((scene.match(/data-chair=/g)||[]).length,1+(scene.includes('data-rest="camp-chair"')?1:0));
-   const seat=scene.indexOf('class="desk-seat-layer"'),chair=scene.indexOf('data-chair=',seat),student=scene.indexOf('class="mini-student ',seat);
-   assert.ok(seat>=0&&chair>seat&&student>chair,'chair and occupant share a layer after the desktop');
+   const seat=scene.indexOf('class="desk-seat-layer"'),chair=scene.indexOf('data-chair=',seat),student=scene.indexOf('class="mini-student ',seat),front=scene.indexOf('class="chair-foreground"',seat);
+   assert.ok(seat>=0&&chair>seat&&student>chair&&front>student,'the occupant sits between the chair seat and its near backrest');
    assert.ok(seat>scene.indexOf('class="desk-keyboard"'),'the desktop must not repaint over the student face');
   }
   assert.deepEqual(state,before);
  }
  const seat=projectRoom(13.5,23.5),screen=projectRoom(16.55,18.6,44);
  assert.ok(screen[0]>seat[0]&&screen[1]<seat[1],'the seated student looks towards the upper-right screen');
+});
+test('all four desk chairs occlude the seated body, while the idle student stands clear of the plant',()=>{
+ const seen=new Set();
+ for(let seed=1;seed<=120;seed++){
+  const s=createState('',seed,{labMode:seed%2?'wet':'dry'}),before=JSON.stringify(s),type=roomDecorations(s).chairType;
+  if(!seen.has(type)){
+   seen.add(type);const scene=roomScene(s,{actual:'analysis',performed:true,outcome:'completed'});
+   const student=scene.indexOf('class="mini-student '),front=scene.indexOf('class="chair-foreground"');
+   assert.ok(front>student,`chair ${type}: near backrest must occlude the student's lower back`);
+   assert.match(scene,new RegExp(`data-chair="${type}" data-chair-facing="monitor"`));
+  }
+  const scene=roomScene(s,{actual:'idle'},0,{idle:true});
+  assert.match(scene,new RegExp(`class="mini-student [^>]+data-floor="${ROOM_ANCHORS.standing.join(',')}"`));
+  assert.match(scene,new RegExp(`class="room-plant" data-floor="${ROOM_ANCHORS.plant.join(',')}"`));
+  assert.equal(JSON.stringify(s),before);
+ }
+ assert.equal(seen.size,4);
+ const [x]=projectRoom(...ROOM_ANCHORS.standing),[plantX]=projectRoom(...ROOM_ANCHORS.plant);
+ assert.ok(Math.abs(x-plantX)>=36,'idle feet and the foreground plant need separate projected footprints');
 });
 test('cosmetic room variety is stable and never consumes gameplay state',()=>{
  const walls=new Set(),floors=new Set(),props=new Set();
