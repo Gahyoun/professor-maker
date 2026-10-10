@@ -1,7 +1,7 @@
 import {facultyCapacity,allocateCredits} from '../dist/workload.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createState,simulateMonth,decide,proposeSchedule,validateSave} from '../dist/engine.js';
+import {createState,simulateMonth,decide,proposeSchedule,validateSave,migrateSave} from '../dist/engine.js';
 import {hIndex,advanceImpact} from '../dist/impact.js';
 import {grantCounts,canApplyGrant,advancePortfolio,depositGrant} from '../dist/funding.js';
 import {buildEndingCV} from '../dist/cv.js';
@@ -45,6 +45,26 @@ test('undergraduate conferences teach observation only, with a fixed final-year 
 
 test('faculty capacity and efficiency vary with seniority and seeded calendar pressure without consuming RNG',()=>{
  const young=createState('',12,{age:30}),senior=createState('',12,{age:55});let a=0,b=0;for(let month=0;month<12;month++){young.month=senior.month=month;a+=facultyCapacity(young).credits;b+=facultyCapacity(senior).credits;}assert.ok(a>b);assert.ok(facultyCapacity(senior).efficiency>facultyCapacity(young).efficiency);const before=structuredClone(young);assert.deepEqual(facultyCapacity(young),facultyCapacity(young));assert.deepEqual(young,before);
+});
+test('reduced faculty credits retain eight for maintenance and never exceed eleven',()=>{
+ for(const age of [30,42,55]){
+  const s=createState('',12,{age}),before=structuredClone(s);
+  for(let month=0;month<96;month++)for(const active of [false,true]){
+   const capacity=facultyCapacity({...s,month,sabbatical:{...s.sabbatical,active}});
+   assert.ok(capacity.credits>=8&&capacity.credits<=11);
+  }
+  assert.deepEqual(s,before);
+ }
+});
+test('loading an over-budget workload fits the new cap and can advance without altering the original save',()=>{
+ const old=createState('',12,{age:42});old.allocation={research:3,teaching:3,admin:3,mentoring:3};
+ const before=structuredClone(old),migrated=migrateSave(old),capacity=facultyCapacity(migrated).credits;
+ assert.ok(validateSave(migrated));assert.deepEqual(old,before);
+ assert.equal(Object.values(migrated.allocation).reduce((a,b)=>a+b,0),capacity);
+ assert.ok(Object.values(migrated.allocation).every(n=>n>=2));
+ assert.equal(simulateMonth(migrated,proposeSchedule(migrated),{allocation:migrated.allocation}).month,1);
+ const spare={...old,allocation:{research:2,teaching:2,admin:1,mentoring:2}};
+ assert.deepEqual(migrateSave(spare).allocation,spare.allocation);
 });
 test('teaching neglect decays gently on vacation and sabbatical but is costly during semester',()=>{
  const term=createState('',12),vacation=structuredClone(term),sabbatical=structuredClone(term);term.month=2;vacation.month=4;sabbatical.month=2;sabbatical.sabbatical={active:true,until:14,mode:'home'};

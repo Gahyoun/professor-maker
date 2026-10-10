@@ -6,7 +6,8 @@ export function facultyCapacity(state){
  const vacation=[1,2,7,8].includes(month),sabbatical=state.sabbatical.active;
  const young=Math.max(0,Math.min(2,Math.round((50-age)/10))),busy=month===(state.locale==='en'?9:3)||month===(state.locale==='en'?1:9);
  const draw=(Math.imul((state.creationSeed??state.seed)^(state.month*104729),2654435761)>>>0)/4294967296,jitter=draw<.15?-1:draw>.85?1:0;
- const credits=Math.max(8,Math.min(12,8+young+(vacation?1:0)+(sabbatical?1:0)-(busy&&!sabbatical?1:0)+jitter));
+ // Preserve two credits per duty at the floor, with one fewer discretionary credit.
+ const credits=Math.max(8,Math.min(11,7+young+(vacation?1:0)+(sabbatical?1:0)-(busy&&!sabbatical?1:0)+jitter));
  const efficiency=Number(Math.max(.78,Math.min(1.2,.78+(age-30)*.014)).toFixed(3));
  return {credits,efficiency,teachingRequired:!vacation&&!sabbatical,vacation,sabbatical,jitter,age,calendarMonth:month};
 }
