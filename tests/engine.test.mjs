@@ -175,7 +175,9 @@ test('all six normal careers are reachable through play with managed finances',(
   // The RA founder fixture uses seed 8 × 7919, also exercised by lab-play.test.mjs.
   // Institute seed 1 earns four accepted papers through the unchanged policy;
   // seed 6 now graduates with three ordinary papers after event weights are respected.
-  const seeds={institute:1,startup:63352,unemployed:1};
+  // 4.17 moves thesis verdicts to December and pays integrated students master's stipends for four semesters;
+  // startup stays a narrow industry/enterprise boundary (seed 47), and the video path completes on seed 1.
+  const seeds={institute:1,startup:47,unemployed:1,youtuber:1};
   for(const goal of ['institute','corporate','unrelated','startup','unemployed','youtuber']){const s=play(goal,seeds[goal]??6);assert.equal(s.month,96,goal);assert.ok(canDefend(s),goal);assert.equal(s.ending,goal,JSON.stringify({goal,ending:s.ending,month:s.month,hidden:s.hidden,career:s.career,professor:s.professor}));}
 });
 test('saved games reject old versions, malformed weeks, impossible career counts and invalid events',()=>{

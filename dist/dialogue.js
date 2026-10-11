@@ -146,7 +146,7 @@ export const DIALOGUES = {
 공동연구 미팅에서 제가 맡은 부분은 직접 말해 보고 싶어요. | I would like to present my own part at the collaboration meeting.
 실험 예약이 겹쳐서 이야기하고 시간을 바꿨어요. 다음에는 규칙이 있으면 좋겠어요. | We talked through a booking clash and changed times. A clear rule would help next time.
 연구 얘기만 하다가 점심도 같이 먹었어요. 질문하기가 조금 편해졌어요. | We usually only discuss work, but we had lunch together. Asking questions feels easier now.
-새로 온 학생에게 노트 쓰는 법을 알려 줬어요. 제 첫 노트는 안 보여 줬지만요. | I showed the new student how to keep a notebook. I did not show them my first one, though.
+동기에게 노트 쓰는 법을 같이 정리해 보자고 했어요. | I suggested to a classmate that we work out how to keep notes together.
 `),
   paper: lines(`
 결과는 있는데 문단으로 연결하려니 어렵네요. 제일 중요한 문장부터 써 볼게요. | I have the results, but linking them into paragraphs is difficult. I will start with the main sentence.
@@ -349,6 +349,43 @@ export const DIALOGUES = {
 일정이 또 밀렸어요. 무리해서 따라잡기보다 조정할 수 있을까요? | The schedule slipped again. Could we adjust it instead of pushing too hard to catch up?
 `),
 };
+// Dry labs keep the same voices without bench vocabulary (experiments, instruments, controls, materials).
+const swaps = text => Object.fromEntries(text.trim().split('\n').map(row => { const [from, to] = row.trim().split(' => '); return [from, lines(to)[0]]; }));
+export const DRY_LINES = swaps(`
+교수님, 실험 노트는 어느 정도 자세히 쓰면 될까요? 아직 첫 장을 못 넘겼어요. => 교수님, 연구 노트는 어느 정도 자세히 쓰면 될까요? 아직 첫 장을 못 넘겼어요. | Professor, how detailed should my research notes be? I still have not made it past the first page.
+계획은 적어 왔어요. 실험 시간을 얼마나 잡아야 할지는 아직 모르겠어요. => 계획은 적어 왔어요. 계산 시간을 얼마나 잡아야 할지는 아직 모르겠어요. | I brought a plan. I am still unsure how much time to allow for computation.
+장비 사용 교육부터 받고 싶어요. 괜히 만졌다가 고장 낼까 봐요. => 계산 서버 사용법부터 배우고 싶어요. 괜히 돌렸다가 다른 사람 작업을 멈출까 봐요. | I would like to learn the compute server first. I am worried I might stop someone else’s job.
+원하는 모양이 나왔다고 끝내지 않고, 대조군도 다시 봤어요. => 원하는 모양이 나왔다고 끝내지 않고, 비교 조건도 다시 봤어요. | I did not stop when the plot looked right. I checked the comparison conditions again.
+이번에는 제가 다음 실험도 제안해 봐도 될까요? => 이번에는 제가 다음 계산도 제안해 봐도 될까요? | Could I suggest the next computation this time?
+지난달에는 안 보이던 차이가 이번에는 보여요. 측정 조건이 중요했네요. => 지난달에는 안 보이던 차이가 이번에는 보여요. 계산 조건이 중요했네요. | I can see a difference I missed last month. The computational settings mattered.
+오늘은 실패한 실험 얘기도 같이 드릴 수 있을 것 같아요. => 오늘은 실패한 계산 얘기도 같이 드릴 수 있을 것 같아요. | Today I think I can talk about the failed runs too.
+실험은 했는데, 이번 결과로 주장을 해도 되는지는 모르겠어요. => 계산은 돌렸는데, 이번 결과로 주장을 해도 되는지는 모르겠어요. | I ran the computations, but I am not sure these results support a claim.
+장비 예약을 잡기 전에 쉬는 날부터 하나 넣어 두고 싶어요. => 계산 서버를 예약하기 전에 쉬는 날부터 하나 넣어 두고 싶어요. | I would like to put one rest day in before booking the compute server.
+실험 중간에 집중이 끊겨서 체크리스트를 다시 만들었어요. => 계산을 돌리는 중간에 집중이 끊겨서 체크리스트를 다시 만들었어요. | I lost focus during a computation run, so I made another checklist.
+좋은 결과를 얻고도 다음 실험이 먼저 걱정됐어요. => 좋은 결과를 얻고도 다음 계산이 먼저 걱정됐어요. | Even after a good result, I worried about the next computation first.
+다음 실험은 제가 일정까지 잡아 봤어요. 놓친 게 있는지만 봐 주세요. => 다음 계산은 제가 일정까지 잡아 봤어요. 놓친 게 있는지만 봐 주세요. | I drafted the schedule for the next computation too. Could you check what I missed?
+계획한 실험 옆에 작은 질문 하나를 더 적었어요. 연결될 것 같아서요. => 계획한 계산 옆에 작은 질문 하나를 더 적었어요. 연결될 것 같아서요. | I added one small question beside the planned computation. I think they might connect.
+잘된 실험도 실패한 실험도 같은 형식으로 기록했어요. => 잘된 계산도 실패한 계산도 같은 형식으로 기록했어요. | I recorded the successful and failed runs in the same format.
+동료가 실험을 도와줬어요. 다음에는 제가 그쪽 분석을 봐 주기로 했고요. => 동료가 계산을 도와줬어요. 다음에는 제가 그쪽 분석을 봐 주기로 했고요. | A labmate helped with the computation. I offered to help with their analysis next.
+실험 예약이 겹쳐서 이야기하고 시간을 바꿨어요. 다음에는 규칙이 있으면 좋겠어요. => 계산 서버 예약이 겹쳐서 이야기하고 시간을 바꿨어요. 다음에는 규칙이 있으면 좋겠어요. | We talked through a compute-server booking clash and changed times. A clear rule would help next time.
+학회에서 메모한 질문을 가져왔어요. 다음 실험에 연결될 것 같아요. => 학회에서 메모한 질문을 가져왔어요. 다음 계산에 연결될 것 같아요. | I brought the questions I noted at the conference. They may help shape the next computation.
+방문 연구실에서는 이런 측정을 어떻게 하는지 궁금해요. => 방문 연구실에서는 이런 계산을 어떻게 하는지 궁금해요. | I wonder how they approach this kind of computation at your host lab.
+실험 두 번과 논문 읽기를 넣었어요. 중간에 하루는 비워 뒀고요. => 계산 두 번과 논문 읽기를 넣었어요. 중간에 하루는 비워 뒀고요. | I planned two computation runs and some reading, with one day left open between them.
+다음 주 일정에 여유가 조금 있어요. 공부를 더 넣을지 실험을 넣을지 고민했어요. => 다음 주 일정에 여유가 조금 있어요. 공부를 더 넣을지 계산을 더 돌릴지 고민했어요. | There is a little room next week. I wondered whether to add study or more computation.
+칭찬해 주신 부분은 다음 실험에서도 유지해 봤어요. => 칭찬해 주신 부분은 다음 계산에서도 유지해 봤어요. | I tried to keep the part you praised in the next computation too.
+결과만 보고 판단하시기 전에 실험 기록도 봐 주셨으면 해요. => 결과만 보고 판단하시기 전에 계산 기록도 봐 주셨으면 해요. | Before judging only the result, I would like you to look at the computation log too.
+제가 쓰고 난 장비는 다음 사람 조건에 맞춰 정리해 뒀습니다. => 제가 쓰고 난 계산 환경은 다음 사람이 쓰기 좋게 정리해 뒀습니다. | I left the computing environment ready for the next person after using it.
+실험을 도와준 동료 이름도 발표 자료에 넣었습니다. => 계산을 도와준 동료 이름도 발표 자료에 넣었습니다. | I included the colleague who helped with the computation in the slides.
+이 일정은 못 맞출 것 같아요. 실험 시간이 너무 짧아요. => 이 일정은 못 맞출 것 같아요. 계산 시간이 너무 짧아요. | I do not think I can meet this schedule. There is not enough computation time.
+결론부터 말하면 아직 모르겠어요. 확인할 실험은 생각했어요. => 결론부터 말하면 아직 모르겠어요. 확인할 계산은 생각했어요. | The short answer is that I do not know yet. I have a computation in mind to check it.
+실패한 실험을 열어 보는 데 시간이 좀 걸렸어요. 이제 같이 볼 수 있을 것 같아요. => 실패한 계산 결과를 열어 보는 데 시간이 좀 걸렸어요. 이제 같이 볼 수 있을 것 같아요. | It took me a while to open the failed run. I think I can look at it with you now.
+새 아이디어가 있어요. 하루짜리 작은 실험으로 먼저 걸러 보고 싶어요. => 새 아이디어가 있어요. 하루짜리 작은 계산으로 먼저 걸러 보고 싶어요. | I have a new idea. I would like to screen it with a small one-day computation.
+실험 시작 전에 끝내는 시간을 정했어요. 그 뒤에는 기록만 정리했어요. => 계산 시작 전에 끝내는 시간을 정했어요. 그 뒤에는 기록만 정리했어요. | I set a stopping time before the run and only organized notes afterward.
+제가 잘 집중하는 시간에 어려운 실험을 옮겨도 될까요? => 제가 잘 집중하는 시간에 어려운 계산을 옮겨도 될까요? | Could we move the difficult computation to the time when I focus best?
+마침 장비 예약이 비어서 계획을 조금 앞당길 수 있었어요. => 마침 계산 서버가 비어서 계획을 조금 앞당길 수 있었어요. | The compute server happened to be free, so I could move the plan forward a little.
+예약을 잡았는데 점검일이랑 겹쳤어요. 가능한 다른 일을 먼저 할게요. => 계산 서버를 예약했는데 점검일이랑 겹쳤어요. 가능한 다른 일을 먼저 할게요. | My compute-server booking overlapped with maintenance. I will first do what is still possible.
+준비한 날에 필요한 재료가 안 왔어요. 다음 계획에는 여유를 넣고 싶어요. => 준비한 날에 필요한 데이터가 안 왔어요. 다음 계획에는 여유를 넣고 싶어요. | The data I needed did not arrive on the day I prepared. I want a buffer in the next plan.
+`);
 
 function hash(text) {
   let n = 2166136261;
@@ -365,7 +402,7 @@ export function studentLine(s, lang = 'ko') {
     const reasonEn=rest.reason==='both'?'I feel worn out, both physically and mentally.':rest.reason==='physical'?'I feel physically worn out.':'I am finding it hard to clear my head.';
     return lang==='ko'?`교수님, ${reason} 이번 달에는 ${duration} 정도 쉬면서 회복하고 싶어요.`:`${reasonEn} Could I take ${durationEn} to rest and recover this month?`;
   }
-  if(s.started&&s.hidden?.rapport>=40&&academicWeeks(s).some((_,i)=>examWindow(s,i)))return lang==='ko'?'교수님, 시험 주와 그 전주에는 자율 시간을 주실 수 있을까요? 제가 공부 계획을 세워 볼게요.':'Could I plan my own time for exam week and the week before?';
+  if(s.started&&s.month<48&&s.hidden?.rapport>=40&&academicWeeks(s).some((_,i)=>examWindow(s,i)))return lang==='ko'?'교수님, 시험 주와 그 전주에는 자율 시간을 주실 수 있을까요? 제가 공부 계획을 세워 볼게요.':'Could I plan my own time for exam week and the week before?';
   if(s.advising?.inattention>=6)return lang==='ko'?'제가 제대로 가고 있는지, 구체적으로 한 번 봐 주실 수 있을까요?':'Could we look more closely at how I am doing?';
   if(s.advising?.lastFeedback==='praise'&&s.advising.streak>=4)return lang==='ko'?'좋다고 해 주셔서 감사해요. 어떤 부분을 더 다듬으면 좋을지도 알고 싶어요.':'Thank you. I would also like to know what I can improve.';
   if(s.advising?.lastFeedback==='listen'&&s.advising.streak>=4)return lang==='ko'?'매번 같은 식으로 넘어가다 보니, 교수님이 제 연구를 어떻게 보고 계신지 잘 모르겠어요.':'I am not sure how you see my work when each meeting ends in the same way.';
@@ -425,5 +462,6 @@ export function studentLine(s, lang = 'ko') {
   const key = groups[hash(`${s.seed}:${month}:voice`) % groups.length];
   const pool = DIALOGUES[key];
   const index = (hash(`${s.seed}:${key}:line`) + month * 3 + Math.floor(month / pool.length)) % pool.length;
-  return pool[index][lang === 'en' ? 'en' : 'ko'];
+  const line = pool[index], dry = s.professorProfile?.labMode === 'dry' && DRY_LINES[line.ko];
+  return (dry || line)[lang === 'en' ? 'en' : 'ko'];
 }

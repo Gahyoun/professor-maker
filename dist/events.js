@@ -12,7 +12,7 @@ export const EVENTS = [
     option('이번 주의 부담과 생활 시간을 함께 확인한다','Review workload and time for life',{hidden:{rapport:2,stress:-3,resilience:.4},professor:{mentoring:1}}),
     option('학생이 필요한 자율 시간을 직접 제안하게 한다','Let the student propose personal time',{hidden:{autonomy:3,rapport:1,stamina:2}}),
   ],{minMonth:4,cooldown:12}),
-  event('one-student-lab','작은 연구실의 인원표','A small lab roster','“다른 연구실은 다인원으로 하는데, 저희 연구실에는 저밖에 없네요.” 교수는 인원표를 다시 본다. 혼자 연구하다 막히는 날에도 함께 질문을 나눌 사람이 필요하다. 공동 세미나와 다른 팀의 연구자를 만날 방법을 의논한다.','The student notices they are the only student in the lab. You discuss joint seminars and researchers in other teams who could share questions and ideas.','social',[
+  event('one-student-lab','작은 연구실의 인원표','A small lab roster','“다른 연구실은 사람이 꽤 많던데, 저희 연구실에는 저밖에 없네요.” 교수는 인원표를 다시 본다. 혼자 연구하다 막히는 날에도 함께 질문을 나눌 사람이 필요하다. 공동 세미나와 다른 팀의 연구자를 만날 방법을 의논한다.','The student notices they are the only student in the lab. You discuss joint seminars and researchers in other teams who could share questions and ideas.','social',[
     option('다른 연구실의 공동 세미나에 연결한다','Connect them with a joint seminar',{hidden:{social:2,rapport:1,autonomy:1},professor:{mentoring:-.5}}),
     option('작은 연구실의 장단점을 솔직하게 의논한다','Discuss the tradeoffs honestly',{hidden:{rapport:2,confidence:1}}),
     option('우선 현재 프로젝트에 집중하자고 말한다','Prioritize the current project',{hidden:{research:1,rapport:-1,stress:1}}),
@@ -35,7 +35,7 @@ export const EVENTS = [
     'The student brings a timetable and asks which foundations to revisit while balancing coursework and research.', 'counseling',[
       option('기초 과목부터 짚고 이번 달 연구 범위를 줄인다','Identify foundations and narrow this month’s scope',{hidden:{learning:2,rapport:2,stress:-3},professor:{teaching:1,mentoring:1}}),
       option('스스로 짠 공부 계획을 검토하고 짧은 확인 면담을 약속한다','Review their study plan and arrange a check-in',{hidden:{learning:1,autonomy:3,confidence:1},professor:{teaching:1}}),
-    ],{minMonth:3,maxMonth:47,cooldown:10}),
+    ],{minMonth:3,maxMonth:47,cooldown:10,calendarMonths:[3,4,5,6,9,10,11,12]}),
   event('counsel-small-question','작은 질문부터','Starting with a small question',
     '학생이 읽던 논문의 한 문장에 표시를 해 왔다. “다들 아는 내용일까 봐 못 물었어요. 여기서 왜 이 가정을 쓰는지 모르겠어요.”',
     'The student marked a sentence but worried everyone already understood it. They ask why the assumption is needed.', 'counseling',[
@@ -53,13 +53,13 @@ export const EVENTS = [
     'The student brings PhD information and job listings, interested in both further research and applying what they learned.', 'counseling',[
       option('각 길에서 하고 싶은 일과 생활을 먼저 묻는다','Ask about desired work and daily life in each route',{hidden:{rapport:3,autonomy:2,stress:-2},professor:{mentoring:1}}),
       option('관심 있는 선배·연구자와 이야기할 기회를 연결한다','Connect them with people on the routes they are considering',{hidden:{social:2,industry:1,autonomy:2,confidence:1},professor:{mentoring:1}}),
-    ],{minMonth:30,maxMonth:47,requires:'early_graduate',cooldown:12}),
+    ],{minMonth:30,maxMonth:47,stages:['masters'],cooldown:12}),
   event('counsel-qual','퀄 준비의 빈칸','Gaps in qualifying-exam preparation',
     '학생이 기출 문제와 연구 계획을 번갈아 본다. “외운 답보다 원리를 설명하는 게 어렵네요. 공부할 범위를 함께 정할 수 있을까요?”',
     'The student asks to set a manageable scope for qualifying-exam study and practice explaining the principles.', 'counseling',[
       option('부족한 기초를 확인하고 공부 시간을 보호한다','Identify foundations and protect study time',{hidden:{learning:3,stress:-2,rapport:2},professor:{teaching:1}}),
       option('짧은 구두 질문을 연습하고 모르는 부분은 같이 찾는다','Practice short oral questions and revisit unclear concepts',{hidden:{language:2,learning:1,confidence:2},professor:{mentoring:1}}),
-    ],{minMonth:36,maxMonth:59,requires:'qual_preparation',cooldown:12}),
+    ],{minMonth:36,maxMonth:59,requires:['graduate','qual_pending'],cooldown:12}),
   event('counsel-independent','제 질문으로 시작하고 싶어요','Beginning with my own question',
     '학생이 다음 연구의 초안을 꺼냈다. “교수님 제안과는 조금 다른 방향이에요. 제가 고른 질문으로 해 보고 싶지만, 빠뜨린 가정이 없는지 여쭤보고 싶어요.”',
     'The doctoral student proposes an independent direction and asks you to check its assumptions.', 'counseling',[
@@ -79,7 +79,7 @@ export const EVENTS = [
       option('학생의 자기 평가를 듣고 다음 면담의 확인 기준을 정한다','Hear their self-assessment and agree on a check-in criterion',{hidden:{rapport:2,autonomy:3,intuition:1},professor:{mentoring:1}}),
     ],{minMonth:12,cooldown:12}),
 
-  event('undergraduate-contest','학부생 연구 발표대회','Undergraduate research showcase','2년차 10월, 학부생을 위한 연구 발표대회가 열린다. 학생이 그동안의 시행착오를 작은 포스터로 정리해 보고 싶다고 한다.','An undergraduate showcase offers a first chance to explain the work.', 'academic', [option('작은 포스터로 발표를 응원한다','Support a small poster',{hidden:{language:3,confidence:3,autonomy:2,stress:1}}),option('현장에서 배우고 다음 발표를 준비한다','Observe and prepare for later',{hidden:{learning:2,social:1,stress:-1}})],{minMonth:20,maxMonth:20,stages:['undergrad'],once:true}),
+  event('undergraduate-contest','학부생 연구 발표대회','Undergraduate research showcase','지난 10월 학회 주간에 학부생 연구 발표대회가 함께 열렸다. 다른 학생들의 포스터를 둘러본 학생은 그동안의 시행착오를 작은 포스터로 정리해 보고 싶다고 한다.','Last October, an undergraduate showcase ran alongside the conference week. After seeing the posters, your student wants to turn their trial and error into a small poster.', 'academic', [option('작은 포스터 정리를 응원한다','Support a small poster',{hidden:{language:3,confidence:3,autonomy:2,stress:1}}),option('현장에서 배우고 다음 발표를 준비한다','Observe and prepare for later',{hidden:{learning:2,social:1,stress:-1}})],{minMonth:20,maxMonth:20,stages:['undergrad'],once:true}),
 
   event('ordinary-meaning','실적표 밖의 한 주','A week beyond the output sheet',
     '학생이 동료들과 산책을 다녀왔다. 논문 이야기 없이 걸었던 시간이 뜻밖에 좋았다고 한다. “다음 주에도 한 번은 시간을 비워 두고 싶어요.”',
@@ -93,7 +93,7 @@ export const EVENTS = [
       option('성과와 관계없는 휴식과 일상을 확보한다','Make room for rest and everyday life',{hidden:{resilience:3,stress:-6,stamina:5,rapport:2},professor:{mentoring:2,research:-1}}),
       option('원하는 지원을 묻고 다음 계획은 나중에 의논한다','Ask what support they want and revisit plans later',{hidden:{resilience:2,stress:-5,rapport:3,autonomy:2},professor:{mentoring:2,admin:-1}}),
     ],{minMonth:48,maxMonth:72,requires:'graduate',once:true}),
-  event('undergrad-record','첫 기록의 시행착오','Learning to keep a record',
+  event('undergrad-record','기록의 시행착오','Learning to keep a record',
     '학생이 원자료와 분석본을 같은 이름으로 저장해 어디서부터 계산했는지 헷갈려 한다. 원자료는 남아 있다. “제가 다시 따라 해 볼 테니, 처음 단계만 같이 확인해 주실 수 있을까요?”',
     'The undergraduate mixed up raw and processed filenames. The original data survives. They ask to check the first step together before trying again.', 'ordinary',[
       option('원자료를 보존하고 파일·노트 규칙을 함께 정한다','Preserve raw data and agree on recordkeeping',{hidden:{learning:3,research:2,rapport:3},professor:{mentoring:-2}}),
@@ -104,7 +104,7 @@ export const EVENTS = [
     'The master’s student completed the basic analysis independently, but proposed too many follow-ups. They ask to compare the scope with available time and equipment.', 'ordinary',[
       option('핵심 질문과 보류할 질문을 함께 나눈다','Separate core and deferred questions',{hidden:{research:3,intuition:2,stress:-2},professor:{research:2,mentoring:-2}}),
       option('작은 검증부터 맡기고 다음 면담에서 범위를 정한다','Begin with a small validation',{hidden:{autonomy:3,research:2,confidence:2},professor:{mentoring:2}}),
-    ],{minMonth:24,requires:'early_graduate',cooldown:10}),
+    ],{minMonth:24,stages:['masters'],cooldown:10}),
   event('doctoral-lead','학생이 정한 다음 질문','A question the student chose',
     '학생이 결과의 한계와 다음 실험의 비용을 정리해 왔다. 공동연구 회의도 자신이 진행하겠다고 한다. 교수에게는 아직 확인하지 못한 가정 하나를 검토해 달라고 부탁한다.',
     'The doctoral student brings limitations and cost estimates, offers to lead the collaboration meeting, and asks you to review one assumption.', 'good',[
@@ -182,7 +182,7 @@ export const EVENTS = [
     'Your student is asked to lead a problem session. Preparing it could deepen their understanding, but it will take time away from experiments.', 'ordinary', [
       option('짧은 수업을 준비하고 함께 리허설한다', 'Prepare a short session and rehearse together', { hidden: { learning: 3, language: 2, confidence: 3, stamina: -3 }, professor: { teaching: 7, mentoring: -2 } }),
       option('이번에는 교수가 맡고 학생은 수업을 참관한다', 'Teach it yourself and let the student observe', { hidden: { learning: 2, stamina: 2 }, professor: { teaching: 5, research: -4 } }),
-    ], { minMonth: 24, requires: 'graduate', cooldown: 10 }),
+    ], { minMonth: 24, requires: 'graduate', cooldown: 10, calendarMonths: [3, 4, 5, 6, 9, 10, 11, 12] }),
   event('grading', '시험지와 실험 노트', 'Exam scripts and lab notes',
     '학기 말 채점 기간이 연구 마감과 겹쳤다. 학생은 조교 업무를 어디까지 맡아야 할지 묻는다.',
     'End-of-semester grading overlaps with a research deadline. Your student asks how much teaching-assistant work they should take on.', 'ordinary', [
@@ -206,13 +206,13 @@ export const EVENTS = [
     'Your student brings a poster plan, travel options and registration costs for the next conference. The budget is tight. Before confirming the abstract result and attendance schedule, you review available support together.', 'ordinary', [
       option('참가 지원을 신청하고 함께 발표를 준비한다', 'Apply for travel support and prepare the presentation', { lab: { funds: -4 }, hidden: { language: 3, motivation: 4 }, professor: { admin: -3 } }),
       option('온라인 발표와 후속 연구 교류를 알아본다', 'Explore remote presentation and follow-up discussions', { hidden: { language: 2, social: 3, autonomy: 2 }, professor: { research: 2, admin: -2 } }),
-    ], { minMonth: 8, cooldown: 10 }),
+    ], { minMonth: 24, requires: ['graduate', 'research'], cooldown: 10 }),
   event('grant-renewal', '연구비 갱신의 계절', 'Renewal season',
-    '다음 연구비의 중간 보고서를 제출할 때다. 학생의 연구 결과를 과장하지 않고도, 무엇을 배웠는지 설명해야 한다.',
-    'The interim report for the next funding period is due. You need to explain what was learned without overstating the student’s results.', 'ordinary', [
+    '진행 중인 과제의 연차 보고서를 내고 후속 과제를 준비할 때다. 학생의 연구 결과를 과장하지 않고도, 무엇을 배웠는지 설명해야 한다.',
+    'The annual report for the current grant is due, and the follow-up proposal is next. You need to explain what was learned without overstating the student’s results.', 'ordinary', [
       option('교수가 보고서를 맡고 학생은 핵심 그림을 점검한다', 'Write the report yourself and ask the student to check key figures', { lab: { funds: 9 }, professor: { admin: 5, research: -4 }, hidden: { research: 2 } }),
       option('연구의 범위와 다음 목표를 함께 정리한다', 'Review scope and next steps together', { lab: { funds: 7 }, hidden: { learning: 3, autonomy: 3, stamina: -3 }, professor: { admin: 3, mentoring: -2 } }),
-    ], { minMonth: 10, cooldown: 15 }),
+    ], { minMonth: 10, cooldown: 15, requires: 'grant_active' }),
   event('safety', '실험 전에 확인할 것', 'Before the next experiment',
     '연구실 안전 점검에서 오래된 절차서가 발견됐다. 누구도 다치지는 않았지만 새 학생이 읽기에는 설명이 부족하다.',
     'A safety inspection finds an outdated procedure. No one was hurt, but the instructions are not clear enough for a new student.', 'ordinary', [
@@ -322,8 +322,8 @@ export const EVENTS = [
       option('지금은 자세히 묻지 않고 발표 준비와 연구 상담으로 전환한다', 'Respect her preference and return to presentation and research advice', { hidden: { rapport: 3, language: 2, confidence: 2 }, professor: { mentoring: 2, research: 1 } }),
     ], { minMonth: 16, cooldown: 24, requires: 'female_pair' }),
   event('support-without-assumptions', '필요한 도움을 먼저 묻다', 'Asking what support is needed',
-    '학생이 연구실 밖의 일이 일정에 영향을 주고 있다고 말한다. 구체적인 사정은 아직 말하고 싶지 않다. 교수와 학생의 성별에 관계없이, 개인적인 설명보다 필요한 지원부터 이야기할 수 있다.',
-    'Your student says something outside the lab is affecting the schedule but does not want to describe it yet. Whatever your genders, the conversation can start with support rather than personal details.', 'ordinary', [
+    '학생이 연구실 밖의 일이 일정에 영향을 주고 있다고 말한다. 구체적인 사정은 아직 말하고 싶지 않다. 개인적인 설명보다 필요한 지원부터 이야기하기로 한다.',
+    'Your student says something outside the lab is affecting the schedule but does not want to describe it yet. The conversation starts with support rather than personal details.', 'ordinary', [
       option('사생활은 묻지 않고 마감과 면담 방식을 함께 조정한다', 'Adjust deadlines and meetings together without asking for private details', { hidden: {  rapport: 2.8, stress: -4, resilience: 1 }, professor: { mentoring: 2, research: -1 } }),
       option('공개된 지원 제도를 알려 주고 학생이 연락할지 결정하게 한다', 'Share available support and let the student decide whether to contact it', { hidden: { rapport: 3, autonomy: 3, stress: -2 }, professor: { admin: 2, mentoring: 1 } }),
     ], { minMonth: 8, cooldown: 18, requires: 'stress' }),
@@ -338,6 +338,9 @@ export const EVENTS = [
 // Counseling includes both supportive and demanding approaches, with distinct consequences.
 for(const e of EVENTS.filter(e=>e.kind==='counseling')){e.options.push(option('우선 학생이 계획을 정하고 다음 면담에서 근거를 설명하게 한다','Ask for an independently justified plan',{hidden:{autonomy:2,rapport:-.4,stress:1},professor:{mentoring:.3}}),option('합의한 목표와 기한을 명확히 하고 보완을 요구한다','Set a clear deadline and require revisions',{hidden:{diligence:1,research:.4,stress:3,rapport:-1.4,confidence:-.5},professor:{research:.5}}));}
 
+// The student has set a boundary in these scenes; no deadline or report request is offered.
+const BOUNDARY_EVENTS=new Set(['illness','caregiving','support-without-assumptions','women-stem-consultation','family-career-consultation','third-year-question']);
+for(const e of EVENTS.filter(e=>BOUNDARY_EVENTS.has(e.id)))e.options.push(option('학생이 정한 시점에 다시 이야기하기로 한다','Talk again when the student is ready',{hidden:{rapport:1,autonomy:1}}));
 for(const e of EVENTS.filter(e=>e.kind!=='counseling'&&e.options.length===2)){e.options.push(option('기존 계획을 유지하고 다음 면담에서 다시 검토한다','Keep the plan and revisit it next month',{hidden:{autonomy:.5,rapport:-.3,stress:.5}}),option('우선순위와 기한을 정하고 보완 보고를 요청한다','Set priorities and request a follow-up report',{hidden:{diligence:.4,rapport:-.8,stress:1},professor:{admin:.3}}));}
 
 // An award has already been announced in the scene. The response changes how
@@ -348,7 +351,7 @@ for(const e of EVENTS.filter(e=>['best-paper','best-presentation'].includes(e.id
 
 EVENTS.push(...DILEMMAS);
 
-EVENTS.push(event('military-hidden','교수님, 지금이라도 다녀올까요?','A question about service','“교수님, 저 군대를 지금이라도 갔다 와야 할까요?” 학생은 연구를 이어 갈 시점과 병역 일정을 함께 고민한다. 교수는 잠시 말을 고른다. 나는 전문연구요원으로 병역을 이행해서, 다른 복무 경험에 대해 해 줄 말은 많지 않다. 내 경험만으로 학생의 선택을 정할 수는 없었다.','The student asks about service timing. The adviser has experience as a research service personnel, not every service route.','counseling',[option('내 경험의 범위를 밝히고 학생의 걱정부터 듣는다','State the limits of my experience and listen',{hidden:{rapport:2,stress:-2,autonomy:1},professor:{mentoring:-.5}}),option('공식 안내와 담당 상담 창구를 함께 찾는다','Look up official guidance together',{hidden:{rapport:1,autonomy:2},professor:{admin:-1}}),option('졸업·연구 일정만 비교하고 선택은 학생에게 맡긴다','Compare research timing and leave the decision to the student',{hidden:{autonomy:2,stress:1},professor:{research:.3}})],{minMonth:12,maxMonth:60,once:true,requires:'male_pair',weight:.5}));
+EVENTS.push(event('military-hidden','교수님, 지금이라도 다녀올까요?','A question about service','“교수님, 저 군대를 지금이라도 갔다 와야 할까요?” 학생은 연구를 이어 갈 시점과 병역 일정을 함께 고민한다. 교수는 잠시 말을 고른다. 교수는 전문연구요원으로 병역을 이행해서, 다른 복무 경험에 대해 해 줄 말이 많지 않다. 자신의 경험만으로 학생의 선택을 정할 수는 없다.','The student asks about service timing. The adviser has experience as a research service personnel, not every service route.','counseling',[option('내 경험의 범위를 밝히고 학생의 걱정부터 듣는다','State the limits of my experience and listen',{hidden:{rapport:2,stress:-2,autonomy:1},professor:{mentoring:-.5}}),option('공식 안내와 담당 상담 창구를 함께 찾는다','Look up official guidance together',{hidden:{rapport:1,autonomy:2},professor:{admin:-1}}),option('졸업·연구 일정만 비교하고 선택은 학생에게 맡긴다','Compare research timing and leave the decision to the student',{hidden:{autonomy:2,stress:1},professor:{research:.3}})],{minMonth:12,maxMonth:60,once:true,requires:'male_pair',weight:.5}));
 
 const dryScenes={
   'equipment-decision':{
@@ -361,6 +364,7 @@ const dryScenes={
     title:'계산이 멈춘 오후',
     body:'계산·저장 장치에서 오류가 발생했다. 학생은 자기 코드의 문제인지 먼저 묻는다. 점검 기록에는 오래된 저장 장치의 교체 권고가 남아 있다.',
     en:{title:'A computation stops',body:'A computing or storage device reports an error. Your student first asks whether their code caused it. The maintenance log already recommended replacing an aging storage component.'},
+    labels:{0:'수리를 예약하고 이번 주는 문헌·결과 정리로 바꾼다'},
   },
   safety:{
     title:'분석 전에 확인할 것',
@@ -418,6 +422,7 @@ export function adaptEventText(text,state,locale='ko'){
     ['시료','원자료'],
     ['대조군','비교 조건'],
     ['소모품','저장 공간'],
+    ['출장비','출장 경비'],
     ['장비','계산 자원'],
     ['측정','자료 검증'],
     ['실험','계산·검증'],

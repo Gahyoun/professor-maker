@@ -298,12 +298,12 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
   pixels=body;
   poly([[43,94],[49,94],[69,95],[73,98],[72,102],[65,101],[57,98],[43,98]],pantsD);
   poly([[30,94],[43,94],[60,96],[64,98],[63,102],[57,102],[46,99],[32,99]],pants);
-  poly([[71,99],[76,99],[76,107],[71,108],[69,104]],pantsD);
-  poly([[58,99],[64,99],[63,107],[58,108],[56,104]],pants);
+  poly([[71,99],[76,99],[76,103],[71,104],[69,102]],pantsD);
+  /* The far calf hangs behind the seat and chair column in this view; only its knee shows. */
   poly([[34,94],[43,94],[59,96],[61,98],[55,98],[42,97]],pantsH);
   poly([[50,94],[57,94],[70,96],[72,98],[68,98],[57,97]],pantsH);
-  box(58,101,60,106,pantsH);box(71,101,72,106,pantsH);
-  row(107,57,63,pantsD);row(107,71,76,pantsD);sneaker(56,108,11);sneaker(70,108,8);
+  box(71,100,72,102,pantsH);
+  /* The near foot rests forward under the desk edge, so it sits higher in the projection than the seat. */row(103,71,76,pantsD);sneaker(70,104,8);
   // One eye and a stepped cheek silhouette make the viewing direction clear.
   pixels=frontHead;
   oval(43,40,21,23,skinD);poly([[45,24],[56,29],[61,35],[61,40],[66,43],[63,46],[63,54],[57,61],[47,63],[39,58],[37,39]],skin);
@@ -327,7 +327,7 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
    // Its lower edge stays above the eye and the upper spectacle rim (y=39).
    const foreheadCap=l===1?
     [[48,23],[55,24],[59,27],[63,31],[63,34],[60,36],[57,34],[53,33],[50,29]]:
-    [[47,21],[54,22],[60,25],[64,29],[65,33],[63,36],[60,37],[58,38],[56,35],[52,34],[49,29]];
+    [[44,18],[52,18],[59,21],[64,25],[67,30],[67,35],[64,37],[61,38],[58,38],[55,36],[51,34],[47,29]];
    poly(foreheadCap,hair);
    poly([[49,23],[54,24],[59,27],[62,30],[60,31],[56,28],[52,27]],hairM);
    // Saved fringe families end in different stepped locks above the brow.
@@ -337,8 +337,10 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
     fringe%4===1?[[49,25],[57,27],[61,31],[62,35],[60,34],[59,38],[57,36],[56,32],[53,35],[53,30]]:
     fringe%4===2?[[50,23],[56,25],[60,29],[60,33],[57,30],[55,33],[54,28],[51,29]]:
     [[48,25],[54,25],[58,28],[62,33],[62,36],[59,35],[59,39],[57,36],[55,34],[54,31],[51,32]];
-   const fullerFringe=sideFringe.map(([x,y])=>[x+(x>=57?2:0),Math.min(38,y+(y>=27?3:0))]);
+   const fullerFringe=sideFringe.map(([x,y])=>[x+(x>=57?3:x>=53?1:0),Math.min(38,y+(y>=27?3:1))]);
    poly(fullerFringe,hair);poly([[54,28],[58,29],[61,32],[59,31],[56,31]],hairM);
+   // Volume at the front hairline: a raised crown lip and a forward lock keep the fringe full in profile.
+   if(l>1){poly([[38,12],[47,12],[55,15],[61,20],[56,20],[49,17],[42,16]],hair);poly([[41,13],[48,13],[54,16],[48,15]],hairH);poly([[62,27],[66,29],[68,33],[66,37],[64,34],[62,36],[61,31]],fringe%2?hairM:hair);}
    if(a.curly)for(const [x,y]of [[57,26],[61,30]]){oval(x,y,3,3,hair);poly([[x-2,y-2],[x+1,y-2],[x+2,y],[x,y+1]],hairM);}
   }else{
    // Fade the close crop into the temple and nape; no fringe or tied tail.

@@ -34,19 +34,20 @@ test('founder rapport changes the contact style without granting a better busine
  }
 });
 
-test('an alternate recommendation has the same required-document account in both languages and cannot precede an appointment',()=>{
+test('an alternate recommendation names another referee without a single-cause verdict in both languages and cannot precede an appointment',()=>{
  for(const ending of ['corporate','startup','institute','unemployed','youtuber'])for(const relationship of ['close','reserved','distant'])for(const locale of ['ko','en']){
   const ctx=context(ending),normal=getEndingPages(ending,locale,relationship,'김민지',null,[],ctx);
   const alternate=getEndingPages(ending,locale,relationship,'김민지',null,[],{...ctx,recommendation:'alternate'});
   assert.equal(alternate.length,normal.length+1,`${ending}/${relationship}/${locale}: a prologue is present`);
-  assert.match(alternate[0],locale==='ko'?/공고에서 요구한 지도교수 추천서/:/opening.*required.*adviser’s letter/,'this is one opening’s documentation requirement, not a rule for all hiring');
+  assert.match(alternate[0],locale==='ko'?/다른 추천인에게 추천서를 부탁했다/:/asked another referee/,'the prologue states the fact of the request');
+  assert.doesNotMatch(alternate[0],/제출하지 못했|통과하지 못했|이어지지 않았|could not submit|did not reach/,'design principle 4: a single letter is never the cause of the outcome');
   assert.doesNotMatch(alternate.join('\n'),/이 이야기의|this story’s/i);
  }
  for(const locale of ['ko','en']){
   const ctx={...context('unrelated'),recommendation:'alternate'};
   const distant=getEndingPages('unrelated',locale,'distant','김민지',null,[],ctx);
   assert.equal(distant.length,9,'the outside-career sequence keeps its authored scenes');
-  assert.match(distant[3],locale==='ko'?/공고에서 요구한 지도교수 추천서/:/opening.*required.*adviser’s letter/);
+  assert.match(distant[3],locale==='ko'?/다른 추천인에게 추천서를 부탁했다/:/asked another referee/);
   for(const ending of ['true','postdoc','bachelor','masters','external_masters','external_phd','leave','dropout','gameover','unfinished']){
    const base={...context(ending)};
    assert.deepEqual(getEndingPages(ending,locale,'close','김민지',null,[],{...base,recommendation:'alternate'}),getEndingPages(ending,locale,'close','김민지',null,[],base),`${ending}: contradictory legacy evidence cannot invent a rejected faculty application`);

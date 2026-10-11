@@ -43,7 +43,7 @@ test('desk work sits in front of the monitor and faces it, with one chair and al
   for(const actual of ['study','coursework','analysis','language','paper',...(labMode==='dry'?['experiment']:[])]){
    const scene=roomScene(state,{actual,performed:true,outcome:'completed'});
    assert.match(scene,/data-pose="seated" data-outfit="[0-5]" data-facing="monitor"/);
-   assert.match(scene,/class="mini-student [^>]+data-floor="13.5,23.5"/);
+   assert.match(scene,/class="mini-student [^>]+data-floor="13.8,24.3"/);
    assert.match(scene,/class="desk-monitor" data-floor="14.2,18.3"/);
    assert.match(scene,/class="desk-keyboard" data-floor="13.5,21.3"/);
    assert.equal((scene.match(/data-chair=/g)||[]).length,1+(scene.includes('data-rest="camp-chair"')?1:0));
@@ -53,7 +53,7 @@ test('desk work sits in front of the monitor and faces it, with one chair and al
   }
   assert.deepEqual(state,before);
  }
- const seat=projectRoom(13.5,23.5),screen=projectRoom(16.55,18.6,44);
+ const seat=projectRoom(...ROOM_ANCHORS.deskOccupant),screen=projectRoom(16.55,18.6,44);
  assert.ok(screen[0]>seat[0]&&screen[1]<seat[1],'the seated student looks towards the upper-right screen');
 });
 test('all four desk chairs occlude the seated body, while the idle student stands clear of the plant',()=>{
@@ -89,6 +89,7 @@ test('office chairs connect five grounded casters to a visible support pole and 
   assert.match(scene,/class="chair-support-pole"/);
   assert.equal((scene.match(/class="chair-armrest"/g)||[]).length,2);
   assert.ok(scene.indexOf('class="chair-wheelbase"')<scene.indexOf('class="mini-student '),'the connected support is behind the seated body');
+  const occlusion=scene.indexOf('class="chair-leg-occlusion"');assert.ok(occlusion>scene.indexOf('class="mini-student '),'the chair column and casters repaint over the calves below the seat');
  }
 });
 test('the far chair arm stays behind the student while near desk edges occlude the legs',()=>{
@@ -100,7 +101,7 @@ test('the far chair arm stays behind the student while near desk edges occlude t
   assert.ok(keyboard<student&&student<backrest&&backrest<desk,'only near desk edges repaint after the avatar and chair back');
   if(type>=2){assert.ok(scene.indexOf('data-chair-part="far-armrest"',seat)<student);assert.ok(scene.indexOf('data-chair-part="near-armrest"',seat)>student);}
   assert.equal((scene.match(/class="desk-lower-occlusion"/g)||[]).length,1);
-  const hipY=projectRoom(...ROOM_ANCHORS.deskSeat,20)[1];
+  const hipY=projectRoom(...ROOM_ANCHORS.deskOccupant,20)[1];
   assert.ok(scene.includes(`class="desk-lower-occlusion" x="0" y="${hipY}"`),'late desk repaint is clipped below the seat instead of covering the upper body');
  }
  assert.equal(seen.size,4);
@@ -116,4 +117,17 @@ test('lab material scarcity, weekly outfit changes and conference/defense scenes
  s.lab.funds=10;s.lab.budget.environment=0;const sparse=roomScene(s,{actual:'experiment',performed:true},0);assert.match(sparse,/data-supply="sparse"/);assert.ok(sparse.length<rich.length);
  assert.match(roomScene(s,{actual:'rest'}),/data-scene="rest" data-projection="isometric"/);assert.match(roomScene(s,{actual:'conference',abroad:true}),/INTERNATIONAL CONFERENCE/);
  s.pending={kind:'thesis',step:'questions'};assert.match(roomScene(s),/THESIS DEFENSE/);assert.match(roomScene(s),/질의응답/);
+});
+test('the desk occupant sits back over the seat and the camp chair frame stays inside its footprint',()=>{
+ const {seat}=chairGeometry(12,22,2),[u,v]=ROOM_ANCHORS.deskOccupant,[cu,cv]=ROOM_ANCHORS.deskSeat;
+ assert.ok(u>seat.u&&u<seat.u+seat.w&&v>seat.v&&v<seat.v+seat.d,'hips stay over the seat');
+ assert.ok(v>cv,'hips sit back towards the near backrest rather than on the front edge');
+ for(let seed=1;seed<400;seed++){
+  const s=createState('',seed);if(roomDecorations(s).restType!==3)continue;
+  const scene=roomScene(s,{actual:'idle',performed:false}),camp=scene.slice(scene.indexOf('data-rest="camp-chair"'),scene.indexOf('</g></g>',scene.indexOf('data-chair-part="near-frame"')));
+  const [minX]=projectRoom(22.5,7.5),[maxX]=projectRoom(24.5,5.5);
+  for(const m of camp.matchAll(/<path d="M([\d.]+) [\d.]+L([\d.]+) /g))for(const x of [+m[1],+m[2]])assert.ok(x>=minX-1&&x<=maxX+1,`frame x ${x} outside ${minX}–${maxX}`);
+  return;
+ }
+ assert.fail('no camp chair seed');
 });

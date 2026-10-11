@@ -113,7 +113,7 @@ test('an already recorded presentation award is shown as a follow-up rather than
 test('winter training blocks advising and student events throughout the three absent weeks, with winter-only start dates',()=>{
   for(const seed of [1,2,3,5,6,7]){
     let s=createState('검수학생',seed,{gender:'male',professorGender:'male'});
-    s.month=36;s.route='integrated';s.pending={kind:'service'};
+    s.month=48;s.route='integrated';s.pending={kind:'service'};
     s=decide(s,'training');
     s.month=s.service.trainingStartMonth;s.pending=null;s.pendingQueue=[];
     assert.ok([1,2].includes(calendarMonth(s.month)));

@@ -1,0 +1,217 @@
+/* Academic information system skin (loaded last).
+   A generic Korean university portal vocabulary: navy utility bar, bordered panels with a dark top rule,
+   gray table headers, square controls and readable minimum type sizes. No institution's marks or names. */
+:root{
+ --ap-navy:#17384b;
+ --ap-navy-deep:#102a3a;
+ --ap-action:#0062a8;
+ --ap-action-dark:#004f8a;
+ --ap-text:#1d2b36;
+ --ap-muted:#4f5f6b;
+ --ap-line:#c7d2db;
+ --ap-line-soft:#dde4ea;
+ --ap-th:#f0f4f7;
+ --ap-canvas:#eef2f5;
+ --ap-ok:#1f7a4d;
+ --campus-radius:3px;
+ --campus-shadow:none;
+ --campus-text:var(--ap-text);
+ --campus-muted:var(--ap-muted);
+ --campus-action:var(--ap-action);
+ --campus-action-dark:var(--ap-action-dark);
+ --muted:var(--ap-muted);
+}
+body{background:var(--ap-canvas);color:var(--ap-text)}
+
+/* ── Global frame: utility bar, header, location bar ───────────────────── */
+.utility-bar{background:var(--ap-navy-deep);color:#c9d6df;border-bottom:0}
+.utility-bar .container{min-height:34px}
+.utility-bar span{font-size:12px;letter-spacing:-.01em}
+.utility-bar button{color:#e9f0f5;font-size:12px;min-height:34px;padding:4px 12px;border-radius:0}
+.utility-bar button+button{border-left:1px solid rgb(255 255 255 / .22)!important}
+.utility-bar button:hover:not(:disabled){background:rgb(255 255 255 / .08);color:#fff}
+.site-header{border-bottom:2px solid var(--ap-navy)}
+.header-content{min-height:72px}
+.header-nav{gap:6px}
+.header-nav a{font-size:16px;font-weight:700;padding:10px 16px;color:var(--ap-navy)}
+.header-nav a:after{bottom:-15px;height:3px;background:var(--ap-action)}
+.header-nav a[aria-current]{color:var(--ap-action)}
+.breadcrumb{background:#fff;color:var(--ap-muted);box-shadow:none;border-bottom:1px solid var(--ap-line)}
+.breadcrumb .container{min-height:40px;font-size:12.5px;gap:10px}
+.breadcrumb .container>span:first-child:before{content:'';display:inline-block;width:11px;height:10px;margin-right:6px;vertical-align:-1px;background:var(--ap-muted);clip-path:polygon(50% 0,100% 45%,86% 45%,86% 100%,14% 100%,14% 45%,0 45%)}
+.breadcrumb strong{color:var(--ap-navy);font-weight:700}
+.breadcrumb .save-status{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border:1px solid var(--ap-line);border-radius:999px;background:#f7fafb;color:var(--ap-text);font-size:12px}
+.breadcrumb .save-status:before{content:'';width:7px;height:7px;border-radius:50%;background:var(--ap-ok)}
+.faculty-scroll-summary{background:#f8fafb;border-bottom:1px solid var(--ap-line);box-shadow:none;font-size:12.5px;gap:0;padding:8px 20px}
+.faculty-scroll-summary>*{padding:0 12px}
+.faculty-scroll-summary>*+span{border-left:1px solid var(--ap-line-soft)}
+.faculty-scroll-summary strong{font-size:12.5px;color:var(--ap-navy);padding-left:0}
+.faculty-scroll-summary a{font-weight:700}
+
+/* ── Page title: dark rule with a square marker, location on the right ───── */
+main.container{padding-top:24px}
+.page-title{border-bottom:2px solid var(--ap-navy);padding-bottom:10px;margin-bottom:22px;animation:none}
+.page-title h1{display:flex;align-items:center;gap:10px;font-size:24px;font-weight:800;color:var(--ap-navy)}
+.page-title h1:before{content:'';width:5px;height:22px;background:var(--ap-action)}
+.page-title .text-button{min-height:32px;padding:4px 12px;border:1px solid var(--ap-line);border-radius:3px;background:#fff;color:var(--ap-text);font-size:12px}
+.home-page-title{border-bottom:0;padding-bottom:0;margin-bottom:0}
+
+/* ── Panels: square corners, 2px top rule, no game-like drop shadows ────── */
+.welcome,.project-overview,.monthly-panel,.save-points,.ending-summary,.student-record,.portal-login,.student-panel,.faculty-credit-panel,.decision,.grant-panel,.advising-policies{border-radius:3px!important;box-shadow:none!important}
+.student-panel,.project-overview,.save-points,.welcome{border:1px solid var(--ap-line);border-top:2px solid var(--ap-navy)}
+.panel-title{font-size:14px;color:var(--ap-navy);border-bottom:1px solid var(--ap-line-soft)}
+.record-id{font-size:11px;color:var(--ap-muted);font-variant-numeric:tabular-nums}
+.section-top h2,.term-heading h2{display:flex;align-items:center;gap:8px}
+.section-top h2:before{content:'';flex:none;width:7px;height:7px;background:var(--ap-navy)}
+.section-top h2{font-size:18px}
+.section-top>span{font-size:12px;color:var(--ap-muted)}
+.term-heading p,.term-count{font-size:12.5px;color:var(--ap-muted)}
+
+/* Key-value lists read like 학적 정보 tables. */
+.student-numbers{font-size:13px}
+.student-numbers div{border-bottom:1px solid var(--ap-line-soft)}
+.student-numbers div:last-child{border-bottom:0}
+.student-numbers dt{color:var(--ap-muted)}
+.student-numbers dd{color:var(--ap-text)}
+.student-numbers small{font-size:11px}
+
+/* Notices: 공지 상자 instead of gradients. */
+.story-objective{background:#f5f9fc;border:1px solid #b8cad8;border-left:4px solid var(--ap-action);border-radius:3px;box-shadow:none}
+.story-objective>span{display:inline-block;justify-self:start;padding:1px 8px;border:1px solid #9fbad0;background:#fff;color:var(--ap-action);font-size:12px}
+.story-objective>strong{font-size:15px}
+.story-objective>small{font-size:12.5px;color:var(--ap-muted)}
+.student-voice{background:#fff!important;border:1px solid var(--ap-line);border-radius:3px;box-shadow:none}
+.student-voice p{color:var(--ap-text)}
+
+/* ── Weekly plan as a data grid: gray header cell, ruled rows ────────────── */
+.weekly-planner{border-top:2px solid var(--ap-navy)!important;background:#fff}
+.week-plan{border-radius:0!important;box-shadow:none!important;border-bottom:1px solid var(--ap-line)!important;border-left:0!important;padding:12px 14px!important;transform:none!important}
+.week-plan:hover{transform:none;background:#fbfcfd}
+.week-plan .week-heading{align-self:stretch;margin:-12px 0 -12px -14px!important;padding:12px 10px!important;background:var(--ap-th);border-right:1px solid var(--ap-line-soft)!important}
+.week-plan.conference-week .week-heading{background:#e3eef7;box-shadow:inset 4px 0 #4686ad}
+.week-plan.exam-week .week-heading{background:#fbf1df;box-shadow:inset 4px 0 #c99a4f}
+.week-plan .week-heading strong{font-size:16px}
+@media(min-width:900px){.week-plan{grid-template-columns:118px minmax(100px,1fr) minmax(145px,1.5fr) minmax(100px,1.2fr)!important}}
+.week-plan .week-heading span{font-size:11px;color:var(--ap-muted)}
+.week-plan .proposal{font-size:12px;color:var(--ap-muted)}
+.week-plan .proposal strong{font-size:14px;color:var(--ap-text)}
+.week-plan>label{font-size:12px;font-weight:700;color:var(--ap-text)}
+.week-plan select{border-radius:3px;font-size:14px}
+.week-plan .week-desc{font-size:13px;color:#3e4d58}
+.autonomy-request{font-size:12px}
+
+/* Advising feedback and other choice lists. */
+.feedback-options{border-top:2px solid var(--ap-navy)!important;background:#fff}
+.feedback-option{border-bottom:1px solid var(--ap-line)!important}
+.feedback-option strong{font-size:14px}
+.feedback-option span{font-size:13px;color:#3e4d58}
+.feedback-option.selected{background:#eaf3fa}
+
+/* Sticky confirm bar: flat action strip. */
+.monthly-confirm{background:#f4f8fb;border:1px solid var(--ap-line);border-top:2px solid var(--ap-navy);border-radius:0;box-shadow:0 -6px 14px rgb(16 42 58 / .06)}
+.monthly-confirm strong{font-size:13px}
+.monthly-confirm>div>span{font-size:12px}
+
+/* Faculty credit and management areas. */
+.faculty-credit-panel{background:#fff;border:1px solid var(--ap-line);border-top:2px solid var(--ap-navy)}
+.faculty-credit-panel legend{font-size:17px;color:var(--ap-navy)}
+.faculty-credit-panel fieldset>p{font-size:13px}
+.faculty-credit-panel .allocation-row{border-bottom:1px solid var(--ap-line-soft)}
+
+/* ── Controls: flat, square, consistent heights ──────────────────────────── */
+button,.primary,.secondary{border-radius:3px}
+.primary{box-shadow:none!important;background:var(--ap-action);border-color:var(--ap-action)}
+.primary:hover:not(:disabled){background:var(--ap-action-dark);border-color:var(--ap-action-dark)}
+.monthly-confirm .primary,.choices .choice{border-radius:3px!important;box-shadow:none!important}
+.monthly-confirm .primary:active,.choices .choice:active{transform:translateY(1px)}
+a.primary{padding-left:20px;padding-right:20px}
+select,input[type=text],input:not([type]){border-radius:3px;border-color:#a9b8c4}
+.small-note{color:var(--ap-muted)}
+
+/* ── Records and mail: bordered grids ────────────────────────────────────── */
+.scholar-table,.mail-list{border-top:2px solid var(--ap-navy)}
+.scholar-table th,.scholar-table thead td{background:var(--ap-th);color:var(--ap-navy);font-size:13px}
+.mail-toolbar{border-bottom:1px solid var(--ap-line)}
+.mail-folders{border-radius:3px;border:1px solid var(--ap-line);border-top:2px solid var(--ap-navy);background:#fff}
+
+/* ── Portal home: login box and quick-menu tiles ─────────────────────────── */
+.portal-login{border:1px solid var(--ap-line);border-top:3px solid var(--ap-navy)}
+.portal-account{border:1px solid var(--ap-line-soft);background:var(--ap-th)}
+.portal-cards article{background:#fff;border:1px solid var(--ap-line);border-top:2px solid var(--ap-navy);border-radius:3px}
+.portal-cards article>span{font-size:12px;font-weight:700}
+.portal-cards p{font-size:14px;color:#44535e}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+.site-footer{background:#e4e9ee;border-top:1px solid var(--ap-line)}
+.site-footer small,.site-footer p{color:#44535e}
+
+/* ── Mobile: keep readable floors (no 8–10px text) and 44px targets ──────── */
+@media(max-width:899px){
+ .header-content{min-height:0;padding-top:10px;padding-bottom:0}
+ .header-nav a{padding:12px 4px;font-size:15px}
+ .header-nav a:after{bottom:-2px}
+ .faculty-scroll-summary{font-size:12px;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+ .faculty-scroll-summary>*{padding:0 9px}
+ .faculty-scroll-summary span{font-size:12px}
+ .week-plan .week-desc{font-size:12.5px}
+}
+@media(max-width:650px){
+ .utility-bar button{min-height:40px}
+ .week-plan{grid-template-columns:76px minmax(0,1fr)!important;padding:10px 12px!important}
+ .week-plan .week-heading{margin:-10px 0 -10px -12px!important;padding:10px 8px!important}
+ .week-plan .week-heading strong{font-size:15px}
+ .week-plan .week-heading span{font-size:11px}
+ .week-plan .proposal{font-size:12px}
+ .week-plan .proposal strong{font-size:13px}
+ .week-plan>label{font-size:12px}
+ .week-plan .week-desc{font-size:12px}
+ .feedback-option strong{font-size:13px}
+ .feedback-option span{font-size:12px}
+ .breadcrumb .container{min-height:36px;font-size:12px}
+ .page-title h1{font-size:21px}
+ .section-top h2{font-size:17px}
+ .section-top>span{font-size:12px}
+ .story-objective>small{font-size:12px}
+}
+@media print{
+ .page-title{border-bottom-color:#000}
+ .breadcrumb .save-status{display:none}
+}
+
+/* The sticky lab used a 64px white mask above itself, which hid the current year/month heading
+   (term-heading) at the top of the page. The gap it must cover is only stage top − summary height (≈0–5px). */
+.live-lab:before{height:6px!important;background:var(--ap-canvas)!important}
+.term-heading h2{font-size:22px;font-weight:800}
+
+/* System name beside the lab mark, as on a campus information system header. */
+.header-brand{display:flex;align-items:center;gap:18px;min-width:0}
+.header-system{display:inline-flex;align-items:center;gap:18px;font-family:var(--title);font-size:18px;font-weight:800;color:var(--ap-navy);letter-spacing:-.03em;white-space:nowrap}
+.header-brand .brand+.header-system:before{content:'';width:1px;height:22px;background:var(--ap-line)}
+@media(max-width:899px){.header-brand .brand+.header-system{display:none}.header-system{font-size:16px}}
+
+/* Records page: profile, checkpoints and notebook as framed panels. */
+.scholar-profile{background:#fff;border:1px solid var(--ap-line);border-top:2px solid var(--ap-navy);border-radius:3px;padding:20px 24px;margin-bottom:24px}
+.scholar-table{background:#fff}
+.save-points .small-note{border:1px solid #e3d3a8!important;background:#fffaf0;color:#5b4a1f;padding:9px 12px;border-radius:3px;box-shadow:none!important;text-decoration:none}
+.save-points .small-note:before{content:'※ '}
+.content-row{background:#fff;border:1px solid var(--ap-line);border-top:2px solid var(--ap-navy);border-radius:3px;padding:20px 24px}
+.content-row>div{border-top:0!important}
+.content-row h2{font-size:18px;color:var(--ap-navy)}
+.mail-workspace .mail-content,.ending-collection{background:#fff;border:1px solid var(--ap-line);border-radius:3px;padding:16px 20px}
+.mail-toolbar{border-bottom:2px solid var(--ap-navy)!important}
+@media(max-width:650px){.scholar-profile,.content-row{padding:16px}}
+
+/* Room labels inside the dot lab stay legible on phones. */
+@media(max-width:420px){.live-lab .room-label,.pixel-room[data-projection=isometric] .room-label{font-size:11px!important}}
+
+/* "조회된 내용이 없습니다" style empty states. */
+.empty-state{border:1px solid var(--ap-line-soft)!important;background:#f8fafb;text-align:center;padding:28px 16px!important;margin-top:14px;color:var(--ap-muted)}
+.empty-state h3{font-size:18px;color:var(--ap-navy)}
+.empty-state .primary{margin:0 auto}
+#checkpoint-list{margin-top:4px}
+
+/* Onboarding header kept its vertical padding override but lost the container gutter on phones. */
+@media(max-width:899px){body[data-onboarding=true] .header-content{padding-left:16px!important;padding-right:16px!important}}
+.utility-user{color:#fff;font-weight:700}
+.utility-user:before{content:'';display:inline-block;width:7px;height:7px;margin-right:7px;border-radius:50%;background:#5fd08f;vertical-align:1px}
+@media(max-width:650px){.utility-bar .container>span:has(.utility-user){display:inline;font-size:11px}}

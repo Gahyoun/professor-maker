@@ -110,7 +110,7 @@ test('named manuscript list retains every paper, status, journal and actual subm
   const second=papers.find(paper=>paper.id===2);assert.equal(second.journal,'kci');assert.equal(second.impactFactor,undefined);
   assert.equal(second.submittedMonth,42);assert.equal(second.acceptedMonth,45);
   for(let id=1;id<=5;id++)assert.ok(html.includes(`논문 제목 ${id}`));
-  assert.ok(html.includes('전체 6편'));assert.ok(html.includes('수정 후 재심사'));assert.ok(html.includes('KCI 등재'));
+  assert.ok(html.includes('전체 6편'));assert.ok(html.includes('수정 후 재심사'));assert.ok(html.includes('국내 등재지'));
   assert.ok(html.indexOf('전체 연구 논문 및 투고 기록')<html.indexOf('SIMULATION REPORT'));
 });
 test('old CV archives retain titles and stored IF without guessing missing dates or first experiences',()=>{
