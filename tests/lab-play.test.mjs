@@ -12,7 +12,7 @@ const set=(s,k,v)=>{const [lo,hi]=HIDDEN_RANGES[k];s.hidden[k]=lo+(hi-lo)*v/100;
 test('trusted students ask for self-directed exam preparation in the exam week and the previous week',()=>{
  const s=createState('',6);s.started=true;s.month=3;set(s,'rapport',80);const plan=proposeSchedule(s);
  for(let i=0;i<plan.length;i++)if(examWindow(s,i,plan.length))assert.equal(plan[i],'free');
- assert.match(studentLine(s),/시험 주와 그 전주/);set(s,'rapport',30);const supported=proposeSchedule(s);for(let i=0;i<supported.length;i++)if(examWindow(s,i,supported.length))assert.equal(supported[i],'coursework');
+ assert.match(studentLine(s),/시험 주와 그 전 주/);set(s,'rapport',30);const supported=proposeSchedule(s);for(let i=0;i<supported.length;i++)if(examWindow(s,i,supported.length))assert.equal(supported[i],'coursework');
  set(s,'rapport',80);set(s,'stamina',90);const n=simulateMonth(s,plan,{proposal:plan});assert.ok(n.lastReport.results.some(w=>w.autonomous==='coursework'));assert.ok(validateSave(n));
 });
 test('course work develops qualification knowledge without generating research output',()=>{

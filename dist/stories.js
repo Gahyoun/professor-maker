@@ -95,7 +95,7 @@ export const ENDINGS={
   ]},
   external_phd:{type:'EPILOGUE',title:p("연구를 이어 갈 또 다른 곳","Another place to continue research"),career:p("외부·해외 박사과정 진학","A doctoral program elsewhere or abroad"),time:p("석사 졸업 2년 후 · 박사과정 소식 메일","Two years after the master’s · news from doctoral study"),pages:[
     p("학부연구생과 석사과정, 네 해의 시간이 흘렀다. 그리고 다시 몇 해가 지났다.\n\n학생이 다른 학교의 박사과정에 지원하고 싶다고 했던 면담이 떠올랐다. 더 넓은 연구 환경에서 배워 보고 싶다는 말에, 나는 지원을 함께 준비했다.","Four years of undergraduate and master’s research passed, followed by a few more. I remembered helping the student prepare an application to a doctoral program elsewhere."),
-    p("교수님께.\n\n이곳에서 자격시험을 준비하고 있습니다. 연구 주제도 조금 바뀌었습니다. 논문 초고에 의견을 적어 주시던 방식이 생각나서, 제 글을 소리 내어 다시 읽어 봅니다.\n\n떠나는 선택을 응원해 주셔서 감사합니다. 다음 학회에서는 새 연구 이야기를 들고 인사드리겠습니다.\n― {name} 올림","Dear Professor,\n\nI am preparing for my qualifying exam. My topic has changed a little. Your comments on my drafts still help me read my work carefully. Thank you for supporting my choice.\n— {name}"),
+    p("교수님께.\n\n이곳에서 자격시험을 준비하고 있습니다. 연구 주제도 조금 바뀌었습니다. 논문 초고에 의견을 적어 주시던 방식이 생각나서, 제 글을 소리 내어 다시 읽어 봅니다.\n\n떠나는 선택을 응원해 주셔서 감사합니다. 다음 학회에서는 새 연구 이야기를 들고 인사드리겠습니다.\n― {name} 올림","Dear Professor,\n\nI am preparing for my qualifying exam. My topic has changed a little. Your comments on my drafts still help me read my work carefully.\n\nThank you for supporting my choice.\n— {name}"),
     p("아직 박사학위를 마친 것은 아니었다. 메일에는 해야 할 일과 새로 만난 사람들의 이야기가 나란히 적혀 있었다.\n\n나는 시험 준비를 응원하는 답장을 썼다.\n\n지도는 마무리되었고, 새로운 배움은 계속되고 있었다.","The doctorate was still in progress. I sent encouragement for the coming exam. Our advising had ended, and their learning continued.")
   ]}
 };
@@ -184,7 +184,22 @@ function assembleLetterPages(pages, id, distance, history, context, locale, reas
     return pages;
   }
 
-  const text = pages[letterIndex];
+  if (id === 'youtuber') {
+    const closingText = letterClosing(id, distance, context, locale);
+    if (closingText) {
+      const text = pages[letterIndex];
+      const sigMatch = text.match(/\n*[―—]\s*\{name\}(?:(?:\s+올림|\s+드림)?)/);
+      if (sigMatch) {
+        const at = sigMatch.index;
+        const prefix = text.slice(0, at).trimEnd();
+        const sig = text.slice(at).trimStart();
+        pages[letterIndex] = prefix + '\n\n' + closingText + '\n\n' + sig;
+      }
+    }
+    return pages;
+  }
+
+  const text = pages[letterIndex].replace(/(?<!\n)\n(?=[―—]\s*\{name\})/g, '\n\n');
   const parts = text.split('\n\n');
   if (parts.length < 3) return pages;
 
@@ -201,8 +216,12 @@ function assembleLetterPages(pages, id, distance, history, context, locale, reas
   if (anchorText) {
     const anchorIndex = bodyParas.findIndex(p => p.includes(anchorText));
     if (anchorIndex >= 0) {
-      coreParas = bodyParas.slice(0, anchorIndex);
-      requestParas = bodyParas.slice(anchorIndex);
+      const targetPara = bodyParas[anchorIndex];
+      const at = targetPara.indexOf(anchorText);
+      const preAnchor = targetPara.slice(0, at).trimEnd();
+      const postAnchor = targetPara.slice(at).trimStart();
+      coreParas = [...bodyParas.slice(0, anchorIndex), preAnchor].filter(Boolean);
+      requestParas = [postAnchor, ...bodyParas.slice(anchorIndex + 1)].filter(Boolean);
     }
   }
 
@@ -300,7 +319,7 @@ function memoryCandidates(history,locale='ko'){
  const unique=[...new Map(found.map(h=>[h.id,h])).values()].reverse();
  return unique.map((h,index)=>({id:`memory.${h.id}.${h.choice}`,group:'memory',priority:100-index,
   tags:[...(['counsel-daily-life','caregiving','support-without-assumptions'].includes(h.id)?['recovery']:['counsel-coursework','undergrad-record'].includes(h.id)?['newcomer']:[]),
-   ...(h.id==='funding-cut'&&h.choice===1||h.id==='undergrad-record'&&h.choice===1?['wet']:['wet','dry'])],
+   ...(h.id==='equipment'||h.id==='funding-cut'&&h.choice===1||h.id==='undergrad-record'&&h.choice===1?['wet']:['wet','dry'])],
   text:locale==='en'?('[Memory] '+(englishMemories[h.id]?.[h.choice]??(h.choice===2?'We agreed to review the evidence for my plan at the next meeting.':'We agreed on a deadline and the work that needed revision.'))):('[회상] '+(eventMemories[h.id][h.choice]??(h.choice===2?'다음 면담에서 제 계획의 근거를 검토하기로 했던 약속이 남아 있습니다.':'기한과 보완할 범위를 분명히 정했던 면담이 떠오릅니다.')))}));
 }
 export function validPassageIds(ids){const known=new Set([...VOICE_PASSAGE_IDS,...Object.keys(eventMemories).flatMap(id=>[0,1,2,3].map(choice=>`memory.${id}.${choice}`))]);return Array.isArray(ids)&&ids.length<=known.size&&new Set(ids).size===ids.length&&ids.every(id=>typeof id==='string'&&known.has(id));}

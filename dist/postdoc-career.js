@@ -72,5 +72,5 @@ export function postdocLetter(context={},locale='ko',setting={task:'연구 자�
   research_professor:p('이곳 연구소에서 연구교수로 일하게 되었습니다. 그 연구의 후속 과제와 세미나를 맡아, 동료들의 질문을 들으며 연구의 방향을 함께 의논합니다.','I have started work as a Research Professor at this institute. I lead a follow-up project and a seminar, discussing our direction and listening to colleagues’ questions.'),
   postdoc:p('박사후연구를 이어 가며 그 연구의 다음 질문을 검토하고 있습니다. 공동연구 회의에서는 제 질문과 필요한 자료를 먼저 정리해 가져가는 습관이 생겼습니다.','I am continuing my postdoctoral work and examining the next question it raises. Before collaboration meetings, I set out my questions and the evidence I need.'),
  };
- return openings[id][locale]+p('\n\n아직 전임교원 지원 결과는 모르지만, 교수님께 좋은 소식을 전해 드리고 싶어서 제 자리에서 할 일을 이어 가고 있습니다. 좋은 소식은 꼭 직접 들고 찾아뵙겠습니다.\n\n건강하세요.\n― {name} 올림','\n\nI do not know the result of my faculty application yet. I am continuing my work and hope to bring you good news in person. Please take care.\n— {name}')[locale];
+ return openings[id][locale]+p('\n\n아직 전임교원 지원 결과는 모르지만, 교수님께 좋은 소식을 전해 드리고 싶어서 제 자리에서 할 일을 이어 가고 있습니다. 좋은 소식은 꼭 직접 들고 찾아뵙겠습니다.\n\n건강하세요.\n― {name} 올림','\n\nI do not know the result of my faculty application yet. I am continuing my work and hope to bring you good news in person.\n\nPlease take care.\n— {name}')[locale];
 }

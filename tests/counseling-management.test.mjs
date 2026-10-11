@@ -15,8 +15,8 @@ const rest=['rest','rest','rest','rest'];
 const clone=x=>structuredClone(x);
 
 test('stage-specific counseling covers career, academic learning and research without ranking careers',()=>{
- const s=createState('',6),counseling=EVENTS.filter(e=>e.kind==='counseling'&&e.id!=='military-hidden');assert.equal(counseling.length,10);
- for(const e of counseling){s.month=e.minMonth;s.route=s.month>=24?'integrated':null;s.project.phase=2;assert.ok(eventEligible(s,e),e.id);s.pending={kind:'event',id:e.id};assert.ok(validateSave(s),e.id);
+ const s=createState('',6),counseling=EVENTS.filter(e=>e.kind==='counseling'&&e.id!=='military-hidden');assert.equal(counseling.length,16);
+ for(const e of counseling){s.month=e.minMonth;s.route=s.month>=24?'integrated':null;s.project.phase=2;s.project.submitted=false;s.project.submittedAt=null;s.project.revisions=0;s.hidden.stress=20;if(e.requires==='stress')s.hidden.stress=50;if(e.requires==='revision'){s.project.submitted=true;s.project.phase=5;s.project.revisions=1;s.project.submittedAt=s.month;}if(e.requires==='graduate'){s.route='integrated';if(s.month<24)s.month=24;}if(e.stages?.includes('phd')){s.month=Math.max(s.month,49);s.route='integrated';}if(e.stages?.includes('undergrad')){s.month=Math.min(s.month,23);s.route=null;}assert.ok(eventEligible(s,e),e.id);s.pending={kind:'event',id:e.id};assert.ok(validateSave(s),e.id);
   for(const choice of [0,1]){const n=decide(s,choice);assert.ok(validateSave(n));assert.ok(n.hidden.rapport>=s.hidden.rapport);assert.ok(endingMemoryNotes(n.history).length);n.ending='leave';const cv=buildEndingCV(n);assert.ok(validateCVModel(cv.model));assert.ok(cv.model.memories.some(m=>m.title===e.title.ko));}
   assert.ok(e.options.every(o=>!Object.hasOwn(o.effects?.career??{},'papers')),'A conversation never invents an achievement');
  }
