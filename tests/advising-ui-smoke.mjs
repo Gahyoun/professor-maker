@@ -16,7 +16,7 @@ try{
  async function overflow(label){const n=await page.evaluate(()=>({w:innerWidth,s:document.documentElement.scrollWidth}));assert.ok(n.s<=n.w,`${label}: ${JSON.stringify(n)}`);}
  for(const width of [320,390,1360]){
   await page.setViewportSize({width,height:900});await inject(fixture());await overflow(`planner ${width}`);
-  await page.locator('#week-0').scrollIntoViewIfNeeded();assert.equal(await page.locator('#live-stage').evaluate(el=>getComputedStyle(el).position),width<900?'relative':'sticky');
+  await page.locator('#week-0').scrollIntoViewIfNeeded();assert.equal(await page.locator('#live-stage').evaluate(el=>getComputedStyle(el).position),'relative');
   const credit=page.locator('[data-credit=research][data-count="1"]');await credit.focus();await page.keyboard.press('Enter');
   assert.equal(await page.evaluate(()=>document.activeElement?.getAttribute('data-credit')),'research');
   assert.equal(await page.evaluate(()=>document.activeElement?.getAttribute('data-count')),'1');
