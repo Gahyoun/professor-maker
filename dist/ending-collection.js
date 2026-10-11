@@ -14,7 +14,7 @@ export function retirementScenes(gallery){
  if(get('resident_researcher'))scenes.push(`${withParticle(get('resident_researcher'),'은/는')} 새로 들어온 연구원의 자리를 함께 찾아 주었다. 교수와 눈이 마주치자 고개를 끄덕이고 객석에 앉았다.`);
  if(get('unemployed'))scenes.push(`${withParticle(get('unemployed'),'은/는')} 옆자리 제자와 오랜만에 안부를 나누었다. 교수도 다가가 인사했다. 다음 지원 이야기는 먼저 꺼내지 않았다.`);
  if(get('youtuber'))scenes.push(`${get('youtuber')} 박사는 촬영 안내를 확인하고 카메라를 내려놓았다. 오늘은 영상보다 서로의 이야기를 듣는 시간을 남기기로 했다.`);
- if(get('unrelated'))scenes.push(`맨 뒷줄 빈자리에는 ${withParticle(get('unrelated'),'이/가')} 공개를 허락한 산 사진 엽서가 놓였다. “건강하세요.” 더 긴 연락을 요구하지는 않았다.`);
+ if(get('unrelated'))scenes.push(!['close','reserved'].includes(gallery.find(e=>e.ending==='unrelated').relationship)?`맨 뒷줄 빈자리에는 ${withParticle(get('unrelated'),'이/가')} 공개를 허락한 산 사진 엽서가 놓였다. “건강하세요.” 교수도 더 긴 연락을 요구하지 않았다.`:`${get('unrelated')}도 자리에 왔다. 회사 밖에서 배운 이야기를 하나 들려주겠다고 했다.`);
  scenes.push('마지막 인사를 준비하며 교수는 오래된 연구 노트를 펼쳤다. 수정한 문장 옆에 학생이 처음 적었던 질문이 남아 있었다. 강단에 올라 그 페이지를 화면에 띄우자, 객석 한쪽에서 작은 웃음이 났다.');
  if(endingCollection(gallery).complete)scenes.push('강당이 비어 가고, 연구실 문을 천천히 닫는다. 다음 질문을 이어 갈 사람들에게 자리를 남긴다.');
  return scenes;

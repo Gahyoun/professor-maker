@@ -122,12 +122,12 @@ export function endingVoice(context={},locale='ko'){
 export function dryEndingText(text){return replaceNounWithParticle(String(text),'오래된 기계','오래된 워크스테이션').replaceAll('냉동고 맨 아래 칸 샘플','서버의 마지막 프로젝트 폴더').replaceAll('냉동고 맨 아래 칸을 열어','서버의 마지막 프로젝트 폴더를 열어').replaceAll('냉동고 샘플','보관 데이터').replaceAll('라벨이 붙은 튜브들','정리된 데이터 파일들').replaceAll('샘플은 라벨을 다 붙여 두었습니다','파일에는 설명과 실행 조건을 정리해 두었습니다').replaceAll('라벨을 다 붙여 두었습니다','설명과 실행 조건을 정리해 두었습니다').replaceAll('냉동고','자료 보관함').replaceAll('기계로 실험','컴퓨터로 계산').replaceAll('실험 노트','연구 노트').replaceAll('실험','연구');}
 
 // Career-specific closings. No generic sentimental postscript for the special comedy.
-export function letterClosing(id,distance,context,locale='ko'){
+export function letterClosing(id,distance,context,locale='ko',reason=null){
  if(distance==='distant')return '';
  const close=distance==='close';
  const endings={
  postdoc:close?['건강하세요.','Please take care.']:['긴 안부를 쓰는 일은 아직 조금 어색합니다. 그래도 이 소식은 직접 전하고 싶었습니다.','A long personal letter still feels a little awkward. Even so, I wanted you to hear this news from me.'],
- youtuber:close?['다음 촬영 전에 대본부터 보내겠습니다. 이번에는 “응”의 뜻을 제가 먼저 여쭤볼게요.','I will send the script before we film. This time, I will ask what your Hmm means.']:['대본 검토는 메일로 부탁드립니다. 6번 “응”은 편집으로 살릴 수 없습니다.','Please review the script by email. Editing cannot fix Hmm number six.'],
+ youtuber:close?['이번에는 “응”의 뜻을 제가 먼저 여쭤볼게요.','This time, I will ask what your Hmm means first.']:['대본 검토는 메일로 부탁드립니다. 6번 “응”은 편집으로 살릴 수 없습니다.','Please review the script by email. Editing cannot fix Hmm number six.'],
  bachelor:close?['다음에 뵐 때 새로 배우는 일도 들려드릴게요.','I will tell you what I am learning when we next meet.']:['다음 계획이 정해지면 짧게 소식 전하겠습니다.','I will send a short update when my next plan is settled.'],
  masters:close?['다음에 뵐 때 연구실 밖에서 배운 이야기도 들려드릴게요.','I will tell you what I have learned beyond the lab next time.']:['새 생활에 익숙해지면 다시 소식 전하겠습니다.','I will send an update once I have settled into this new routine.'],
  external_masters:close?['새 연구실에서 배운 이야기를 다음 방학에 들려드릴게요.','I will tell you about my new lab during the next break.']:['수업과 연구가 자리를 잡으면 다음 소식 전하겠습니다.','I will send news once my courses and research have settled.'],
@@ -138,7 +138,8 @@ export function letterClosing(id,distance,context,locale='ko'){
  leave:close?['여유가 생기면 산책 이야기부터 들려드릴게요.','When I have room for it, I will tell you about my walks.']:['교수님도 건강히 지내시길 바랍니다.','I hope you are keeping well.'],
  dropout:close?['다른 일을 시작하더라도 함께 배운 시간을 기억하겠습니다.','I will remember what we learned together as I begin something else.']:['남은 인계가 끝나면 제 생활을 정리할 시간을 갖겠습니다.','After the handover, I will take time to organize my own life.'],
  unfinished:close?['남은 일을 정리하고 제가 원하는 다음 계획을 말씀드릴게요.','I will review the remaining work and tell you about my next plan.']:['다음 계획은 조금 더 살펴본 뒤 말씀드리겠습니다.','I will share my next plan after considering it further.'],
- gameover:close?['필요한 정리를 마친 뒤, 새로운 계획으로 다시 인사드릴게요.','After finishing the arrangements, I will share my new plans.']:['남은 절차를 확인하고 이후 계획은 제 속도로 정하겠습니다.','I will check the remaining procedures and decide what comes next at my own pace.'],
+ // Reason-specific gameover letters already end with the next plan.
+ gameover:reason?(close?['그동안 함께 고민해 주셔서 감사했습니다.','Thank you for thinking things through with me all this time.']:['교수님도 건강히 지내시길 바랍니다.','I hope you are keeping well.']):close?['필요한 정리를 마친 뒤, 새로운 계획으로 다시 인사드릴게요.','After finishing the arrangements, I will share my new plans.']:['남은 절차를 확인하고 이후 계획은 제 속도로 정하겠습니다.','I will check the remaining procedures and decide what comes next at my own pace.'],
  };
  const pair=endings[id]??(close?['다음에 뵐 때 이야기 더 들려드릴게요.','I will tell you more when we next meet.']:['긴 안부를 쓰는 일은 아직 조금 어색합니다. 그래도 이 소식은 직접 전하고 싶었습니다.','A long personal letter still feels a little awkward. Even so, I wanted you to hear this news from me.']);
  return pair[locale==='en'?1:0];

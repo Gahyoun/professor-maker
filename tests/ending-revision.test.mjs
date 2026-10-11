@@ -59,7 +59,7 @@ test('special video ending does not count toward either retirement milestone',()
  const s=createState('',3);s.hidden.language=899.1;s.hidden.social=80;s.hidden.outreach=0;assert.equal(careerEnding(s),'youtuber');s.hidden.language=898;assert.notEqual(careerEnding(s),'youtuber');
 });
 test('training schedules in winter, blocks advising and three weekly activities, then restores normal play',()=>{
- let s=createState('김준영',3,{gender:'male'});s.month=36;s.route='integrated';s.pending={kind:'service'};s=decide(s,'training');assert.ok(validateSave(s));assert.ok([1,2].includes(calendarMonth(s.service.trainingStartMonth)));assert.ok(!studentTrainingActive(s));
+ let s=createState('김준영',3,{gender:'male'});s.month=36;s.route='integrated';s.pending={kind:'service'};assert.throws(()=>decide(s,'training'),/doctoral-stage/);s.month=48;s=decide(s,'training');assert.ok(validateSave(s));assert.ok([1,2].includes(calendarMonth(s.service.trainingStartMonth)));assert.ok(!studentTrainingActive(s));
  s.month=s.service.trainingStartMonth;s.pending=null;s.pendingQueue=[];s.plan=proposeSchedule(s);s.facultyAction='routine';assert.ok(studentTrainingActive(s));assert.ok(validateSave(s));
  assert.throws(()=>simulateMonth(s,s.plan,{facultyAction:'conversation'}),/unavailable/);assert.throws(()=>simulateMonth(s,s.plan,{facultyAction:'support'}),/unavailable/);
  const n=simulateMonth(s,s.plan,{feedback:'harsh',facultyAction:'routine'});assert.ok(validateSave(n));assert.equal(n.lastReport.results.filter(r=>r.outcome==='training').length,3);assert.equal(n.behavior.harsh,s.behavior.harsh);assert.equal(failureRun(n),0);assert.ok(!studentTrainingActive(n));assert.equal(weeklyAppearance({...n,visualMonth:s.month},3).hairLength,0);

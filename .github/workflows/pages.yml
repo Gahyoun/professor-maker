@@ -23,6 +23,8 @@ jobs:
           node-version: '24'
       - name: Test simulation and content
         run: npm test
+      - name: Keep hosted-only, admin and test outputs out of the public artifact
+        run: rm -rf dist/server dist/.openai dist/admin.html dist/admin.js
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

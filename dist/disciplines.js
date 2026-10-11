@@ -684,7 +684,7 @@ export const DISCIPLINES = [
     "id": "158",
     "label": "교통시스템공학",
     "major": "공학",
-    "group": "교통・수송",
+    "group": "교통ㆍ수송",
     "labModes": [
       "dry"
     ],
@@ -694,7 +694,7 @@ export const DISCIPLINES = [
     "id": "159",
     "label": "철도운전제어학",
     "major": "공학",
-    "group": "교통・수송",
+    "group": "교통ㆍ수송",
     "labModes": [
       "dry"
     ],
@@ -704,7 +704,7 @@ export const DISCIPLINES = [
     "id": "160",
     "label": "선박운항학",
     "major": "공학",
-    "group": "교통・수송",
+    "group": "교통ㆍ수송",
     "labModes": [
       "dry"
     ],
@@ -714,7 +714,7 @@ export const DISCIPLINES = [
     "id": "161",
     "label": "항공운항학",
     "major": "공학",
-    "group": "교통・수송",
+    "group": "교통ㆍ수송",
     "labModes": [
       "dry"
     ],
@@ -724,7 +724,7 @@ export const DISCIPLINES = [
     "id": "162",
     "label": "무인항공기(운항)학",
     "major": "공학",
-    "group": "교통・수송",
+    "group": "교통ㆍ수송",
     "labModes": [
       "dry"
     ],

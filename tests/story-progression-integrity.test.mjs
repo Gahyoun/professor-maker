@@ -31,14 +31,15 @@ function endingText(s,lang='ko'){
 
 test('a first unmet master verdict reaches the semester-extension decision through the real month queue',()=>{
  const s=createState('김민지',6,{gender:'female'});
- s.month=47;s.route='masters';s.sabbatical.start=24;
+ // The verdict comes in December (month 45) of the semester before conferral; the degree decision follows in March.
+ s.month=44;s.route='masters';s.sabbatical.start=24;
  let n=simulateMonth(s,proposeSchedule(s));
  assert.equal(n.pending?.kind,'thesis');
  assert.equal(n.pending.level,'masters');
  assert.equal(n.pending.step,'verdict');
- assert.ok(n.pendingQueue.some(p=>p.kind==='masters'));
  n=decide(n,'confirm');
  assert.equal(n.ending,null);
+ n=settleOtherDecisions(n);n.month=47;n.plan=proposeSchedule(n);n=simulateMonth(n,n.plan);n=settleOtherDecisions(n,'masters');
  assert.equal(n.pending?.kind,'masters');
  assert.equal(n.history.filter(h=>h.kind==='thesis'&&h.step==='verdict').at(-1).passed,false);
  n=decide(n,'extend');
@@ -49,7 +50,7 @@ test('a first unmet master verdict reaches the semester-extension decision throu
 
  // The extension is a chance to complete the work, not an automatic degree award.
  n=settleOtherDecisions(n);
- n.month=53;n.plan=proposeSchedule(n);
+ n.month=50;n.plan=proposeSchedule(n);
  n=simulateMonth(n,n.plan);
  assert.equal(n.pending?.kind,'thesis');
  assert.equal(n.pending.step,'verdict');

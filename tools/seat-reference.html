@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Seat Reference</title>
+<style>
+ :root{--bg:#f4f1ea;--ink:#25313a;--muted:#5d6a73;--line:#cfd6dc;--panel:#fff}
+ body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 system-ui,'Apple SD Gothic Neo',sans-serif}
+ main{max-width:1900px;margin:0 auto;padding:16px}
+ h1{font-size:18px;margin:0 0 4px}
+ p{margin:0 0 12px;color:var(--muted)}
+ .controls{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-bottom:12px}
+ .grid{display:grid;grid-template-columns:repeat(3,600px);gap:12px;overflow-x:auto}
+ figure{margin:0;background:var(--panel);border:1px solid var(--line)}
+ figcaption{padding:6px 10px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+ .stage{position:relative;width:600px;height:360px;overflow:hidden}
+ #three{background:#c9cdc6}
+ .stage canvas,.stage svg{position:absolute;inset:0;width:600px!important;height:360px!important;image-rendering:pixelated}
+ .overlay svg{opacity:var(--game-opacity,.5)}
+ .legend span{display:inline-block;width:10px;height:10px;margin:0 4px 0 10px;vertical-align:-1px}
+</style>
+</head>
+<body>
+<main>
+ <h1>앉은 자세 기준 모형 · 게임 카메라 (2:1 아이소메트릭)</h1>
+ <p>게임 좌표 그대로: 책상 u9–19·v16–22·상판 z26, 사무용 의자 좌판 u12.4–14.6·v22.4–24.6·z17–20, 등받이는 v24.25–24.6, 모니터 (14.2,18.3). 1 바닥 단위 = 11.02 z 단위(≈ 24.8cm).
+  <span class="legend"><span style="background:#e0773d"></span>학생의 오른쪽 팔다리<span style="background:#3d7be0"></span>왼쪽 팔다리<span style="background:#d9cdb8"></span>몸통·머리</span></p>
+ <div class="controls">
+  <label>모형 <select id="model"><option value="chibi">게임 비율 3.5등신</option><option value="adult">성인 7.5등신</option></select></label>
+  <label>엉덩이 v <input id="hipV" type="range" min="22.6" max="24.4" step=".05" value="23.75"> <output id="hipVo"></output></label>
+  <label>엉덩이 u <input id="hipU" type="range" min="12.8" max="14.6" step=".05" value="13.6"> <output id="hipUo"></output></label>
+  <label>겹침 투명도 <input id="op" type="range" min="0" max="1" step=".05" value=".5"></label>
+  <label><input id="ghost" type="checkbox"> 의자 반투명</label>
+ </div>
+ <div class="grid">
+  <figure><div class="stage" id="three"></div><figcaption>3D 기준 모형</figcaption></figure>
+  <figure><div class="stage" id="game"></div><figcaption>현재 게임 도트</figcaption></figure>
+  <figure><div class="stage overlay" id="overlay"></div><figcaption>겹쳐 보기 (도트 반투명 위에 3D)</figcaption></figure>
+ </div>
+</main>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import {createState} from '../dist/engine.js';
+import {roomScene} from '../dist/lab-scene.js';
+
+// Game projection: x=300+(u−v)·9, y=96+(u+v)·4.5−z. World units are z-units; a floor unit is 11.02 of them.
+const PX=1/Math.cos(Math.PI/6),FLOOR=12.7279/PX; // PX: screen px per world unit; FLOOR: z-units per floor unit (≈11.02)
+const W=600,H=360;
+const at=(u,v,z=0)=>new THREE.Vector3(u*FLOOR,z,v*FLOOR);
+
+function makeRenderer(host){
+ const r=new THREE.WebGLRenderer({antialias:false,alpha:true,preserveDrawingBuffer:true});
+ r.setPixelRatio(2);r.setSize(W,H);host.appendChild(r.domElement);return r;
+}
+const camera=new THREE.OrthographicCamera(-W/2/PX,W/2/PX,H/2/PX,-H/2/PX,-5000,5000);
+{const target=at(9.3333,9.3333,0),d=new THREE.Vector3(Math.cos(Math.PI/6)/Math.SQRT2,Math.sin(Math.PI/6),Math.cos(Math.PI/6)/Math.SQRT2);
+ camera.position.copy(target).addScaledVector(d,1500);camera.up.set(0,1,0);camera.lookAt(target);camera.updateProjectionMatrix();}
+
+const mat=c=>new THREE.MeshLambertMaterial({color:c});
+const boxMesh=(u,v,z,w,d,h,c)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w*FLOOR,h,d*FLOOR),mat(c));m.position.copy(at(u+w/2,v+d/2,z+h/2));return m;};
+function limb(a,b,r,c){const len=a.distanceTo(b),m=new THREE.Mesh(new THREE.CapsuleGeometry(r,Math.max(.01,len-2*r),4,10),mat(c));m.position.copy(a).add(b).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),b.clone().sub(a).normalize());return m;}
+const ball=(p,r,c)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(r,18,14),mat(c));m.position.copy(p);return m;};
+
+function room(group){
+ for(const [a,b] of [[9.5,16.5],[18,16.5],[9.5,21],[18,21]])group.add(boxMesh(a,b,0,.65,.65,23,'#a58c73'));
+ group.add(boxMesh(9,16,23,10,6,3,'#c5ab8e'));
+ group.add(boxMesh(14.2,18.3,26,4.7,.3,21,'#788f9c'));
+ group.add(boxMesh(13.5,21.3,26,2.4,.55,.6,'#d4ddda'));
+}
+function chair(group,ghost){
+ const c='#879ba8',m=new THREE.Group(),seat={u:12.4,v:22.4,w:2.2,d:2.2},cu=13.5,cv=23.5;
+ m.add(boxMesh(seat.u,seat.v,17,seat.w,seat.d,3,c));
+ m.add(boxMesh(seat.u+.1,seat.v+seat.d-.35,20,2,.35,22,'#94a8b4'));
+ m.add(boxMesh(cu-.2,cv-.2,3,.4,.4,14,'#84979f'));
+ for(let i=0;i<5;i++){const a=-Math.PI/2+i*Math.PI*2/5,p=[cu+Math.cos(a)*1.85,cv+Math.sin(a)*1.85];m.add(limb(at(cu,cv,3),at(p[0],p[1],2),.9,'#586873'));m.add(boxMesh(p[0]-.22,p[1]-.2,0,.44,.4,2,'#52606b'));}
+ for(const a of [seat.u,seat.u+seat.w-.25]){m.add(boxMesh(a,seat.v+.8,20,.25,.25,9,'#71838c'));m.add(boxMesh(a,seat.v+.6,29,.3,1.3,1,c));}
+ if(ghost)m.traverse(o=>{if(o.material){o.material=o.material.clone();o.material.transparent=true;o.material.opacity=.35;}});
+ group.add(m);
+}
+// Joint positions in floor/z coordinates; the student faces −v (towards the monitor).
+function person(group,{model,hipU,hipV}){
+ const P=model==='adult'?{head:10,neck:2,torso:24,thigh:19,shin:19,foot:6,upper:13,fore:12,hipW:.62,shW:.78,r:2.1}:
+                          {head:25,neck:1,torso:22,thigh:14,shin:12,foot:5,upper:10,fore:9,hipW:.55,shW:.7,r:2.8};
+ const right='#e0773d',left='#3d7be0',core='#d9cdb8',seatTop=20;
+ const hip=[hipU,hipV,seatTop+P.r],lean=.12;
+ const chest=[hipU,hipV-P.torso*Math.sin(lean)/FLOOR,hip[2]+P.torso*Math.cos(lean)];
+ group.add(limb(at(...hip),at(...chest),P.r*1.9,core));
+ const headC=[chest[0],chest[1]-.15,chest[2]+P.neck+P.head/2];
+ group.add(ball(at(...headC),P.head/2,core));
+ group.add(ball(at(headC[0],headC[1]-P.head/2/FLOOR*.9,headC[2]+P.head*.05),P.head*.08,'#25313a'));// nose marks the facing
+ for(const [side,c] of [[1,right],[-1,left]]){
+  // facing −v: the student's right hand side is +u
+  const h=[hip[0]+side*P.hipW,hip[1],hip[2]],knee=[h[0],h[1]-P.thigh/FLOOR,h[2]],ankleZ=Math.max(P.foot*.3,knee[2]-P.shin),ankle=[knee[0],knee[1]-.05,ankleZ],toe=[ankle[0],ankle[1]-P.foot/FLOOR,ankleZ];
+  group.add(limb(at(...h),at(...knee),P.r,c));group.add(limb(at(...knee),at(...ankle),P.r*.85,c));group.add(limb(at(...ankle),at(...toe),P.r*.8,c));
+  const sh=[chest[0]+side*P.shW,chest[1],chest[2]-1],hand=[13.9+side*.55+.8,21.55,26.8],mid=sh.map((x,i)=>(x+hand[i])/2),elbow=[mid[0]+side*.25,mid[1]+.35,mid[2]-P.upper*.35];
+  group.add(limb(at(...sh),at(...elbow),P.r*.7,c));group.add(limb(at(...elbow),at(...hand),P.r*.6,c));
+ }
+ return {hip,P};
+}
+
+const threeHost=document.getElementById('three'),overlayHost=document.getElementById('overlay');
+const rA=makeRenderer(threeHost),rB=makeRenderer(overlayHost);
+const scene=new THREE.Scene();scene.add(new THREE.AmbientLight(0xffffff,.75));const sun=new THREE.DirectionalLight(0xffffff,.9);sun.position.set(-200,400,150);scene.add(sun);
+const game=createState('기준',7919,{gender:'female',labMode:'dry',fieldId:'090'});game.month=30;game.route='integrated';
+const svg=roomScene(game,{actual:'study',performed:true,outcome:'success'},0).match(/<svg[^]*<\/svg>/)[0];
+document.getElementById('game').innerHTML=svg;
+function draw(){
+ const q=id=>document.getElementById(id);q('hipVo').value=q('hipV').value;q('hipUo').value=q('hipU').value;
+ document.documentElement.style.setProperty('--game-opacity',q('op').value);
+ while(scene.children.length>2)scene.remove(scene.children[2]);
+ const g=new THREE.Group();room(g);chair(g,q('ghost').checked);person(g,{model:q('model').value,hipU:+q('hipU').value,hipV:+q('hipV').value});scene.add(g);
+ rA.render(scene,camera);rB.render(scene,camera);
+ overlayHost.querySelector('svg')?.remove();overlayHost.insertAdjacentHTML('beforeend',svg);
+}
+for(const el of document.querySelectorAll('input,select'))el.addEventListener('input',draw);
+const params=new URLSearchParams(location.search);for(const [k,v] of params){const el=document.getElementById(k);if(!el)continue;if(el.type==='checkbox')el.checked=v==='1';else el.value=v;}
+draw();document.body.dataset.ready='true';
+</script>
+</body>
+</html>

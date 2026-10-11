@@ -110,7 +110,7 @@ test('all Korean ending paths use the saved name and dry stories omit wet-only p
 });
 
 test('retirement names and CV career descriptions follow the same saved identity and field',()=>{
- const gallery=MAIN_ENDINGS.map((ending,i)=>({ending,name:i%2?'김민지':'김지훈'}));
+ const gallery=MAIN_ENDINGS.map((ending,i)=>({ending,name:i%2?'김민지':'김지훈',relationship:'distant'}));
  assert.match(retirementScenes(gallery).join('\n'),/김지훈이 공개를 허락/);
  gallery.find(e=>e.ending==='unrelated').name='김민지';assert.match(retirementScenes(gallery).join('\n'),/김민지가 공개를 허락/);
  const s=createState('김민지',8,{fieldId:'072',labMode:'dry'});s.ending='corporate';s.month=96;s.route='integrated';s.career.qual='passed';const cv=buildEndingCV(s).model;

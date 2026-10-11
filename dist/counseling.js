@@ -9,7 +9,8 @@ export function studentObservation(s,locale='ko'){
 export function counselingBody(event,s,locale='ko'){
  const body=adaptEventText(event.body[locale],s,locale);
  if(event.kind!=='counseling')return body;
- const opening=s.hidden.rapport<10?(locale==='ko'?'학생은 보고를 마친 뒤에도 말을 망설였다. 먼저 질문할 시간이 있다고 전하자, 메모한 고민을 조심스레 꺼냈다.':'After the report, the student hesitates. Given time to ask, they cautiously share a question.'):(locale==='ko'?'“교수님, 오늘은 이 이야기도 함께 의논하고 싶어요.” 학생이 먼저 면담 주제를 꺼냈다.':'The student begins: “There is something else I would like to discuss today.”');
+ const last=s.history?.at(-1),asked=last?.kind==='conversation-topic'&&last.month===s.month;
+ const opening=s.hidden.rapport<10?(locale==='ko'?'학생은 보고를 마친 뒤에도 말을 망설였다. 먼저 질문할 시간이 있다고 전하자, 메모한 고민을 조심스레 꺼냈다.':'After the report, the student hesitates. Given time to ask, they cautiously share a question.'):asked?(locale==='ko'?'질문을 들은 학생이 잠시 생각을 고르더니 이야기를 꺼냈다.':'The student takes a moment with your question, then begins.'):(locale==='ko'?'“교수님, 오늘은 이 이야기도 함께 의논하고 싶어요.” 학생이 먼저 면담 주제를 꺼냈다.':'The student begins: “There is something else I would like to discuss today.”');
  return opening+'\n\n'+body;
 }
 const followups={

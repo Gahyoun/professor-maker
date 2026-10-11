@@ -16,7 +16,7 @@ const line=(a,b,color,width=1)=>{const [x,y]=projectRoom(...a),[xx,yy]=projectRo
 const front=(u,v,z,w,h,color)=>plane([[u,v,z],[u+w,v,z],[u+w,v,z+h],[u,v,z+h]],color);
 const left=(u,v,z,d,h,color)=>plane([[u,v,z],[u,v+d,z],[u,v+d,z+h],[u,v,z+h]],color);
 const isLecturing=(result,idle)=>!idle&&result.actual==='teach'&&result.performed===true&&result.outcome!=='training';
-export const ROOM_ANCHORS=Object.freeze({standing:Object.freeze([23,14]),deskSeat:Object.freeze([13.5,23.5]),plant:Object.freeze([24,19])});
+export const ROOM_ANCHORS=Object.freeze({standing:Object.freeze([23,14]),deskSeat:Object.freeze([13.5,23.5]),deskOccupant:Object.freeze([13.8,24.3]),plant:Object.freeze([24,19])});
 function lectureDiagram(type,ink){
  const stroke=points=>`<path class="ta-board-stroke" pathLength="1" d="${points.map((p,i)=>`${i?'L':'M'}${projectRoom(...p).join(' ')}`).join('')}" fill="none" stroke="${ink}" stroke-width="1.3"/>`;
  return `<g class="ta-board-annotation" data-board-kind="${type}" aria-label="강의 개념 도표">`+
@@ -62,7 +62,16 @@ function chairParts(u,v,color,type=0,facing='front'){
  return {base:`<g data-chair="${type}" data-chair-facing="${facing}" aria-label="${labels[type]}">${base}${near?farArm:backrest+farArm+nearArm}</g>`,front:near?`<g class="chair-foreground" aria-hidden="true">${backrest}${nearArm}</g>`:''};
 }
 function chair(...args){const parts=chairParts(...args);return parts.base+parts.front;}
-function restFurniture(u,v,type){if(type===0)return `<g data-rest="sofa">${sofa(u,v)}</g>`;if(type===1)return `<g data-rest="cot">${cot(u,v)}</g>`;if(type===2)return `<g data-rest="beanbag">${box(u+.4,v+.4,4,4,6,'#c3b49b')+box(u+1,v+1,3,3,6,'#d7c8af',6)+box(u+1.6,v+.3,2,2,13,'#cabbab',6)}</g>`;return `<g data-rest="camp-chair">${chair(u,v,'#a2b4a9',1)+line([u,v,0],[u+3,v+3,14],'#798e86',2)+line([u+3,v,0],[u,v+3,14],'#798e86',2)}</g>`;}
+function restFurniture(u,v,type){if(type===0)return `<g data-rest="sofa">${sofa(u,v)}</g>`;if(type===1)return `<g data-rest="cot">${cot(u,v)}</g>`;if(type===2)return `<g data-rest="beanbag">${box(u+.4,v+.4,4,4,6,'#c3b49b')+box(u+1,v+1,3,3,6,'#d7c8af',6)+box(u+1.6,v+.3,2,2,13,'#cabbab',6)}</g>`;return `<g data-rest="camp-chair">${campChair(u,v)}</g>`;}
+// A folding camp chair: the X frames stay inside the seat's two side faces, a sling seat
+// hangs between them and a fabric back rises from the far edge (the occupant faces the viewer).
+function campChair(u,v){
+ const frame='#6f8379',fabric='#a2b4a9',seat={u:u+.5,v:v+.5,w:2,d:2,z:16},x=(side,width)=>line([side,seat.v,0],[side,seat.v+seat.d,seat.z],frame,width)+line([side,seat.v+seat.d,0],[side,seat.v,seat.z],frame,width);
+ return `<g data-chair="camp" aria-label="접이식 의자"><g class="chair-floor-shadow" opacity=".18">${plane([[u+.3,v+.3,0],[u+2.7,v+.3,0],[u+2.7,v+2.7,0],[u+.3,v+2.7,0]],'#727c78')}</g>`+
+  `<g data-chair-part="far-frame">${x(seat.u,1.6)}</g>`+line([seat.u,seat.v,seat.z+12],[seat.u,seat.v,seat.z],frame,1.6)+line([seat.u+seat.w,seat.v,seat.z+12],[seat.u+seat.w,seat.v,seat.z],frame,1.6)+
+  box(seat.u,seat.v,seat.w,.25,10,shade(fabric,6),seat.z+1.5)+box(seat.u,seat.v,seat.w,seat.d,1.5,fabric,seat.z)+
+  `<g data-chair-part="near-frame">${x(seat.u+seat.w,1.8)}</g></g>`;
+}
 export const PLANT_SPECIES=Object.freeze(['몬스테라','고무나무','스킨답서스','산세베리아']);
 function pixelLeaf(x,y,size,color,flip=false,split=false){
  const cut=split?'M3 3h3v2H3zM7 7h3v2H7z':'';
@@ -161,12 +170,16 @@ export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'
  add(...ROOM_ANCHORS.plant,2,2,`<g class="room-plant" data-floor="${ROOM_ANCHORS.plant.join(',')}">${plant(...ROOM_ANCHORS.plant,d.plantType)}</g>`);
  if(d.bag)add(6,23,2.2,1.7,box(6,23,2.2,1.7,9,'#b49a8c')+line([6.4,23.2,10],[7.7,23.2,10],'#85786d',2));
  const deskSeat=chairParts(12,22,['#b5b9b0','#a1b7bf','#879ba8','#777f99'][d.chairType],d.chairType,'monitor');
- // The occupant sits between the seat and the near backrest/armrests. Painting
+ // The occupant sits between the seat and the near backrest/armrests, its hips set back from the
+ // hub (deskSeat) towards the backrest so the body rests in the chair instead of on its front edge. Painting
  // the whole chair first made the taller student's body pass through the chair.
  // The desk is already complete behind the occupant. Its near geometry only
  // occludes the lower body: an unclipped replay would stripe the upper torso.
- const hipY=projectRoom(...ROOM_ANCHORS.deskSeat,20)[1],lowerDesk=deskWorking?`<svg class="desk-lower-occlusion" x="0" y="${hipY}" width="600" height="${360-hipY}" viewBox="0 ${hipY} 600 ${360-hipY}" overflow="hidden" aria-hidden="true">${deskLayers.front}</svg>`:'';
- objects.push({depth:44,art:`<g class="desk-seat-layer" data-layer-order="chair-rear student chair-front desk-front">${deskSeat.base}${student&&deskWorking?actor(state,result,index,...ROOM_ANCHORS.deskSeat,false,0,'monitor'):''}${deskSeat.front}${lowerDesk}</g>`});
+ const hipY=projectRoom(...ROOM_ANCHORS.deskOccupant,20)[1],lowerDesk=deskWorking?`<svg class="desk-lower-occlusion" x="0" y="${hipY}" width="600" height="${360-hipY}" viewBox="0 ${hipY} 600 ${360-hipY}" overflow="hidden" aria-hidden="true">${deskLayers.front}</svg>`:'';
+ // The hub, casters and seat skirt stand between the viewer and the calves hanging at the seat's
+ // desk-side edge, so they repaint over the legs below the seat — never over the thighs or torso.
+ const seatBottomY=Math.round(projectRoom(...ROOM_ANCHORS.deskOccupant,16)[1]),chairUnder=student&&deskWorking?`<svg class="chair-leg-occlusion" x="0" y="${seatBottomY}" width="600" height="${360-seatBottomY}" viewBox="0 ${seatBottomY} 600 ${360-seatBottomY}" overflow="hidden" aria-hidden="true">${deskSeat.base.replace(/<g class="chair-floor-shadow"[^]*?<\/g>/,'').replaceAll('class="chair-','class="replay-chair-').replaceAll('data-chair','data-replay-chair').replace(/ aria-label="[^"]*"/,'')}</svg>`:'';
+ objects.push({depth:44,art:`<g class="desk-seat-layer" data-layer-order="chair-rear student chair-front desk-front">${deskSeat.base}${student&&deskWorking?actor(state,result,index,...ROOM_ANCHORS.deskOccupant,false,0,'monitor'):''}${chairUnder}${deskSeat.front}${lowerDesk}</g>`});
  const pos=lecturing?[24,3]:result.actual==='presentation'&&!idle?[24,4]:working?[17,15]:ROOM_ANCHORS.standing;if(student&&result.outcome!=='training'&&!resting&&!deskWorking)add(...pos,1,1,actor(state,result,index,...pos,idle));
  objects.sort((a,b)=>a.depth-b.depth);art+=objects.map(o=>o.art).join('');
  // Front rim has the same two floor axes as the tiles, never an unrelated angle.

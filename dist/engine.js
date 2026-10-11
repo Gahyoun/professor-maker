@@ -28,7 +28,7 @@ export function developmentalStage(s){const level=s.month<24?'undergrad':s.month
 const activity = (ko, en, icon) => ({ ko, en, icon });
 export const ACTIVITIES = {
   study: activity(['문헌 탐구', '논문과 교재를 읽으며 연구 질문을 다듬는다.'], ['Read & study', 'Read papers and refine a research question.'], 'book'),
-  coursework: activity(['전공과목 공부', '수업의 개념과 문제를 정리하며 시험과 퀄을 준비한다.'], ['Course work', 'Study course concepts and prepare for exams and qualification.'], 'book'),
+  coursework: activity(['전공과목 공부', '수업의 개념과 문제를 정리하며 전공 기초를 다진다.'], ['Course work', 'Study course concepts and strengthen core foundations.'], 'book'),
   experiment: activity(['실험', '관찰과 실험으로 가설을 검증한다.'], ['Experiment', 'Test a hypothesis against observations.'], 'flask'),
   analysis: activity(['데이터 분석', '재현성과 통계, 그래프를 점검한다.'], ['Analyze data', 'Check statistics, reproducibility and figures.'], 'chart'),
   conference: activity(['학술 발표', '준비된 프로젝트를 학회에서 발표한다.'], ['Conference', 'Present a prepared project to peers.'], 'globe'),
@@ -144,7 +144,11 @@ export function winterTrainingMonth(s){
  for(let month=s.month;month<MONTHS;month++)if(calendarMonth(month,s.locale)===preferred)return month;
  return null;
 }
-export function salaryBase(s) { return s.month<24?13:s.route==='masters'&&(s.month<48||s.mastersExtended&&s.month<54)?22:30; }
+// Integrated students count as master's students for their first four semesters (stipend, service).
+// The March decision follows the December verdict: work finished after a failed verdict needs the extension semester.
+export function mastersEligible(s){const verdict=s.history.filter(h=>h.kind==='thesis'&&h.level==='masters'&&h.step==='verdict').at(-1);return requirementsMet(s,'masters')&&verdict?.passed!==false;}
+export function doctoralPhase(s){return s.month>=24&&(s.route==='integrated'?s.month>=48:stage(s)==='phd');}
+export function salaryBase(s) { return s.month<24?13:doctoralPhase(s)?30:22; }
 export const OPERATING_ADVANCE_LIMIT=100; // 1,000만원 fictional institutional bridge, not a personal loan.
 export function availableCredit(s){return s.lab.creditEnabled?Math.max(0,OPERATING_ADVANCE_LIMIT-(s.lab.debt??0)):0;}
 // Moderate relief applies to adjustable support costs, not stipends or wet supplies.
@@ -166,7 +170,7 @@ export function proposeSchedule(s) {
     const failedAt=s.history.find(h=>h.kind==='qual'&&!h.passed)?.month??s.month;
     if(qualificationStudy(s,failedAt+1)<2)plan[0]=plan[1]='coursework';
   }
-  for(let i=0;i<plan.length;i++){const c=weekContext(s,i,plan.length);if(c.conference&&studentAttends(s.attendance?.domestic??'together'))plan[i]='conference';else if(examWindow(s,i,plan.length))plan[i]=h.rapport>=70?'free':'coursework';}
+  for(let i=0;i<plan.length;i++){const c=weekContext(s,i,plan.length);if(c.conference&&studentAttends(s.attendance?.domestic??'together'))plan[i]='conference';else if(s.month<48&&examWindow(s,i,plan.length))plan[i]=h.rapport>=70?'free':'coursework';}
   if(s.month>=24){const first=plan.indexOf('conference');if(first>=0){let needed=Math.max(0,2-presentationPractice(s));for(let i=0;i<first&&needed>0;i++)if(!examWindow(s,i,plan.length)&&plan[i]!=='coursework'){plan[i]='presentation';needed--;}}}
   const request=studentRestRequest(s);
   if(request){
@@ -184,12 +188,14 @@ function nextPending(s) { s.pending=s.pendingQueue.shift()||null; }
 function academicDue(s) {
   const chapter=({1:'contact',12:'firstyear',25:'graduate',42:'uncertainty',72:'independence',85:'lastyear'})[s.month];if(chapter)queue(s,{kind:'story',id:chapter});
 
-  if(s.route==='masters'&&s.month===s.mastersReviewAt-3)queue(s,{kind:'thesis',level:'masters',step:'draft'});
-  if(s.route==='masters'&&s.month===s.mastersReviewAt-1)queue(s,{kind:'thesis',level:'masters',step:'presentation'});
-  if(s.route==='masters'&&s.month===s.mastersReviewAt)queue(s,{kind:'thesis',level:'masters',step:'verdict'});
-  if(s.month===93)queue(s,{kind:'thesis',level:'phd',step:'draft'});
-  if(s.month===95)queue(s,{kind:'thesis',level:'phd',step:'presentation'});
-  if(s.month===96)queue(s,{kind:'thesis',level:'phd',step:'verdict'});
+  // Korean schools review a thesis in the semester before conferral: Sep draft, Nov defense, Dec verdict
+  // (Apr–Jun after a one-semester extension), so the degree is conferred in February or August.
+  if(s.route==='masters'&&s.month===s.mastersReviewAt-(s.mastersExtended?5:6))queue(s,{kind:'thesis',level:'masters',step:'draft'});
+  if(s.route==='masters'&&s.month===s.mastersReviewAt-4)queue(s,{kind:'thesis',level:'masters',step:'presentation'});
+  if(s.route==='masters'&&s.month===s.mastersReviewAt-3)queue(s,{kind:'thesis',level:'masters',step:'verdict'});
+  if(s.month===90)queue(s,{kind:'thesis',level:'phd',step:'draft'});
+  if(s.month===92)queue(s,{kind:'thesis',level:'phd',step:'presentation'});
+  if(s.month===93)queue(s,{kind:'thesis',level:'phd',step:'verdict'});
   if(s.month===20)queue(s,{kind:'event',id:'undergraduate-contest'});
   if(s.month===24){if(externalAdmissionEligible(s,'bachelor')&&canContinue(s))queue(s,{kind:'external-admission',level:'bachelor'});queue(s,{kind:'route'});}
   if(s.month===36&&s.locale==='ko'&&s.gender==='male'&&!s.service.completed)queue(s,{kind:'service'});
@@ -279,7 +285,7 @@ function scienceProgress(s,id,result) {
 }
 export function autonomousChoice(s,index){
  const h=scores(s);if(h.stamina<55||h.stress>60)return 'rest';
- if(examWindow({...s,month:Math.max(0,s.month-1)},index,s.plan.length)&&h.rapport>=70)return 'coursework';
+ if(s.month<48&&examWindow({...s,month:Math.max(0,s.month-1)},index,s.plan.length)&&h.rapport>=70)return 'coursework';
  const n=(Math.imul((s.creationSeed??s.seed)^(s.month*104729)^((index+1)*7919),2654435761)>>>0)/4294967296;
  const research=s.month>=24?.15+h.autonomy*.003+h.creativity*.002:.03;const rest=.65+Math.max(0,80-h.stamina)*.01+h.stress*.002,study=.12+s.temperament.curiosity*.002+Math.max(0,h.diligence-60)*.003,travel=.23+Math.max(0,h.social-50)*.003;
  const draw=n*(rest+study+research+travel);return draw<rest?'rest':draw<rest+study?(s.month<24?'coursework':'study'):draw<rest+study+research?(s.project.phase<=2?'experiment':'analysis'):'travel';
@@ -342,12 +348,12 @@ function advanceProject(s,reviewTick=false) {
 }
 function required(s,req) {
   const list=Array.isArray(req)?req:req?[req]:[];
-  return list.every(r=>r==='paper'?s.career.papers>0:r==='top_paper'?s.career.topPapers>0:r==='conference'?s.career.conferences>0:r==='submission'?s.career.submissions>0:r==='revision'?s.project.submitted===true&&s.project.phase===5&&s.project.revisions>0:r==='low_motivation'?s.hidden.motivation<45:r==='stress'?s.hidden.stress>45:r==='graduate'?stage(s)!=='undergrad':r==='qual_preparation'?stage(s)!=='undergrad'&&s.career.qual!=='passed':r==='grading_period'?[6,12].includes(calendarMonth(Math.max(0,s.month-1),s.locale)):r==='early_graduate'?developmentalStage(s).level==='masters':r==='sabbatical'?s.sabbatical.active:r==='away_sabbatical'?s.sabbatical.active&&s.sabbatical.mode==='away':r==='research'?s.project.phase>=1:r==='male_pair'?s.locale==='ko'&&s.gender==='male'&&s.professorProfile.gender==='male':r==='female_pair'?s.locale==='ko'&&s.gender==='female'&&s.professorProfile.gender==='female':r==='young_professor'?professorAge(s)<=37:r==='national'?s.professorProfile.institution==='national':r==='institute'?s.professorProfile.institution==='institute':false);
+  return list.every(r=>r==='paper'?s.career.papers>0:r==='top_paper'?s.career.topPapers>0:r==='conference'?s.career.conferences>0:r==='submission'?s.career.submissions>0:r==='revision'?s.project.submitted===true&&s.project.phase===5&&s.project.revisions>0:r==='low_motivation'?s.hidden.motivation<45:r==='stress'?s.hidden.stress>45:r==='graduate'?stage(s)!=='undergrad':r==='qual_preparation'?stage(s)!=='undergrad'&&s.career.qual!=='passed':r==='grading_period'?[6,12].includes(calendarMonth(Math.max(0,s.month-1),s.locale)):r==='early_graduate'?developmentalStage(s).level==='masters':r==='sabbatical'?s.sabbatical.active:r==='away_sabbatical'?s.sabbatical.active&&s.sabbatical.mode==='away':r==='research'?s.project.phase>=1:r==='qual_pending'?s.career.qual!=='passed'&&(s.route==='integrated'?s.month>=30:s.route==='masters'&&stage(s)==='phd'):r==='grant_active'?s.grants?.status==='active':r==='male_pair'?s.locale==='ko'&&s.gender==='male'&&s.professorProfile.gender==='male':r==='female_pair'?s.locale==='ko'&&s.gender==='female'&&s.professorProfile.gender==='female':r==='young_professor'?professorAge(s)<=37:r==='national'?s.professorProfile.institution==='national':r==='institute'?s.professorProfile.institution==='institute':false);
 }
 export function eventEligible(s,e) {
   if(studentTrainingActive(s)||!e.options.some(o=>Math.max(0,-(o.effects.lab?.funds??0))<=s.lab.funds))return false;
-  if(e.id==='military-hidden'&&s.service.completed)return false;const flag=s.eventFlags[e.id];
-  return s.month>=(e.minMonth??0)&&s.month<=(e.maxMonth??MONTHS)&&(!e.stages||e.stages.includes(stage(s)))&&!(e.once&&flag?.count>0)&&(!flag||s.month-flag.lastMonth>=(e.cooldown??12))&&required(s,e.requires);
+  if(e.id==='military-hidden'&&(s.service.completed||s.service.trainingStartMonth!==undefined))return false;const flag=s.eventFlags[e.id];
+  return s.month>=(e.minMonth??0)&&s.month<=(e.maxMonth??MONTHS)&&(!e.stages||e.stages.includes(stage(s)))&&(!e.calendarMonths||e.calendarMonths.includes(calendarMonth(s.month,s.locale)))&&!(e.once&&flag?.count>0)&&(!flag||s.month-flag.lastMonth>=(e.cooldown??12))&&required(s,e.requires);
 }
 const SOCIAL_EVENTS = new Set(['collaboration','seminar','internship']);
 // Fictional opportunity weights, not measured probabilities of academic collaborations.
@@ -557,7 +563,7 @@ export function decide(state,choice) {
   } else if(p.kind==='failure-counsel'){
     if(!['support','review','independent','strict'].includes(choice))throw new Error('Invalid failure consultation.');shift(s,'hidden',({support:{resilience:1.2,stress:-5,rapport:2,motivation:1},review:{research:1,learning:1,resilience:.5,stress:-2,rapport:1},independent:{autonomy:2,rapport:-.2,stress:1},strict:{diligence:1,stress:4,rapport:-2,resilience:-.4}})[choice]);log(s,{kind:'failure-support',choice});
   } else if(p.kind==='conversation-topic'){
-    const topics={daily:'counsel-daily-life',academic:'counsel-coursework',research:'counsel-results'};if(!Object.hasOwn(topics,choice))throw new Error('Invalid conversation topic.');const eligible=EVENTS.filter(e=>e.kind==='counseling'&&eventEligible(s,e));const event=eligible.find(e=>e.id===topics[choice])??eligible[0];if(event)s.pendingQueue.unshift({kind:'event',id:event.id});log(s,{kind:'conversation-topic',topic:choice});
+    const topics={daily:['counsel-daily-life'],academic:['counsel-coursework','counsel-small-question','counsel-qual','counsel-feedback'],research:['counsel-results','counsel-independent','counsel-feedback']};if(!Object.hasOwn(topics,choice))throw new Error('Invalid conversation topic.');const event=topics[choice].map(id=>EVENTS.find(e=>e.id===id)).find(e=>eventEligible(s,e));if(event)s.pendingQueue.unshift({kind:'event',id:event.id});log(s,{kind:'conversation-topic',topic:choice});
   } else if(p.kind==='event') {
     const e=EVENTS.find(e=>e.id===p.id),o=e?dilemmaOptions(s,e)[choice]:null;if(!Number.isInteger(choice)||!o)throw new Error('Invalid event choice.');
     if(o.effects?.lab?.funds<0&&s.lab.funds<-o.effects.lab.funds)throw new Error('Insufficient funds for this purchase.');applyEvent(s,o,e);const old=s.eventFlags[e.id];s.eventFlags[e.id]={lastMonth:s.month,count:(old?.count||0)+1};log(s,{kind:'event',id:e.id,choice,...(o.response?{response:o.response}:{})});
@@ -572,7 +578,7 @@ export function decide(state,choice) {
     if(choice==='graduate'||!canContinue(s)||declinesInternalAdmission(s,'bachelor'))return finish(s,'bachelor');s.route=choice;log(s,{kind:'route',route:choice});
   } else if(p.kind==='masters') {
     if(!['continue','graduate','extend'].includes(choice))throw new Error('Invalid degree decision.');
-    const eligible=requirementsMet(s,'masters');
+    const eligible=mastersEligible(s);
     if(choice==='extend') {if(s.mastersExtended)throw new Error('The master review can only be extended once.');s.mastersExtended=true;s.mastersReviewAt=54;log(s,{kind:'masters-extension'});}
     else if(choice==='graduate')return finish(s,eligible?'masters':'gameover',eligible?null:'graduation_requirements');
     else {if(!eligible)throw new Error('A manuscript submission and conference presentation are required before advancement.');if(!canContinue(s)||declinesInternalAdmission(s,'masters'))return finish(s,'masters');s.mastersExtended=false;log(s,{kind:'promotion'});}
@@ -597,7 +603,7 @@ export function decide(state,choice) {
     if(!['consult','skip','training'].includes(choice)||s.service.completed)throw new Error('Invalid service consultation.');
     // Narrative counseling only: this never assigns a legal service status or guarantees selection.
     if(s.locale!=='ko'||s.gender!=='male')throw new Error('This consultation is not applicable.');
-    if(choice==='training'){if(s.service.trainingStartMonth!==undefined||s.service.trainingReturnMonth!==undefined)throw new Error('Training has already been scheduled or shown.');const start=winterTrainingMonth(s);if(start===null)throw new Error('No winter training window remains.');s.service.trainingStartMonth=start;s.service.trainingReturnMonth=start+1;}
+    if(choice==='training'){if(!doctoralPhase(s))throw new Error('Training applies to doctoral-stage researchers.');if(s.service.trainingStartMonth!==undefined||s.service.trainingReturnMonth!==undefined)throw new Error('Training has already been scheduled or shown.');const start=winterTrainingMonth(s);if(start===null)throw new Error('No winter training window remains.');s.service.trainingStartMonth=start;s.service.trainingReturnMonth=start+1;}
     s.service.status=choice==='training'?'consulted':choice==='consult'?(p.kind==='service'?'planning':'consulted'):'not_requested';log(s,{kind:p.kind,choice});
     if(choice==='consult'&&s.professorProfile.gender==='male')shift(s,'hidden',{rapport:2.2});
   } else if(p.kind==='defense') {
@@ -622,7 +628,7 @@ export function migrateSave(raw) {
   s.sabbatical.start??=s.history.find(h=>h.kind==='sabbatical')?.month??(s.pending?.kind==='sabbatical'||s.pendingQueue?.some(p=>p.kind==='sabbatical')?s.month:Math.min(72,Math.max(24,Math.ceil(s.month/12)*12+12)));s.stipendLock??=s.lab.budget.salary;s.lab.budget.publicity=0;s.hidden=mergeRelationship(s.hidden);s.publication??={...DEFAULT_PUBLICATION};s.attendance??={domestic:'together',overseas:'none'};if(s.facultyAction==='abroad_shared')s.facultyAction='abroad_together';s.policies??={...DEFAULT_POLICIES};s.professorName??='지도교수';s.creationSeed??=s.seed;
   // Retire only previously scheduled events whose conditions were tightened.
   // Validate the rest of the save before consulting its state; never reset a run.
-  const revisedEvents=new Set(['teaching','grading','reviewer-two','sabbatical-contact','counsel-qual']);
+  const revisedEvents=new Set(['teaching','grading','reviewer-two','sabbatical-contact','counsel-qual','counsel-coursework','counsel-master-career','master-scope','poster-travel','grant-renewal','military-hidden','monthly-scope','monthly-validation']);
   const revised=p=>p?.kind==='event'&&revisedEvents.has(p.id);
   const previous=revised(s.pending)&&!s.ending?s.pending:null;
   if(previous)s.pending=null;
