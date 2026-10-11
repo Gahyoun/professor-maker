@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="same-origin">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./activity-motion.css">
+  <link rel="stylesheet" href="./recovery-art.css">
+  <link rel="stylesheet" href="./mobile.css">
+  <link rel="stylesheet" href="./campus-ui.css">
+  <link rel="stylesheet" href="./cv.css">
+  <link rel="stylesheet" href="./academic-portal.css">
+  <link rel="stylesheet" href="./welcome-preview.css">
+  <title>Professor Maker · 업데이트와 입학면접 미리보기</title>
+</head>
+<body data-view="lab" data-onboarding="true">
+  <header class="preview-header container">
+    <a href="./#lab" class="preview-brand">Professor Maker</a>
+    <p>화면 미리보기 · 기존 플레이는 유지됩니다.</p>
+    <nav class="preview-tabs" aria-label="미리볼 화면">
+      <button type="button" data-preview-view="updates">업데이트 안내</button>
+      <button type="button" data-preview-view="interview">입학 면접</button>
+      <button type="button" data-preview-view="room">연구실 도트</button>
+    </nav>
+  </header>
+  <main id="main" class="container" tabindex="-1"></main>
+  <script type="module" src="./welcome-preview.js"></script>
+</body>
+</html>
