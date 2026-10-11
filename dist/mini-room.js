@@ -1,11 +1,118 @@
 import {studentEmotion,reactionEffects} from './student-reaction.js';
+import {getDiscipline} from './disciplines.js';
 import {weeklyAppearance,renderPortrait} from './appearance.js';
 import {activityProps,monitorMotion} from './activity-motion.js';
 import {equipmentProfile,roomEquipment} from './lab-equipment.js';
+import {calendarMonth} from './engine.js';
 // One shared axonometric projection for walls, floor, furniture and props.
 // Seeded cosmetics never consume simulation RNG or affect research outcomes.
 export const WALLPAPERS=['#faf8f2','#f3efe5','#eee5d7','#f7f4ec','#e8dfd0'];
 export const FLOOR_TILES=[['#d5d7d6','#c9cdcd','#aeb5b5'],['#e1d3bc','#d6c6ac','#bcad94'],['#e9e3d6','#ded6c5','#c5bba8'],['#c8cbc9','#bfc4c1','#a5ada8']];
+export const WINDOW_SEASONS=Object.freeze({
+ spring:Object.freeze({
+  season:'spring',
+  label:'봄',
+  sky:'#dbeafe',
+  trees:Object.freeze(['#fbcfe8','#f472b6','#f9a8d4']),
+  effectClass:'window-petals cherry-petals',
+  effectAttr:'cherry-petals',
+  effectLabel:'흩날리는 벚꽃 꽃잎 픽셀',
+  particles:Object.freeze([
+   [10.2,68,.35,.7,'#fbcfe8'],
+   [11.8,62,.30,.6,'#f472b6'],
+   [14.5,71,.35,.8,'#f9a8d4'],
+   [16.2,65,.30,.6,'#fbcfe8'],
+   [9.8,56,.35,.7,'#f472b6'],
+   [12.4,50,.40,.8,'#f9a8d4'],
+   [15.1,48,.30,.7,'#fbcfe8'],
+   [17.0,53,.35,.6,'#f472b6'],
+   [10.8,42,.30,.7,'#f9a8d4'],
+   [14.2,39,.35,.8,'#fbcfe8']
+  ])
+ }),
+ summer:Object.freeze({
+  season:'summer',
+  label:'여름',
+  sky:'#93c5fd',
+  trees:Object.freeze(['#15803d','#16a34a','#22c55e']),
+  effectClass:'window-clouds cumulus-clouds',
+  effectAttr:'cumulus-clouds',
+  effectLabel:'뭉게구름 픽셀',
+  particles:Object.freeze([
+   [9.8,66,2.2,3.2,'#ffffff'],
+   [9.5,64,2.8,2.5,'#f0f9ff'],
+   [10.2,69,1.4,2.0,'#ffffff'],
+   [11.6,65,1.2,2.2,'#e0f2fe'],
+   [14.2,68,2.4,3.0,'#ffffff'],
+   [13.8,66,3.2,2.4,'#f0f9ff'],
+   [14.6,71,1.6,1.8,'#ffffff'],
+   [16.2,67,1.4,2.0,'#e0f2fe']
+  ])
+ }),
+ autumn:Object.freeze({
+  season:'autumn',
+  label:'가을',
+  sky:'#fed7aa',
+  trees:Object.freeze(['#facc15','#eab308','#dc2626']),
+  effectClass:'window-leaves autumn-leaves',
+  effectAttr:'autumn-leaves',
+  effectLabel:'낙엽 픽셀',
+  particles:Object.freeze([
+   [10.5,69,.35,.8,'#facc15'],
+   [12.0,63,.30,.7,'#dc2626'],
+   [14.8,70,.40,.8,'#eab308'],
+   [16.4,64,.35,.7,'#dc2626'],
+   [9.9,55,.30,.8,'#eab308'],
+   [12.2,51,.35,.7,'#facc15'],
+   [15.0,49,.40,.8,'#dc2626'],
+   [16.8,54,.30,.7,'#eab308'],
+   [10.6,43,.35,.8,'#dc2626'],
+   [13.8,40,.30,.7,'#facc15']
+  ])
+ }),
+ winter:Object.freeze({
+  season:'winter',
+  label:'겨울',
+  sky:'#cbd5e1',
+  trees:Object.freeze(['#e2e8f0','#f1f5f9','#94a3b8']),
+  effectClass:'window-snow pixel-snow',
+  effectAttr:'pixel-snow',
+  effectLabel:'내리는 픽셀 눈송이',
+  particles:Object.freeze([
+   [10.0,71,.30,.7,'#ffffff'],
+   [11.5,65,.25,.6,'#f8fafc'],
+   [13.0,69,.30,.7,'#ffffff'],
+   [14.8,73,.25,.6,'#ffffff'],
+   [16.2,67,.30,.7,'#f8fafc'],
+   [9.6,58,.25,.6,'#ffffff'],
+   [12.1,54,.30,.7,'#f8fafc'],
+   [14.2,51,.25,.6,'#ffffff'],
+   [16.0,56,.30,.7,'#ffffff'],
+   [17.2,48,.25,.6,'#f8fafc'],
+   [10.8,44,.30,.7,'#ffffff'],
+   [13.5,41,.25,.6,'#ffffff'],
+   [15.4,43,.30,.7,'#f8fafc']
+  ])
+ })
+});
+export function miniRoomSeason(state){
+ if(state?.season&&['spring','summer','autumn','winter'].includes(state.season))return state.season;
+ if(state?.calendarMonth!==undefined&&Number.isFinite(Number(state.calendarMonth))){
+  const rawCm=Number(state.calendarMonth);
+  const cm=((Math.floor(rawCm-1)%12)+12)%12+1;
+  if(cm>=3&&cm<=5)return 'spring';
+  if(cm>=6&&cm<=8)return 'summer';
+  if(cm>=9&&cm<=11)return 'autumn';
+  return 'winter';
+ }
+ const rawMonth=Number(state?.month??0);
+ const normalizedMonth=Number.isFinite(rawMonth)?((Math.floor(rawMonth)%12)+12)%12:0;
+ const m=calendarMonth(normalizedMonth,state?.locale??'ko');
+ if(m>=3&&m<=5)return 'spring';
+ if(m>=6&&m<=8)return 'summer';
+ if(m>=9&&m<=11)return 'autumn';
+ return 'winter';
+}
 const shade=(hex,amount)=>'#'+hex.slice(1).match(/../g).map(c=>Math.max(0,Math.min(255,parseInt(c,16)+amount)).toString(16).padStart(2,'0')).join('');
 export function projectRoom(u,v,z=0){return [300+(u-v)*9,96+(u+v)*4.5-z];}
 const polygon=(points,fill,stroke)=>`<polygon points="${points.map(p=>p.join(',')).join(' ')}" fill="${fill}"${stroke?` stroke="${stroke}" stroke-width=".8" stroke-linejoin="miter"`:''}/>`;
@@ -52,11 +159,83 @@ function chairParts(u,v,color,type=0,facing='front'){
 function chair(...args){const parts=chairParts(...args);return parts.base+parts.front;}
 function restFurniture(u,v,type){if(type===0)return `<g data-rest="sofa">${sofa(u,v)}</g>`;if(type===1)return `<g data-rest="cot">${cot(u,v)}</g>`;if(type===2)return `<g data-rest="beanbag">${box(u+.4,v+.4,4,4,6,'#c3b49b')+box(u+1,v+1,3,3,6,'#d7c8af',6)+box(u+1.6,v+.3,2,2,13,'#cabbab',6)}</g>`;return `<g data-rest="camp-chair">${chair(u,v,'#a2b4a9',1)+line([u,v,0],[u+3,v+3,14],'#798e86',2)+line([u+3,v,0],[u,v+3,14],'#798e86',2)}</g>`;}
 function plant(u,v){let art=box(u,v,2,2,10,'#b89b80');art+=box(u+.25,v+.25,1.5,1.5,1,'#7e846b',10);for(const [a,b,h] of [[.6,.5,18],[1.1,1,27],[.8,1.5,21]]){art+=box(u+a,v+b,.25,.25,h,'#839987',10)+box(u+a-.5,v+b-.35,1.2,.75,2,'#9fb49a',h+6);}return art;}
-function bookshelf(u,v,wet,stock){let art=box(u,v,5.5,2,60,'#c6b296');for(const z of [6,23,40]){art+=front(u+.4,v+2.02,z,4.7,14,'#ebe1d0');art+=front(u+.3,v+2.1,z-1,4.9,2,'#b69c80');}
- for(let i=0;i<6;i++)art+=front(u+.55+i*.7,v+2.12,7,.5,10,['#95a5b6','#bca18a','#b5baa3','#b4a6bd','#9badb1','#c7b98f'][i]);
+function bookshelf(u,v,wet,stock,state){
+ let art=`<g class="lab-bookshelf antique-bookshelf" data-shelf="academic-library" aria-label="학술 저널과 학위논문 바인더 서가">`;
+ art+=box(u,v,5.5,2,60,'#6d492b');
+ art+=box(u-.1,v-.1,5.7,2.2,3.5,'#52341b',0);
+ art+=box(u-.1,v-.1,5.7,2.2,1.8,'#7d5431',58.5)+box(u-.2,v-.15,5.9,2.3,1.2,'#8e6139',60.3);
+ for(const z of [4,22,40]){
+  art+=front(u+.4,v+2.02,z,4.7,17,'#e6ddcc');
+  art+=front(u+.3,v+2.1,z-1,4.9,2,'#7d5431');
+  art+=front(u+.4,v+2.01,z-2,4.7,1,'#3b2210');
+ }
+ art+=`<g class="shelf-thesis-binders" data-shelf-tier="theses" aria-label="학위논문 하드커버 바인더 서가">`;
+ const thesisColors=['#0f224a','#132a58','#3b1016','#151921','#0f2b4c','#1a3324','#1c2230'];
+ const hasPaper=(state?.career?.papers??0)>0;
+ for(let i=0;i<7;i++){
+  const bw=.48,bx=u+.52+i*.51;
+  art+=front(bx,v+2.08,5,bw,14.5,thesisColors[i]);
+  art+=line([bx+.04,v+2.1,17.8],[bx+bw-.04,v+2.1,17.8],'#e5c158',.8);
+  art+=line([bx+.04,v+2.1,6.8],[bx+bw-.04,v+2.1,6.8],'#e5c158',.8);
+  art+=line([bx+bw/2,v+2.11,9.0],[bx+bw/2,v+2.11,15.8],'#d4af37',.7);
+  art+=front(bx+bw/2-.1,v+2.12,11.8,.2,1.6,'#fef9e7');
+ }
+ art+=box(u+4.12,v+1.2,.18,.75,7.5,'#b48c48',5);
+ art+=box(u+4.12,v+1.2,.55,.75,.35,'#b48c48',5);
+ art+=box(u+4.32,v+1.2,.68,.75,1.6,hasPaper?'#1a365d':'#c2baa7',5);
+ art+=box(u+4.35,v+1.24,.62,.70,1.3,'#8fa389',6.6);
+ art+='</g>';
+ art+=`<g class="shelf-textbooks" data-shelf-tier="textbooks" aria-label="전공 원서 및 학술 레퍼런스">`;
+ const bookSpines=[
+  {color:'#8b1e28',w:.65,h:13.5,ribs:[27,31,34]},
+  {color:'#1b4332',w:.70,h:15.0,ribs:[26,29,33,36]},
+  {color:'#1e3a8a',w:.62,h:12.8,ribs:[26,30,33]},
+  {color:'#78350f',w:.68,h:14.2,ribs:[27,31,35]},
+  {color:'#374151',w:.60,h:11.8,ribs:[26,29,32]}
+ ];
+ let curX=u+.52;
+ for(const b of bookSpines){
+  art+=front(curX,v+2.08,23,b.w,b.h,b.color);
+  for(const rib of b.ribs)art+=line([curX+.06,v+2.1,rib],[curX+b.w-.06,v+2.1,rib],'#dfb76c',.7);
+  art+=line([curX+b.w/2,v+2.11,24.5],[curX+b.w/2,v+2.11,23+b.h-2],'#fef3c7',.5);
+  curX+=b.w+.08;
+ }
+ if(!wet){
+  art+=front(u+4.0,v+2.08,23,.45,12.5,'#cab897')+line([u+4.22,v+2.09,24.5],[u+4.22,v+2.09,33.5],'#52452e',.6);
+  art+=front(u+4.52,v+2.08,23,.48,13.2,'#aebfa8')+line([u+4.76,v+2.09,24.5],[u+4.76,v+2.09,34.2],'#445242',.6);
+ }
+ art+='</g>';
+ art+=`<g class="shelf-journals" data-shelf-tier="journals" aria-label="알록달록한 학술 저널 컬렉션">`;
+ const journals=[
+  {color:'#dc2626',h:12.5},
+  {color:'#d97706',h:12.0},
+  {color:'#0284c7',h:13.0},
+  {color:'#16a34a',h:11.5},
+  {color:'#ca8a04',h:12.8},
+  {color:'#7c3aed',h:12.2},
+  {color:'#0d9488',h:11.8},
+  {color:'#475569',h:12.5}
+ ];
+ for(let i=0;i<journals.length;i++){
+  const jx=u+.52+i*.38,j=journals[i];
+  art+=front(jx,v+2.08,41,.32,j.h,j.color);
+  art+=front(jx+.03,v+2.09,41+j.h-3.8,.26,1.4,'#ffffff');
+  art+=line([jx+.05,v+2.1,43],[jx+.27,v+2.1,43],'#334155',.6);
+  art+=line([jx+.16,v+2.1,41+j.h],[jx+.16,v+2.1,41+j.h+1.2],'#ef4444',.7);
+ }
+ if(!wet){
+  art+=front(u+3.75,v+2.08,41,.42,12.0,'#b7adb9')+line([u+3.96,v+2.09,42.5],[u+3.96,v+2.09,51.0],'#493e50',.5);
+  art+=front(u+4.25,v+2.08,41,.65,11.5,'#334155')+line([u+4.57,v+2.09,42.5],[u+4.57,v+2.09,50.5],'#cbd5e1',.6);
+ }
+ art+='</g>';
  const bottles=wet?({sparse:1,balanced:4,rich:8})[stock]:0;
- for(let i=0;i<bottles;i++){const a=u+.6+(i%4)*1.1,z=i<4?41:24;art+=box(a,v+1.3,.65,.55,7,['#a7c5c9','#c8b2c2','#b6c9a6'][i%3],z)+box(a+.1,v+1.4,.4,.35,2,'#879a99',z+7);}
- if(!wet)for(let i=0;i<3;i++)art+=front(u+.55+i*1.3,v+2.12,25,1,10,['#cab897','#b7adb9','#aebfa8'][i]);return art;}
+ for(let i=0;i<bottles;i++){
+  const a=i<4?(u+3.68+(i%4)*.32):(u+3.8+(i%4)*.28);
+  const z=i<4?41:23;
+  art+=box(a,v+1.25,.28,.45,7,['#a7c5c9','#c8b2c2','#b6c9a6'][i%3],z)+box(a+.05,v+1.32,.18,.3,2,'#879a99',z+7);
+ }
+ return art+'</g>';
+}
 function fridge(u,v){return box(u,v,3.5,3,45,'#d3d9d5')+front(u+.25,v+3.03,2,3,24,'#e7eae3')+front(u+.25,v+3.03,28,3,15,'#e7eae3')+front(u+.55,v+3.1,18,.25,5,'#96a4a1')+front(u+.55,v+3.1,33,.25,5,'#96a4a1')+front(u+2,v+3.1,36,.6,2,'#c6b6a0');}
 function server(u,v){let art=box(u,v,3,2.6,48,'#7d8994');for(let i=0;i<4;i++){art+=front(u+.25,v+2.63,4+i*10,2.5,7,'#9ca9b3')+front(u+.5,v+2.65,6+i*10,.25,1.2,'#c6d8a7');for(let j=0;j<3;j++)art+=front(u+1+j*.35,v+2.65,7+i*10,.15,2,'#637582');}return art;}
 function sofa(u,v){return box(u,v,4,8,9,'#a5b1bf')+box(u+.3,v+.7,3.4,6.6,8,'#c0cbd1',9)+box(u,v,1,8,27,'#b3c0c9')+box(u+3,v,.9,8,20,'#9caebb')+box(u,v,4,.8,20,'#afbcc7')+box(u,v+7.2,4,.8,20,'#afbcc7')+box(u+1.3,v+1.3,1.5,1.7,6,'#e0c9b4',16);}
@@ -69,7 +248,7 @@ function microscope(u,v,z){return box(u,v,2.3,2,2,'#d9dfd5',z)+box(u+1.5,v+.2,.5
 function actor(state,result,index,u,v,idle,lift=0,facing='front'){
  const [x,y]=projectRoom(u,v,lift),w=62.4,h=96.72,activity=String(result.actual),wet=state.professorProfile.labMode==='wet';
  const executing=!idle&&result.performed!==false&&!['idle','training','unfinished'].includes(activity),relaxing=!idle&&['rest','coffee'].includes(activity);
- const pose=isLecturing(result,idle)?'lecturing':relaxing||!idle&&['study','coursework','analysis','language','paper'].includes(activity)||!idle&&activity==='experiment'&&!wet?'seated':!idle&&['experiment','research'].includes(activity)&&wet?'experiment':'standing';
+ const pose=isLecturing(result,idle)?'lecturing':relaxing||!idle&&['study','coursework','analysis','language','paper','free'].includes(activity)||!idle&&activity==='experiment'&&!wet?'seated':!idle&&['experiment','research'].includes(activity)&&wet?'experiment':'standing';
  const expression=studentEmotion(state,result,{idle}),appearance={...weeklyAppearance({...state,visualMonth:idle?state.month:Math.max(0,state.month-1)},index),...(pose==='experiment'?{outfit:0}:{})};
  const portraitTop=y-h+(pose==='seated'?7:2),headCenter=portraitTop+(pose==='seated'?152:120)*h/496;
  const portrait=renderPortrait(appearance,'학생 도트 초상화',expression,pose,facing).replace('class="portrait"',`class="portrait room-portrait" x="${x-w/2}" y="${portraitTop}" width="${w}" height="${h}" style="width:${w}px;height:${h}px"`);
@@ -83,16 +262,54 @@ export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'
  art+=plane([[0,0,0],[0,28,0],[0,28,90],[0,0,90]],shade(wall,-11),'#cbc5b8')+plane([[0,0,0],[28,0,0],[28,0,90],[0,0,90]],wall,'#cbc5b8');
  art+=left(.08,0,0,28,4,'#c5baa7')+front(0,.08,0,28,4,'#d0c5b1');
  // Window, writing board and pinned papers sit on their respective wall planes.
- art+=left(.15,8,33,11,47,'#d0c5af')+left(.2,8.6,36,9.8,40,'#c5dce0')+left(.24,13.2,36,.45,40,'#f4f0e4')+left(.24,8.6,54,9.8,.8,'#f4f0e4');
- for(let i=0;i<7;i++)art+=left(.27,9+i*1.3,36,1.4,5+(i%3)*3,['#a7bca4','#b3c3ac','#b9c5af'][i%3]);
+ const seasonKey=miniRoomSeason(state),winSeason=WINDOW_SEASONS[seasonKey]??WINDOW_SEASONS.spring;
+ art+=left(.15,8,33,11,47,'#d0c5af');
+ art+=`<g class="window-scenery window-season-${seasonKey}" data-season="${seasonKey}" aria-label="창밖 ${winSeason.label} 풍경">`+
+  left(.2,8.6,36,9.8,40,winSeason.sky);
+ for(let i=0;i<7;i++){
+  const th=5+(i%3)*3;
+  art+=left(.27,9+i*1.3,36,1.4,th,winSeason.trees[i%3]);
+  if(seasonKey==='winter')art+=left(.28,9+i*1.3,36+th-1,1.4,1.1,'#ffffff');
+ }
+ art+=`<g class="${winSeason.effectClass}" data-effect="${winSeason.effectAttr}" aria-label="${winSeason.effectLabel}">`+
+  winSeason.particles.map(([v,z,d,h,c])=>left(.28,v,z,d,h,c)).join('')+
+  '</g></g>';
+ art+=left(.24,13.2,36,.45,40,'#f4f0e4')+left(.24,8.6,54,9.8,.8,'#f4f0e4');
  const lecturing=isLecturing(result,idle),boardColors=['#526762','#faf8ee','#d7e5e0','#293e50'],boardInk=['#e4e6d6','#738781','#78948e','#afd5db'];art+=`<g data-board="${d.boardType}" aria-label="${['블랙보드','화이트보드','유리 벽면','전자칠판'][d.boardType]}">`+front(16,.15,33,9,39,d.boardType===2?'#b9cbc6':'#c6b194')+front(16.5,.2,36,8,33,boardColors[d.boardType]);for(let i=0;i<(lecturing?2:4);i++)art+=line([17.2,.24,63-i*6],[23-(i%2)*2,.24,63-i*6],boardInk[d.boardType],1.3);if(lecturing)art+=lectureDiagram(d.boardType,boardInk[d.boardType]);art+='</g>';
  // The game emblem doubles as the lab's wall sign.
  art+='<g class="lab-logo-plaque" aria-label="연구실 로고">'+left(.2,2,55,4,20,'#f6f1e6');for(const [a,b]of [[[.28,2.8,61],[.28,5,70]],[[.28,5,70],[.28,5.4,60]],[[.28,2.8,61],[.28,5.4,60]]])art+=line(a,b,'#9ab7c8',1.5);for(const [v,z,color]of [[2.8,61,'#19384b'],[5,70,'#00a3d2']]){const[x,y]=projectRoom(.3,v,z);art+=`<circle cx="${x}" cy="${y}" r="3.5" fill="${color}"/>`;}art+='</g>';
- for(let i=0;i<Math.min(3,state.career.awards);i++){const u=6+i*2.1;art+=`<g class="award-certificate" aria-label="우수연구·발표상 상장">`+front(u,.2,66,1.8,14,'#b7a47a')+front(u+.15,.24,67,1.5,12,'#faf5e5')+line([u+.4,.28,76],[u+1.4,.28,76],'#8e9287',.8)+line([u+.4,.28,73],[u+1.3,.28,73],'#b5b3a3',.6);const[x,y]=projectRoom(u+.9,.3,70);art+=`<circle cx="${x}" cy="${y}" r="1.5" fill="#c8ae67"/></g>`;}
+ const certCount=Math.min(4,state?.career?.awards??0);
+ const awardSpecs=[
+  {type:'best-paper',label:'학회 우수논문상 상장',frame:'#5d3c26',gold:'#d4af37',paper:'#faf7ee',seal:'#b71c1c',sealCore:'#ffd700',ribbon:'#c62828',ink1:'#3e352b',ink2:'#807769'},
+  {type:'foundation-citation',label:'연구재단 우수연구 표창장',frame:'#442b1d',gold:'#e6c35c',paper:'#fdfcf7',seal:'#1565c0',sealCore:'#ffea00',ribbon:'#0d47a1',ink1:'#2e3748',ink2:'#64748b'},
+  {type:'presentation-award',label:'학술대회 최우수 발표상 상장',frame:'#4b382a',gold:'#c5a059',paper:'#f8f5ea',seal:'#2e7d32',sealCore:'#f5ee9e',ribbon:'#1b5e20',ink1:'#354238',ink2:'#6b7a6e'},
+  {type:'innovation-award',label:'학술연구 혁신 표창장',frame:'#3e2418',gold:'#dfb842',paper:'#fbf7f0',seal:'#6a1b9a',sealCore:'#ffd54f',ribbon:'#4a148c',ink1:'#423245',ink2:'#7a677d'}
+ ];
+ for(let i=0;i<certCount;i++){
+  const spec=awardSpecs[i%awardSpecs.length];
+  const u=5.8+i*1.55;
+  art+=`<g class="award-certificate" data-certificate="${spec.type}" aria-label="${spec.label}">`+
+   front(u,.2,65.5,1.4,13.5,spec.frame)+
+   front(u+.07,.22,65.9,1.26,12.7,spec.gold)+
+   front(u+.14,.24,66.4,1.12,11.7,spec.paper)+
+   front(u+.07,.23,78.2,.2,.2,'#fff0a6')+
+   front(u+1.13,.23,78.2,.2,.2,'#fff0a6')+
+   front(u+.07,.23,66.0,.2,.2,'#fff0a6')+
+   front(u+1.13,.23,66.0,.2,.2,'#fff0a6')+
+   line([u+.26,.27,75.8],[u+1.14,.27,75.8],spec.ink1,.8)+
+   line([u+.28,.27,74.0],[u+1.12,.27,74.0],spec.ink2,.6)+
+   line([u+.28,.27,72.4],[u+1.06,.27,72.4],spec.ink2,.5)+
+   line([u+.32,.27,70.8],[u+1.02,.27,70.8],spec.ink2,.5);
+  const [sx,sy]=projectRoom(u+.7,.28,68.2);
+  art+=`<polygon points="${sx-1.1},${sy+1.2} ${sx-1.8},${sy+2.5} ${sx},${sy+1.9} ${sx+1.8},${sy+2.5} ${sx+1.1},${sy+1.2}" fill="${spec.ribbon}"/>`+
+   `<circle cx="${sx}" cy="${sy}" r="1.6" fill="${spec.seal}"/>`+
+   `<circle cx="${sx}" cy="${sy}" r="0.8" fill="${spec.sealCore}"/>`+
+   `</g>`;
+ }
  if(d.clock){art+=front(12,.2,63,2.8,16,'#b7b7a7')+front(12.3,.22,65,2.2,12,'#f9f4e7')+line([13.3,.24,71],[13.3,.24,76],'#82918d',1.4)+line([13.3,.24,71],[14,.24,70],'#82918d',1.4);}
  if(d.noticeboard){art+=left(.2,21,39,4.5,24,'#cdb597')+left(.25,21.4,42,1.5,15,'#f7efda')+left(.25,23.4,46,1.3,13,'#e6d6c8');}
  const objects=[],add=(u,v,w,depth,art)=>objects.push({depth:u+v+w+depth,art});
- add(4,1,5.5,2,bookshelf(4,1,wet,stock)+(d.plush?plush(5.5,2.3,60):''));
+ add(4,1,5.5,2,bookshelf(4,1,wet,stock,state)+(d.plush?plush(5.5,2.3,60):''));
  if(d.server)add(10,1,3,2.6,server(10,1));
  if(d.fridge)add(1,5,3.5,3,fridge(1,5));
  let tea=desk(1.5,21,3.8,3);if(d.kettle)tea+=kettle(2.2,22,26);tea+=box(3.5,22.5,.6,.6,4,'#c9ad92',26);add(1.5,21,3.8,3,tea);
@@ -104,13 +321,57 @@ export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'
  add(22,5,4,8,`<g class="rest-seat-layer" data-seat-type="${d.restType}">${restFurniture(22,5,d.restType)}${restActor}</g>`);
  if(d.cot&&d.restType!==1)add(19,24,7,3,cot(19,24));
  if(d.printer)add(15,1,3.5,3,desk(15,1,3.5,3)+printer(15.5,1.7,26));
- const working=!idle&&['study','coursework','analysis','language','experiment','paper'].includes(result.actual),deskWorking=working&&!(result.actual==='experiment'&&wet)&&result.outcome!=='training';
+ const working=!idle&&['study','coursework','analysis','language','experiment','paper','free'].includes(result.actual),deskWorking=working&&!(result.actual==='experiment'&&wet)&&result.outcome!=='training';
  const equipment=roomEquipment(state,{box,front,line,desk,microscope,monitor,project:projectRoom},!idle&&result.performed===true&&['analysis','experiment','industry','startup','video','paper'].includes(result.actual));
  add(3.5,10,6.2,3.5,equipment.bench);
- let work=desk(9,16,10,6,wet?'#bac9c5':'#c5ab8e');work+=(wet&&deskWorking?`<g class="desk-monitor" data-floor="14.2,18.3">${monitor(14.2,18.3,26,result.performed===true&&result.actual==='analysis')}</g>`:equipment.primary)+equipment.accessories;
+ let work=desk(9,16,10,6,wet?'#bac9c5':'#c5ab8e');
+ const fieldId=state?.professorProfile?.fieldId??'050';
+ const fieldLabel=getDiscipline(fieldId)?.label??'학술 연구';
+ let monuments='';
+ monuments+=box(9.2,16.1,4.0,0.8,3.2,wet?'#8fa49f':'#a38e75',26);
+ monuments+=`<g class="desk-thesis-binder" data-binder="thesis-draft" aria-label="학위논문 초안 및 연구 바인더">`+
+  box(9.4,16.25,0.7,0.6,3.2,'#1e3a8a',29.2)+
+  front(9.42,16.85,29.8,0.66,2.2,'#0f172a')+
+  line([9.45,16.86,31.4],[10.05,16.86,31.4],'#e5c158',.8)+
+  line([9.45,16.86,30.2],[10.05,16.86,30.2],'#e5c158',.8)+
+  `</g>`;
+ monuments+=`<g class="lab-founding-plaque" data-monument="lab-plaque" aria-label="${fieldLabel} 연구실 현판">`+
+  box(10.25,16.25,1.15,0.3,0.4,'#b48c48',29.2)+
+  box(10.3,16.3,1.05,0.2,2.4,'#1e293b',29.6)+
+  front(10.32,16.51,29.8,1.01,2.0,'#dfb76c')+
+  line([10.38,16.52,31.0],[11.28,16.52,31.0],'#1e293b',.8)+
+  line([10.42,16.52,30.3],[11.22,16.52,30.3],'#52452e',.6)+
+  `</g>`;
+ if((state?.career?.awards??0)>=1){
+  const [csx,csy]=projectRoom(11.95,16.65,32.2);
+  monuments+=`<g class="trophy-plaque crystal-plaque" data-monument="crystal-trophy" aria-label="학술대회 Best Paper Award 크리스털 기념패">`+
+   box(11.55,16.25,0.85,0.4,0.5,'#1e293b',29.2)+
+   front(11.6,16.66,29.3,0.75,0.3,'#d4af37')+
+   box(11.62,16.3,0.72,0.25,4.0,'#bae6fd',29.7)+
+   front(11.64,16.56,29.9,0.68,3.6,'#e0f2fe')+
+   line([11.68,16.57,30.3],[12.28,16.57,33.3],'#ffffff',.8)+
+   `<circle cx="${csx}" cy="${csy}" r="1.1" fill="#0284c7"/>`+
+   `<circle cx="${csx}" cy="${csy}" r="0.6" fill="#ffd700"/>`+
+   `</g>`;
+ }
+ if((state?.career?.awards??0)>=2||(state?.career?.completedProjects??0)>=1||(state?.career?.papers??0)>=1){
+  const [tx,ty]=projectRoom(12.85,16.65,31.4);
+  monuments+=`<g class="trophy-plaque championship-trophy" data-monument="championship-trophy" aria-label="연구 우승 팻말 및 챔피언십 기념패">`+
+   box(12.5,16.25,0.8,0.4,0.4,'#4e2d17',29.2)+
+   box(12.55,16.3,0.7,0.2,3.3,'#78350f',29.6)+
+   front(12.57,16.51,29.8,0.66,2.9,'#ffd700')+
+   front(12.61,16.52,30.0,0.58,2.5,'#fffbeb')+
+   `<circle cx="${tx}" cy="${ty}" r="0.9" fill="#f59e0b"/>`+
+   `<circle cx="${tx}" cy="${ty}" r="0.5" fill="#ffd700"/>`+
+   line([12.63,16.53,30.4],[13.15,16.53,30.4],'#b45309',.6)+
+   `</g>`;
+ }
+ work+=monuments;
+ work+=(wet&&deskWorking?`<g class="desk-monitor" data-floor="14.2,18.3">${monitor(14.2,18.3,26,result.performed===true&&result.actual==='analysis')}</g>`:equipment.primary)+equipment.accessories;
  // Notebook, pencil, keyboard, task lamp and cups share the desk's top plane.
  work+=box(10.1,19.8,1.6,1.7,.6,'#f2ecdd',26)+line([10.6,19.8,27],[11.1,21.2,27],'#82949b',1.2)+`<g class="desk-keyboard" data-floor="13.5,21.3">`+box(13.5,21.3,2.4,.55,.5,'#d4ddda',26)+line([13.7,21.45,26.7],[15.6,21.45,26.7],'#9db0b1',.7)+'</g>';
  work+=box(17.6,16.8,1,1,1,'#abb9b1',26)+box(17.9,17,.25,.25,15,'#91a39e',27)+box(17.2,16.7,1.4,1.3,2,'#b7c4b3',42);
+ if(!idle&&result.actual==='free'&&result.performed!==false)work+=`<g class="free-desk-lamp-light" aria-label="따뜻한 스탠드 조명 빛">${plane([[11.5,17.2,26.04],[16.8,17.2,26.04],[16.8,21.8,26.04],[11.5,21.8,26.04]],'#fef9c3',null)}</g>`;
  if(wet){const count=({sparse:1,balanced:3,rich:5})[stock];for(let i=0;i<count;i++)work+=box(14+i*.5,17.5,.25,.4,5,'#b5cecb',26)+box(14+i*.5,17.5,.25,.4,1,'#899ca3',31);if(stock==='rich')work+=box(17,18.2,1.3,1.2,7,'#c8d2cc',26);}
  add(9,16,10,6,work);
  add(...ROOM_ANCHORS.plant,2,2,`<g class="room-plant" data-floor="${ROOM_ANCHORS.plant.join(',')}">${plant(...ROOM_ANCHORS.plant)}</g>`);

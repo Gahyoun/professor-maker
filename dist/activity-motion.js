@@ -11,6 +11,31 @@ export function activityProps(activity,{wet=false,index=0,kind,facing='front'}={
   return `<g data-motion="resting"><path d="M-9 -29h7v6h-7zM-2 -28h3v4h-3z" fill="#f2e6d4" stroke="#b79d86"/><g class="cup-steam"><path d="M-7 -31v-3h1v-3m3 6v-2h1v-3" fill="none" stroke="#c8d8d3" stroke-width="1"/></g>${music}</g>`;
  }
  if(activity==='presentation')return `<g data-motion="rehearsing"><path d="M-16 -32h9v7h-9z" fill="#f6edd8" stroke="#a7b7bb"/><path d="M-14 -29h5m-5 2h3" stroke="#819da7"/><g class="rehearsal-words"><path d="M27 -65h10v2H27zm0 5h15v2H27zm0 5h8v2h-8z" fill="#8facb1"/></g></g>`;
+ if(activity==='free'){
+  const isMonitor=facing==='monitor',yOff=isMonitor?0:-28;
+  const transform=isMonitor?' transform="translate(34 -39) rotate(26)"':'';
+  return `<g data-motion="free-thought"${transform}>`+
+   `<g class="free-lamp-glow" aria-label="따뜻한 스탠드 조명 빛">`+
+    `<polygon points="-28,${yOff-14} 28,${yOff-12} 24,${yOff+14} -32,${yOff+12}" fill="#fef08a" opacity=".22"/>`+
+    `<path d="M-16 ${yOff-10}l12 8m-6-10l12 8" stroke="#fef9c3" stroke-width="1" opacity=".4"/>`+
+   `</g>`+
+   `<g class="mini-activity-prop">`+
+    `<g class="free-sketchbook" aria-label="아이디어 스케치북">`+
+     `<path class="idea-sketchbook" d="M-14 ${yOff-4}h13v9h-13zM1 ${yOff-4}h13v9H1z" fill="#fdfbf7" stroke="#d5c7b3"/>`+
+     `<path d="M-11 ${yOff-1}h8m-8 3h6m8-3h8m-8 3h6" stroke="#b8c2b7"/>`+
+     `<path class="sketchbook-spine" d="M-1 ${yOff-4}h2v9h-2z" fill="#e8ded0"/>`+
+    `</g>`+
+    `<g class="free-postits" aria-label="컬러 포스트잇">`+
+     `<path class="postit-yellow" d="M16 ${yOff-5}h5v5h-5z" fill="#fef08a"/>`+
+     `<path class="postit-green" d="M22 ${yOff-2}h5v5h-5z" fill="#bbf7d0"/>`+
+    `</g>`+
+    `<g class="free-mug" aria-label="김이 나는 머그컵">`+
+     `<path d="M-22 ${yOff-4}h6v7h-6zM-24 ${yOff-2}h2v4h-2z" fill="#f5ede0" stroke="#c2a893"/>`+
+     `<g class="cup-steam"><path d="M-20 ${yOff-6}v-3h1v-3m3 6v-2h1v-3" fill="none" stroke="#c8d8d3" stroke-width="1"/></g>`+
+    `</g>`+
+   `</g>`+
+  `</g>`;
+ }
  return '';
 }
 

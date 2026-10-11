@@ -11,7 +11,8 @@ test('executed activities use distinct props while failed tasks do not imply wor
  assert.match(render(wet,'experiment'),/data-motion="pipetting"/);
  assert.match(render(dry,'presentation'),/data-motion="rehearsing"/);
  assert.match(render(dry,'rest'),/data-motion="resting"/);
- for(const [state,actual] of [[dry,'study'],[dry,'analysis'],[wet,'experiment']]){
+ assert.match(render(dry,'free'),/data-motion="free-thought"/);
+ for(const [state,actual] of [[dry,'study'],[dry,'analysis'],[wet,'experiment'],[dry,'free']]){
   assert.doesNotMatch(render(state,actual,false),/data-motion=/);
  }
  assert.doesNotMatch(render(dry,'experiment'),/pipetting/);
