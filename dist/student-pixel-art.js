@@ -7,7 +7,7 @@ export const STUDENT_MONITOR_LAYERS=Object.freeze(['rear-head','far-arm','body',
 
 // Integer raster art: the public 320 × 496 frame is shared by every activity.
 // Cosmetics are read from saved appearance fields and never consume game RNG.
-export function renderStudentPortrait(a,label='학생 도트 초상화',expression='neutral',pose='standing',facing='front'){
+function studentPortrait(a,label='학생 도트 초상화',expression='neutral',pose='standing',facing='front',hairOnly=false){
  expression=normalizeExpression(expression);
  pose=['standing','seated','experiment','lecturing'].includes(pose)?pose:'standing';
  facing=pose==='seated'&&facing==='monitor'?'monitor':'front';
@@ -375,6 +375,9 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  for(let y=0;y<outputH;y++)for(let x=0;x<outputW;x++)if(!pixels[y][x]){const neighbor=[[x,y-1],[x,y+1],[x-1,y],[x+1,y]].find(([xx,yy])=>pixels[yy]?.[xx]);if(neighbor){const[xx,yy]=neighbor;outlined[y][x]=mix(pixels[yy][xx],edge,.65);outlinedOwners[y][x]=owners[yy][xx];}}
  const parts=STUDENT_MONITOR_LAYERS.map(()=>[]);let rects='';for(let y=0;y<outputH;y++){let x=0;while(x<outputW){const c=outlined[y][x];if(!c){x++;continue;}const owner=outlinedOwners[y][x];let end=x;while(end+1<outputW&&outlined[y][end+1]===c&&(facing!=='monitor'||outlinedOwners[y][end+1]===owner))end++;const rect=`<rect x="${x}" y="${y}" width="${end-x+1}" height="1" fill="${c}"/>`;if(facing==='monitor')parts[owner].push(rect);else rects+=rect;x=end+1;}}
  if(facing==='monitor')rects=parts.map((part,i)=>`<g data-avatar-part="${STUDENT_MONITOR_LAYERS[i]}">${part.join('')}</g>`).join('');
+ // Only the already-visible hair pixels drape over a chair back. The resolved
+ // ownership mask excludes the face, shirt and both keyboard arms.
+ if(hairOnly)return `<svg class="student-hair-drape" viewBox="0 0 320 496" aria-hidden="true"><g shape-rendering="crispEdges" transform="translate(0 24) scale(2)"><g data-avatar-part="back-hair">${parts[3].join('')}</g></g></svg>`;
  const styles=['까까머리','크롭컷','짧은 머리','중간 길이 머리','단발','어깨 길이 머리','긴 머리'];
  const title=escape(`${label} · ${EXPRESSIONS[expression]} · ${styles[originalLength]}${hairStyle==='ponytail'?' · 포니테일':hairStyle==='braided-bun'?' · 땋아올린 번':''}${a.curly&&l?' · 곱슬머리':''}${a.glasses?' · 안경':''}${l?` · 앞머리 ${fringe+1}`:''}${pose==='lecturing'?' · 칠판 앞에서 강의':''}${facing==='monitor'?' · 모니터를 바라보며 앉음':''}`);
  // The upper arm bends away from the shoulder and the forearm rises to the
@@ -383,4 +386,10 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  const shoulderY=Math.round(bodyY(71)),palmTop=Math.round(bodyY(60)),palmBottom=Math.round(bodyY(65)),grip=Math.round(bodyY(61)),cuffY=Math.round(bodyY(64));
  const arm=pose==='lecturing'?`<g transform="translate(0 24) scale(4)" shape-rendering="crispEdges"><g class="ta-lecture-arm" style="transform-origin:27px ${shoulderY}px"><path d="M${armPoints.map(([x,y])=>`${x} ${y}`).join('L')}z" fill="${top}" stroke="${topD}" stroke-width="1"/><path d="M15 ${Math.round(bodyY(73))}V${cuffY+2}M19 ${Math.round(bodyY(77))}L26 ${shoulderY+3}" fill="none" stroke="${topH}" stroke-width="1"/><path d="M13 ${cuffY}h5v2h-5z" fill="${outfit===0?topD:rib}"/><path d="M16 ${grip}V7" fill="none" stroke="#756353" stroke-width="1.5" class="ta-pointer"/><path d="M16 7v2" stroke="#e9e5d8" stroke-width="1.5"/><path d="M14 ${palmTop}h4l1 2v${palmBottom-palmTop-3}l-1 1h-4z" fill="${skin}" stroke="${skinD}" stroke-width=".6"/><path d="M16 ${palmTop+2}h3" stroke="${skinH}" stroke-width="1"/></g></g>`:'';
  return `<svg class="portrait" data-expression="${expression}" data-pose="${pose}" data-outfit="${outfit}"${facing==='monitor'?' data-facing="monitor"':''} data-head-scale="${STUDENT_HEAD_SCALE}" data-body-proportion="3.5"${hairStyle!=='loose'?` data-hair-style="${hairStyle}"`:''} viewBox="0 0 320 496" role="img" aria-label="${title}"><title>${title}</title><g class="hair-fringe chibi-grid ${expression==='sad'?'expression-tear':''}" shape-rendering="crispEdges" transform="translate(0 24) scale(2)">${rects}</g>${arm}</svg>`;
+}
+
+export function renderStudentPortrait(a,label,expression,pose,facing){return studentPortrait(a,label,expression,pose,facing);}
+export function renderStudentHairDrape(a,expression='neutral'){
+ if((a.hairLength??3)<5||a.labMode==='wet'&&a.hairStyle==='braided-bun')return '';
+ return studentPortrait(a,'',expression,'seated','monitor',true);
 }
