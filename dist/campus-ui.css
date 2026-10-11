@@ -206,3 +206,14 @@ dialog::backdrop{background:rgb(14 32 46 / .65)}
 @media(max-width:899px){body[data-gameplay=true]:not(.month-playing) #live-stage{position:relative;top:auto;z-index:0}}
 
 .recovery-plan-notice button[hidden]{display:none}
+
+/* Keep scene captions in their own row, outside the projected lab artwork. */
+.live-lab{min-width:0;max-width:100%}
+.live-lab:before{left:0;right:0}
+.lab-scene-heading{flex-wrap:wrap}
+.lab-scene-heading>*{min-width:0;overflow-wrap:anywhere}
+.pixel-room[data-projection=isometric]{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+.pixel-room[data-projection=isometric]>.pixel-room-art{position:static;grid-column:1;grid-row:2;min-width:0;min-height:0;width:100%;height:100%}
+.pixel-room[data-projection=isometric]>.room-label{position:static;grid-column:1;grid-row:1;justify-self:start;max-width:calc(100% - 24px);margin:8px 12px 0;padding:3px 0;background:transparent;overflow-wrap:anywhere;z-index:auto}
+@media(max-width:650px){.pixel-room[data-projection=isometric]>.room-label{max-width:calc(100% - 16px);margin:5px 8px 0;font-size:9px}.live-lab .lab-scene-heading{gap:4px 10px}}
+@media(max-width:899px){body[data-gameplay=true]:not(.month-playing) #live-stage:before{display:none}}

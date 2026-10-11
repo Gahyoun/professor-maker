@@ -9,6 +9,19 @@ test('room floor axes have equal lengths and opposing slopes; height stays verti
  for(const [a,b,h] of [[3,4,20],[19,14,48],[28,28,90]])assert.deepEqual(delta(projectRoom(a,b,h),projectRoom(a,b)),[0,-h]);
 });
 
+test('students have no ground shadow in any lab pose while furniture keeps its shadow',()=>{
+ for(const labMode of ['dry','wet']){
+  const state=createState('',9,{labMode}),before=structuredClone(state);
+  for(const actual of ['idle','analysis','experiment','presentation','coursework','rest','coffee']){
+   const scene=roomScene(state,{actual,performed:true,outcome:'completed'},0,{idle:actual==='idle'});
+   assert.equal((scene.match(/class="mini-student /g)||[]).length,1,`${labMode}/${actual}`);
+   assert.doesNotMatch(scene,/#b9b4a4|student-shadow|drop-shadow/);
+   assert.match(scene,/class="chair-floor-shadow"/,'furniture shading remains');
+  }
+  assert.deepEqual(state,before);
+ }
+});
+
 test('resting students sit at their own furniture anchor with the backrest behind them',()=>{
  const seen=new Set(),anchors=['24.3,8.5','26,6.5','24.1,7.5','23.5,6.5'];
  for(let seed=1;seed<=100&&seen.size<4;seed++){
