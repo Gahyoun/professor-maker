@@ -13,10 +13,13 @@ export const canTravel=s=>s.travel?.status==='accepted'&&s.travel.conferenceMont
 
 export const ATTENDANCE_LABELS={none:'안 가기',professor:'교수 혼자 가기',together:'학생과 가기',student:'학생만 가기'};
 export const studentAttends=mode=>['together','student'].includes(mode);
+export const professorAbroad=s=>s.sabbatical?.active===true&&s.sabbatical.mode==='away'&&s.month<s.sabbatical.until;
+export const domesticAttendanceChoices=s=>professorAbroad(s)?['none','student']:['none','professor','together','student'];
+export const normalizedDomesticAttendance=(s,mode)=>professorAbroad(s)?({professor:'none',together:'student'})[mode]??mode:mode;
 export const attendanceCost=(mode,abroad=false)=>({none:0,professor:1,together:2,student:1}[mode]??0)*(abroad?40:2);
 export function conferenceCosts(s,plan=s.plan,attendance=s.attendance??{domestic:'together',overseas:'none'},action=s.facultyAction){
  const month=(s.month+(s.locale==='en'?8:2))%12+1,festival=[4,10].includes(month);
  const overseas=({abroad_student:'student',abroad_together:'together',abroad_shared:'together'})[action]??attendance.overseas;
  const domesticPlan=studentAttends(overseas)?plan.slice(0,-1):plan,count=Math.max(festival?1:0,domesticPlan.filter(a=>a==='conference').length);
- return {domestic:count*attendanceCost(attendance.domestic),overseas:attendanceCost(overseas,true)};
+ return {domestic:count*attendanceCost(normalizedDomesticAttendance(s,attendance.domestic)),overseas:attendanceCost(overseas,true)};
 }

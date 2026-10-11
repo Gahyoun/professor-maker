@@ -6,7 +6,7 @@ import {createState,proposeSchedule,abilityScore,calendarMonth,projectThresholds
 import {DISCIPLINES} from '../dist/disciplines.js';
 import {generateKoreanName} from '../dist/names.js';
 import {managedOptions,affordableEventChoice} from '../tests/play-support.mjs';
-const choices={'workshop-plan':'skip','monthly-issue':'acknowledge','failure-counsel':'review','conversation-topic':'academic',story:'encourage','academic-exam':'support',route:'integrated','presentation-recovery':'rehearse','external-admission':'remain',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
+const choices={'rest-request':'allow','lab-warning':'acknowledge','workshop-plan':'skip','monthly-issue':'acknowledge','failure-counsel':'review','conversation-topic':'academic',story:'encourage','academic-exam':'support',route:'integrated','presentation-recovery':'rehearse','external-admission':'remain',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
 if(isMainThread){
  const runs=Number(process.argv[2]??1000);if(!Number.isSafeInteger(runs)||runs<1)throw Error('Invalid runs');
  const sourceHashes={};for(const file of ['scripts/focused-faculty-audit.mjs','tests/play-support.mjs','dist/simulation-worker.js','dist/engine.js','dist/balance.js','dist/funding.js','dist/grants.js','dist/relationship.js','dist/disciplines.js','dist/events.js','dist/monthly-choices.js','dist/academic-calendar.js','dist/main-story.js','dist/travel.js','dist/workload.js','dist/impact.js','dist/venues.js','dist/research-topics.js','dist/names.js'])sourceHashes[file]=createHash('sha256').update(await fs.readFile(new URL('../'+file,import.meta.url))).digest('hex');
@@ -48,6 +48,7 @@ if(isMainThread){
      if(guard>=20)throw Error('Unterminated decision queue');const p=s.pending;
      const choice=p.kind==='event'?affordableEventChoice(s,p.id):p.kind==='conference-plan'?(p.scope==='domestic'?'student':'none'):choices[p.kind]??({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[p.step];
      s=run('decision',s,{choice});
+     if(p.kind==='rest-request')s=run('month',s,{plan:s.plan,options});
     }
    }
    outcome=s.ending??'incomplete';

@@ -5,18 +5,18 @@ import {planReadiness,recoveryPlan,acceptRecoveryPlan} from '../dist/advising-pl
 import {facultyCapacity,allocateCredits} from '../dist/workload.js';
 import {examWindow,weekContext} from '../dist/academic-calendar.js';
 const fixture=()=>{const s=createState('검증',1);s.started=true;s.allocation=allocateCredits(s.allocation,facultyCapacity(s).credits);return s;};
-test('stipend reserves cannot make an unaffordable operating plan appear ready',()=>{
+test('stipend reserves stay restricted while automatic borrowing keeps a cash-short plan playable',()=>{
  const s=fixture();s.lab.funds=0;s.lab.pool=1000;s.lab.creditEnabled=false;
  const before=JSON.stringify(s),status=planReadiness(s);
- assert.deepEqual(status.blockers,['operating-funds']);assert.ok(status.shortfall>0);
- assert.throws(()=>simulateMonth(s,s.plan),/Budget exceeds/);assert.equal(JSON.stringify(s),before);
+ assert.deepEqual(status.blockers,[]);assert.ok(status.estimatedBorrowing>0);assert.ok(status.ready);
+ const next=simulateMonth(s,s.plan);assert.ok(next.lab.debt>0);assert.equal(JSON.stringify(s),before);assert.equal(next.lab.pool,1000-7.8);
  s.lab.creditEnabled=true;assert.ok(planReadiness(s).ready);assert.doesNotThrow(()=>simulateMonth(s,s.plan));
 });
 test('the exact cost boundary agrees with simulation admission for wet and dry plans',()=>{
  for(const mode of ['wet','dry']){
   const s=fixture();s.professorProfile.labMode=mode;s.plan=s.plan.map(()=> 'experiment');s.lab.pool=0;s.lab.funds=monthlyBudgetCost(s);
   assert.ok(planReadiness(s).ready);assert.doesNotThrow(()=>simulateMonth(s,s.plan));
-  s.lab.funds-=.01;assert.equal(planReadiness(s).ready,false);assert.throws(()=>simulateMonth(s,s.plan),/Budget exceeds/);
+  s.lab.funds-=.01;assert.equal(planReadiness(s).ready,true);assert.ok(Math.abs(planReadiness(s).estimatedBorrowing-.01)<1e-8);assert.ok(simulateMonth(s,s.plan).lab.debt>0);
  }
 });
 test('an unavailable funding call is distinguished from insufficient money',()=>{
@@ -26,7 +26,7 @@ test('an unavailable funding call is distinguished from insufficient money',()=>
 test('accepting requested recovery preserves other choices and fixed commitments',()=>{
  for(const month of [1,3,5,9,24]){
   const s=fixture();s.month=month;if(month>=24)s.route='integrated';
-  for(const [key,value] of Object.entries({stress:10,stamina:20,resilience:70})){
+  for(const [key,value] of Object.entries({stress:10,stamina:15,resilience:70})){
    const [lo,hi]=HIDDEN_RANGES[key];s.hidden[key]=lo+value*(hi-lo)/100;
   }
   s.plan=proposeSchedule(s).map(id=>id==='recovery'?'study':id);const before=JSON.stringify(s),status=recoveryPlan(s),agreed=acceptRecoveryPlan(s);

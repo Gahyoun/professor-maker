@@ -23,15 +23,15 @@ try{
   const size=await credit.boundingBox();assert.ok(size.width>=44&&size.height>=44);
   await page.screenshot({path:`${output}/planner-${width}.png`,fullPage:true});
  }
- const tired=fixture();tired.month=24;tired.route='integrated';tired.hidden.stamina=199.8;tired.hidden.stress=10;tired.plan=proposeSchedule(tired).map(id=>id==='recovery'?'study':id);
+ const tired=fixture();tired.month=24;tired.route='integrated';tired.hidden.stamina=149.85;tired.hidden.stress=10;tired.plan=proposeSchedule(tired).map(id=>id==='recovery'?'study':id);
  await page.setViewportSize({width:390,height:844});await inject(tired);
- assert.match(await page.locator('.recovery-plan-notice').innerText(),/2주/);await page.locator('[data-ui=respect-rest]').click();
+ assert.match(await page.locator('.recovery-plan-notice').innerText(),/2주/);await page.locator('[data-ui=respect-rest]').click();await page.locator('#decision [data-choice=allow]').click();await page.locator('#monthly-plan').waitFor();
  const accepted=await page.evaluate(()=>JSON.parse(localStorage.getItem('pm-save-v4')).plan);assert.equal(accepted.filter(id=>id==='recovery').length,2);
- assert.match(await page.locator('#recovery-plan-status').innerText(),/반영되었습니다/);assert.equal(await page.evaluate(()=>document.activeElement?.textContent),'주별 지도계획');await overflow('recovery');
+ assert.match(await page.locator('#recovery-plan-status').innerText(),/휴식을 허용했습니다/);assert.equal(await page.evaluate(()=>document.activeElement?.textContent),'주별 지도계획');await overflow('recovery');
  const recoveredWeek=accepted.findIndex(id=>id==='recovery');
  assert.ok(await page.locator('[data-ui=respect-rest]').isHidden());
  await page.locator(`#week-${recoveredWeek}`).selectOption('study');
- assert.match(await page.locator('#recovery-plan-status').innerText(),/1주가 아직/);
+ assert.match(await page.locator('#recovery-plan-status').innerText(),/1주가 일정에서 빠졌습니다/);
  assert.ok(await page.locator('[data-ui=respect-rest]').isVisible());
  assert.ok(await page.locator('[data-ui=respect-rest]').isEnabled());
  await page.locator('[data-ui=respect-rest]').click();
@@ -39,7 +39,7 @@ try{
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('pm-save-v4')).month),tired.month);
  await page.locator('#monthly-plan').screenshot({path:`${output}/recovery-390.png`});
  const poor=fixture();poor.lab.funds=0;poor.lab.pool=1000;await inject(poor);
- assert.ok(await page.locator('[data-ui=advance]').isDisabled());assert.match(await page.locator('#budget-error').innerText(),/인건비 풀은 운영비로/);
+ assert.ok(await page.locator('[data-ui=advance]').isEnabled());assert.match(await page.locator('#budget-error').innerText(),/자동 차입/);assert.match(await page.locator('#budget-error').innerText(),/인건비 풀은 운영비로/);
  await page.locator('[data-ui=review-plan]').click();assert.ok(await page.locator('#lab-budget').evaluate(el=>el.open));
  await page.locator('#monthly-plan').screenshot({path:`${output}/budget-390.png`});await overflow('poor plan');
  const closed=fixture();closed.month=1;closed.plan=proposeSchedule(closed);closed.facultyAction='funding';await inject(closed);

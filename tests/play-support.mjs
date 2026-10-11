@@ -1,7 +1,7 @@
 // A player strategy for integration tests: plan grants ahead, scale spending in gaps,
 // and direct spare credits to teaching without abandoning administration.
 import {canApplyGrant,grantCallOpen,baseRenewalDue} from '../dist/funding.js';
-import {EVENTS,calendarMonth} from '../dist/engine.js';
+import {EVENTS,calendarMonth,simulateMonth,decide} from '../dist/engine.js';
 import {dilemmaOptions} from '../dist/monthly-choices.js';
 import {facultyCapacity,allocateCredits} from '../dist/workload.js';
 export function managedOptions(s,facultyAction='routine'){
@@ -21,4 +21,16 @@ export function affordableEventChoice(s,id,preferred=0){
  const e=EVENTS.find(e=>e.id===id),options=dilemmaOptions(s,e);
  const affordable=o=>!o.disabled&&Math.max(0,-(o.effects.lab?.funds??0))<=s.lab.funds;
  return affordable(options[preferred])?preferred:options.findIndex(affordable);
+}
+
+// Integration policies explicitly answer the pre-month consent step before
+// evaluating one completed month. Individual request tests exercise both calls.
+export function simulateWithRestConsent(s,plan,options,choice){
+ if(!['allow','decline'].includes(choice))throw new Error('Choose a rest consent policy.');
+ let next=simulateMonth(s,plan,options);
+ if(next.month===s.month&&next.pending?.kind==='rest-request'){
+  next=decide(next,choice);
+  next=simulateMonth(next,next.plan,options);
+ }
+ return next;
 }

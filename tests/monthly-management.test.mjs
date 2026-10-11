@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createState,simulateMonth,decide,proposeSchedule,validateSave,migrateSave,isTrueEnding,TRUE_REQUIREMENTS,HIDDEN_RANGES,EVENTS,failureRun} from '../dist/engine.js';
+import {createState,decide,proposeSchedule,validateSave,migrateSave,isTrueEnding,TRUE_REQUIREMENTS,HIDDEN_RANGES,EVENTS,failureRun} from '../dist/engine.js';
 import {grantCallOpen,canApplyGrant} from '../dist/funding.js';
 import {roomScene,conferenceHall,figureType} from '../dist/lab-scene.js';
 import {studentAppearance,renderPortrait} from '../dist/appearance.js';
@@ -8,10 +8,11 @@ import {getEndingPages} from '../dist/stories.js';
 import {endingEvidence,validEvidence} from '../dist/ending-evidence.js';
 import {endingStatistics} from '../dist/statistics.js';
 import {validRecord} from '../backend/api.js';
-import {managedOptions} from './play-support.mjs';
+import {managedOptions,simulateWithRestConsent} from './play-support.mjs';
+const simulateMonth=(s,plan,options)=>simulateWithRestConsent(s,plan,options,'decline');
 const clone=structuredClone;
 const rest=['rest','rest','rest','rest'];
-const choices={'workshop-plan':'skip','monthly-issue':'acknowledge','conference-plan':'none','failure-counsel':'review','conversation-topic':'daily',story:'encourage','academic-exam':'support',event:0,route:'integrated','presentation-recovery':'rehearse','external-admission':'remain',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
+const choices={'rest-request':'decline','lab-warning':'acknowledge','workshop-plan':'skip','monthly-issue':'acknowledge','conference-plan':'none','failure-counsel':'review','conversation-topic':'daily',story:'encourage','academic-exam':'support',event:0,route:'integrated','presentation-recovery':'rehearse','external-admission':'remain',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
 function resolve(s){for(let i=0;s.pending&&!s.ending;i++){assert.ok(i<20);const p=s.pending;s=decide(s,choices[p.kind]??({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[p.step]);}return s;}
 function pending(s){return [s.pending,...s.pendingQueue].filter(Boolean);}
 test('sabbatical scheduling covers years 3–7 deterministically and never repeats',()=>{

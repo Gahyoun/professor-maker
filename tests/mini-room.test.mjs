@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createState} from '../dist/engine.js';
 import {roomScene,roomDecorations} from '../dist/lab-scene.js';
-import {projectRoom,chairGeometry,ROOM_ANCHORS,WALLPAPERS,FLOOR_TILES,PLANT_SPECIES} from '../dist/mini-room.js';
+import {projectRoom,chairGeometry,cotGeometry,ROOM_ANCHORS,WALLPAPERS,FLOOR_TILES,PLANT_SPECIES} from '../dist/mini-room.js';
 test('room floor axes have equal lengths and opposing slopes; height stays vertical',()=>{
  const delta=(a,b)=>a.map((v,i)=>v-b[i]),base=projectRoom(0,0),u=delta(projectRoom(1,0),base),v=delta(projectRoom(0,1),base);
  assert.equal(Math.hypot(...u),Math.hypot(...v));assert.equal(u[0],-v[0]);assert.equal(u[1],v[1]);
@@ -23,7 +23,7 @@ test('students have no ground shadow in any lab pose while furniture keeps its s
 });
 
 test('resting students sit at their own furniture anchor with the backrest behind them',()=>{
- const seen=new Set(),anchors=['24.3,8.5','26,6.5','24.1,7.5','23.5,6.5'];
+ const seen=new Set(),anchors=['24.3,8.5','24,6.5','24.1,7.5','23.5,6.5'];
  for(let seed=1;seed<=100&&seen.size<4;seed++){
   const s=createState('',seed,{labMode:'dry'}),type=roomDecorations(s).restType;if(seen.has(type))continue;seen.add(type);
   for(const actual of ['rest','coffee']){
@@ -36,6 +36,23 @@ test('resting students sit at their own furniture anchor with the backrest behin
   }
  }
  assert.equal(seen.size,4);
+});
+test('folding beds and every support stay inside the floor with a margin, including rest occupants',()=>{
+ for(const anchor of [ROOM_ANCHORS.cot,ROOM_ANCHORS.spareCot]){
+  const geometry=cotGeometry(...anchor);
+  for(const [u,v]of geometry.footprint)assert.ok(u>=1&&u<=27&&v>=1&&v<=27,'the complete mattress footprint needs floor space on both axes');
+  for(const [u,v]of geometry.legs)for(const [a,b]of [[u,v],[u+geometry.legSize,v+geometry.legSize]])assert.ok(a>=1&&a<=27&&b>=1&&b<=27,'leg bases must touch the floor inside its rim');
+ }
+ const seen=new Set();
+ for(const labMode of ['dry','wet'])for(const seed of [57,5])for(const actual of ['idle','analysis','rest']){
+  const state=createState('',seed,{gender:'female',labMode}),before=structuredClone(state),decor=roomDecorations(state),scene=roomScene(state,{actual,performed:true,outcome:'completed'},0,{idle:actual==='idle'}),anchor=decor.restType===1?ROOM_ANCHORS.cot:ROOM_ANCHORS.spareCot;
+  assert.match(scene,new RegExp(`class="room-cot" data-floor="${anchor.join(',')}" data-size="7,3"`));
+  const geometry=cotGeometry(...anchor),rendered=[...scene.matchAll(/<g class="cot-leg" data-floor="([^\"]+)">([^]*?)<\/g>/g)];assert.equal(rendered.length,4);
+  for(const leg of rendered){const [u,v]=leg[1].split(',').map(Number);assert.ok(geometry.legs.some(p=>Math.abs(p[0]-u)<1e-9&&Math.abs(p[1]-v)<1e-9));for(const point of [projectRoom(u,v+geometry.legSize,0),projectRoom(u+geometry.legSize,v+geometry.legSize,0),projectRoom(u+geometry.legSize,v,0)])assert.ok(leg[2].includes(point.join(',')),'visible leg bases must use z=0, not a lower plane');}
+  if(actual==='rest'&&decor.restType===1)assert.match(scene,/class="mini-student [^>]+data-floor="24,6.5"/);
+  assert.deepEqual(state,before);seen.add(decor.restType===1?'primary':'spare');
+ }
+ assert.equal(seen.size,2);
 });
 test('desk work sits in front of the monitor and faces it, with one chair and aligned desktop tools',()=>{
  for(const labMode of ['dry','wet']){

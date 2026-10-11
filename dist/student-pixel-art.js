@@ -12,7 +12,7 @@ function studentPortrait(a,label='학생 도트 초상화',expression='neutral',
  pose=['standing','seated','experiment','lecturing'].includes(pose)?pose:'standing';
  facing=pose==='seated'&&facing==='monitor'?'monitor':'front';
  const W=80,H=118,raster=()=>Array.from({length:H},()=>Array(W).fill(null));
- const backHead=raster(),body=raster(),frontHead=raster(),backHair=raster(),farArm=raster(),nearArm=raster();let pixels=backHead;
+ const backHead=raster(),body=raster(),frontHead=raster(),backHair=raster(),napeHair=raster(),farArm=raster(),nearArm=raster();let pixels=backHead;
  const put=(x,y,c)=>{if(x>=0&&x<W&&y>=0&&y<H)pixels[y][x]=c;};
  const row=(y,x0,x1,c)=>{for(let x=x0;x<=x1;x++)put(x,y,c);};
  const box=(x0,y0,x1,y1,c)=>{for(let y=y0;y<=y1;y++)row(y,x0,x1,c);};
@@ -349,6 +349,15 @@ function studentPortrait(a,label='학생 도트 초상화',expression='neutral',
    for(let y=22;y<=38;y+=3)for(let x=19+(y%2);x<=46;x+=4)put(x,y,(x+y)%3?buzzLight:buzzFade);
   }
   oval(44,48,4,5,skinD);oval(45,47,3,4,skin);box(44,46,45,49,skinD);
+  if(originalLength>=5){
+   // Long hair follows the rear jaw down to the collar. Resolve these locks
+   // after the face so its rounded skin base cannot show through at the nape;
+   // the ear, cheek, spectacles and tied-hair silhouette remain exposed.
+   pixels=napeHair;
+   poly([[20,48],[34,51],[39,53],[40,57],[43,60],[45,63],[51,67],[51,71],[43,73],[33,69],[25,62],[20,55]],hairD);
+   poly([[23,51],[31,53],[35,56],[36,61],[42,66],[45,70],[39,69],[30,64],[25,59]],hair);
+   poly([[25,53],[28,54],[30,59],[34,64],[32,64],[27,60]],hairM);
+  }
  }
 
  // About 3.5 head heights when standing: a 30px skull, a 38px torso and 36px
@@ -366,7 +375,7 @@ function studentPortrait(a,label='학생 도트 초상화',expression='neutral',
   const sy=Math.round(head?66+(py-neck)/(tail?(facing==='monitor'?1.1:1.5):STUDENT_HEAD_SCALE):py<=hip?66+(py-neck)*28/(hip-neck):94+(py-hip)*17/(foot-hip));
   const color=source[sy]?.[sx];if(color){composite[y][x]=color;owners[y][x]=part;}
  }};
- if(facing==='monitor'){overlay(backHead,true,0);overlay(farArm,false,1);overlay(body,false,2);overlay(backHair,true,3);overlay(frontHead,true,4);overlay(nearArm,false,5);}
+ if(facing==='monitor'){overlay(backHead,true,0);overlay(farArm,false,1);overlay(body,false,2);overlay(backHair,true,3);overlay(frontHead,true,4);overlay(napeHair,true,3);overlay(nearArm,false,5);}
  else{overlay(backHead,true);overlay(body,false);overlay(frontHead,true);}
  pixels=composite;
 

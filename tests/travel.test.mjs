@@ -24,9 +24,9 @@ test('acceptance increases with prepared research and luck without guaranteeing 
   const outcomes=new Set();for(let seed=1;seed<=100;seed++)outcomes.add(simulateMonth(vacation(seed),rest,{facultyAction:'abstract'}).travel.status);
   assert.deepEqual(outcomes,new Set(['accepted','rejected']));
 });
-test('accepted abstracts require operating funds; attendance boosts learning more than a domestic talk',()=>{
+test('accepted travel borrows operating shortfalls without using pooled stipends; attendance boosts learning',()=>{
   const s=accepted(),poor=structuredClone(s);poor.lab.funds=0;poor.lab.pool=1000;
-  assert.throws(()=>simulateMonth(poor,rest,{facultyAction:'abroad_student'}),/funds/);
+  const bridged=simulateMonth(poor,rest,{facultyAction:'abroad_student'});assert.equal(bridged.month,poor.month+1);assert.ok(bridged.lastReport.borrowed>=40);assert.equal(bridged.lab.pool,1000-13.2);assert.ok(validateSave(bridged));
   let trip;for(let seed=1;seed<100;seed++){s.seed=seed;trip=simulateMonth(s,rest,{facultyAction:'abroad_student'});if(trip.travel.status==='attended')break;}
   assert.equal(trip.travel.status,'attended');assert.ok(validateSave(trip));assert.equal(trip.career.conferences,s.career.conferences+1);
   const baseline=simulateMonth(s,rest,{facultyAction:'routine'});

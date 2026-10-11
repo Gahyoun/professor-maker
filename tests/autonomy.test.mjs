@@ -4,7 +4,7 @@ import {ACTIVITIES,createState,proposeSchedule,simulateMonth,autonomousChoice,mi
 import {weeklyScene} from '../dist/weekly-scene.js';
 import {buildEndingCV} from '../dist/cv.js';
 const score=(s,key,value)=>{const [lo,hi]=HIDDEN_RANGES[key];s.hidden[key]=lo+(hi-lo)*value/100;};
-function healthy(seed){const s=createState('',seed);s.month=2;s.started=true;score(s,'stamina',90);score(s,'stress',10);return s;}
+function healthy(seed){const s=createState('',seed);s.month=2;s.started=true;score(s,'stamina',90);score(s,'stress',10);score(s,'resilience',70);return s;}
 
 test('student proposals offer self-directed time and legacy saves migrate only upcoming schedules',()=>{
  assert.ok(ACTIVITIES.free);for(const id of ['rest','coffee','startup'])assert.ok(!Object.hasOwn(ACTIVITIES,id));
@@ -12,8 +12,8 @@ test('student proposals offer self-directed time and legacy saves migrate only u
  const s=healthy(6);s.plan=['rest','coffee','startup','study'];const before=structuredClone(s),migrated=migrateSave(s);
  assert.deepEqual(migrated.plan,['free','free','industry','study']);assert.deepEqual(migrated.history,s.history);assert.deepEqual(s,before);assert.ok(validateSave(migrated));
 });
-test('self-directed choices cover study, travel and rest reproducibly, with recovery prioritized under strain',()=>{
- const chosen=new Set();for(let seed=1;seed<=400;seed++){const s=healthy(seed*7919),before=structuredClone(s);chosen.add(autonomousChoice(s,0));assert.equal(autonomousChoice(s,0),autonomousChoice(s,0));assert.deepEqual(s,before);score(s,'stamina',30);assert.equal(autonomousChoice(s,0),'rest');score(s,'stamina',90);score(s,'stress',80);assert.equal(autonomousChoice(s,0),'rest');}
+test('self-directed choices cover study, travel and rest reproducibly, with mandatory recovery limited to critical strain',()=>{
+ const chosen=new Set();for(let seed=1;seed<=400;seed++){const s=healthy(seed*7919),before=structuredClone(s);chosen.add(autonomousChoice(s,0));assert.equal(autonomousChoice(s,0),autonomousChoice(s,0));assert.deepEqual(s,before);score(s,'stamina',8);assert.equal(autonomousChoice(s,0),'rest');score(s,'stamina',20);score(s,'stress',95);assert.equal(autonomousChoice(s,0),'rest');}
  assert.deepEqual(chosen,new Set(['rest','coursework','experiment','travel']));
 });
 test('self-directed weekly reports save actual choices; only study can contribute weighted research progress',()=>{

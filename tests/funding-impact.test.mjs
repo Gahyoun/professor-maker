@@ -27,7 +27,7 @@ test('grant selection is probabilistic and grants last exactly two to five years
 test('pooled stipend survives ended projects, pays first and cannot fund operations',()=>{
  const s=createState('',8);s.month=2;s.lab.funds=0;s.lab.pool=200;depositGrant(s,100);assert.equal(s.lab.funds,65);assert.equal(s.lab.pool,235);
  const n=simulateMonth(s,['rest','rest','rest','rest']);assert.equal(n.lab.pool,235-7.8);assert.equal(n.lab.funds,56.2);assert.equal(n.history.find(h=>h.kind==='stipend-payment').fromPool,7.8);
- s.lab.funds=0;assert.throws(()=>simulateMonth(s,['rest','rest','rest','rest']),/Budget/);
+ s.lab.funds=0;const bridged=simulateMonth(s,['rest','rest','rest','rest']);assert.equal(bridged.month,s.month+1);assert.equal(bridged.lab.pool,235-7.8);assert.ok(Math.abs(bridged.lastReport.borrowed-8.8)<1e-8);assert.equal(bridged.lab.funds,0);assert.ok(validateSave(bridged));
 });
 test('external admission is offered at undergraduate and master transitions and advice has distinct outcomes',()=>{
  for(const level of ['bachelor','masters']){

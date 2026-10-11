@@ -3,7 +3,7 @@ import {facultyCapacity,allocateCredits} from '../dist/workload.js';
 // Optional end-to-end QA: PLAYWRIGHT_MODULE points to an installed package.
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import {createState,VERSION,validateSave} from '../dist/engine.js';
+import {createState,VERSION,validateSave,professorAbroad} from '../dist/engine.js';
 import {DISCIPLINES} from '../dist/disciplines.js';
 import {buildEndingCV,CV_TEMPLATES} from '../dist/cv.js';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
@@ -11,7 +11,7 @@ const base=process.env.GAME_URL||'http://127.0.0.1:4173/';
 const browser=await chromium.launch({headless:true});
 const errors=[],qa='/tmp/professor-maker-qa',saveKey='pm-save-v4',galleryKey='pm-letters-v3';
 await fs.mkdir(qa,{recursive:true});
-const choices={'workshop-plan':'skip','monthly-issue':'acknowledge','conference-plan':'none','failure-counsel':'review','conversation-topic':'daily','presentation-recovery':'rehearse','external-admission':'remain',event:'0',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
+const choices={'rest-request':'allow','lab-warning':'acknowledge','workshop-plan':'skip','monthly-issue':'acknowledge','conference-plan':'none','failure-counsel':'review','conversation-topic':'daily','presentation-recovery':'rehearse','external-admission':'remain',event:'0',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
 const snapshot=page=>page.evaluate(key=>JSON.parse(localStorage.getItem(key)),saveKey);
 async function applyManagedOptions(page,state){
  const options=managedOptions(state);
@@ -58,15 +58,15 @@ try{
  await page.locator('#field-id').selectOption('050');await page.locator('#lab-mode').selectOption('dry');await page.locator('select[name="professorGender"]').selectOption('female');
  for(const institution of ['national','private','institute']){await page.locator('select[name="institution"]').selectOption(institution);assert.ok((await page.locator('#profile-hint').innerText()).length>5);}
  assert.equal(await page.locator('#student-name').count(),0);await page.locator('select[name="professorName"]').selectOption('김 교수');assert.equal(await page.locator('select[name="gender"]').count(),0);await page.setViewportSize({width:320,height:900});await noOverflow(page,'320px profile setup');
- await page.locator('#start-form button[type="submit"]').click();await page.locator('#decision [data-choice=together]').click();await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)).pending===null,saveKey);await page.locator('[data-week="0"]').waitFor();
- const initial=await snapshot(page);assert.equal(initial.version,VERSION);assert.deepEqual(initial.professorProfile,{gender:'female',age:55,fieldId:'050',labMode:'dry',institution:'institute'});assert.ok(initial.name.length>1);assert.equal(initial.professorName,'김 교수');assert.equal(await page.locator('[data-week]').count(),initial.plan.length);assert.equal(await page.locator('[role="meter"]').count(),4);assert.ok(await page.locator('[data-ui="advance"]').isEnabled());
+ if(await page.locator('#onboarding-update').count())await page.locator('#onboarding-update [data-ui=update-close]').first().click();await page.locator('#start-form button[type="submit"]').click();await page.locator('[name=candidateIndex][value="0"]').check();await page.locator('#admission-form button[type=submit]').click();await page.locator('#decision [data-choice=together]').click();await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)).pending===null,saveKey);await page.locator('[data-week="0"]').waitFor();if(await page.locator('[data-ui=screen-guide-skip]').count())await page.locator('[data-ui=screen-guide-skip]').click();
+ const initial=await snapshot(page);assert.equal(initial.version,VERSION);assert.deepEqual(initial.professorProfile,{gender:'female',age:55,fieldId:'050',labMode:'dry',institution:'institute',difficulty:'beginner'});assert.ok(initial.name.length>1);assert.equal(initial.professorName,'김 교수');assert.equal(await page.locator('[data-week]').count(),initial.plan.length);assert.equal(await page.locator('[role="meter"]').count(),4);assert.ok(await page.locator('[data-ui="advance"]').isEnabled());
  for(const [index,activity] of ['study','experiment','free','language'].entries())await page.locator(`[data-week="${index}"]`).selectOption(activity);
  await page.locator('[data-ui="advance"]').click();await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)).month===1,saveKey);
  while((await snapshot(page)).pending){const p=(await snapshot(page)).pending;await page.locator(`[data-ui="decide"][data-choice="${p.kind==='conference-plan'?'together':p.kind==='monthly-issue'?'acknowledge':'encourage'}"]`).click();await page.waitForTimeout(50);}
  await page.locator('#week-2').waitFor();assert.ok(await page.locator('#week-2').isDisabled());assert.equal(await page.locator('#week-2').inputValue(),'conference');
  await page.locator('.month-report summary').click();assert.ok(!(await page.locator('.month-report').innerText()).includes('undefined'));
  await page.locator('.management-controls summary').click();await page.locator('[data-credit="research"][data-count="1"]').click();assert.ok(await page.locator('[data-ui="advance"]').isEnabled());
- await page.reload();assert.equal(await page.locator('.term-count').innerText(),'1 / 96 개월');await page.locator('.management-controls summary').click();
+ await page.reload();assert.match(await page.locator('.term-count').innerText(),/^1 \/ 96 개월 · 신임교수/);await page.locator('.management-controls summary').click();
  for(const width of [320,1360]){await page.setViewportSize({width,height:900});await noOverflow(page,`${width}px lab`);await page.screenshot({path:`${qa}/lab-${width}.png`,fullPage:true});}
  const saved=await snapshot(page);
  for(const institution of ['national','private','institute']){const fixture=createState('소속검증',42,{professorProfile:{gender:'male',age:30,fieldId:'050',labMode:'dry',institution}});fixture.started=true;await injectState(page,fixture);assert.equal((await snapshot(page)).professorProfile.institution,institution);}
@@ -80,13 +80,13 @@ try{
   if(state.pending){
    if(state.pending.kind==='route')assert.ok((await page.locator('.mobile-student-summary summary').innerText()).includes('학부연구생'));
    const before=JSON.stringify(state),p=state.pending;
-   const choice=p.kind==='event'?affordableEventChoice(state,p.id):p.kind==='conference-plan'?p.scope==='domestic'?'together':'none':choices[p.kind]??(p.kind==='story'?'encourage':p.kind==='academic-exam'?'support':({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[p.step]);
+   const choice=p.kind==='event'?affordableEventChoice(state,p.id):p.kind==='conference-plan'?p.scope==='domestic'?(professorAbroad(state)?'student':'together'):'none':choices[p.kind]??(p.kind==='story'?'encourage':p.kind==='academic-exam'?'support':({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[p.step]);
    await page.locator(`[data-ui="decide"][data-choice="${choice}"]`).click();
    await page.waitForFunction(({saveKey,before})=>localStorage.getItem(saveKey)!==before,{saveKey,before});
   }else{
    await applyManagedOptions(page,state);
    await page.locator('[data-ui="advance"]').click();
-   await page.waitForFunction(({saveKey,month})=>JSON.parse(localStorage.getItem(saveKey)).month>month,{saveKey,month:state.month});
+   await page.waitForFunction(({saveKey,month})=>JSON.parse(localStorage.getItem(saveKey)).month>month||JSON.parse(localStorage.getItem(saveKey)).pending?.kind==='rest-request',{saveKey,month:state.month});
   }
  }
  const final=await snapshot(page);await fs.writeFile(`${qa}/pm46-final-debug.json`,JSON.stringify(final,null,2));assert.equal(final.month,96);assert.notEqual(final.ending,'gameover');assert.equal(final.career.qual,'passed');assert.ok(final.career.papers>=3);
@@ -101,6 +101,6 @@ try{
  const fixtures=new Map();for(let seed=0;seed<500&&fixtures.size<5;seed++){const cv=buildEndingCV(finalFixture(seed));fixtures.set(cv.templateId,cv);}assert.equal(fixtures.size,CV_TEMPLATES.length);
  const cvPage=await context.newPage();cvPage.on('pageerror',error=>errors.push(error.message));const css=await fs.readFile(new URL('../dist/cv.css',import.meta.url),'utf8');
  for(const [id,cv] of fixtures){await cvPage.setContent(`<!doctype html><html lang="ko"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:8px}${css}</style><body>${cv.html}</body></html>`);for(const width of [320,1360]){await cvPage.setViewportSize({width,height:900});await noOverflow(cvPage,`${id} CV ${width}px`);await cvPage.screenshot({path:`${qa}/cv-${id}-${width}.png`,fullPage:true});}await cvPage.emulateMedia({media:'print'});await cvPage.pdf({path:`${qa}/cv-${id}.pdf`,format:'A4',printBackground:true});await cvPage.emulateMedia({media:'screen'});}await cvPage.close();
- await page.goto(base+'#lab');await page.waitForFunction(async()=>!!(await navigator.serviceWorker.getRegistration())?.active,{}, {timeout:15000});await page.reload();await page.waitForFunction(()=>!!navigator.serviceWorker.controller);await context.setOffline(true);await page.reload();await page.locator('.ending-summary').waitFor();await page.locator('[data-ui="new"]').click();await page.locator('[data-ui="confirm-new"]').click();await page.locator('#start-form button[type="submit"]').click();await page.locator('#decision [data-choice=together]').click();await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)).pending===null,saveKey);await page.locator('[data-ui="advance"]').click();await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)).month===1,saveKey);await context.setOffline(false);
+ await page.goto(base+'#lab');await page.waitForFunction(async()=>!!(await navigator.serviceWorker.getRegistration())?.active,{}, {timeout:15000});await page.reload();await page.waitForFunction(()=>!!navigator.serviceWorker.controller);await context.setOffline(true);await page.reload();await page.locator('.ending-summary').waitFor();await page.locator('[data-ui="new"]').click();await page.locator('[data-ui="confirm-new"]').click();if(await page.locator('#onboarding-update').count())await page.locator('#onboarding-update [data-ui=update-close]').first().click();await page.locator('#start-form button[type="submit"]').click();await page.locator('[name=candidateIndex][value="0"]').check();await page.locator('#admission-form button[type=submit]').click();await page.locator('#decision [data-choice=together]').click();await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)).pending===null,saveKey);await page.locator('[data-ui="advance"]').click();await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)).month===1,saveKey);await context.setOffline(false);
  await context.close();assert.deepEqual(errors,[]);console.log('Browser smoke passed: profiles, 96-month Worker run, five CV layouts at 320/1360px, archival, standalone HTML/PDF, malicious import rejection, no game-over CV, offline month.');
 }finally{await browser.close();}

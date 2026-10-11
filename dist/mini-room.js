@@ -17,7 +17,7 @@ const line=(a,b,color,width=1)=>{const [x,y]=projectRoom(...a),[xx,yy]=projectRo
 const front=(u,v,z,w,h,color)=>plane([[u,v,z],[u+w,v,z],[u+w,v,z+h],[u,v,z+h]],color);
 const left=(u,v,z,d,h,color)=>plane([[u,v,z],[u,v+d,z],[u,v+d,z+h],[u,v,z+h]],color);
 const isLecturing=(result,idle)=>!idle&&result.actual==='teach'&&result.performed===true&&result.outcome!=='training';
-export const ROOM_ANCHORS=Object.freeze({standing:Object.freeze([23,14]),deskSeat:Object.freeze([13.5,23.5]),deskOccupant:Object.freeze([13.8,24.3]),plant:Object.freeze([24,19])});
+export const ROOM_ANCHORS=Object.freeze({standing:Object.freeze([23,14]),deskSeat:Object.freeze([13.5,23.5]),deskOccupant:Object.freeze([13.8,24.3]),plant:Object.freeze([24,19]),cot:Object.freeze([20,5]),spareCot:Object.freeze([19,24])});
 function lectureDiagram(type,ink){
  const stroke=points=>`<path class="ta-board-stroke" pathLength="1" d="${points.map((p,i)=>`${i?'L':'M'}${projectRoom(...p).join(' ')}`).join('')}" fill="none" stroke="${ink}" stroke-width="1.3"/>`;
  return `<g class="ta-board-annotation" data-board-kind="${type}" aria-label="강의 개념 도표">`+
@@ -112,7 +112,19 @@ function bookshelf(u,v,wet,stock){let art=box(u,v,5.5,2,60,'#c6b296');for(const 
 function fridge(u,v){return box(u,v,3.5,3,45,'#d3d9d5')+front(u+.25,v+3.03,2,3,24,'#e7eae3')+front(u+.25,v+3.03,28,3,15,'#e7eae3')+front(u+.55,v+3.1,18,.25,5,'#96a4a1')+front(u+.55,v+3.1,33,.25,5,'#96a4a1')+front(u+2,v+3.1,36,.6,2,'#c6b6a0');}
 function server(u,v){let art=box(u,v,3,2.6,48,'#7d8994');for(let i=0;i<4;i++){art+=front(u+.25,v+2.63,4+i*10,2.5,7,'#9ca9b3')+front(u+.5,v+2.65,6+i*10,.25,1.2,'#c6d8a7');for(let j=0;j<3;j++)art+=front(u+1+j*.35,v+2.65,7+i*10,.15,2,'#637582');}return art;}
 function sofa(u,v){return box(u,v,4,8,9,'#a5b1bf')+box(u+.3,v+.7,3.4,6.6,8,'#c0cbd1',9)+box(u,v,1,8,27,'#b3c0c9')+box(u+3,v,.9,8,20,'#9caebb')+box(u,v,4,.8,20,'#afbcc7')+box(u,v+7.2,4,.8,20,'#afbcc7')+box(u+1.3,v+1.3,1.5,1.7,6,'#e0c9b4',16);}
-function cot(u,v){let art=box(u,v,.5,.5,12,'#829594')+box(u+6.5,v+2.4,.5,.5,12,'#829594')+box(u,v,7,3,3,'#a9b7b3',12)+box(u+.2,v+.2,6.6,2.6,4,'#dbe1d8',15)+box(u+.4,v+.4,1.4,2.2,3,'#f7f0df',19)+box(u+2.4,v+.3,4,2.4,2,'#b8c9bf',19);return art;}
+export function cotGeometry(u,v){
+ const width=7,depth=3,legSize=.5,inset=.3;
+ const legs=[[u+inset,v+inset],[u+width-inset-legSize,v+inset],[u+inset,v+depth-inset-legSize],[u+width-inset-legSize,v+depth-inset-legSize]];
+ return {u,v,width,depth,legs,legSize,legHeight:12,footprint:[[u,v],[u+width,v],[u+width,v+depth],[u,v+depth]]};
+}
+function cot(u,v){
+ const geometry=cotGeometry(u,v);
+ // All supports start at the same floor plane; the footprint, not the mattress
+ // silhouette, determines whether the folding bed fits inside the room.
+ let art=geometry.legs.slice().sort((a,b)=>a[0]+a[1]-b[0]-b[1]).map(([a,b])=>`<g class="cot-leg" data-floor="${a},${b}">${box(a,b,geometry.legSize,geometry.legSize,geometry.legHeight,'#829594')}</g>`).join('');
+ art+=box(u,v,geometry.width,geometry.depth,3,'#a9b7b3',12)+box(u+.2,v+.2,6.6,2.6,4,'#dbe1d8',15)+box(u+.4,v+.4,1.4,2.2,3,'#f7f0df',19)+box(u+2.4,v+.3,4,2.4,2,'#b8c9bf',19);
+ return `<g class="room-cot" data-floor="${u},${v}" data-size="${geometry.width},${geometry.depth}" aria-label="접이식 침대">${art}</g>`;
+}
 function printer(u,v,z=0){return box(u,v,2.6,2,8,'#bac5c6',z)+box(u+.3,v+.1,2,1.4,2,'#dee2db',z+8)+front(u+.4,v+2.04,z+2,1.9,1.3,'#71868d')+box(u+.5,v-.1,1.8,.8,1,'#f8f4e8',z+10);}
 function kettle(u,v,z=0){return box(u,v,1.2,1.2,1,'#8a9b9c',z)+box(u+.2,v+.2,.8,.8,8,'#e9e3d3',z+1)+box(u+.3,v+.3,.6,.6,1,'#96a4a3',z+9)+line([u+1,v+.5,z+3],[u+1.6,v+.5,z+4],'#829996',2)+line([u+1.6,v+.5,z+4],[u+1.6,v+.5,z+8],'#829996',2);}
 function plush(u,v,z){const [x,y]=projectRoom(u,v,z);return `<g fill="#c6a281"><path d="M${x-7} ${y-16}h3v-3h4v2h5v-2h4v3h3v10h-3v7h-13v-7h-3z"/><path d="M${x-6} ${y-6}h12v5h-12z" fill="#e7d5b7"/><path d="M${x-4} ${y-12}h1v2h-1zm8 0h1v2h-1z" fill="#696060"/><path d="M${x-1} ${y-8}h3v1h-3z" fill="#a57c69"/></g>`;}
@@ -154,10 +166,11 @@ export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'
  const resting=!idle&&(kind==='rest'||result.actual==='coffee')&&result.outcome!=='training';
  // Keep each seat and its occupant together. Sorting by the chair's far
  // corner alone used to paint the backrest over the student's face.
- const restSeats=[[24.3,8.5,5],[26,6.5,7],[24.1,7.5,1],[23.5,6.5,2]];
+ const [cotU,cotV]=ROOM_ANCHORS.cot,restSeats=[[24.3,8.5,5],[cotU+4,cotV+1.5,7],[24.1,7.5,1],[23.5,6.5,2]];
  const seat=restSeats[d.restType],restActor=resting&&student?actor(state,result,index,seat[0],seat[1],false,seat[2]):'';
- add(22,5,4,8,`<g class="rest-seat-layer" data-seat-type="${d.restType}">${restFurniture(22,5,d.restType)}${restActor}</g>`);
- if(d.cot&&d.restType!==1)add(19,24,7,3,cot(19,24));
+ const restPlacement=d.restType===1?[cotU,cotV,7,3]:[22,5,4,8];
+ add(...restPlacement,`<g class="rest-seat-layer" data-seat-type="${d.restType}">${restFurniture(restPlacement[0],restPlacement[1],d.restType)}${restActor}</g>`);
+ if(d.cot&&d.restType!==1)add(...ROOM_ANCHORS.spareCot,7,3,cot(...ROOM_ANCHORS.spareCot));
  if(d.printer)add(15,1,3.5,3,desk(15,1,3.5,3)+printer(15.5,1.7,26));
  const working=!idle&&['study','coursework','analysis','language','experiment','paper'].includes(result.actual),deskWorking=working&&!(result.actual==='experiment'&&wet)&&result.outcome!=='training';
  const equipment=roomEquipment(state,{box,front,line,desk,microscope,monitor,project:projectRoom},!idle&&result.performed===true&&['analysis','experiment','industry','startup','video','paper'].includes(result.actual));

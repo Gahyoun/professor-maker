@@ -48,10 +48,11 @@ if(isMainThread){
     try{s=execute('month',s,{plan,options});}catch(e){if(!e.message.includes('Budget exceeds'))throw e;options.budget={...options.budget,environment:0,performance:0};s=execute('month',s,{plan,options});}
     for(let guard=0;s.pending&&!s.ending;guard++){
      if(guard>=25)throw Error('Decision queue did not terminate');const p=s.pending;
-     const choices={'workshop-plan':'skip','monthly-issue':'acknowledge','conference-plan':p.scope==='domestic'?'student':'none','failure-counsel':'review','conversation-topic':'academic',story:'encourage','academic-exam':'support',route:'integrated','presentation-recovery':'rehearse','external-admission':'remain',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
+     const choices={'rest-request':'allow','lab-warning':'acknowledge','workshop-plan':'skip','monthly-issue':'acknowledge','conference-plan':p.scope==='domestic'?'student':'none','failure-counsel':'review','conversation-topic':'academic',story:'encourage','academic-exam':'support',route:'integrated','presentation-recovery':'rehearse','external-admission':'remain',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
      let choice=p.kind==='event'?affordableEventChoice(s,p.id):choices[p.kind]??({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[p.step];
      if(policy==='random'&&p.kind==='event'){const opts=dilemmaOptions(s,EVENTS.find(e=>e.id===p.id));choice=pick(opts.map((o,index)=>({o,index})).filter(({o})=>!o.disabled&&Math.max(0,-(o.effects?.lab?.funds??0))<=s.lab.funds)).index;}
      s=execute('decision',s,{choice});
+     if(p.kind==='rest-request')s=execute('month',s,{plan:s.plan,options});
     }
     if(!validateSave(s))throw Error('Invalid generated save');
    }

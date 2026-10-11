@@ -1,12 +1,13 @@
-import {managedOptions,affordableEventChoice} from './play-support.mjs';
+import {managedOptions,affordableEventChoice,simulateWithRestConsent} from './play-support.mjs';
 import {facultyCapacity,allocateCredits} from '../dist/workload.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createState,simulateMonth,proposeSchedule,decide,validateSave,researchGrade,HIDDEN_RANGES,abilityScore,calendarMonth,ACTIVITIES} from '../dist/engine.js';
+import {createState,proposeSchedule,decide,validateSave,researchGrade,HIDDEN_RANGES,abilityScore,calendarMonth,ACTIVITIES} from '../dist/engine.js';
 import {examWindow} from '../dist/academic-calendar.js';
 import {supplyLevel,roomScene,researchText} from '../dist/lab-scene.js';
 import {weeklyAppearance,studentAppearance,renderPortrait} from '../dist/appearance.js';
 import {studentLine} from '../dist/dialogue.js';
+const simulateMonth=(s,plan,options)=>simulateWithRestConsent(s,plan,options,'decline');
 const set=(s,k,v)=>{const [lo,hi]=HIDDEN_RANGES[k];s.hidden[k]=lo+(hi-lo)*v/100;};
 
 test('trusted students ask for self-directed exam preparation in the exam week and the previous week',()=>{
@@ -48,7 +49,7 @@ test('RA research contributes weighted project work while TA course assistance d
 
 test('a founder ending remains reachable through current RA choices without the removed startup schedule',()=>{
  let s=createState('',63352,{gender:'female',age:38});for(let month=0;month<96&&!s.ending;month++){
-  const plan=proposeSchedule(s);if(![4,10].includes(calendarMonth(s.month))){plan[3]='industry';if(s.month>=24)plan[0]='industry';}assert.ok(plan.every(id=>Object.hasOwn(ACTIVITIES,id)));if(s.grants.status==='bridge')s.lab.budget={...s.lab.budget,performance:0,environment:1,publicity:0};s=simulateMonth(s,plan,{...managedOptions(s,month%4===0?'conversation':'routine')});
-  while(s.pending&&!s.ending){const p=s.pending,choice=({'workshop-plan':'skip','monthly-issue':'acknowledge','conference-plan':p.scope==='domestic'?'together':'none','failure-counsel':'review','conversation-topic':'daily','presentation-recovery':'rehearse',story:'encourage','academic-exam':'support','external-admission':'remain',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',defense:'defend',service:'consult','service-review':'consult',event:p.kind==='event'?affordableEventChoice(s,p.id):0})[p.kind]??({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[p.step];s=decide(s,choice);}
+  const plan=proposeSchedule(s);if(![4,10].includes(calendarMonth(s.month))){plan[3]='industry';if(s.month>=24)plan[0]='industry';}assert.ok(plan.every(id=>Object.hasOwn(ACTIVITIES,id)));if(s.grants.status==='bridge')s.lab.budget={...s.lab.budget,performance:0,environment:1,publicity:0};s=simulateWithRestConsent(s,plan,{...managedOptions(s,month%4===0?'conversation':'routine')},'allow');
+  while(s.pending&&!s.ending){const p=s.pending,choice=({'rest-request':'allow','lab-warning':'acknowledge','workshop-plan':'skip','monthly-issue':'acknowledge','conference-plan':p.scope==='domestic'?'together':'none','failure-counsel':'review','conversation-topic':'daily','presentation-recovery':'rehearse',story:'encourage','academic-exam':'support','external-admission':'remain',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',defense:'defend',service:'consult','service-review':'consult',event:p.kind==='event'?affordableEventChoice(s,p.id):0})[p.kind]??({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[p.step];s=decide(s,choice);}
  }assert.equal(s.month,96);assert.equal(s.ending,'startup');assert.ok(validateSave(s));
 });

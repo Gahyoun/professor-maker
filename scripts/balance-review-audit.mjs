@@ -55,9 +55,10 @@ if(isMainThread){
     maxStress=Math.max(maxStress,s.hidden.stress);minStamina=Math.min(minStamina,abilityScore(s,'stamina'));
     for(let guard=0;s.pending&&!s.ending;guard++){
      if(guard>=25)throw Error('decision queue exceeded');const p=s.pending;
-     const choices={'workshop-plan':'skip','monthly-issue':'acknowledge','failure-counsel':'review','conversation-topic':'academic',story:'encourage','academic-exam':'support',event:0,route:policy==='graduate'?'graduate':policy==='masters'?'masters':'integrated','presentation-recovery':'rehearse','external-admission':'remain',masters:policy==='masters'?'graduate':'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
+     const choices={'rest-request':'allow','lab-warning':'acknowledge','workshop-plan':'skip','monthly-issue':'acknowledge','failure-counsel':'review','conversation-topic':'academic',story:'encourage','academic-exam':'support',event:0,route:policy==='graduate'?'graduate':policy==='masters'?'masters':'integrated','presentation-recovery':'rehearse','external-admission':'remain',masters:policy==='masters'?'graduate':'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
      const choice=p.kind==='conference-plan'?(p.scope==='domestic'?'student':'none'):p.kind==='event'?affordableEventChoice(s,p.id):choices[p.kind]??({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[p.step];
      s=execute('decision',s,{choice});
+     if(p.kind==='rest-request')s=execute('month',s,{plan:s.plan,options});
     }
    }
    outcome(s.ending??'incomplete');

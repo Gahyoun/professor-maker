@@ -1,3 +1,4 @@
+import {simulateWithRestConsent} from './play-support.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createState,EVENTS,eventEligible,eventWeight,simulateMonth,decide,migrateSave,validateSave,calendarMonth,studentTrainingActive} from '../dist/engine.js';
@@ -55,7 +56,7 @@ test('declared rare counseling actually occurs less often without consuming the 
   for(let seed=1;seed<=400;seed++){
     if(seed%4===0)continue; // This fixture needs an unfulfilled service plan.
     const s=createState('검수학생',seed,{gender:'male',professorGender:'male'});s.month=12;
-    const rest=Array(4).fill('rest'),n=simulateMonth(s,rest,{proposal:rest});
+    const rest=Array(4).fill('rest'),n=simulateWithRestConsent(s,rest,{proposal:rest},'decline');
     assert.equal(n.seed,s.seed,'counseling retains its deterministic draw, with no added RNG consumption');
     assert.equal(event(n.pending?.id)?.kind,'counseling');
     counts.set(n.pending.id,(counts.get(n.pending.id)??0)+1);

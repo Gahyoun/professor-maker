@@ -45,3 +45,15 @@ test('dry rendering preserves loose hair even if an old render-only tie property
   for(const hairStyle of ['ponytail','braided-bun'])assert.equal(renderStudentPortrait({...a,hairStyle},'학생','neutral',pose,facing),loose);
  }
 });
+
+test('loose and tied long hair cover the rear nape in the monitor view',()=>{
+ const base=studentAppearance(25,'female');
+ for(const hairLength of [5,6])for(const curly of [false,true])for(const [labMode,hairStyle]of [['dry','loose'],['wet','ponytail'],['wet','braided-bun']]){
+  const svg=renderStudentPortrait({...base,hairLength,curly,labMode,hairStyle,glasses:true},'학생','neutral','seated','monitor');
+  const hair=svg.match(/<g data-avatar-part="back-hair">([\s\S]*?)<\/g>/)?.[1]??'',visible=new Set();
+  for(const m of hair.matchAll(/<rect x="(\d+)" y="(\d+)" width="(\d+)" height="1"/g))for(let x=+m[1];x<+m[1]+(+m[3]);x++)visible.add(`${x},${m[2]}`);
+  // These fixed raster coordinates span the formerly exposed rear jaw and
+  // neck above the collar, including the body neck of a tied hairstyle.
+  for(const point of ['72,82','76,83','80,84','82,87','84,90','86,96'])assert.ok(visible.has(point),`${hairLength}/${curly}/${hairStyle}: uncovered nape ${point}`);
+ }
+});

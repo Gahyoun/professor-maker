@@ -148,6 +148,16 @@ function startupScenes(pages,distance,locale){
  const request=p('다음 주 발표에 와 주실 수 있을까요? 제품과 연구의 다음 계획에 대해 의견을 듣고 싶습니다.\n― {name} 드림','Could you come to our pitch next week? I would like your thoughts on the next plans for the product and our research.\n— {name}');
  pages[0]=opening[locale];pages[1]=[news[locale],contact[distance][locale],request[locale]].join('\n\n');
 }
+const fundingClosurePages=[
+ p('학과장과 만난 뒤 두 달 동안 운영 계획을 다시 살폈다. 그러나 학생 지원과 실험실 유지에 필요한 연구비를 확보하지 못해 운영 보류가 세 달째 이어졌다.\n\n이번에는 새 실험 계획 대신, 학생의 연구가 다른 곳에서도 이어질 수 있도록 인계 계획을 적었다.','After meeting with the department chair, we reviewed the operating plan over the next two months. But funds for student support and essential lab upkeep remained unavailable. Operations were suspended for a third month.\n\nInstead of planning a new experiment, I wrote a handover plan so the student could continue elsewhere.'),
+ p('교수님께.\n\n연구 파일과 노트를 정리해 두었습니다. 연구비가 부족해 멈춘 일과 제가 마친 일은 나누어 적었습니다. 다음 지도교수님과도 이어서 이야기해 보겠습니다.\n\n그동안 배운 것을 잃지 않도록 하겠습니다.\n― {name} 드림','Dear Professor,\n\nI have organized the research files and notes. I listed the work stopped by lack of funding separately from what I completed. I will talk with my next adviser about continuing.\n\nI will try not to lose what I learned here.\n— {name}'),
+ p('나는 인계 서류와 학생 지원 일정의 마지막 줄을 확인했다. 다음 지도교수와의 면담 일시가 적혀 있었다.\n\n연구비는 더 이어지지 못했지만, 학생의 다음 지도가 끊기지 않도록 연락을 남겼다.','I checked the handover documents and student support schedule. The last line held the date of a meeting with the next adviser.\n\nThe funding could not continue, but I left the contact details needed to keep the student’s advising from breaking off.')
+];
+const borrowingClosurePages=[
+ p('학과장과 만난 뒤 두 달 동안 지출과 다음 과제의 입금 일정을 다시 살폈다. 학과에서 부족한 운영비를 차입해 급여와 연구는 이어 갔다. 그러나 미상환액이 1천만원을 넘은 상태에서 추가 차입이 세 달째 계속되었다.\n\n더 빌려 운영을 연장하는 대신, 학생이 해 온 연구와 다음 지도 계획을 함께 정리했다.','After meeting with the department chair, we reviewed spending and the next grant deposit over two months. Department borrowing kept stipends and research going. But new borrowing continued for a third month while outstanding debt exceeded ten million KRW.\n\nRather than extend operations with more loans, we organized the student’s research and next advising plan.'),
+ p('교수님께.\n\n연구 파일과 노트를 정리해 두었습니다. 마지막까지 진행한 일과 다음 연구실에서 이어 갈 일을 나누어 적었습니다. 연구비 사정으로 환경은 바뀌지만, 제가 해 온 질문도 함께 가져가겠습니다.\n\n다음 지도교수님과 이야기한 뒤 다시 연락드리겠습니다.\n― {name} 드림','Dear Professor,\n\nI have organized the research files and notes, separating the work completed here from the work to continue in the next lab. Funding circumstances will change my environment, but I will take my questions with me.\n\nI will contact you after talking to my next adviser.\n— {name}'),
+ p('차입금의 마지막 숫자 옆에 학생 지원과 인계 일정을 적었다. 다음 지도교수와의 면담 일시를 다시 확인했다.\n\n연구실의 살림은 여기서 멈췄다. 학생의 다음 이야기가 끊기지 않도록 연락은 남겼다.','Beside the final debt figure, I wrote the student support and handover schedule. I checked the date of the meeting with the next adviser.\n\nThe lab’s operations stopped here. I left the contacts needed for the student’s next story to continue.')
+];
 const failurePages = {
   graduation_requirements: [
     p('학위를 마칠 시점이 왔지만, 필요한 연구와 학술발표를 모두 채우지는 못했다. 연구실 운영이 중단된 것은 아니었다. 다만 학생의 졸업에 필요한 준비가 끝나지 않았다.\n\n나는 성과표의 빈칸을 보고, 끝났다고 말할 수 없었던 시간을 생각했다.', 'The degree review arrived before all the required research and presentations were complete. The lab had not closed. The student’s preparation for graduation was unfinished.\n\nI looked at the gaps in the record and thought about the time I could not call complete.'),
@@ -302,7 +312,7 @@ export function getEndingPages(id, lang = 'ko', relationship, name, reason, hist
   const distance = endingRelationship(relationship, id);
   if(id==='dismissed'){const closing={close:['학생은 이후에도 필요한 절차를 함께 확인하기로 했다. 다음 계획이 정해지면 학생이 먼저 연락하기로 했다.','They agreed to review the remaining procedures and get in touch when plans were ready.'],reserved:['필요한 서류와 연락 방법을 정리했다. 이후의 계획을 재촉하지 않았다.','They reviewed the documents and contact details without pressing for plans.'],distant:['행정상 필요한 연락만 남기고, 더 이야기하고 싶지 않다는 학생의 뜻을 존중했다.','Only administrative contact remained, respecting the student’s wish for privacy.']};return story.pages.map((p,i)=>p[locale]+(i===story.pages.length-1?'\n\n'+closing[distance][locale==='en'?1:0]:'')).map(p=>formatStudentName(p,name,locale));}
   const suppliedReason = typeof reason === 'object' ? reason?.endingReason : reason;
-  const rawPages = id === 'gameover' && failurePages[suppliedReason] ? failurePages[suppliedReason] : story.pages;
+  const rawPages = id==='gameover'&&context?.labClosure?.reason==='funding'?(context.labClosure.mode==='borrowing'?borrowingClosurePages:fundingClosurePages):id === 'gameover' && failurePages[suppliedReason] ? failurePages[suppliedReason] : story.pages;
   let pages = rawPages.map(page => page[locale]);
   if(id==='true')pages[3]=postdocLetter(context,locale,locale==='en'?englishResearchSetting(context):researchSetting(context));
   if(id==='gameover'&&suppliedReason==='qual_failure'&&history.filter(h=>h.kind==='qual'&&!h.passed).length<2){

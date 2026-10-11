@@ -1,11 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createState,simulateMonth,proposeSchedule,decide,eventEligible,validateSave} from '../dist/engine.js';
+import {createState,proposeSchedule,decide,eventEligible,validateSave} from '../dist/engine.js';
 import {EVENTS} from '../dist/events.js';
+import {simulateWithRestConsent} from './play-support.mjs';
+const simulateMonth=(s,plan,options)=>simulateWithRestConsent(s,plan,options,'allow');
 import {getEndingPages} from '../dist/stories.js';
 
 function settleOtherDecisions(state,target){
- const choices={story:'encourage','academic-exam':'support','monthly-issue':'acknowledge','conference-plan':'none','workshop-plan':'skip','failure-counsel':'review','conversation-topic':'daily','presentation-recovery':'rehearse',sabbatical:'home',event:0};
+ const choices={'rest-request':'allow','lab-warning':'acknowledge',story:'encourage','academic-exam':'support','monthly-issue':'acknowledge','conference-plan':'none','workshop-plan':'skip','failure-counsel':'review','conversation-topic':'daily','presentation-recovery':'rehearse',sabbatical:'home',event:0};
  let s=state;
  for(let guard=0;s.pending&&!s.ending&&s.pending.kind!==target;guard++){
   assert.ok(guard<20,'The decision queue must make progress.');

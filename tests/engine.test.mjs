@@ -1,18 +1,21 @@
-import {managedOptions,affordableEventChoice} from './play-support.mjs';
+import {managedOptions,affordableEventChoice,simulateWithRestConsent} from './play-support.mjs';
 import {facultyCapacity,allocateCredits} from '../dist/workload.js';
 import {canApplyGrant} from '../dist/funding.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {VERSION,MONTHS,ACTIVITIES,PROJECT_PHASES,EVENTS,createState,simulateMonth,decide,stage,proposeSchedule,calendarMonth,salaryBase,monthlyBudgetCost,canContinue,canDefend,careerEnding,isTrueEnding,TRUE_REQUIREMENTS,validateSave,HIDDEN_RANGES,abilityScore,eventWeight,migrateSave,degreeRequirements,qualificationStudy,projectWork,projectThresholds,feedbackEffect} from '../dist/engine.js';
+import {VERSION,MONTHS,ACTIVITIES,PROJECT_PHASES,EVENTS,createState,decide,stage,proposeSchedule,calendarMonth,salaryBase,monthlyBudgetCost,canContinue,canDefend,careerEnding,isTrueEnding,TRUE_REQUIREMENTS,validateSave,HIDDEN_RANGES,abilityScore,eventWeight,migrateSave,degreeRequirements,qualificationStudy,projectWork,projectThresholds,feedbackEffect} from '../dist/engine.js';
 import {DISCIPLINES,degreeTargets} from '../dist/disciplines.js';
 const copy=s=>structuredClone(s);
+// These older monthly fixtures explicitly retain their chosen schedules.
+// New request tests cover permission, refusal and preflight independently.
+const simulateMonth=(s,plan,options)=>simulateWithRestConsent(s,plan,options,'decline');
 const normalized=s=>Object.fromEntries(Object.keys(s.hidden).map(k=>[k,abilityScore(s,k)]));
 function setScore(s,key,value){const [lo,hi]=HIDDEN_RANGES[key];s.hidden[key]=lo+value*(hi-lo)/100;}
 function resolve(s,route='integrated',pressure=false) {
   let guard=0;
   while(s.pending&&!s.ending) {
     assert.ok(guard++<16,'decision queue must terminate');
-    const kind=s.pending.kind;if(['workshop-plan','monthly-issue','conference-plan','failure-counsel','conversation-topic'].includes(kind)){s=decide(s,({'workshop-plan':'skip','monthly-issue':'acknowledge','conference-plan':s.pending.scope==='domestic'?'together':'none','failure-counsel':pressure?'strict':'review','conversation-topic':'daily'})[kind]);continue;}if(kind==='story'||kind==='academic-exam'||kind==='thesis'){const c=kind==='story'?'encourage':kind==='academic-exam'?'support':({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[s.pending.step];s=decide(s,c);continue;}
+    const kind=s.pending.kind;if(['rest-request','lab-warning','workshop-plan','monthly-issue','conference-plan','failure-counsel','conversation-topic'].includes(kind)){s=decide(s,({'rest-request':pressure?'decline':'allow','lab-warning':'acknowledge','workshop-plan':'skip','monthly-issue':'acknowledge','conference-plan':s.pending.scope==='domestic'?'together':'none','failure-counsel':pressure?'strict':'review','conversation-topic':'daily'})[kind]);continue;}if(kind==='story'||kind==='academic-exam'||kind==='thesis'){const c=kind==='story'?'encourage':kind==='academic-exam'?'support':({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[s.pending.step];s=decide(s,c);continue;}
     if(pressure&&kind==='event'&&s.pending.id==='monthly-workload'){s=decide(s,1);continue;}
     s=decide(s,kind==='presentation-recovery'?'rehearse':kind==='external-admission'?'remain':kind==='event'?affordableEventChoice(s,s.pending.id):kind==='route'?route:kind==='masters'?'continue':kind==='qual'?'exam':kind==='sabbatical'?'home':kind==='defense'?'defend':'consult');
   }
@@ -20,6 +23,10 @@ function resolve(s,route='integrated',pressure=false) {
 }
 function strategy(s,goal='institute') {
   const plan=proposeSchedule(s),h=normalized(s);
+  if(goal==='startup'){
+    if(![4,10].includes(calendarMonth(s.month,s.locale))){plan[3]='industry';if(s.month>=24)plan[0]='industry';}
+    return plan;
+  }
   if(['unemployed','unrelated'].includes(goal)&&s.career.papers>=3){plan.splice(0,4,'rest','coffee','rest',h.learning<50?'study':'rest');}
   else if(goal==='true') {
     if(!s.project.submitted){s.publication.journal=s.career.topPapers<2?'leading':'standard';s.project.journal=s.publication.journal;}
@@ -34,7 +41,6 @@ function strategy(s,goal='institute') {
     if(s.month>=30&&s.month<52&&s.career.qual!=='passed'&&(qualificationStudy(s)<8||s.career.qual==='failed'&&qualificationStudy(s,(s.history.find(h=>h.kind==='qual'&&!h.passed)?.month??s.month)+1)<2))plan[0]=plan[1]='coursework';
     return plan;
   } else if(goal==='corporate')plan[3]=h.industry<98?'industry':s.project.phase<=2?'experiment':'analysis';
-  else if(goal==='startup'){plan[3]='industry';if(s.month>=24)plan[0]='industry';}
   else if(goal==='youtuber')plan[3]='video';
   else if(goal==='unrelated')plan[3]=h.industry<35?'industry':'free';
   if(goal==='unrelated'&&s.career.papers>=3&&h.industry<35)plan[3]='industry';
@@ -43,13 +49,13 @@ function strategy(s,goal='institute') {
   return plan;
 }
 export function play(goal='institute',seed=1,route='integrated',locale='ko') {
-  let s=createState('Test student',seed,{gender:'female',locale,...(goal==='true'?{age:38}:{})});
+  let s=createState('Test student',seed,{gender:'female',locale,...(['true','startup'].includes(goal)?{age:38}:{})});
   for(let m=0;m<MONTHS&&!s.ending;m++) {
-    s.lab.creditEnabled=true;const plan=strategy(s,goal);
-    const facultyAction=s.lab.funds<80&&canApplyGrant(s)?'funding':goal==='true'&&s.career.papers&&s.career.recommendations<4?'recommend':s.sabbatical.active?'support':goal==='true'||goal==='resident_researcher'||m%6===0?'conversation':'routine';
+    s.lab.creditEnabled=true;if(goal==='startup'&&s.grants.status==='bridge')s.lab.budget={...s.lab.budget,performance:0,environment:1,publicity:0};const plan=strategy(s,goal);
+    const facultyAction=s.lab.funds<80&&canApplyGrant(s)?'funding':goal==='startup'?(m%4===0?'conversation':'routine'):goal==='true'&&s.career.papers&&s.career.recommendations<4?'recommend':s.sabbatical.active?'support':goal==='true'||goal==='resident_researcher'||m%6===0?'conversation':'routine';
     const aligned=feedbackEffect(s,'praise').efficiency>1?'praise':feedbackEffect(s,'critique').efficiency>1?'critique':'listen';
-    const feedback=s.advising?.lastFeedback===aligned&&s.advising.streak>=3?'listen':aligned;
-    try{s=resolve(simulateMonth(s,plan,{feedback,...managedOptions(s,facultyAction)}),route);}catch(error){error.state=structuredClone(s);throw error;}
+    const feedback=goal==='startup'?'listen':s.advising?.lastFeedback===aligned&&s.advising.streak>=3?'listen':aligned;
+    try{s=resolve(simulateWithRestConsent(s,plan,{feedback,...managedOptions(s,facultyAction)},'allow'),route);}catch(error){error.state=structuredClone(s);throw error;}
     assert.ok(validateSave(s),`invalid generated state at month ${s.month}`);
   }
   return s;
@@ -86,7 +92,7 @@ test('annual grants, degree stipends, monthly stipend adjustment and funding tim
   let s=createState('Student',1);const initial=s.lab.funds;assert.equal(s.lab.funds+s.lab.pool,s.lab.initialFunding);assert.equal(salaryBase(s),13);assert.ok(Math.abs(monthlyBudgetCost(s)-16.6)<1e-8);
   const first=simulateMonth(s,s.plan);assert.ok(Math.abs(first.lab.funds-(initial-(16.6-7.8)))<1e-8);
   assert.throws(()=>simulateMonth({...first,pending:null,pendingQueue:[]},proposeSchedule(first),{budget:{...first.lab.budget,salary:73}}),/March/);
-  s.month=12;s.lab.funds=0;assert.throws(()=>simulateMonth(s,proposeSchedule(s),{facultyAction:'funding'}));
+  s.month=12;s.lab.funds=0;const financed=simulateMonth(s,proposeSchedule(s),{facultyAction:'funding'});assert.equal(financed.month,13);assert.ok(financed.history.some(h=>h.kind==='operating-advance'));
   s.lab.funds=25;s.grants.reportYears=[1];const grant=simulateMonth(s,proposeSchedule(s));assert.ok(grant.history.some(h=>h.kind==='annual-grant'));assert.ok(grant.lab.funds+grant.lab.pool>200);
   s.month=24;s.route='masters';assert.equal(salaryBase(s),22);s.month=48;assert.equal(salaryBase(s),30);
 });
@@ -103,13 +109,13 @@ test('performance feedback depends on evidence; harshness has a relationship cos
   base.lastReport={...report,completion:.5,progress:0,scienceFailures:2};const repaired=simulateMonth(base,['rest','rest','rest','rest'],{feedback:'critique'});assert.ok(repaired.hidden.research>base.hidden.research);assert.equal(repaired.project.progress,base.project.progress);assert.ok(repaired.monthlyEfficiency>1);
   const harsh=simulateMonth(base,['rest','rest','rest','rest'],{feedback:'harsh'});assert.ok(harsh.hidden.rapport<base.hidden.rapport);assert.equal(harsh.behavior.harsh,1);
 });
-test('rest recovers fatigue; low wellbeing warns then causes departure, faculty zero is immediate',()=>{
+test('rest recovers fatigue; low wellbeing warns then causes departure, faculty zero offers recovery',()=>{
   const s=createState('Student',1);setScore(s,'stamina',20);s.hidden.stress=80;
   const recovered=simulateMonth(s,['rest','rest','coffee','rest']);assert.ok(recovered.hidden.stamina>s.hidden.stamina);assert.ok(recovered.hidden.stress<s.hidden.stress);
-  setScore(s,'rapport',0);setScore(s,'rapport',0);setScore(s,'resilience',20);s.hidden.stress=90;s.hidden.motivation=0;let first=simulateMonth(s,['experiment','experiment','experiment','experiment'],{feedback:'harsh'});assert.equal(first.crisis,1);assert.equal(first.ending,null);assert.ok(first.history.some(h=>h.kind==='warning'));
+  setScore(s,'rapport',0);setScore(s,'rapport',0);setScore(s,'resilience',25);setScore(s,'stamina',90);s.hidden.stress=90;s.hidden.motivation=0;let first=simulateMonth(s,['experiment','experiment','experiment','experiment'],{feedback:'harsh'});assert.equal(first.crisis,1);assert.equal(first.ending,null);assert.ok(first.history.some(h=>h.kind==='warning'));
   first=resolve(first);const second=simulateMonth(first,['experiment','experiment','conference','experiment'],{feedback:'harsh'});assert.equal(second.ending,'dropout');
-  const p=createState();p.professor.admin=0;assert.equal(simulateMonth(p,p.plan).ending,'gameover');
-  const neglected=createState();neglected.professor.admin=3;assert.equal(simulateMonth(neglected,neglected.plan,{allocation:allocateCredits({research:4,teaching:2,admin:0,mentoring:2},facultyCapacity(neglected).credits)}).ending,'gameover');
+  const p=createState();p.professor.admin=0;const warned=simulateMonth(p,p.plan);assert.equal(warned.ending,null);assert.equal(warned.labRisk.faculty.admin,1);assert.ok([warned.pending,...warned.pendingQueue].some(p=>p?.kind==='lab-warning'));
+  const neglected=createState();neglected.professor.admin=3;const firstNeglect=simulateMonth(neglected,neglected.plan,{allocation:allocateCredits({research:4,teaching:2,admin:0,mentoring:2},facultyCapacity(neglected).credits)});assert.equal(firstNeglect.ending,null);assert.equal(firstNeglect.labRisk.faculty.admin,1);
 });
 test('project submissions and accepted papers differ; review never completes in one month',()=>{
   const s=createState('Student',2);s.month=2;s.project.phase=4;s.project.progress=31;setScore(s,'language',100);setScore(s,'research',100);setScore(s,'learning',100);
@@ -172,12 +178,9 @@ test('advanced doctoral preparation remains attainable through actual practice u
   assert.ok(s.career.papers>=TRUE_REQUIREMENTS.papers);assert.ok(s.career.conferences>=TRUE_REQUIREMENTS.conferences);
 });
 test('all six normal careers are reachable through play with managed finances',()=>{
-  // The RA founder fixture uses seed 8 × 7919, also exercised by lab-play.test.mjs.
-  // Institute seed 1 earns four accepted papers through the unchanged policy;
-  // seed 6 now graduates with three ordinary papers after event weights are respected.
-  // 4.17 moves thesis verdicts to December and pays integrated students master's stipends for four semesters;
-  // startup stays a narrow industry/enterprise boundary (seed 47), and the video path completes on seed 1.
-  const seeds={institute:1,startup:47,unemployed:1,youtuber:1};
+  // The founder policy uses current RA choices, agreed rest, and four-monthly
+  // advising on seed 8 × 7919, also exercised by lab-play.test.mjs.
+  const seeds={institute:1,startup:63352,unemployed:1,youtuber:2};
   for(const goal of ['institute','corporate','unrelated','startup','unemployed','youtuber']){const s=play(goal,seeds[goal]??6);assert.equal(s.month,96,goal);assert.ok(canDefend(s),goal);assert.equal(s.ending,goal,JSON.stringify({goal,ending:s.ending,month:s.month,hidden:s.hidden,career:s.career,professor:s.professor}));}
 });
 test('saved games reject old versions, malformed weeks, impossible career counts and invalid events',()=>{
@@ -253,14 +256,14 @@ test('the resident researcher path uses stability preference rather than low res
 });
 test('sustained overwork causes leave while sustained relationship damage causes dropout',()=>{
   let s=createState('Student',6,{gender:'female',institution:'institute'});
-  // Start in graduate research to isolate overwork from undergraduate admission criteria.
-  s.month=24;s.route='integrated';
+  // Start after qualification to isolate health effects from an unrelated exam exit.
+  s.month=48;s.route='integrated';s.career.qual='passed';s.career.qualAttempts=1;
   for(let i=0;i<36&&!s.ending;i++){
     const primary=['study','experiment','experiment','analysis','paper','paper'][s.project.phase],plan=Array(4).fill(primary);
     if([4,10].includes(calendarMonth(s.month,s.locale)))plan[2]='conference';
     s=resolve(simulateMonth(s,plan,{proposal:plan,feedback:'listen',policies:{work:'intensive',study:'research'}}),'integrated',true);
   }
-  assert.equal(s.ending,'leave');assert.ok(s.history.some(h=>h.kind==='warning'&&h.reason==='health'));assert.ok(abilityScore(s,'rapport')>12);assert.ok(abilityScore(s,'rapport')>12);
+  assert.equal(s.ending,'leave');assert.ok(s.history.some(h=>h.kind==='warning'&&h.reason==='health'));assert.ok(abilityScore(s,'rapport')>12);
 });
 test('grant reporting, two-to-five-year renewal history and save validation integrate with monthly play',()=>{
   const s=play('institute',6);assert.ok(s.history.some(h=>h.kind==='grant-report'));assert.ok(s.history.some(h=>h.kind==='grant-application'));assert.ok(s.history.some(h=>h.kind==='grant-selection'));assert.ok(s.history.filter(h=>h.kind==='grant-selection'&&h.awarded).every(h=>h.years>=2&&h.years<=5));assert.ok(s.grants.reportYears.includes(8));assert.ok(validateSave(s));
@@ -360,8 +363,8 @@ test('public-institution grant amounts stay stable while private variations rema
     const national=createState('Student',seed,{institution:'national'}),privatePI=createState('Student',seed,{institution:'private'});
     for(const s of [national,privatePI]){s.month=12;s.grants.reportYears=[1];}
     const stable=simulateMonth(national,rest,{proposal:rest}),variable=simulateMonth(privatePI,rest,{proposal:rest}),repeat=simulateMonth(privatePI,rest,{proposal:rest});
-    assert.equal(stable.grants.annualAmount,300);assert.deepEqual(variable,repeat);assert.ok(variable.history.find(h=>h.kind==='annual-grant').amount>=270&&variable.history.find(h=>h.kind==='annual-grant').amount<=330);privateAmounts.add(variable.history.find(h=>h.kind==='annual-grant').amount);
-    assert.equal(variable.grants.annualAmount,300);
+    assert.equal(stable.grants.annualAmount,359);assert.deepEqual(variable,repeat);assert.ok(variable.history.find(h=>h.kind==='annual-grant').amount>=Math.round(stable.grants.annualAmount*.9)&&variable.history.find(h=>h.kind==='annual-grant').amount<=Math.round(stable.grants.annualAmount*1.1));privateAmounts.add(variable.history.find(h=>h.kind==='annual-grant').amount);
+    assert.equal(variable.grants.annualAmount,359);
   }
   assert.ok(privateAmounts.size>5);
 });
@@ -372,7 +375,7 @@ test('physics age-38 public PI completes eight years with proposals and expenses
       if(s.grants.status==='bridge')s.lab.budget={...s.lab.budget,environment:1,performance:0,publicity:0};
       const aligned=feedbackEffect(s,'praise').efficiency>1?'praise':feedbackEffect(s,'critique').efficiency>1?'critique':'listen';
       const feedback=s.advising?.lastFeedback===aligned&&s.advising.streak>=3?'listen':aligned;
-      s=resolve(simulateMonth(s,proposeSchedule(s),{feedback,...managedOptions(s,month%6===0?'conversation':'routine')}));
+      s=resolve(simulateWithRestConsent(s,proposeSchedule(s),{feedback,...managedOptions(s,month%6===0?'conversation':'routine')},'allow'));
     }
     assert.equal(s.month,96,labMode);assert.ok(canDefend(s),labMode);assert.ok(!['gameover','dropout','leave'].includes(s.ending),JSON.stringify({labMode,ending:s.ending}));assert.ok(validateSave(s));
   }

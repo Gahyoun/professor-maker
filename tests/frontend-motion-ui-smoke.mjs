@@ -16,9 +16,9 @@ try{
  await page.locator('.skip-link').focus();await page.locator('.skip-link').press('Enter');
  assert.equal(await page.evaluate(()=>location.hash),'#lab');
  assert.equal(await page.evaluate(()=>document.activeElement.id),'main');
- await page.locator('#start-form button[type=submit]').click();
+ if(await page.locator('#onboarding-update').count())await page.locator('#onboarding-update [data-ui=update-close]').first().click();await page.locator('#start-form button[type=submit]').click();await page.locator('[name=candidateIndex][value="0"]').check();await page.locator('#admission-form button[type=submit]').click();
  await page.locator('#decision [data-choice=together]').click();
- await page.waitForFunction(()=>JSON.parse(localStorage.getItem('pm-save-v4')).pending===null);
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('pm-save-v4')).pending===null);if(await page.locator('[data-ui=screen-guide-skip]').count())await page.locator('[data-ui=screen-guide-skip]').click();
  for(const width of [320,390,768,1360]){
   await page.setViewportSize({width,height:950});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${width}px overflows`);
@@ -58,7 +58,7 @@ try{
  await page.locator('[data-ui=advance]').click();
  await page.locator('#funding-results .funding-awarded').waitFor();
  assert.match(await page.locator('#funding-results').innerText(),/5년/);
- assert.match(await page.locator('#toast').innerText(),/선정되었습니다/);
+ assert.match(await page.locator('#toast').innerText(),/좋은 소식!.*선정.*추가 연구비/);
  const real=await page.evaluate(()=>JSON.parse(localStorage.getItem('pm-save-v4')).lastReport.fundingResults);
  assert.deepEqual(real,expected);
  await page.locator('#funding-results').scrollIntoViewIfNeeded();
