@@ -128,7 +128,13 @@ function cot(u,v){
 function printer(u,v,z=0){return box(u,v,2.6,2,8,'#bac5c6',z)+box(u+.3,v+.1,2,1.4,2,'#dee2db',z+8)+front(u+.4,v+2.04,z+2,1.9,1.3,'#71868d')+box(u+.5,v-.1,1.8,.8,1,'#f8f4e8',z+10);}
 function kettle(u,v,z=0){return box(u,v,1.2,1.2,1,'#8a9b9c',z)+box(u+.2,v+.2,.8,.8,8,'#e9e3d3',z+1)+box(u+.3,v+.3,.6,.6,1,'#96a4a3',z+9)+line([u+1,v+.5,z+3],[u+1.6,v+.5,z+4],'#829996',2)+line([u+1.6,v+.5,z+4],[u+1.6,v+.5,z+8],'#829996',2);}
 function plush(u,v,z){const [x,y]=projectRoom(u,v,z);return `<g fill="#c6a281"><path d="M${x-7} ${y-16}h3v-3h4v2h5v-2h4v3h3v10h-3v7h-13v-7h-3z"/><path d="M${x-6} ${y-6}h12v5h-12z" fill="#e7d5b7"/><path d="M${x-4} ${y-12}h1v2h-1zm8 0h1v2h-1z" fill="#696060"/><path d="M${x-1} ${y-8}h3v1h-3z" fill="#a57c69"/></g>`;}
-function monitor(u,v,z,active=false){return box(u+1.5,v,.4,.6,7,'#7e909c',z)+box(u+.7,v-.2,2.2,1,1,'#9daeb1',z)+front(u,v+.3,z+7,4.7,21,'#788f9c')+front(u+.35,v+.32,z+8.5,4,17.7,'#d9e6de')+line([u+.7,v+.35,z+22],[u+3.7,v+.35,z+22],'#9cb9ac',1.4)+line([u+.7,v+.35,z+17],[u+3.3,v+.35,z+17],'#9cb9ac',1.4)+line([u+.7,v+.35,z+12],[u+2.4,v+.35,z+12],'#9cb9ac',1.4)+(active?monitorMotion(projectRoom,u,v,z):'');}
+export const MONITOR_DISPLAY=Object.freeze({width:4,height:4*Math.hypot(9,4.5)*9/16,aspectRatio:16/9});
+function monitor(u,v,z,active=false){
+ const display=MONITOR_DISPLAY,frameHeight=display.height+3.3;
+ return box(u+1.5,v,.4,.6,7,'#7e909c',z)+box(u+.7,v-.2,2.2,1,1,'#9daeb1',z)+front(u,v+.3,z+7,4.7,frameHeight,'#788f9c')+
+  `<g class="monitor-display" data-display-aspect="16:9">${front(u+.35,v+.32,z+8.5,display.width,display.height,'#d9e6de')}</g>`+
+  line([u+.7,v+.35,z+26],[u+3.7,v+.35,z+26],'#9cb9ac',1.4)+line([u+.7,v+.35,z+20],[u+3.3,v+.35,z+20],'#9cb9ac',1.4)+line([u+.7,v+.35,z+14],[u+2.4,v+.35,z+14],'#9cb9ac',1.4)+(active?monitorMotion(projectRoom,u,v,z):'');
+}
 function microscope(u,v,z){return box(u,v,2.3,2,2,'#d9dfd5',z)+box(u+1.5,v+.2,.55,.8,17,'#9eafb5',z+2)+box(u+.7,v+.2,1.8,.7,3,'#8e9fa8',z+19)+box(u+.6,v+.3,.4,.4,6,'#8395a0',z+13)+box(u+.4,v+.3,1.4,1.2,1,'#bdcbd0',z+7);}
 function actor(state,result,index,u,v,idle,lift=0,facing='front',hairOnly=false){
  const [x,y]=projectRoom(u,v,lift),w=62.4,h=96.72,activity=String(result.actual),wet=state.professorProfile.labMode==='wet';

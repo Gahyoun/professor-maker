@@ -1,5 +1,6 @@
 // Classification labels and codes transcribed from the user-supplied Ministry of Education classification workbook.
 // Lab tracks and degree targets below are fictional game rules, not national degree regulations.
+import {publicationPaceProfile} from './publication-pace.js';
 export const DISCIPLINES = [
   {
     "id": "058",
@@ -772,4 +773,4 @@ export const DISCIPLINES = [
   }
 ];
 export function getDiscipline(id="050"){return DISCIPLINES.find(d=>d.id===id)||DISCIPLINES.find(d=>d.id==="050");}
-export function degreeTargets(fieldId,stage){const d=getDiscipline(fieldId),masters=stage==="masters";if(stage==="undergrad")return {submissions:0,papers:0,conferences:0};if(d.graduation==="conference")return {submissions:masters?0:1,papers:masters?0:1,conferences:masters?2:5};if(d.graduation==="mixed")return {submissions:masters?1:2,papers:masters?0:2,conferences:masters?1:4};return {submissions:masters?1:3,papers:masters?0:3,conferences:masters?1:3};}
+export function degreeTargets(fieldId,stage){const d=getDiscipline(fieldId),masters=stage==="masters",pace=publicationPaceProfile(d.id);if(stage==="undergrad")return {submissions:0,papers:0,conferences:0};if(d.graduation==="conference")return {submissions:masters?0:1,papers:masters?0:1,conferences:masters?2:pace.doctorateConferences??5};if(d.graduation==="mixed")return {submissions:masters?1:2,papers:masters?0:2,conferences:masters?1:4};const papers=pace.doctoratePapers??3;return {submissions:masters?1:papers,papers:masters?0:papers,conferences:masters?1:3};}

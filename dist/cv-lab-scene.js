@@ -50,9 +50,9 @@ function validSVG(svg){
    const open=/^<([A-Za-z][\w-]*)([\s\S]*?)\s*(\/?)>$/.exec(token);if(!open||!tags.has(open[1])||++count>3000)return false;
    if(!stack.length&&open[1]!=='svg')return false;
    const body=open[2],attributes=new Map();let consumed=0;
-   for(const match of body.matchAll(/\s+([A-Za-z][\w-]*)="([^"<>]*)"/g)){
-    if(match.index!==consumed||attributes.has(match[1])||!validAttribute(match[1],match[2]))return false;
-    consumed=match.index+match[0].length;attributes.set(match[1],match[2]);
+   for(const match of body.matchAll(/\s+([A-Za-z][\w-]*)=(["'])([^"'<>]*)\2/g)){
+    if(match.index!==consumed||attributes.has(match[1])||!validAttribute(match[1],match[3]))return false;
+    consumed=match.index+match[0].length;attributes.set(match[1],match[3]);
    }
    if(body.slice(consumed).trim()||!stack.length&&!attributes.has('xmlns'))return false;
    if(!stack.length&&(attributes.get('width')!=='600'||attributes.get('height')!=='360'||attributes.get('viewBox')!=='0 0 600 360'))return false;
@@ -89,7 +89,7 @@ function inheritPaint(svg){
   const fill=tag.match(/ fill="([^"]*)"/),fillBefore=fill?.[1]??parent.fillBefore;
   const stroke=tag.match(/ stroke="([^"]*)"/)?.[1]??parent.stroke;
   let after=explicit?Number(explicit[1]):parent.after,fillAfter=fill?.[1]??parent.fillAfter;
-  if(!stack.length){tag=tag.replace(/>$/,' stroke-width="0.8" fill="none">');after=.8;fillAfter='none';}
+  if(!stack.length){tag=tag.replace(/>$/,' stroke-width=".8" fill="none">');after=.8;fillAfter='none';}
   else if(explicit&&before===parent.after){tag=tag.replace(explicit[0],'');after=parent.after;}
   if(stack.length&&fill&&fillBefore===parent.fillAfter){tag=tag.replace(fill[0],'');fillAfter=parent.fillAfter;}
   if(!explicit&&stroke!=='none'&&['path','rect','circle','ellipse','line','polyline','text'].includes(name)&&before!==after){tag=tag.replace(/\/?\>$/,end=>` stroke-width="${before}"${end}`);after=before;}
@@ -125,16 +125,94 @@ function polygonPath(points){
 }
 const minifyPath=d=>d.replace(/(\d)\s+([+-])/g,'$1$2').replace(/(^|[^\d.])(-?)0\./g,'$1$2.');
 
+function pixelBoundaryPath(cells){
+ // A colour's disjoint grid cells have an exact integer boundary. Clockwise
+ // outer loops and counterclockwise holes keep the original nonzero fill.
+ const occupied=new Set(cells),edges=[],outgoing=new Map(),has=(x,y)=>occupied.has(`${x},${y}`);
+ const edge=(x,y,d)=>{const e={x,y,d,used:false};edges.push(e);const key=`${x},${y}`;if(!outgoing.has(key))outgoing.set(key,[]);outgoing.get(key).push(e);};
+ for(const cell of occupied){const [x,y]=cell.split(',').map(Number);if(!has(x,y-1))edge(x,y,0);if(!has(x+1,y))edge(x+1,y,1);if(!has(x,y+1))edge(x+1,y+1,2);if(!has(x-1,y))edge(x,y+1,3);}
+ const dx=[1,0,-1,0],dy=[0,1,0,-1];let path='',previousStart=null;
+ for(const first of edges){
+  if(first.used)continue;let current=first,x=first.x,y=first.y,segments=[],direction=null,length=0;
+  do{
+   current.used=true;if(current.d===direction)length++;else{if(length)segments.push([direction,length]);direction=current.d;length=1;}
+   x+=dx[current.d];y+=dy[current.d];
+   const next=(outgoing.get(`${x},${y}`)||[]).filter(e=>!e.used);
+   if(x===first.x&&y===first.y)break;
+   // At a corner shared by diagonal cells, turn right so separate islands do
+   // not join through a single vertex or change their holes.
+   current=next.sort((a,b)=>[1,0,3,2].indexOf((a.d-current.d+4)%4)-[1,0,3,2].indexOf((b.d-current.d+4)%4))[0];
+   if(!current)throw new Error('Open portrait boundary.');
+  }while(current);
+  if(length)segments.push([direction,length]);
+  const absolute=`M${first.x} ${first.y}`,relative=previousStart?minifyPath(`m${first.x-previousStart[0]} ${first.y-previousStart[1]}`):absolute;
+  path+=(relative.length<absolute.length?relative:absolute)+segments.slice(0,-1).map(([d,n])=>`${d%2?'v':'h'}${(d===2||d===3)?-n:n}`).join('')+'z';
+  previousStart=[first.x,first.y];
+ }
+ return path;
+}
+function compactClosedMoves(path){
+ // A closed subpath returns to its starting point, so the next absolute move
+ // can use the exact integer delta instead. Only our closed grid paths use it.
+ let previous=null;
+ return path.replace(/(^|z)M([+-]?[\d.]+)[ ,]([+-]?[\d.]+)/g,(whole,prefix,xs,ys)=>{
+  const x=Number(xs),y=Number(ys),absolute=`M${xs} ${ys}`,relative=previous?minifyPath(`m${x-previous[0]} ${y-previous[1]}`):absolute;
+  previous=[x,y];return prefix+(relative.length<absolute.length?relative:absolute);
+ });
+}
+function compactFloorTiles(svg){
+ // Only the49 known, nonoverlapping4×4 floor tiles can be batched. Their
+ // shared edges all have the same grout colour and width, so their order cannot
+ // affect another object; the room's base and every later object stay in place.
+ const point=(u,v)=>`${300+(u-v)*9},${96+(u+v)*4.5}`,expected=new Set();
+ for(let u=0;u<28;u+=4)for(let v=0;v<28;v+=4)expected.add([[u,v],[u+4,v],[u+4,v+4],[u,v+4]].map(p=>point(...p)).join(' '));
+ return svg.replace(/(<g shape-rendering="crispEdges">)(<polygon points="300,96 552,222 300,348 48,222"[^<>]*\/>)([\s\S]*)/,(whole,open,base,tail)=>{
+  const run=/^(?:<polygon[^<>]*\/>){49}/.exec(tail)?.[0];if(!run)return whole;
+  const tiles=[...run.matchAll(/<polygon points="([^"]+)" fill="(#[\da-fA-F]{6})" stroke="(#[\da-fA-F]{6})" stroke-width="\.8" stroke-linejoin="miter"\/>/g)];
+  if(tiles.length!==49||tiles.map(([tag])=>tag).join('')!==run||new Set(tiles.map(t=>t[3])).size!==1||new Set(tiles.map(t=>t[2])).size!==2||!tiles.every(t=>expected.delete(t[1]))||expected.size)return whole;
+  const colours=new Map();for(const [,points,fill]of tiles)colours.set(fill,(colours.get(fill)||'')+polygonPath(points));
+  return open+base+`<g stroke="${tiles[0][3]}" stroke-width=".8" stroke-linejoin="miter">`+[...colours].map(([fill,d])=>`<path fill="${fill}" d="${compactClosedMoves(d)}"/>`).join('')+'</g>'+tail.slice(run.length);
+ });
+}
+function compactPortraitPixels(svg){
+ // Only the already-resolved portrait has a disjoint pixel grid. Room polygons
+ // keep their painter order, and no palette or saved appearance is changed.
+ return svg.replace(/(<g class="hair-fringe[^"<>]*"[^<>]*>)([\s\S]*?)(<\/g>)/g,(whole,open,body,close)=>{
+  const cells=[...body.matchAll(/<rect x="(\d+)" y="(\d+)" width="(\d+)" height="1" fill="(#[\da-fA-F]{6})"\/>/g)];
+  if(!cells.length||cells.map(([cell])=>cell).join('')!==body)return whole;
+  const colours=new Map(),last=new Map(),runs=new Map();
+  for(const [,xs,ys,ws,fill]of cells){
+   if(!colours.has(fill)){colours.set(fill,[]);runs.set(fill,[]);}
+   const x=Number(xs),y=Number(ys),w=Number(ws),key=`${fill}:${x}:${w}`,previous=last.get(key);
+   for(let px=x;px<x+w;px++)colours.get(fill).push(`${px},${y}`);
+   if(previous&&previous.y+previous.h===y)previous.h++;else{const run={x,y,w,h:1};runs.get(fill).push(run);last.set(key,run);}
+  }
+  return open+[...colours].map(([fill,pixels])=>{
+   const boundary=minifyPath(pixelBoundaryPath(pixels)),rectangles=compactClosedMoves(runs.get(fill).map(({x,y,w,h})=>`M${x} ${y}h${w}v${h}h${-w}z`).join(''));
+   return `<path fill="${fill}" d="${rectangles.length<boundary.length?rectangles:boundary}"/>`;
+  }).join('')+close;
+ });
+}
+
 function compactSVG(svg){
  // These labels and classes affect accessibility or animation in the game, not pixels.
- return unwrapGroups(inheritPaint(svg.replace(/\s(?:class|data-[\w-]+|role|aria-[\w-]+)="[^"]*"/g,'')
+ return unwrapGroups(inheritPaint(compactPortraitPixels(compactFloorTiles(svg)).replace(/\s(?:class|data-[\w-]+|role|aria-[\w-]+)="[^"]*"/g,'')
   .replace(/\sstyle="width:[\d.]+px;height:[\d.]+px"/g,'')
   .replace(/\spreserveAspectRatio="xMidYMid meet"/g,'')
+  .replace(/<svg [^<>]*>/g,tag=>{
+   if(tag.includes('xmlns=')||!tag.includes('preserveAspectRatio="none"'))return tag;
+   const width=tag.match(/ width="([\d.]+)"/)?.[1],height=tag.match(/ height="([\d.]+)"/)?.[1],viewBox=tag.match(/ viewBox="([^"]+)"/);
+   // A window viewport already uses the same unscaled local coordinates.
+   return viewBox&&viewBox[1]===`0 0 ${width} ${height}`?tag.replace(viewBox[0],'').replace(' preserveAspectRatio="none"',''):tag;
+  })
   // Projection arithmetic has long binary-float tails. Subpixel precision is enough
   // for the fixed 600px image; the maximum coordinate adjustment is 0.005px.
   .replace(/\s([\w-]+)="([^"]*)"/g,(attribute,key,value)=>numbers.has(key)||['points','d','transform','viewBox'].includes(key)?` ${key}="${value.replace(/[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?/gi,n=>String(Number(Number(n).toFixed(key==='transform'?3:2))).replace(/^(-?)0\./,'$1.'))}"`:attribute)
   .replace(/scale\(([+-]?[\d.]+) \1\)/g,'scale($1)')
   .replace(/\sstroke-linejoin="miter"/g,'') // The SVG default is miter.
+  // The unsplit leaf has one simple boundary. Its evenodd flag adds no holes;
+  // split Monstera leaves keep their two cutouts and their fill rule.
+  .replace(/(<path d="M0 0h4v1h3v2h2v2h2v4H9v2H5V9H3V7H1V4H0z"[^<>]*?) fill-rule="evenodd"/g,'$1')
   .replace(/<polygon points="([^"]*)"([^<>]*)\/>/g,(_,points,attributes)=>`<path d="${polygonPath(points)}"${attributes}/>`)
   .replace(/ d="([^"]*)"/g,(_,d)=>` d="${minifyPath(d)}"`)
   .replace(/(?:<(?:path|rect|circle|ellipse|line|polyline)\b[^<>]*\/>)+/g,run=>{
@@ -159,11 +237,11 @@ function compactSVG(svg){
     path+=`M${x} ${y}h${w}v${h}h${-Number(w)}z`;
    }
    flush();return output;
-  })));
+  }))).replace(/\s([\w-]+)="([^"]*)"/g,(_,key,value)=>` ${key}='${value}'`);
 }
 export function createCVLabScene(state){
  const month=Math.max(0,state.month-1),fieldId=state.professorProfile.fieldId,labMode=state.professorProfile.labMode;
- const svg=compactSVG(renderLabScene({...state,month,visualMonth:month,pending:null},{actual:'idle'},0,{idle:true,student:false}));
+ const svg=compactSVG(renderLabScene({...state,month,visualMonth:month,pending:null},{actual:'idle'},0,{idle:true,student:true}));
  const scene={version:1,month,fieldId,labMode,image:PREFIX+encodeSVG(svg)};
  if(!validateCVLabScene(scene,state.month))throw new Error('Invalid lab scene snapshot.');
  return scene;

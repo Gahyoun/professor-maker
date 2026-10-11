@@ -18,4 +18,4 @@ body #main{padding-top:24px;padding-bottom:48px}
 .preview-room-card h2{font-size:17px;margin:18px 18px 8px}.preview-room-card>p{font-size:13px;line-height:1.8;color:#527184;margin:8px 18px 18px}
 .preview-room-card .live-lab{border:0;border-radius:0;margin:0}
 .preview-room-card .pixel-room{width:100%;max-width:none}
-@media(max-width:899px){.preview-header{padding-top:16px}.preview-intro h1{font-size:21px}.preview-tabs button{flex:1 1 96px;padding:10px 8px;font-size:13px}.preview-room-grid{grid-template-columns:1fr;gap:18px}.preview-room-card h2{font-size:16px}.preview-intro>.primary{width:100%}}
+@media(max-width:899px){.preview-header{padding-top:16px}.preview-intro h1{font-size:21px}.preview-tabs button{flex:1 1 0;min-width:0;padding:10px 6px;font-size:12px}.preview-room-grid{grid-template-columns:1fr;gap:18px}.preview-room-card h2{font-size:16px}.preview-intro>.primary{width:100%}}

@@ -1,0 +1,18 @@
+/* A scene is an intrinsic 600px drawing. Wide text columns add breathing room,
+   rather than stretching monitors or furniture; small screens scale the SVG. */
+.live-lab{background:#f7f5ef}
+.pixel-room,.live-lab .pixel-room,.preview-room-card .pixel-room{width:min(100%,600px)!important;max-width:600px!important;height:auto!important;max-height:none!important;min-height:0!important;margin-inline:auto;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;background:#f7f5ef;border:0!important;overflow:hidden}
+.pixel-room>.pixel-room-art,.pixel-room[data-projection=isometric]>.pixel-room-art{position:static!important;grid-column:1;grid-row:2;inset:auto;width:100%!important;max-width:600px;height:auto!important;min-height:0;aspect-ratio:auto;display:block;object-fit:contain}
+.pixel-room>.room-label,.pixel-room[data-projection=isometric]>.room-label{position:static!important;grid-column:1;grid-row:1;justify-self:start;max-width:calc(100% - 24px);margin:8px 12px 0;padding:3px 0;background:transparent;color:#526d79;overflow-wrap:anywhere;z-index:auto}
+.pixel-room>.defense-step{right:12px;top:8px;font-size:10px;padding:3px 7px}
+.vn-scene,.review-reader .vn-scene{container-type:inline-size;width:min(100%,600px)!important;max-width:600px!important;margin-inline:auto;height:auto!important;aspect-ratio:600/260;border:0}
+.vn-scene .vn-window{left:12cqw;top:6cqw;width:28cqw;height:24cqw;border-width:1.667cqw;box-shadow:inset 0 0 0 .667cqw #879ca4}
+.vn-scene .vn-desk{right:8cqw;left:auto;width:48cqw;height:7.2cqw;border-top-width:1.333cqw}
+.vn-scene .vn-screen{box-sizing:content-box;bottom:7.333cqw;left:4.8cqw;width:31.2cqw;max-width:none;height:auto!important;aspect-ratio:16/9;border:0!important;box-shadow:0 0 0 1.4cqw #263642,1.4cqw 1.4cqw #162a3840;font-size:clamp(10px,2.333cqw,14px)}
+.vn-scene .vn-cup{right:2.4cqw;bottom:7.833cqw;width:4.667cqw;height:6.167cqw}
+.vn-scene .vn-scene-caption{left:3.333cqw;bottom:2.333cqw;font-size:clamp(9px,2cqw,12px)}
+.review-reader .vn-scene .portrait{width:7.733cqw;height:11.987cqw;right:16cqw;bottom:1.1667cqw}
+.review-retirement .vn-window{width:74cqw;height:17.33cqw;left:13cqw;top:5.2cqw}
+.review-retirement .vn-desk{width:20cqw;left:40cqw;right:auto;height:10.4cqw}
+.review-retirement .vn-screen{width:44cqw;left:-12cqw;bottom:10.833cqw;aspect-ratio:16/9}
+@media(max-width:650px){.pixel-room>.room-label,.pixel-room[data-projection=isometric]>.room-label{max-width:calc(100% - 16px);margin:6px 8px 0;font-size:10px}.pixel-room>.defense-step{font-size:9px;top:7px}}

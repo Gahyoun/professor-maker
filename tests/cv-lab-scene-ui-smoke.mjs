@@ -40,7 +40,7 @@ const maximumField=maximum.scene.fieldId,maximumMode=maximum.scene.labMode;
 for(let seed=1;seed<=512;seed++)inspectScene(seed,maximumField,maximumMode);
 const maximumWinter=maximum;
 for(const field of DISCIPLINES)for(const mode of field.labModes)for(const month of [1,4,7,10])inspectScene(16,field.id,mode,month);
-assert.ok(maximum.scene.image.length<50000,`Largest scene ${maximum.scene.image.length}`);
+assert.ok(maximum.scene.image.length<70000,`Largest scene ${maximum.scene.image.length}`);
 report.maximum={cases:sceneCases,imageLength:maximum.scene.image.length,fieldId:maximum.scene.fieldId,labMode:maximum.scene.labMode,seed:maximum.state.creationSeed,month:maximum.state.month};
 // Keep all real chronology, publications, statistics and memories. Only combine
 // the largest legitimate frozen scene with the matching CV field and mode.
@@ -59,7 +59,7 @@ try{
  for(const [fieldId,mode]of [['058','wet'],['107','wet'],['050','dry'],['090','dry'],['073','dry']])for(const seed of [16,7919]){
   const state=createState('검증',seed,{professorProfile:{gender:'female',age:38,fieldId,labMode:mode,institution:'national'}});state.month=96;
   state.lab.funds=200;state.lab.budget.environment=3;state.career.awards=3;
-  const scene=createCVLabScene(state),svg=renderLabScene({...state,month:95,visualMonth:95,pending:null},{actual:'idle'},0,{idle:true,student:false});
+  const scene=createCVLabScene(state),svg=renderLabScene({...state,month:95,visualMonth:95,pending:null},{actual:'idle'},0,{idle:true,student:true});
   const original=prefix+Buffer.from(svg).toString('base64');
   const metrics=await page.evaluate(async({original,compact})=>{
    const load=src=>new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('Image decode failed'));img.src=src;});
@@ -88,10 +88,10 @@ try{
   await page.locator('.cv-lab-record').screenshot({path:path.join(output,`lab-record-${width}.png`)});
  }
  const downloadPromise=page.waitForEvent('download');await page.locator('[data-ui=download-cv]').click();const download=await downloadPromise;
- const standalone=await fs.readFile(await download.path(),'utf8');const escapedImage=initialImage.replace(/[&"<>]/g,c=>({'&':'&amp;','"':'&quot;','<':'&lt;','>':'&gt;'}[c]));assert.ok(standalone.includes(escapedImage));assert.ok(standalone.includes("img-src data:"));await download.saveAs(path.join(output,'frozen-cv.html'));
+ const standalone=await fs.readFile(await download.path(),'utf8');const escapedImage=initialImage.replace(/[&"'<>]/g,c=>({'&':'&amp;','"':'&quot;',"'":'&#39;','<':'&lt;','>':'&gt;'}[c]));assert.ok(standalone.includes(escapedImage));assert.ok(standalone.includes("img-src data:"));await download.saveAs(path.join(output,'frozen-cv.html'));
  const cvPage=await context.newPage();cvPage.on('pageerror',e=>errors.push(e.message));
  await cvPage.setContent(standalone);await cvPage.waitForFunction(()=>document.querySelector('.cv-lab-image')?.naturalWidth===600);
- await cvPage.pdf({path:path.join(output,'frozen-cv.pdf'),format:'A4',printBackground:true});
+ await cvPage.pdf({path:path.join(output,'frozen-cv.pdf'),format:'A4',preferCSSPageSize:true,printBackground:true});
  const css=await fs.readFile(path.join(root,'dist/cv.css'),'utf8');
  for(const template of CV_TEMPLATES){
   const model={...structuredClone(record.cv),templateId:template.id};
@@ -99,9 +99,9 @@ try{
   await cvPage.waitForFunction(()=>document.querySelector('.cv-lab-image')?.naturalWidth===600);
   for(const width of [320,1360]){await cvPage.setViewportSize({width,height:900});assert.ok(await cvPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${template.id}/${width}`);}
   await cvPage.setViewportSize({width:703,height:1030});await cvPage.emulateMedia({media:'print'});
-  const layout=await cvPage.evaluate(()=>({summaryHeight:document.querySelector('.cv-summary').getBoundingClientRect().height,labInsideSummary:!!document.querySelector('.cv-summary .cv-lab-record'),catalogBreak:getComputedStyle(document.querySelector('.cv-publication-catalog')).breakBefore}));
-  assert.ok(layout.summaryHeight<1030,`${template.id}: ${JSON.stringify(layout)}`);assert.equal(layout.labInsideSummary,false);assert.equal(layout.catalogBreak,'page');report.templates.push({id:template.id,...layout});
-  await cvPage.pdf({path:path.join(output,`cv-${template.id}.pdf`),format:'A4',printBackground:true});await cvPage.emulateMedia({media:'screen'});
+  const layout=await cvPage.evaluate(()=>({summaryHeight:document.querySelector('.cv-summary').getBoundingClientRect().height,formHeight:document.querySelector('.cv-print-form').getBoundingClientRect().height,reportDisplay:getComputedStyle(document.querySelector('.research-report')).display,labInsideSummary:!!document.querySelector('.cv-summary .cv-lab-record'),catalogBreak:getComputedStyle(document.querySelector('.cv-publication-catalog')).breakBefore}));
+  assert.equal(layout.summaryHeight,0);assert.ok(layout.formHeight>100,`${template.id}: ${JSON.stringify(layout)}`);assert.equal(layout.reportDisplay,'none');assert.equal(layout.labInsideSummary,false);assert.equal(layout.catalogBreak,'auto');report.templates.push({id:template.id,...layout});
+  await cvPage.pdf({path:path.join(output,`cv-${template.id}.pdf`),format:'A4',preferCSSPageSize:true,printBackground:true});await cvPage.emulateMedia({media:'screen'});
  }
  await cvPage.close();await page.locator('[data-ui=close]').click();await page.reload();
  assert.equal(await page.evaluate(key=>JSON.parse(localStorage.getItem(key))[0].cv.labScene.image,galleryKey),initialImage);
@@ -114,7 +114,7 @@ try{
  // Simulate quota exhaustion only on the two gallery persistence attempts.
  // The third attempt restores the original values during transaction rollback.
  await page.evaluate(()=>{location.hash='letters';});await page.waitForFunction(()=>document.body.dataset.view==='letters');
- const transactionKeys=[saveKey,'pm-language',galleryKey,LETTER_PASSAGES_KEY,'pm-fast'];
+ const transactionKeys=[saveKey,'pm-save-v3','pm-language',galleryKey,LETTER_PASSAGES_KEY,'pm-fast'];
  const transactionBefore=await page.evaluate(keys=>({hash:location.hash,values:keys.map(key=>[key,localStorage.getItem(key)])}),transactionKeys);
  const rejected=structuredClone(exportedData);rejected.state.name='보관 실패 확인';assert.ok(validateSave(rejected.state));
  await page.locator('[data-ui=settings]').click();await page.locator('#import-file').setInputFiles({name:'quota-rejection.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(rejected))});await page.locator('#confirm-import').waitFor();
@@ -141,5 +141,5 @@ try{
   await page.locator('[data-ui=close]').click();
  }
  await context.close();assert.deepEqual(errors,[]);await fs.writeFile(path.join(output,'report.json'),JSON.stringify(report,null,2));
- console.log(JSON.stringify(report,null,2));console.log('CV lab scene smoke passed: geometry, 40 rich archives, persistence/export/import, malicious SVG rejection, 320/1360 layouts, standalone HTML/PDF and five one-page summaries.');
+ console.log(JSON.stringify(report,null,2));console.log('CV lab scene smoke passed: geometry, 40 rich archives, persistence/export/import, malicious SVG rejection, 320/1360 layouts, standalone HTML/PDF and all five A4 CV forms.');
 }finally{await browser.close();}

@@ -1,11 +1,11 @@
-export const RELEASE_NOTES_VERSION='4.18.1';
+export const RELEASE_NOTES_VERSION='4.19.0';
 export const RELEASE_NOTES_KEY='pm-update-notes-v1';
-export const RELEASE_NOTES={title:'연구실 운영과 첫 플레이를 다듬었습니다.',changes:[
- '연구비 부족액은 자동 차입하고, 과제 지원을 늘렸습니다. 선정과 실제 입금은 좋은 소식으로 알려드립니다.',
- '운영 종료 원인과 학과장 사전 경고, 쉬움 난도의 정착지원을 더했습니다. 학생의 휴식도 먼저 의논합니다.',
- '입학면접에서 세 지원자 중 한 명을 선택합니다. 학생 공유 코드와 목표·메뉴를 알려 주는 첫 화면 가이드를 더했습니다.',
- '전공별 연구비 지출을 구분하고, 해외 연구년 중에는 국내학회에 학생만 참석하도록 고쳤습니다.',
- '긴머리의 뒷목과 앞머리, 팔·의자·침대의 겹침을 점검하고 연구실 도트를 보수했습니다. 업데이트 안내·입학면접·도트 화면을 기존 저장 없이 확인하는 미리보기도 더했습니다.'
+export const RELEASE_NOTES={title:'연구와 기록을 다듬고, 첫 플레이 안내를 보강했습니다.',changes:[
+ '전공별로 연구 검증과 출판 속도를 구분했습니다. 수학은 증명과 심사에 더 시간이 필요하며, 해당 전공의 학위·엔딩 요건도 함께 조정했습니다.',
+ '미클리어 후일담을 누르면 달성 조건과 필요한 선택 시점을 볼 수 있습니다. 이미 얻은 편지와 연구 기록은 그대로 보관합니다.',
+ 'CV 파일에 해당 플레이의 연구실 그림과 한글 글꼴을 포함합니다. 인쇄·PDF는 A4 CV 양식으로 학력, 논문, 발표와 수상을 정리합니다.',
+ '학회장을 강의실·컨벤션·포스터·호텔 홀로 구분했습니다. 연구실·엔딩 그림의 크기를 고정하고, 모니터는 16:9로 맞췄습니다.',
+ '첫 화면에서 자동 차입과 이자·운영 부담, 인건비·소모품 예산 조절, 과제 신청과 저장·기록 메뉴를 안내합니다. 모바일에서도 안내가 버튼을 가리지 않도록 점검했습니다.'
 ]};
 export const validReleaseNotesSeen=value=>Array.isArray(value)&&value.length<=20&&value.every(v=>typeof v==='string'&&/^\d+\.\d+\.\d+$/.test(v));
 export function markReleaseNotesSeen(seen,version=RELEASE_NOTES_VERSION){return [...new Set([...(validReleaseNotesSeen(seen)?seen:[]),version])].slice(-20);}

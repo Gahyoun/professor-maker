@@ -1,4 +1,5 @@
 import {getDiscipline} from './disciplines.js';
+import {publicationPaceProfile} from './publication-pace.js';
 // Fictional journal metrics for game balance, not measured JCR/KCI statistics.
 export const JOURNALS=Object.freeze({standard:{label:'기초 연구 저널',impactFactor:1.8,work:1,acceptance:0,citationWeight:.027,reviewMonths:2},established:{label:'분야 전문 저널',impactFactor:4.2,work:1.15,acceptance:-.09,citationWeight:.063,reviewMonths:2},leading:{label:'선도 연구 저널',impactFactor:8,work:1.3,acceptance:-.18,citationWeight:.12,reviewMonths:3},kci:{label:'국내 전문 학술지',index:'국내 등재',impactFactor:null,work:1.05,acceptance:-.03,citationWeight:.035,reviewMonths:2}});
 export const IF_PROFILES=Object.freeze({
@@ -21,7 +22,7 @@ const FIELD_PROFILES=Object.freeze({
 // This is a gameplay selection, not a claim that KCI is absent in other disciplines.
 const KCI_FIELDS=new Set(['058','059','060','061','062','063','064','066','067','068','069','057','112','113','114','115','116','118','163','065','107','108','109','110','111','072','073','074','075','076','077','102','103','104','078','079','080','081','082','083','084','085','086','091','101','158','159','160','161','162']);
 export function journalProfile(fieldId){const d=getDiscipline(fieldId);return {...IF_PROFILES[FIELD_PROFILES[d.id]??'physics'],id:FIELD_PROFILES[d.id]??'physics',kci:KCI_FIELDS.has(d.id)};}
-export function getJournal(id='standard',fieldId){const base=JOURNALS[id]??JOURNALS.standard,profile=journalProfile(fieldId);return {...base,impactFactor:id==='kci'?null:profile.values[['standard','established','leading'].indexOf(id)<0?0:['standard','established','leading'].indexOf(id)]};}
+export function getJournal(id='standard',fieldId){const base=JOURNALS[id]??JOURNALS.standard,profile=journalProfile(fieldId),pace=publicationPaceProfile(fieldId);return {...base,reviewMonths:base.reviewMonths+pace.reviewDelay,acceptance:base.acceptance+pace.acceptanceAdjustment,impactFactor:id==='kci'?null:profile.values[['standard','established','leading'].indexOf(id)<0?0:['standard','established','leading'].indexOf(id)]};}
 // A fictional annual journal metric. This hash never advances simulation RNG.
 // The submitted manuscript keeps its recorded value throughout review and replay.
 export function journalMetricRecord(state,journalId=state.project?.journal??'standard',projectId=state.project?.id??1,month=state.project?.submittedAt??state.month??1){

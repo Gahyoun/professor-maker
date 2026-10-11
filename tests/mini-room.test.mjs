@@ -148,3 +148,9 @@ test('the desk occupant sits back over the seat and the camp chair frame stays i
  }
  assert.fail('no camp chair seed');
 });
+
+test('computer display planes use16:9 measured along the isometric plane edges',()=>{
+ const state=createState('',9,{labMode:'dry'}),scene=roomScene(state,{actual:'analysis',performed:true,outcome:'completed'});
+ const displays=[...scene.matchAll(/<g class="monitor-display" data-display-aspect="16:9"><polygon points="([^"]+)"/g)];assert.ok(displays.length>=2);
+ for(const m of displays){const p=m[1].split(' ').map(pair=>pair.split(',').map(Number)),width=Math.hypot(p[1][0]-p[0][0],p[1][1]-p[0][1]),height=Math.hypot(p[2][0]-p[1][0],p[2][1]-p[1][1]);assert.ok(Math.abs(width/height-16/9)<1e-9);}
+});

@@ -22,7 +22,7 @@ test('lab snapshot freezes the last performed month and clears a pending defense
   assert.deepEqual(state,before);assert.deepEqual(first,createCVLabScene(state));
   assert.deepEqual({...first,image:undefined},{version:1,month:95,fieldId:'058',labMode:'wet',image:undefined});
   assert.ok(validateCVLabScene(first,96));assert.equal(validateCVLabScene(first,95),false);
-  assert.ok(!decode(first.image).includes('THESIS DEFENSE'));assert.ok(!decode(first.image).includes('학생'));
+  assert.ok(!decode(first.image).includes('THESIS DEFENSE'));assert.ok(decode(first.image).includes('학생 도트 초상화'));
   const cv=buildEndingCV(state);assert.ok(cv.html.indexOf('cv-lab-record')>cv.html.indexOf('</div><div class="cv-publication-catalog">'));
   assert.match(cv.html,locale==='en'?/Y8 · Aug/:/8년차 2월/);
  }
@@ -34,14 +34,14 @@ test('every discipline/mode and four seasonal windows produce bounded standalone
   const state=completed(7919,field.id,mode);state.month=month;
   const scene=createCVLabScene(state),svg=decode(scene.image);cases++;
   assert.ok(validateCVLabScene(scene,month),`${field.id}/${mode}/${month}`);assert.ok(scene.image.length<=MAX_CV_LAB_IMAGE_LENGTH);
-  assert.match(svg,/^<svg xmlns="http:\/\/www.w3.org\/2000\/svg" width="600" height="360"/);
+  assert.match(svg,/^<svg xmlns=["']http:\/\/www.w3.org\/2000\/svg["'] width=["']600["'] height=["']360["']/);
   assert.ok(!/\b(?:class|data-[\w-]+|style|href|onload)=/.test(svg));assert.ok(!/<(?:script|image|foreignObject|use)\b/.test(svg));
   max=Math.max(max,scene.image.length);images.add(scene.image);
  }
  assert.equal(cases,448);assert.ok(images.size>=8);assert.ok(max<70000,`largest scene ${max} bytes`);
 });
 test('image validation rejects active markup, external resources, broken XML and unbounded payloads',()=>{
- const scene=createCVLabScene(completed()),svg=decode(scene.image);
+ const scene=createCVLabScene(completed()),svg=decode(scene.image).replace(/(\s[\w-]+)='([^']*)'/g,'$1="$2"');
  assert.ok(validateCVLabScene({...scene,image:encode(svg)},96),'previous canonical base64 snapshots remain valid');
  const delimiters=svg.replace('</svg>','<title>50% #색\r\n\t기록</title></svg>');
  const canonical=textPrefix+delimiters.replace(/[%#\r\n\t]/g,c=>'%'+c.charCodeAt(0).toString(16).padStart(2,'0').toUpperCase());
@@ -89,4 +89,13 @@ test('forty representative archives including scenes fit comfortably within loca
  const json=JSON.stringify({format:'professor-maker',version:4,state:completed(),gallery,seenPassageIds:[]});
  assert.ok(Buffer.byteLength(json,'utf8')<4000000,`${Buffer.byteLength(json,'utf8')} bytes`);
  assert.ok(json.length*2<5000000,`${json.length*2} UTF-16 bytes`);
+});
+
+test('single-quoted snapshots keep strict matching delimiters and duplicate-attribute rejection',()=>{
+ const scene=createCVLabScene(completed()),svg=decode(scene.image);
+ assert.match(svg,/width='600'/);assert.ok(validateCVLabScene(scene,96));
+ for(const bad of [svg.replace("width='600'","width='600\""),svg.replace("width='600'",'width="600\''),svg.replace("width='600'",'width=600'),svg.replace("width='600'",'width=\'600\' width="600"'),svg.replace("xmlns='http://www.w3.org/2000/svg'","xmlns='http://www.w3.org/2000/svg' onload='alert(1)'")]){
+  assert.notEqual(bad,svg,'the attack fixture must alter the generated SVG');assert.equal(validateCVLabScene({...scene,image:encode(bad)},96),false);
+ }
+ const double=svg.replace(/(\s[\w-]+)='([^']*)'/g,'$1="$2"');assert.ok(validateCVLabScene({...scene,image:encode(double)},96));
 });

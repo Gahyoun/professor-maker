@@ -9,7 +9,7 @@ test('a demanding faculty ending remains reachable through 96 months without inj
  let s=createState('학생',2,{age:38,gender:'female'});
  for(let month=0;month<96&&!s.ending;month++){
   // These are player-selectable publication goals and schedules, not stat overrides.
-  if(!s.project.submitted){s.publication.journal=s.career.topPapers<2?'leading':'standard';s.project.journal=s.publication.journal;}
+  if(!s.project.submitted){s.publication.journal=s.career.topPapers<1?'leading':'standard';s.project.journal=s.publication.journal;}
   const plan=proposeSchedule(s),score=k=>abilityScore(s,k);
   if(s.month>=24){
    const primary=['study','experiment','experiment','analysis','analysis','analysis'][s.project.phase];

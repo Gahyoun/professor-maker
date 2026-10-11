@@ -11,6 +11,7 @@ import {grantCallOpen,ensureFunding,validPortfolio,canApplyGrant,validApplicatio
 import {GAME_BALANCE as BALANCE} from './balance.js';
 import {LAB_RISK_KEYS,LAB_CLOSURE_MONTHS,difficultyOf,initialLabRisk,settlementSupport,validLabRisk,validLabClosure,validLabWarning} from './lab-risk.js';
 import {researchFinanceProfile,researchOperatingCost} from './research-finance.js';
+import {publicationPaceProfile,publicationProgressFactor} from './publication-pace.js';
 // Monthly, seeded simulation. Student ability values are intentionally hidden by the UI.
 import { EVENTS } from './events.js';
 import { initialGrants, advanceGrants, validateGrants } from './grants.js';
@@ -315,7 +316,7 @@ function scienceProgress(s,id,result) {
   const roll=random(s);result.successRate=roll>=probability?0:clamp(1-Math.pow(roll/probability,4),0,1);if(result.successRate<.4)result.scienceFailures++;result.researchGrade=researchGrade(result.successRate);
   const languageFactor=id==='paper'?.75+h.language/200:1;
   const creativityFactor=.8+h.creativity/250;
-  const emphasis=(s.policies??DEFAULT_POLICIES).study;const policyWeight=id==='study'?(emphasis==='study'?1.2:emphasis==='learn'?1.1:.9):(emphasis==='intensive'?1.2:emphasis==='research'?1.1:.95);const weight=(fit?12:5)*(1+skill/160)*(1+s.lab.budget.performance*.025)*languageFactor*creativityFactor*growth.independence*policyWeight*(s.monthlyEfficiency??1)*(1+(p.eventSupport??0))*BALANCE.projectProgressScale*(4/s.plan.length)*1.25;result.weight=weight*(s.month<=24?.65:1);const amount=result.weight*result.successRate;
+  const emphasis=(s.policies??DEFAULT_POLICIES).study;const policyWeight=id==='study'?(emphasis==='study'?1.2:emphasis==='learn'?1.1:.9):(emphasis==='intensive'?1.2:emphasis==='research'?1.1:.95);const weight=(fit?12:5)*(1+skill/160)*(1+s.lab.budget.performance*.025)*languageFactor*creativityFactor*growth.independence*policyWeight*(s.monthlyEfficiency??1)*(1+(p.eventSupport??0))*BALANCE.projectProgressScale*(4/s.plan.length)*1.25;result.weight=weight*(s.month<=24?.65:1)*publicationProgressFactor(s,p.phase);const amount=result.weight*result.successRate;
   p.progress+=amount;result.progress=amount;result.outcome=amount>0?'progress':'inconclusive';
 }
 export function autonomousChoice(s,index){
@@ -375,13 +376,16 @@ function advanceProject(s,reviewTick=false) {
   const venueRecord=journalMetricRecord(s,p.journal??'standard',p.id,p.submittedAt??s.month);
   while(p.phase<5&&p.progress>=projectThresholds(s).phaseTargets[p.phase]){p.progress-=projectThresholds(s).phaseTargets[p.phase];p.phase++;log(s,{kind:'project-phase',projectId:p.id,phase:PROJECT_PHASES[p.phase].id});}
   if(p.phase===5&&!p.submitted) {
-    p.progress=0;p.submitted=true;p.submittedAt=s.month;p.reviewMonths=0;s.career.submissions++;log(s,{kind:'submission',projectId:p.id,...venueRecord});return;
+    p.progress=0;p.submitted=true;p.submittedAt=s.month;p.reviewMonths=0;p.reviewDuration=venue.reviewMonths;p.reviewDifficulty=venue.acceptance;s.career.submissions++;log(s,{kind:'submission',projectId:p.id,...venueRecord});return;
   }
   if(p.phase!==5||!p.submitted||!reviewTick||p.submittedAt===s.month)return;
-  p.reviewMonths++;p.progress=Math.min(24,p.reviewMonths*12);
-  if(p.reviewMonths<venue.reviewMonths)return;
+  // Existing submitted saves keep the previous review contract; a new submission
+  // snapshots its field-specific duration and difficulty, including revisions.
+  const reviewDuration=p.reviewDuration??JOURNALS[p.journal??'standard'].reviewMonths;
+  p.reviewMonths++;p.progress=Math.min(24,24*p.reviewMonths/reviewDuration);
+  if(p.reviewMonths<reviewDuration)return;
   const h=scores(s);
-  const probability=clamp(.62+h.research*.002+h.language*.001+p.revisions*.12+(h.luck-50)*.0006+venue.acceptance,.35,.97);
+  const probability=clamp(.62+h.research*.002+h.language*.001+p.revisions*.12+(h.luck-50)*.0006+(p.reviewDifficulty??JOURNALS[p.journal??'standard'].acceptance),.35,.97);
   if(random(s)<probability) {
     s.career.papers++;s.career.completedProjects++;shift(s,'hidden',{motivation:5,confidence:4,autonomy:2});if(p.journal==='leading')s.career.topPapers++;log(s,{kind:'paper',projectId:p.id,revisions:p.revisions,...venueRecord});s.project=newProject(s,p.id+1);
   } else {
@@ -618,7 +622,8 @@ export const TRUE_REQUIREMENTS={learning:78,research:82,language:70,social:60,au
 // A fresh doctorate is assessed on a small, prepared body of work. Awards help
 // the student's record, but winning a random award is not an appointment gate.
 export const TRUE_RESEARCH_REQUIREMENTS={leadingPaper:1,hIndex:2};
-export function recommendationCandidate(s) { return canDefend(s)&&s.career.topPapers>=TRUE_RESEARCH_REQUIREMENTS.leadingPaper&&(s.impact?.hIndex??0)>=TRUE_RESEARCH_REQUIREMENTS.hIndex&&Object.entries(TRUE_REQUIREMENTS).filter(([k])=>k!=='rapport').every(([k,n])=>k==='faculty'?FACULTY_KEYS.every(f=>s.professor[f]>=n):(k in s.hidden?abilityScore(s,k):s.career[k])>=n); }
+export function trueRequirements(s){return {...TRUE_REQUIREMENTS,papers:publicationPaceProfile(s).truePapers??TRUE_REQUIREMENTS.papers};}
+export function recommendationCandidate(s) { return canDefend(s)&&s.career.topPapers>=TRUE_RESEARCH_REQUIREMENTS.leadingPaper&&(s.impact?.hIndex??0)>=TRUE_RESEARCH_REQUIREMENTS.hIndex&&Object.entries(trueRequirements(s)).filter(([k])=>k!=='rapport').every(([k,n])=>k==='faculty'?FACULTY_KEYS.every(f=>s.professor[f]>=n):(k in s.hidden?abilityScore(s,k):s.career[k])>=n); }
 export function isTrueEnding(s) { return recommendationCandidate(s)&&abilityScore(s,'rapport')>=TRUE_REQUIREMENTS.rapport; }
 export function careerScores(s) {
   const h=scores(s),c=s.career;
@@ -787,6 +792,7 @@ export function validateSave(s) {
   if(s.advising!==undefined&&(!plain(s.advising)||!['listen','praise','critique','harsh',null].includes(s.advising.lastFeedback)||!integer(s.advising.streak,0,96)||!integer(s.advising.inattention,0,96)))return false;
   if(s.publication!==undefined&&!validPublication(s.publication,p.fieldId))return false;
   if(s.project?.journal!==undefined&&!isAvailableJournal(s.project.journal,p.fieldId)||s.project?.topicId!==undefined&&!validTopicId(s.project.topicId))return false;
+  if(s.project?.reviewDuration!==undefined&&(!s.project.submitted||!integer(s.project.reviewDuration,2,12))||s.project?.reviewDifficulty!==undefined&&(!s.project.submitted||!number(s.project.reviewDifficulty,-.5,0))||(s.project?.reviewDuration===undefined)!==(s.project?.reviewDifficulty===undefined))return false;
   if(s.attendance!==undefined&&!validAttendance(s.attendance))return false;
   if(s.travel!==undefined&&!validTravel(s.travel,s.month))return false;
   if(s.impact!==undefined&&!validImpact(s.impact,s.career?.papers))return false;if(!validPortfolio(s)||!validFinance(s)||s.lab?.pool!==undefined&&!number(s.lab.pool,0,5000))return false;
