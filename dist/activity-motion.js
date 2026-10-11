@@ -14,10 +14,10 @@ export function activityProps(activity,{wet=false,index=0,kind,facing='front'}={
  return '';
 }
 
-export function monitorMotion(project,u,v,z){
+export function monitorMotion(project){
  const path=(points,cls,color,width=1)=>`<path class="${cls}" d="${points.map((p,i)=>`${i?'L':'M'}${project(...p).join(' ')}`).join('')}" stroke="${color}" stroke-width="${width}" fill="none"/>`;
  return `<g data-motion="analysis">`+
-  path([[u+.9,v+.36,z+10],[u+1.5,v+.36,z+14],[u+2,v+.36,z+11],[u+2.9,v+.36,z+19],[u+3.6,v+.36,z+16]],'analysis-trace','#7d9eab',1.3)+
-  path([[u+2.8,v+.39,z+15],[u+2.8,v+.39,z+11],[u+3.4,v+.39,z+12],[u+2.8,v+.39,z+15]],'analysis-cursor','#5e7d91',1.2)+
-  path([[u+.6,v+.37,z+24],[u+1,v+.37,z+24]],'analysis-status','#d1bd8e',1.8)+'</g>';
+  path([[.14,.08],[.28,.3],[.42,.14],[.64,.63],[.81,.48]],'analysis-trace','#7d9eab',1.3)+
+  path([[.68,.4],[.68,.18],[.83,.25],[.68,.4]],'analysis-cursor','#5e7d91',1.2)+
+  path([[.1,.85],[.19,.85]],'analysis-status','#d1bd8e',1.8)+'</g>';
 }

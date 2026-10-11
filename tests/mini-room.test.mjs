@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createState} from '../dist/engine.js';
 import {roomScene,roomDecorations} from '../dist/lab-scene.js';
-import {projectRoom,chairGeometry,cotGeometry,ROOM_ANCHORS,WALLPAPERS,FLOOR_TILES,PLANT_SPECIES} from '../dist/mini-room.js';
+import {projectRoom,monitorGeometry,MONITOR_DISPLAY,chairGeometry,cotGeometry,ROOM_ANCHORS,WALLPAPERS,FLOOR_TILES,PLANT_SPECIES} from '../dist/mini-room.js';
 test('room floor axes have equal lengths and opposing slopes; height stays vertical',()=>{
  const delta=(a,b)=>a.map((v,i)=>v-b[i]),base=projectRoom(0,0),u=delta(projectRoom(1,0),base),v=delta(projectRoom(0,1),base);
  assert.equal(Math.hypot(...u),Math.hypot(...v));assert.equal(u[0],-v[0]);assert.equal(u[1],v[1]);
@@ -149,8 +149,29 @@ test('the desk occupant sits back over the seat and the camp chair frame stays i
  assert.fail('no camp chair seed');
 });
 
-test('computer display planes use16:9 measured along the isometric plane edges',()=>{
- const state=createState('',9,{labMode:'dry'}),scene=roomScene(state,{actual:'analysis',performed:true,outcome:'completed'});
- const displays=[...scene.matchAll(/<g class="monitor-display" data-display-aspect="16:9"><polygon points="([^"]+)"/g)];assert.ok(displays.length>=2);
- for(const m of displays){const p=m[1].split(' ').map(pair=>pair.split(',').map(Number)),width=Math.hypot(p[1][0]-p[0][0],p[1][1]-p[0][1]),height=Math.hypot(p[2][0]-p[1][0],p[2][1]-p[1][1]);assert.ok(Math.abs(width/height-16/9)<1e-9);}
+test('computer screens are16:9 before projection and visibly widescreen in all lab poses',()=>{
+ assert.equal(MONITOR_DISPLAY.width/MONITOR_DISPLAY.height,16/9);
+ for(const fieldId of ['090','072','077','056'])for(const labMode of fieldId==='056'?['wet']:['dry'])for(const actual of ['analysis','teach','experiment','rest']){
+  const state=createState('',9,{fieldId,labMode}),before=structuredClone(state),scene=roomScene(state,{actual,performed:true,outcome:'completed'});
+  const displays=[...scene.matchAll(/<g class="monitor-display" data-display-aspect="16:9"><polygon points="([^"]+)"/g)];
+  assert.ok(displays.length>0||labMode==='wet'&&actual!=='analysis');
+  for(const m of displays){
+   const p=m[1].split(' ').map(pair=>pair.split(',').map(Number)),width=p[1][0]-p[0][0],height=p[1][1]-p[2][1];
+   assert.ok(Math.abs(width/height-16/9)<1e-9);
+   const bboxHeight=Math.max(...p.map(x=>x[1]))-Math.min(...p.map(x=>x[1]));assert.ok(width/bboxHeight>1.3,'screen must read as landscape');
+  }
+  assert.deepEqual(state,before);
+ }
+});
+test('monitor frame meets the stand and keeps text and animated graphs inside its screen',()=>{
+ const geometry=monitorGeometry(14.2,18.3,26),{display,frame,center,point}=geometry;
+ assert.ok(point(0,0).every((n,i)=>Math.abs(n-projectRoom(15.9,18.6,33)[i])<1e-9));
+ assert.ok(display.x>frame.x&&display.x+display.width<frame.x+frame.width&&display.y>frame.y&&display.y+display.height<frame.height);
+ const scene=roomScene(createState('',9,{fieldId:'090',labMode:'dry'}),{actual:'analysis',performed:true,outcome:'completed'});
+ const content=scene.slice(scene.indexOf('<g class="desk-monitor"')).match(/<g class="monitor-content">([^]*?)<\/g><\/g><\/g>/)?.[1];assert.ok(content);
+ for(const path of content.matchAll(/<path(?: class="([^"]+)")? d="([^"]+)"/g)){
+  const coordinates=[...path[2].matchAll(/[ML]([\d.+-]+) ([\d.+-]+)/g)].map(m=>[Number(m[1]),Number(m[2])]);assert.ok(coordinates.length>=2);
+  const offsets=path[1]==='analysis-cursor'?[[0,0],[-5,2],[2,-3]]:[[0,0]];
+  for(const [dx,dy]of offsets)for(const [sx,sy]of coordinates){const x=sx+dx-center[0],y=center[1]+x*MONITOR_DISPLAY.tilt-(sy+dy);assert.ok(x>display.x+1&&x<display.x+display.width-1&&y>display.y+1&&y<display.y+display.height-1);}
+ }
 });

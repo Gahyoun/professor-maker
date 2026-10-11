@@ -1,6 +1,7 @@
-export const RELEASE_NOTES_VERSION='4.19.0';
+export const RELEASE_NOTES_VERSION='4.19.1';
 export const RELEASE_NOTES_KEY='pm-update-notes-v1';
-export const RELEASE_NOTES={title:'연구와 기록을 다듬고, 첫 플레이 안내를 보강했습니다.',changes:[
+export const RELEASE_NOTES={title:'연구실 모니터를 16:9 와이드 화면으로 수정했습니다.',changes:[
+ '연구실의 주·보조 컴퓨터와 Wet lab 작업 모니터를 16:9 화면으로 통일했습니다. 모니터 방향과 화면 안의 글·그래프, 램프 위치도 함께 조정했습니다.',
  '전공별로 연구 검증과 출판 속도를 구분했습니다. 수학은 증명과 심사에 더 시간이 필요하며, 해당 전공의 학위·엔딩 요건도 함께 조정했습니다.',
  '미클리어 후일담을 누르면 달성 조건과 필요한 선택 시점을 볼 수 있습니다. 이미 얻은 편지와 연구 기록은 그대로 보관합니다.',
  'CV 파일에 해당 플레이의 연구실 그림과 한글 글꼴을 포함합니다. 인쇄·PDF는 A4 CV 양식으로 학력, 논문, 발표와 수상을 정리합니다.',

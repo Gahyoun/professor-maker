@@ -128,12 +128,22 @@ function cot(u,v){
 function printer(u,v,z=0){return box(u,v,2.6,2,8,'#bac5c6',z)+box(u+.3,v+.1,2,1.4,2,'#dee2db',z+8)+front(u+.4,v+2.04,z+2,1.9,1.3,'#71868d')+box(u+.5,v-.1,1.8,.8,1,'#f8f4e8',z+10);}
 function kettle(u,v,z=0){return box(u,v,1.2,1.2,1,'#8a9b9c',z)+box(u+.2,v+.2,.8,.8,8,'#e9e3d3',z+1)+box(u+.3,v+.3,.6,.6,1,'#96a4a3',z+9)+line([u+1,v+.5,z+3],[u+1.6,v+.5,z+4],'#829996',2)+line([u+1.6,v+.5,z+4],[u+1.6,v+.5,z+8],'#829996',2);}
 function plush(u,v,z){const [x,y]=projectRoom(u,v,z);return `<g fill="#c6a281"><path d="M${x-7} ${y-16}h3v-3h4v2h5v-2h4v3h3v10h-3v7h-13v-7h-3z"/><path d="M${x-6} ${y-6}h12v5h-12z" fill="#e7d5b7"/><path d="M${x-4} ${y-12}h1v2h-1zm8 0h1v2h-1z" fill="#696060"/><path d="M${x-1} ${y-8}h3v1h-3z" fill="#a57c69"/></g>`;}
-export const MONITOR_DISPLAY=Object.freeze({width:4,height:4*Math.hypot(9,4.5)*9/16,aspectRatio:16/9});
+// Draw a 16:9 screen before projecting it. The monitor turns towards the room
+// camera, independently of the desk axes, so it still reads as a widescreen.
+export const MONITOR_DISPLAY=Object.freeze({width:48,height:27,aspectRatio:16/9,tilt:.18});
+export function monitorGeometry(u,v,z){
+ const center=projectRoom(u+1.7,v+.3,z+7),display={x:-24,y:1.5,width:MONITOR_DISPLAY.width,height:MONITOR_DISPLAY.height};
+ return {center,display,frame:{x:-27,y:0,width:54,height:30.3},point:(x,y)=>[center[0]+x,center[1]+x*MONITOR_DISPLAY.tilt-y]};
+}
 function monitor(u,v,z,active=false){
- const display=MONITOR_DISPLAY,frameHeight=display.height+3.3;
- return box(u+1.5,v,.4,.6,7,'#7e909c',z)+box(u+.7,v-.2,2.2,1,1,'#9daeb1',z)+front(u,v+.3,z+7,4.7,frameHeight,'#788f9c')+
-  `<g class="monitor-display" data-display-aspect="16:9">${front(u+.35,v+.32,z+8.5,display.width,display.height,'#d9e6de')}</g>`+
-  line([u+.7,v+.35,z+26],[u+3.7,v+.35,z+26],'#9cb9ac',1.4)+line([u+.7,v+.35,z+20],[u+3.3,v+.35,z+20],'#9cb9ac',1.4)+line([u+.7,v+.35,z+14],[u+2.4,v+.35,z+14],'#9cb9ac',1.4)+(active?monitorMotion(projectRoom,u,v,z):'');
+ const {display,frame,point}=monitorGeometry(u,v,z);
+ const surface=(rect,color)=>polygon([[rect.x,rect.y],[rect.x+rect.width,rect.y],[rect.x+rect.width,rect.y+rect.height],[rect.x,rect.y+rect.height]].map(p=>point(...p)),color);
+ const screenPoint=(x,y)=>point(display.x+x*display.width,display.y+y*display.height);
+ const textLine=(x1,x2,y)=>{const a=screenPoint(x1,y),b=screenPoint(x2,y);return `<path d="M${a.join(' ')}L${b.join(' ')}" stroke="#9cb9ac" stroke-width="1.4" fill="none"/>`;};
+ return `<g class="lab-monitor" data-display-width="48" data-display-height="27" data-display-tilt=".18">`+
+  box(u+1.5,v,.4,.6,7,'#7e909c',z)+box(u+.7,v-.2,2.2,1,1,'#9daeb1',z)+`<g class="monitor-frame">${surface(frame,'#788f9c')}</g>`+
+  `<g class="monitor-display" data-display-aspect="16:9">${surface(display,'#d9e6de')}</g>`+
+  `<g class="monitor-content">${textLine(.09,.84,.73)}${textLine(.09,.74,.48)}${textLine(.09,.52,.23)}${active?monitorMotion(screenPoint):''}</g></g>`;
 }
 function microscope(u,v,z){return box(u,v,2.3,2,2,'#d9dfd5',z)+box(u+1.5,v+.2,.55,.8,17,'#9eafb5',z+2)+box(u+.7,v+.2,1.8,.7,3,'#8e9fa8',z+19)+box(u+.6,v+.3,.4,.4,6,'#8395a0',z+13)+box(u+.4,v+.3,1.4,1.2,1,'#bdcbd0',z+7);}
 function actor(state,result,index,u,v,idle,lift=0,facing='front',hairOnly=false){
@@ -182,11 +192,15 @@ export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'
  const equipment=roomEquipment(state,{box,front,line,desk,microscope,monitor,project:projectRoom},!idle&&result.performed===true&&['analysis','experiment','industry','startup','video','paper'].includes(result.actual));
  add(3.5,10,6.2,3.5,equipment.bench);
  const deskLayers=workstationDesk(9,16,10,6,wet?'#bac9c5':'#c5ab8e');
- let work=deskLayers.back;work+=(wet&&deskWorking?`<g class="desk-monitor" data-floor="14.2,18.3">${monitor(14.2,18.3,26,result.performed===true&&result.actual==='analysis')}</g>`:equipment.primary)+equipment.accessories;
+ let stockArt='';
+ if(wet){const count=({sparse:1,balanced:3,rich:5})[stock];for(let i=0;i<count;i++)stockArt+=box(14+i*.5,17.5,.25,.4,5,'#b5cecb',26)+box(14+i*.5,17.5,.25,.4,1,'#899ca3',31);if(stock==='rich')stockArt+=box(17,18.2,1.3,1.2,7,'#c8d2cc',26);}
+ // Samples behind the computer must not be painted over its display.
+ let work=deskLayers.back+(wet&&deskWorking?equipment.accessories+stockArt:'');
+ work+=wet&&deskWorking?`<g class="desk-monitor" data-floor="14.2,18.3">${monitor(14.2,18.3,26,result.performed===true&&result.actual==='analysis')}</g>`:equipment.primary+equipment.accessories;
  // Notebook, pencil, keyboard, task lamp and cups share the desk's top plane.
  work+=box(10.1,19.8,1.6,1.7,.6,'#f2ecdd',26)+line([10.6,19.8,27],[11.1,21.2,27],'#82949b',1.2)+`<g class="desk-keyboard" data-floor="13.5,21.3">`+box(13.5,21.3,2.4,.55,.5,'#d4ddda',26)+line([13.7,21.45,26.7],[15.6,21.45,26.7],'#9db0b1',.7)+'</g>';
- work+=box(17.6,16.8,1,1,1,'#abb9b1',26)+box(17.9,17,.25,.25,15,'#91a39e',27)+box(17.2,16.7,1.4,1.3,2,'#b7c4b3',42);
- if(wet){const count=({sparse:1,balanced:3,rich:5})[stock];for(let i=0;i<count;i++)work+=box(14+i*.5,17.5,.25,.4,5,'#b5cecb',26)+box(14+i*.5,17.5,.25,.4,1,'#899ca3',31);if(stock==='rich')work+=box(17,18.2,1.3,1.2,7,'#c8d2cc',26);}
+ work+=box(17.9,16,1,1,1,'#abb9b1',26)+box(18.2,16.2,.25,.25,15,'#91a39e',27)+box(17.5,15.9,1.4,1.3,2,'#b7c4b3',42);
+ if(!(wet&&deskWorking))work+=stockArt;
  add(9,16,10,6,work+deskLayers.front);
  add(...ROOM_ANCHORS.plant,2,2,`<g class="room-plant" data-floor="${ROOM_ANCHORS.plant.join(',')}">${plant(...ROOM_ANCHORS.plant,d.plantType)}</g>`);
  if(d.bag)add(6,23,2.2,1.7,box(6,23,2.2,1.7,9,'#b49a8c')+line([6.4,23.2,10],[7.7,23.2,10],'#85786d',2));
