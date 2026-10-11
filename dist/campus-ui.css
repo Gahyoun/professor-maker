@@ -217,3 +217,10 @@ dialog::backdrop{background:rgb(14 32 46 / .65)}
 .pixel-room[data-projection=isometric]>.room-label{position:static;grid-column:1;grid-row:1;justify-self:start;max-width:calc(100% - 24px);margin:8px 12px 0;padding:3px 0;background:transparent;overflow-wrap:anywhere;z-index:auto}
 @media(max-width:650px){.pixel-room[data-projection=isometric]>.room-label{max-width:calc(100% - 16px);margin:5px 8px 0;font-size:9px}.live-lab .lab-scene-heading{gap:4px 10px}}
 @media(max-width:899px){body[data-gameplay=true]:not(.month-playing) #live-stage:before{display:none}}
+
+/* The first-week date belongs to the header, never on top of the caption/art. */
+.live-lab .week-scene-header.has-month-cue{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px}
+.week-scene-header.has-month-cue>.month-cue{position:static;grid-column:1/-1;grid-row:1;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;max-width:100%;min-width:0;padding:0;border:0;background:transparent;box-shadow:none;border-radius:0}
+.week-scene-header.has-month-cue>.month-cue strong{font-size:15px;overflow-wrap:anywhere}
+.week-scene-header.has-month-cue>span,.week-scene-header.has-month-cue>strong{grid-row:2;min-width:0;overflow-wrap:anywhere}
+@media(max-width:650px){.live-lab .week-scene-header.has-month-cue{gap:4px 8px}.week-scene-header.has-month-cue>.month-cue strong{font-size:13px}}

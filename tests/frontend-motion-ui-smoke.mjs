@@ -7,7 +7,7 @@ const output='/private/tmp/professor-maker-qa';await fs.mkdir(output,{recursive:
 try{
  const context=await browser.newContext({viewport:{width:1360,height:950},serviceWorkers:'block'}),page=await context.newPage(),errors=[];
  page.on('pageerror',error=>errors.push(error.message));
- await page.goto('http://127.0.0.1:4173/#home');
+ await page.goto((process.env.GAME_URL||'http://127.0.0.1:4173/')+'#home');
  assert.equal(await page.locator('.brand-initial-p').first().evaluate(el=>getComputedStyle(el).color),'rgb(0, 158, 219)');
  assert.equal(await page.locator('.brand-initial-m').first().evaluate(el=>getComputedStyle(el).color),'rgb(0, 158, 219)');
  await page.locator('.header-nav a[href="#lab"]').click();
@@ -29,6 +29,13 @@ try{
  await page.locator('[data-ui="advance"]').click();
  await page.waitForFunction(()=>document.body.classList.contains('month-playing'));
  await page.locator('.month-cue').waitFor();
+ await page.waitForTimeout(300);
+ const cueBounds=await page.evaluate(()=>{
+  const cue=document.querySelector('.month-cue'),header=cue.closest('.week-scene-header');
+  const c=cue.getBoundingClientRect(),h=header.getBoundingClientRect(),label=document.querySelector('#live-stage .room-label').getBoundingClientRect();
+  return {withinHeader:c.left>=h.left&&c.right<=h.right&&c.top>=h.top&&c.bottom<=h.bottom,beforeCaption:c.bottom<=label.top};
+ });
+ assert.deepEqual(cueBounds,{withinHeader:true,beforeCaption:true});
  assert.ok(await page.locator('.schedule').evaluate(el=>el.inert));
  assert.ok(await page.locator('[data-skip-weeks]').evaluate(el=>el===document.activeElement));
  await page.screenshot({path:output+'/pm413-month-cue.png'});
