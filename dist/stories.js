@@ -103,12 +103,31 @@ export const ENDINGS={
 // Each replay gets fresh metadata and pages; the collected ending ID stays the same.
 export function getEndingStory(id,context={}){
  const story=ENDINGS[id];
- if(id==='corporate'&&story){
-  const distance=endingRelationship(context.relationship,id);
-  const title=distance==='close'?p('커피가 식을 때까지','Until the coffee cooled'):distance==='distant'?p('서로의 자리에서','From our own places'):story.title;
-  return {...story,title};
+ if(!story)return null;
+ const hasCtx=Boolean(context.relationship||context.statistics||context.fieldId||context.labMode);
+ if(hasCtx){
+  const distance=endingRelationship(context.relationship??context.statistics?.student?.rapport??context.statistics?.student,id);
+  if(id==='corporate'){
+   const title=distance==='close'?p('커피가 식을 때까지','Until the coffee cooled'):distance==='distant'?p('서로의 자리에서','From our own places'):story.title;
+   const subtitle=distance==='close'?p('가까워진 거리','A closer distance'):distance==='distant'?p('각자의 선을 지키며','Holding our own lines'):p('딱 알맞은 거리','Just the right distance');
+   return {...story,title,subtitle};
+  }
+  const subtitles={
+   true:distance==='close'?p('동료로 마주 선 감사의 순간','A grateful moment facing as colleagues'):distance==='distant'?p('각자의 강단에 서서','Standing at our respective podiums'):p('학회장에서 나눈 동료의 대화','A colleague’s conversation at the conference'),
+   institute:distance==='close'?p('다시 마주 앉은 연구실','Back across the table'):distance==='distant'?p('명확한 역할과 연구 범위','Clear roles and research boundaries'):p('신뢰로 연결된 공동연구','Collaboration built on trust'),
+   startup:distance==='close'?p('새로운 도전을 향한 힘찬 걸음','A bold step toward a new challenge'):distance==='distant'?p('스스로 개척한 독립의 길','An independent path forged on one’s own'):p('시장에서 증명하는 질문','Questions proven in the market'),
+   resident_researcher:distance==='close'?p('함께 지키는 연구실의 일상','Protecting the lab’s rhythm together'):distance==='distant'?p('명확한 역할과 선명한 거리','Clear roles and distinct boundaries'):p('같은 연구실, 다른 자리','The same lab, a different desk'),
+   unrelated:distance==='close'?p('새로운 자리에서 피어난 배움','Learning blossoming in a new place'):distance==='distant'?p('연구실 밖의 길','A path outside the lab'):p('다른 종류의 질문','A different kind of question'),
+   bachelor:distance==='close'?p('함께 보낸 두 해의 소중한 기억','Precious memories of two years together'):distance==='distant'?p('조용히 매듭지은 학부의 시간','Undergraduate days quietly concluded'):p('두 번의 봄, 그리고 졸업','Two springs, then graduation'),
+   masters:distance==='close'?p('책장에 꽂힌 학위논문과 새로운 출발','A thesis on the bookshelf and a fresh start'):distance==='distant'?p('과정을 정리하고 나아간 자리','Moving on after completing the program'):p('석사학위 뒤의 다음 길','The path after a master’s degree'),
+   leave:distance==='close'?p('따뜻한 기다림과 비워 둔 자리','Warm waiting and an empty chair'):distance==='distant'?p('스스로를 돌보는 휴식','Rest to care for oneself'):p('잠시 비워 둔 자리','A desk left empty for now'),
+   postdoc:distance==='close'?p('박사후연구원으로서의 새로운 여정','A new postdoctoral journey'):distance==='distant'?p('필요한 연락만을 남겨 둔 채','Keeping only the necessary correspondence'):p('연구자로서 홀로서기','Standing independently as a researcher')
+  };
+  const subtitle=subtitles[id]??story.title;
+  if(id==='postdoc')return postdocScenes({...story,subtitle},context,researchSetting(context),englishResearchSetting(context));
+  return {...story,subtitle};
  }
- return id==='postdoc'&&story?postdocScenes(story,context,researchSetting(context),englishResearchSetting(context)):story;
+ return id==='postdoc'?postdocScenes(story,context,researchSetting(context),englishResearchSetting(context)):story;
 }
 
 // Rapport controls the distance in the letter, separately from the career outcome.
@@ -338,13 +357,27 @@ export function endingLetterInsertions(id,relationship,history=[],context={},loc
   let remembers=0;return frozen.filter(n=>(remembers+=(n.text.match(/기억합니다/g)||[]).length)<=1).map(clean);
  }
  const seen=new Set(Array.isArray(context.seenPassageIds)?context.seenPassageIds:[]),chosen=[];
+ const seenCount=pId=>(Array.isArray(context.seenPassageIds)?context.seenPassageIds.filter(x=>x===pId).length:(seen.has(pId)?1:0));
  const salt=JSON.stringify([id,context.fieldId,context.labMode,context.statistics?.temperament,context.statistics?.student]);
  const take=group=>{
   const available=candidates.filter(n=>n.group===group&&!chosen.some(p=>p.id===n.id||p.text===n.text)&&([...chosen,n].reduce((count,p)=>count+(p.text.match(/기억합니다/g)||[]).length,0)<=1));
-  available.sort((a,b)=>Number(seen.has(a.id))-Number(seen.has(b.id))||(b.priority??0)-(a.priority??0)||passageHash(salt+a.id)-passageHash(salt+b.id));
+  available.sort((a,b)=>seenCount(a.id)-seenCount(b.id)||(b.priority??0)-(a.priority??0)||passageHash(salt+a.id)-passageHash(salt+b.id));
   if(available[0])chosen.push(available[0]);
  };
- if(candidates.some(n=>n.group==='memory')){take('memory');if(budget===2){take('skill');if(chosen.length<2)take('trait');}}
+ const hasUnseen=group=>candidates.some(n=>n.group===group&&!seen.has(n.id));
+ const unseenMemories=hasUnseen('memory'),unseenSkills=hasUnseen('skill'),unseenTraits=hasUnseen('trait');
+ if(candidates.some(n=>n.group==='memory')){
+  if(unseenMemories||(!unseenSkills&&!unseenTraits)){
+   take('memory');if(budget===2){take('skill');if(chosen.length<2)take('trait');}
+  }else{
+   if(unseenSkills)take('skill');else take('trait');
+   if(budget===2){
+    if(chosen[0]?.group==='skill'&&unseenTraits)take('trait');
+    else if(chosen[0]?.group==='trait'&&unseenSkills)take('skill');
+    else take('memory');
+   }
+  }
+ }
  else if(budget===2){take('trait');take('skill');}else{take('skill');if(!chosen.length)take('trait');}
  return chosen.slice(0,budget).map(clean);
 }
@@ -404,6 +437,48 @@ export function getEndingPages(id, lang = 'ko', relationship, name, reason, hist
     pages[pages.length-1] = distance === 'reserved' ? p('그날 저녁, 두 사람은 학회장 근처 카페에서 커피를 마셨다. 한 잔을 마시는 동안 오래된 기계와 {name} 교수의 대학원생 이야기가 이어졌다.\n\n다음 만남을 서두르지는 않았다. 돌아가기 전, 나는 처음으로 학생의 진도가 아닌 동료의 의견을 물었다.\n\n“{name} 교수는 어떻게 생각해요?”', 'That evening, we had one coffee at a café near the venue. We talked about the old machine and Professor {name}’s graduate students.\n\nWe did not rush to arrange another meeting. Before leaving, I asked for a colleague’s view rather than a student’s progress.\n\n“What do you think?”')[locale] : p('카페에 같이 가자는 말은 꺼내지 않았다. {name} 교수는 다음 세션으로 향했고, 나는 그 뒷모습을 잠깐 바라보았다.\n\n좋은 소식은 약속대로 직접 가져왔다. 그 뒤의 거리는 각자가 정할 일이었다.\n\n며칠 뒤 받은 메일에는 새로운 연구 질문이 적혀 있었다. 이번에는 동료에게 답장을 썼다.', 'I did not suggest going to a café together. Professor {name} headed to the next session, and I watched for a moment.\n\nThe good news had been brought in person as promised. The distance afterward was for each of us to choose.\n\nA few days later, an email arrived with a new research question. This time, I wrote to a colleague.')[locale];
   }
   if(id==='corporate')pages[4]=p('메일은 이렇게 이어졌다.','The email continued.')[locale]+'\n\n'+pages[4];
+  if(id==='corporate'&&context?.statistics){
+    const t=context.statistics.temperament;
+    const addPara=locale==='ko'?(
+      distance==='close'?(
+        t?.caution>=65?'\n\n서두르지 않고 확인할 것부터 짚던 버릇은, 회사에서도 단단한 신뢰가 되어 있었다.':
+        t?.curiosity>=65?'\n\n새로운 문제를 탐색하던 그 눈빛은, 연구실 밖의 현장에서도 여전히 빛나고 있었다.':
+        '\n\n자리와 역할은 달라졌지만, 함께 고민했던 시간은 두 사람 사이에 조용한 온기로 남아 있었다.'
+      ):distance==='reserved'?(
+        '\n\n각자의 영역에서 제 몫을 다하며, 우리는 알맞은 간격을 둔 채 서로의 걸음을 지켜보았다.'
+      ):(
+        '\n\n더 많은 대화를 나누지는 않았지만, 각자의 자리에서 성실하게 나아가는 모습을 확인한 것만으로 충분했다.'
+      )
+    ):(
+      distance==='close'?(
+        t?.caution>=65?'\n\nThe habit of checking details before concluding had become a firm source of trust at work.':
+        t?.curiosity>=65?'\n\nThe spark for exploring new questions was still shining brightly in the field beyond the lab.':
+        '\n\nThough our roles had changed, the hours spent thinking together remained as a quiet warmth.'
+      ):'\n\nWe did not promise a longer conversation, but knowing we each continued our work was enough.'
+    );
+    pages[pages.length-1]+=addPara;
+  }
+  if(id==='institute'&&context?.statistics){
+    if(distance==='close'){
+      pages[pages.length-1]+=locale==='ko'?'\n\n다시 마주 앉을 날을 준비하며, 함께 보낸 여덟 해의 배움이 새로운 질문으로 이어지고 있음을 실감했다.':'\n\nAs we prepared to meet again across the table, I could see our shared time opening new questions.';
+    }else if(distance==='distant'){
+      pages[pages.length-1]+=locale==='ko'?'\n\n공동연구의 범위와 기준을 분명히 한 채, 각자의 연구실에서 동료로서의 걸음을 이어가기로 했다.':'\n\nWith clear boundaries and responsibilities, we continued our steps as colleagues from our own laboratories.';
+    }
+  }
+  if(id==='resident_researcher'&&context?.statistics){
+    if(distance==='close'){
+      pages[pages.length-1]+=locale==='ko'?'\n\n정기 회의가 끝난 뒤 나누는 따뜻한 대화 속에서, 이제는 연구실의 일상을 함께 든든히 지켜 주는 동료를 보았다.':'\n\nIn our warm conversations after regular meetings, I saw a reassuring colleague sharing our lab’s daily rhythm.';
+    }else if(distance==='distant'){
+      pages[pages.length-1]+=locale==='ko'?'\n\n서로의 역할과 업무 범위를 분명히 지키며, 같은 공간에서 담담하게 각자의 책임을 다하고 있었다.':'\n\nRespecting our formal roles and work boundaries, we carried out our responsibilities with quiet clarity.';
+    }
+  }
+  if(id==='startup'&&context?.statistics){
+    if(distance==='close'){
+      pages[pages.length-1]+=locale==='ko'?'\n\n연구실에서 시작된 작은 질문이 세상과 만나는 현장에서, 제자이자 새로운 리더의 성장을 오래 지켜보았다.':'\n\nSeeing our questions meet the wider world, I watched a former student grow into an inspiring new leader.';
+    }else if(distance==='distant'){
+      pages[pages.length-1]+=locale==='ko'?'\n\n각자의 영역에서 독립된 연구와 사업을 이어가며, 멀리서 서로의 새로운 도전을 묵묵히 응원하기로 했다.':'\n\nContinuing independent work in our respective fields, we quietly supported each other’s new ventures from a distance.';
+    }
+  }
   if(id==='startup'&&context?.labMode==='dry')pages=pages.map(text=>text.replace(locale==='ko'?'다음 실험은 무엇입니까?':'What is your next experiment?',locale==='ko'?'다음 연구는 무엇입니까?':'What is your next study?'));
   const slotReason=id==='gameover'&&suppliedReason==='qual_failure'&&history.filter(h=>h.kind==='qual'&&!h.passed).length<2?'qual_withdrawal':suppliedReason;
   assembleLetterPages(pages, id, distance, history, context??{}, locale, slotReason);

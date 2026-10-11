@@ -2,7 +2,7 @@
 export const EXPRESSIONS=Object.freeze({neutral:'평온한 표정',happy:'미소 짓는 표정',delighted:'환하게 기뻐하는 표정',focused:'집중하는 표정',worried:'걱정하는 표정',sad:'속상한 표정',tired:'지친 표정',relieved:'안도하는 표정',surprised:'놀란 표정'});
 export const normalizeExpression=value=>Object.hasOwn(EXPRESSIONS,value)?value:'neutral';
 export function studentEmotion(state,result={}, {idle=false}={}){
- if(idle){if(state.pending?.kind==='monthly-issue'){if(state.pending.id==='grant-selected')return 'surprised';if(state.pending.id==='presentation-award')return 'delighted';if(state.pending.id==='grant-rejected')return 'sad';}if(['thesis','failure-counsel','presentation-recovery'].includes(state.pending?.kind))return 'worried';if(state.hidden?.stress>=70||state.hidden?.stamina<300)return 'tired';return 'neutral';}
+ if(idle){if(state.pending?.kind==='monthly-issue'){if(state.pending.id==='grant-selected')return 'surprised';if(state.pending.id==='presentation-award')return 'delighted';if(state.pending.id==='grant-rejected')return 'sad';}if(['thesis','failure-counsel','presentation-recovery'].includes(state.pending?.kind))return 'worried';const lastEvent=state.history?.findLast(h=>h.month===state.month&&h.expression);if(lastEvent?.expression)return lastEvent.expression;if(state.hidden?.stress>=70||state.hidden?.stamina<300)return 'tired';return 'neutral';}
  if(result.outcome==='presentation_failed'||result.performed===false)return 'sad';
  if(Number.isFinite(result.successRate)){const r=result.successRate;return r>=.9?'delighted':r>=.7?'happy':r>=.4?'focused':r>0?'worried':'sad';}
  if(result.outcome==='presented')return 'delighted';

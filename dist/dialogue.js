@@ -1,4 +1,5 @@
-import {counselingFollowup} from './counseling.js';
+import {counselingFollowup,counselingReaction} from './counseling.js';
+export {counselingReaction} from './counseling.js';
 import {examWindow,academicWeeks} from './academic-calendar.js';
 import {studentRestRequest} from './engine.js';
 // Original bilingual student voices. Abilities never appear as numeric dialogue.

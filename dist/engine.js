@@ -13,6 +13,7 @@ import {GAME_BALANCE as BALANCE} from './balance.js';
 import { EVENTS } from './events.js';
 import { initialGrants, advanceGrants, validateGrants } from './grants.js';
 import { getDiscipline, degreeTargets } from './disciplines.js';
+import { counselingReaction } from './counseling.js';
 export { EVENTS };
 export const VERSION = 4;
 export const MONTHS = 96;
@@ -545,7 +546,7 @@ export function decide(state,choice) {
     const topics={daily:'counsel-daily-life',academic:'counsel-coursework',research:'counsel-results'};if(!Object.hasOwn(topics,choice))throw new Error('Invalid conversation topic.');const eligible=EVENTS.filter(e=>e.kind==='counseling'&&eventEligible(s,e));const event=eligible.find(e=>e.id===topics[choice])??eligible[0];if(event)s.pendingQueue.unshift({kind:'event',id:event.id});log(s,{kind:'conversation-topic',topic:choice});
   } else if(p.kind==='event') {
     const e=EVENTS.find(e=>e.id===p.id),o=e?dilemmaOptions(s,e)[choice]:null;if(!Number.isInteger(choice)||!o)throw new Error('Invalid event choice.');
-    if(o.effects?.lab?.funds<0&&s.lab.funds<-o.effects.lab.funds)throw new Error('Insufficient funds for this purchase.');applyEvent(s,o,e);const old=s.eventFlags[e.id];s.eventFlags[e.id]={lastMonth:s.month,count:(old?.count||0)+1};log(s,{kind:'event',id:e.id,choice,...(o.response?{response:o.response}:{})});
+    if(o.effects?.lab?.funds<0&&s.lab.funds<-o.effects.lab.funds)throw new Error('Insufficient funds for this purchase.');applyEvent(s,o,e);const old=s.eventFlags[e.id];s.eventFlags[e.id]={lastMonth:s.month,count:(old?.count||0)+1};const reaction=e.kind==='counseling'?counselingReaction(s,e.id,choice,s.locale):null;log(s,{kind:'event',id:e.id,choice,...(o.response?{response:o.response}:reaction?{response:reaction.response}:{}),...(reaction?{expression:reaction.expression}:{})});
   } else if(p.kind==='external-admission'){
     if(!['encourage','remain'].includes(choice))throw new Error('Invalid admission advice.');
     const stayed=choice==='encourage'&&random(s)<clamp(.1+abilityScore(s,'rapport')*.006,.1,.7);log(s,{kind:'external-admission',level:p.level,choice,stayed});

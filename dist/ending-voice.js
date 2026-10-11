@@ -110,10 +110,16 @@ export function endingVoiceCandidates(context={},locale='ko'){
  return candidates.filter(candidate=>eligibleVoice(candidate,context.ending));
 }
 
-// Compatibility helper for callers outside the story composer.
+// Compatibility helper for callers outside the story composer with fatigue avoidance.
 export function endingVoice(context={},locale='ko'){
  const budget=context.relationship==='distant'||NO_VOICE_ENDINGS.has(context.ending)?0:context.relationship==='close'?2:1;
- const candidates=endingVoiceCandidates(context,locale).sort((a,b)=>b.priority-a.priority);
+ const seen=new Set(Array.isArray(context.seenPassageIds)?context.seenPassageIds:[]);
+ const seenCount=id=>(Array.isArray(context.seenPassageIds)?context.seenPassageIds.filter(x=>x===id).length:(seen.has(id)?1:0));
+ const salt=JSON.stringify([context.ending,context.fieldId,context.labMode,context.statistics?.temperament,context.statistics?.student]);
+ const hash=text=>{let n=2166136261;for(const c of String(text))n=Math.imul(n^c.charCodeAt(0),16777619);return n>>>0;};
+ const candidates=endingVoiceCandidates(context,locale).sort((a,b)=>
+  seenCount(a.id)-seenCount(b.id)||(b.priority-a.priority)||(hash(salt+a.id)-hash(salt+b.id))
+ );
  const groups=new Set(),notes=[];
  for(const candidate of candidates){if(notes.length>=budget)break;if(groups.has(candidate.group))continue;groups.add(candidate.group);notes.push(candidate.text);}
  return notes;
