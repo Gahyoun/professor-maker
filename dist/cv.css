@@ -55,7 +55,10 @@
 /* A conventional CV for paper; the screen portfolio and parameter report remain on screen. */
 .cv-print-form{display:none}
 @page{size:A4;margin:14mm}
+@page us-cv{size:Letter;margin:.6in}
 @media print{
+ .cv-document[lang=en]{page:us-cv;font-family:Arial,Helvetica,sans-serif}
+ .cv-document[lang=en] .cv-print-header h1,.cv-document[lang=en] .cv-print-section h2,.cv-document[lang=en] .cv-print-section h3{font-family:Arial,Helvetica,sans-serif}
  html,body{height:auto!important;overflow:visible!important;background:white!important}
  dialog.cv-modal[open]{position:static!important;inset:auto!important;display:block!important;width:100%!important;max-width:none!important;height:auto!important;max-height:none!important;margin:0!important;padding:0!important;overflow:visible!important;border:0!important;box-shadow:none!important}
  dialog.cv-modal::backdrop{display:none}

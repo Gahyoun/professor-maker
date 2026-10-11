@@ -63,4 +63,11 @@ export function generateNameRecord(seed, gender = 'unspecified') {
 export function generateKoreanName(seed, gender = 'unspecified') {
   return generateNameRecord(seed, gender).name;
 }
-export const generateStudentName = generateKoreanName;
+// Fictional English-language name pool: not a demographic sample or a prediction.
+const ENGLISH_SURNAMES=['Morgan','Patel','Chen','Williams','Rivera','Kim','Reed','Nguyen','Brooks','Singh','Bennett','Diaz'];
+const ENGLISH_GIVEN={male:['Ethan','Noah','Oliver','Lucas','Daniel','Miles','Henry','Adrian','Julian','Leo'],female:['Maya','Olivia','Sofia','Amelia','Chloe','Nora','Zoe','Isabel','Leah','Audrey'],unspecified:['Alex','Jordan','Taylor','Casey','Riley','Sam','Avery','Morgan','Cameron','Quinn']};
+export function generateEnglishName(seed,gender='unspecified'){
+ const pool=ENGLISH_GIVEN[gender]??ENGLISH_GIVEN.unspecified;
+ return `${pool[Math.floor(unit(seed,'english-given')*pool.length)]} ${ENGLISH_SURNAMES[Math.floor(unit(seed,'english-surname')*ENGLISH_SURNAMES.length)]}`;
+}
+export function generateStudentName(seed,gender='unspecified',locale='ko'){return locale==='en'?generateEnglishName(seed,gender):generateKoreanName(seed,gender);}

@@ -1,3 +1,4 @@
+import {CONTENT_EN,localizeArtworkLabels} from './content-en.js';
 import {studentEmotion,reactionEffects} from './student-reaction.js';
 import {weeklyAppearance,renderPortrait} from './appearance.js';
 import {renderStudentHairDrape} from './student-pixel-art.js';
@@ -153,11 +154,11 @@ function actor(state,result,index,u,v,idle,lift=0,facing='front',hairOnly=false)
  const expression=studentEmotion(state,result,{idle}),appearance={...weeklyAppearance({...state,visualMonth:idle?state.month:Math.max(0,state.month-1)},index),...(pose==='experiment'?{outfit:0}:{})};
  const portraitTop=y-h+(pose==='seated'?7:2),headCenter=portraitTop+(pose==='seated'?152:120)*h/496;
  if(hairOnly){const hair=renderStudentHairDrape(appearance,expression);return hair?hair.replace('class="student-hair-drape"',`class="student-hair-drape room-hair-drape" x="${x-w/2}" y="${portraitTop}" width="${w}" height="${h}" style="width:${w}px;height:${h}px"`):'';}
- const portrait=renderPortrait(appearance,'학생 도트 초상화',expression,pose,facing).replace('class="portrait"',`class="portrait room-portrait" x="${x-w/2}" y="${portraitTop}" width="${w}" height="${h}" style="width:${w}px;height:${h}px"`);
+ const portrait=renderPortrait(appearance,state.locale==='en'?'Pixel portrait of the student':'학생 도트 초상화',expression,pose,facing).replace('class="portrait"',`class="portrait room-portrait" x="${x-w/2}" y="${portraitTop}" width="${w}" height="${h}" style="width:${w}px;height:${h}px"`);
  const props=executing||relaxing?`<g transform="translate(${x} ${y}) scale(.8)">${activityProps(activity,{wet,index,kind:equipmentProfile(state),facing})}</g>`:'';
  return `<g class="mini-student pose-${pose} expression-${expression} ${idle?'mini-idle':'mini-working'} action-${activity.replace(/[^a-z_-]/g,'')}" data-floor="${u},${v}"><g class="room-reaction" transform="translate(${x} ${headCenter}) scale(.7)">${reactionEffects(expression,index)}</g>${portrait}${props}</g>`;
 }
-export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced',student=true}={}){
+function miniRoomArtSource(state,kind,result,index,{idle=false,stock='balanced',student=true}={}){
  const d=roomDecorations(state),wall=WALLPAPERS[d.wallpaper],[tile,tileAlt,grout]=FLOOR_TILES[d.floor],wet=state.professorProfile.labMode==='wet';
  let art=plane([[0,0,0],[28,0,0],[28,28,0],[0,28,0]],tile);
  for(let u=0;u<28;u+=4)for(let v=0;v<28;v+=4)art+=plane([[u,v,0],[u+4,v,0],[u+4,v+4,0],[u,v+4,0]],(u/4+v/4)%2?tileAlt:tile,grout);
@@ -225,3 +226,5 @@ export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'
  art+=plane([[0,28,0],[28,28,0],[28,28,-3],[0,28,-3]],shade(tile,-18))+plane([[28,0,0],[28,28,0],[28,28,-3],[28,0,-3]],shade(tile,-28));
  return `<svg class="pixel-room-art mini-room-art" viewBox="0 0 600 360" role="img" aria-label="도트로 표현한 작은 ${wet?'Wet':'Dry'} lab 연구실" preserveAspectRatio="xMidYMid meet" data-wallpaper="${d.wallpaper}" data-floor-tile="${d.floor}" data-equipment-profile="${equipment.kind}" data-field-kit="${equipment.specialty}" data-season="${labSeason(state,{idle})}"><g shape-rendering="crispEdges">${art}</g></svg>`;
 }
+
+export function miniRoomArt(state,...args){const art=miniRoomArtSource(state,...args);return state.locale==='en'?localizeArtworkLabels(art).replace(/aria-label="([^"]*)"/g,(_,label)=>`aria-label="${CONTENT_EN[label]??(label.endsWith(' 화분')?`${CONTENT_EN[label.slice(0,-3)]??'Indoor plant'} pot`:label.startsWith('도트로 표현한 작은')?'Pixel-art research laboratory':label)}"`):art;}

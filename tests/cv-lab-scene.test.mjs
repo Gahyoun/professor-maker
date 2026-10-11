@@ -22,7 +22,7 @@ test('lab snapshot freezes the last performed month and clears a pending defense
   assert.deepEqual(state,before);assert.deepEqual(first,createCVLabScene(state));
   assert.deepEqual({...first,image:undefined},{version:1,month:95,fieldId:'058',labMode:'wet',image:undefined});
   assert.ok(validateCVLabScene(first,96));assert.equal(validateCVLabScene(first,95),false);
-  assert.ok(!decode(first.image).includes('THESIS DEFENSE'));assert.ok(decode(first.image).includes('학생 도트 초상화'));
+  assert.ok(!decode(first.image).includes('THESIS DEFENSE'));assert.ok(decode(first.image).includes(locale==='en'?'Pixel portrait of the student':'학생 도트 초상화'));
   const cv=buildEndingCV(state);assert.ok(cv.html.indexOf('cv-lab-record')>cv.html.indexOf('</div><div class="cv-publication-catalog">'));
   assert.match(cv.html,locale==='en'?/Y8 · Aug/:/8년차 2월/);
  }

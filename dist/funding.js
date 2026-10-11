@@ -1,5 +1,6 @@
 // Fictional 3 PI / 5 total model; real programs and exemptions require official guidance.
 import {researchFinanceProfile} from './research-finance.js';
+import {campusMonth,campusPolicy} from './campus-calendar.js';
 export const FINANCE_RULES_VERSION=1;
 export const GRANT_SCALE_VERSION=2;
 export const GRANT_INCREASE=1.15;
@@ -34,7 +35,7 @@ export function grantCounts(s){
  const active=(s.grants.portfolio??[{id:0,role:'pi',start:s.grants.cycleStart,end:s.grants.cycleEnd}]).filter(g=>g.start<=s.month&&g.end>s.month&&(g.id!==0||s.grants.status==='active'));
  return {pi:active.filter(g=>g.role==='pi').length,total:active.length};
 }
-export function grantCallOpen(s){const m=((s.month+(s.locale==='en'?8:2))%12)+1;return [3,9].includes(m);}
+export function grantCallOpen(s){return campusPolicy(s).grantMonths.includes(campusMonth(s.month,s));}
 export function baseRenewalDue(s){return s.month<s.grants.cycleEnd&&s.grants.cycleEnd-s.month<=12&&!s.grants.applicationCycles.includes(s.grants.cycleEnd);}
 export function canApplyGrant(s,role='pi'){const n=grantCounts(s);return role==='pi'&&s.grants.status==='active'&&baseRenewalDue(s)||n.total<5&&(role==='co'||n.pi<3);}
 export function validApplication(a){return a&&['pi','co'].includes(a.role)&&[2,3,4,5].includes(a.years)&&Object.keys(a).every(k=>['role','years'].includes(k));}

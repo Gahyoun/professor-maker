@@ -1,7 +1,8 @@
+import {englishText} from './content-en.js';
 // Fictional management decisions. Hints describe tradeoffs without exposing hidden values.
 const p=(ko,en)=>({ko,en});
-const o=(value,ko,en,hint,effects,progress=0,response='')=>({value,label:p(ko,en),hint:p(hint,hint),effects,progress,response});
-const dilemma=(id,title,body,options,extra={})=>({id,title:p(title,title),body:p(body,body),kind:'dilemma',minMonth:1,maxMonth:95,cooldown:4,once:false,options,...extra});
+const o=(value,ko,en,hint,effects,progress=0,response='')=>({value,label:p(ko,en),hint:p(hint,englishText(hint)),effects,progress,response});
+const dilemma=(id,title,body,options,extra={})=>({id,title:p(title,englishText(title)),body:p(body,englishText(body)),kind:'dilemma',minMonth:1,maxMonth:95,cooldown:4,once:false,options,...extra});
 export const DILEMMAS=[
  dilemma('monthly-scope','이번 달에는 어디까지 할까','학생이 후속 질문 두 가지를 가져왔다. 모두 시도하기에는 시간이 부족하다. 지금의 연구를 마무리할지, 작은 새 방향을 확인할지 정해야 한다.',[
   o(0,'작은 검증을 함께 설계한다','Design a small validation together','질문의 근거를 다듬는다. 교수의 다른 업무에 쓸 여유는 줄어든다.',{hidden:{research:.6,rapport:.6},professor:{research:-.5,admin:-.5}},2,'“어디까지 확인하면 되는지 정해져서 시작할 수 있겠어요.”'),
@@ -47,6 +48,7 @@ export function dilemmaOptions(s,event){
   if(event.id==='monthly-workload'&&item.value===1&&s.hidden.stress>=65){item.effects.hidden.stress=4;item.effects.hidden.stamina=-2;item.response='“마감은 알겠습니다. 지금 맡은 일을 모두 해낼 수 있을지는 걱정돼요.”';}
   const cost=Math.max(0,-(item.effects.lab?.funds??0));item.disabled=cost>s.lab.funds;
  }
+ if(s.locale==='en')for(const item of options)item.response=englishText(item.response);
  return options;
 }
 export function monthlyIssueOptions(s,id){
@@ -70,6 +72,7 @@ export function monthlyIssueOptions(s,id){
  };
  const options=[o('acknowledge','합의한 계획을 유지한다','Keep the agreed plan','이번 결과만 확인하고 현재 계획을 이어 간다. 별도의 추가 효과나 지출은 없다.',{},0,''),...(alternatives[id]??[])];
  for(const item of options)item.disabled=-(item.effects.lab?.funds??0)>s.lab.funds;
+ if(s.locale==='en')for(const item of options)item.response=englishText(item.response);
  return options;
 }
 

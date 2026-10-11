@@ -1,12 +1,13 @@
+import {localizeArtworkLabels} from './content-en.js';
 import {weeklyAppearance,renderPortrait} from './appearance.js';
 import {studentEmotion,reactionEffects} from './student-reaction.js';
-import {getDiscipline} from './disciplines.js';
+import {getDiscipline,disciplineLabel} from './disciplines.js';
 
 export const CONFERENCE_VENUES=Object.freeze([
- Object.freeze({id:'seminar',label:'연구학회 강의실'}),
- Object.freeze({id:'convention',label:'대형 컨벤션 홀'}),
- Object.freeze({id:'poster',label:'포스터 세션'}),
- Object.freeze({id:'hotel',label:'국제학회 호텔 홀'})
+ Object.freeze({id:'seminar',label:'연구학회 강의실',labelEn:'Research seminar hall'}),
+ Object.freeze({id:'convention',label:'대형 컨벤션 홀',labelEn:'Convention center'}),
+ Object.freeze({id:'poster',label:'포스터 세션',labelEn:'Poster session'}),
+ Object.freeze({id:'hotel',label:'국제학회 호텔 홀',labelEn:'Conference hotel ballroom'})
 ]);
 export function conferenceVenue(value,fallback=0){
  const index=typeof value==='string'?CONFERENCE_VENUES.findIndex(v=>v.id===value):value;
@@ -24,8 +25,8 @@ const podium=()=>`<g class="conference-podium">${r(423,265,79,61,'#a1886e')}${r(
 const poster=(x,y,title,figure)=>`<g class="conference-poster">${r(x,y,109,157,'#94a6ac')}${r(x+5,y+5,99,144,'#faf9ef')}${r(x+8,y+8,93,20,'#d9e6df')}<text x="${x+54}" y="${y+22}" text-anchor="middle" font-size="8" fill="#4b6d7c">${title}</text><g transform="translate(${x-48} ${y+23}) scale(.4)">${figure}</g>${r(x+14,y+89,80,3,'#b3c2c1')}${r(x+14,y+99,68,3,'#c2ceca')}${r(x+14,y+109,79,3,'#c2ceca')}${r(x+14,y+119,55,3,'#c2ceca')}${line(`M${x+14} ${y+157}v41M${x+95} ${y+157}v41`,'#81969a',3)}</g>`;
 
 // Venue selection is cosmetic. It neither reads storage nor consumes game RNG.
-export function renderConferenceArt(state,result={},index=0,{venue=0,defense=false,figure='',student=true,appearance}={}){
- const chosen=conferenceVenue(venue),v=CONFERENCE_VENUES[chosen],expression=studentEmotion(state,result),field=escape(getDiscipline(state.professorProfile.fieldId).label);
+function renderConferenceArtSource(state,result={},index=0,{venue=0,defense=false,figure='',student=true,appearance}={}){
+ const chosen=conferenceVenue(venue),v=CONFERENCE_VENUES[chosen],expression=studentEmotion(state,result),field=escape(disciplineLabel(state.professorProfile.fieldId,state.locale));
  const title=defense?'THESIS DEFENSE':result.abroad?'INTERNATIONAL CONFERENCE':'RESEARCH CONFERENCE';
  const evidence=state.professorProfile.labMode==='wet'?'Experimental findings':'Models & evidence';
  let art='',stageY=255,portraitX=420,portraitY=154;
@@ -57,7 +58,9 @@ export function renderConferenceArt(state,result={},index=0,{venue=0,defense=fal
   for(const [x,y]of [[38,295],[160,307],[296,292]])art+=`<g class="conference-round-table"><ellipse cx="${x+40}" cy="${y}" rx="42" ry="15" fill="#ece5d4"/>${r(x+37,y,6,43,'#9c9c8d')}${chairs(2,x-3,y+20,56,'#778b88')}</g>`;
  }
  if(defense)for(const x of [34,91,148])art+=`<g class="defense-panel">${r(x,stageY-25,23,24,'#e0bea5')}${r(x-3,stageY-29,29,8,'#5c514c')}${r(x-7,stageY-1,37,29,'#667d88')}</g>`;
- if(student){const avatar=appearance??weeklyAppearance(state,index);art+=`<g class="conference-speaker"><g class="room-reaction" transform="translate(${portraitX+40} ${portraitY+24}) scale(.7)">${reactionEffects(expression,index)}</g>`+renderPortrait(avatar,'학술발표하는 학생',expression,'standing','front').replace('class="portrait"',`class="portrait conference-portrait" x="${portraitX}" y="${portraitY}" width="80" height="124"`)+`</g>`;}
+ if(student){const avatar=appearance??weeklyAppearance(state,index);art+=`<g class="conference-speaker"><g class="room-reaction" transform="translate(${portraitX+40} ${portraitY+24}) scale(.7)">${reactionEffects(expression,index)}</g>`+renderPortrait(avatar,state.locale==='en'?'Student giving a presentation':'학술발표하는 학생',expression,'standing','front').replace('class="portrait"',`class="portrait conference-portrait" x="${portraitX}" y="${portraitY}" width="80" height="124"`)+`</g>`;}
  if(chosen!==2)art+=podium();
- return `<svg class="pixel-room-art conference-room-art" viewBox="0 0 600 360" role="img" aria-label="${escape(v.label)}${defense?' · 학위심사':''}" preserveAspectRatio="xMidYMid meet" data-venue="${v.id}" data-hall="${chosen}"><g shape-rendering="crispEdges">${art}</g></svg>`;
+ return `<svg class="pixel-room-art conference-room-art" viewBox="0 0 600 360" role="img" aria-label="${escape(state.locale==='en'?v.labelEn:v.label)}${defense?(state.locale==='en'?' · Thesis defense':' · 학위심사'):''}" preserveAspectRatio="xMidYMid meet" data-venue="${v.id}" data-hall="${chosen}"><g shape-rendering="crispEdges">${art}</g></svg>`;
 }
+
+export function renderConferenceArt(state,...args){const svg=renderConferenceArtSource(state,...args);return state.locale==='en'?localizeArtworkLabels(svg):svg;}

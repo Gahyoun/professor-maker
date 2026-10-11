@@ -1,3 +1,4 @@
+import {campusMonth,campusPolicy} from './campus-calendar.js';
 export const initialTravel=()=>({status:'none',submittedAt:null,decidedAt:null,conferenceMonth:null,projectId:null});
 export function validTravel(t,month){
   if(t?.tier!==undefined&&!['regular','selective','flagship'].includes(t.tier))return false;
@@ -18,7 +19,7 @@ export const domesticAttendanceChoices=s=>professorAbroad(s)?['none','student']:
 export const normalizedDomesticAttendance=(s,mode)=>professorAbroad(s)?({professor:'none',together:'student'})[mode]??mode:mode;
 export const attendanceCost=(mode,abroad=false)=>({none:0,professor:1,together:2,student:1}[mode]??0)*(abroad?40:2);
 export function conferenceCosts(s,plan=s.plan,attendance=s.attendance??{domestic:'together',overseas:'none'},action=s.facultyAction){
- const month=(s.month+(s.locale==='en'?8:2))%12+1,festival=[4,10].includes(month);
+ const month=campusMonth(s.month,s),festival=campusPolicy(s).conferenceMonths.includes(month);
  const overseas=({abroad_student:'student',abroad_together:'together',abroad_shared:'together'})[action]??attendance.overseas;
  const domesticPlan=studentAttends(overseas)?plan.slice(0,-1):plan,count=Math.max(festival?1:0,domesticPlan.filter(a=>a==='conference').length);
  return {domestic:count*attendanceCost(normalizedDomesticAttendance(s,attendance.domestic)),overseas:attendanceCost(overseas,true)};

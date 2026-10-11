@@ -3,6 +3,7 @@ import {mergeRelationship,scoreAfterChange,abilityAfterChange} from './relations
 import {chooseTopic,validTopicId,topicById} from './research-topics.js';
 import {JOURNALS,CONFERENCE_TIERS,DEFAULT_PUBLICATION,validPublication,getJournal,isAvailableJournal,journalMetricRecord} from './venues.js';
 import {academicWeeks,weekContext,examWindow} from './academic-calendar.js';
+import {campusMonth,campusPolicy,isCampusBreak} from './campus-calendar.js';
 import {CHAPTERS,THESIS_STEPS} from './main-story.js';
 import {initialTravel,validTravel,abstractAcceptance,canTravel,studentAttends,conferenceCosts,professorAbroad,domesticAttendanceChoices,normalizedDomesticAttendance} from './travel.js';
 import {facultyCapacity,allocateCredits,INSTITUTION_RULES,professorAge} from './workload.js';
@@ -12,6 +13,7 @@ import {GAME_BALANCE as BALANCE} from './balance.js';
 import {LAB_RISK_KEYS,LAB_CLOSURE_MONTHS,difficultyOf,initialLabRisk,settlementSupport,validLabRisk,validLabClosure,validLabWarning} from './lab-risk.js';
 import {researchFinanceProfile,researchOperatingCost} from './research-finance.js';
 import {publicationPaceProfile,publicationProgressFactor} from './publication-pace.js';
+import {englishProjectTitle} from './content-en.js';
 // Monthly, seeded simulation. Student ability values are intentionally hidden by the UI.
 import { EVENTS } from './events.js';
 import { initialGrants, advanceGrants, validateGrants } from './grants.js';
@@ -112,7 +114,7 @@ function updateGrowthRules(s){
  if(!s.ending)log(s,{kind:'growth-rules',fromVersion,toVersion:GROWTH_VERSION,legacyThrough:s.growthLegacyThrough});
 }
 function finish(s,ending,reason=null) { s.ending=ending;s.endingReason=reason;s.pending=null;s.pendingQueue=[];log(s,{kind:'ending',ending,...(reason?{reason}:{})});return s; }
-export function projectTitle(s,id=s.project.id,locale=s.locale){const topicId=id===s.project?.id?s.project.topicId:s.history.find(h=>h.projectId===id&&h.topicId)?.topicId;const topic=topicById(topicId);return locale==='ko'&&topic?topic.title:PROJECT_TITLES[(id-1)%PROJECT_TITLES.length][locale==='en'?'en':'ko'];}
+export function projectTitle(s,id=s.project.id,locale=s.locale){const recorded=locale==='en'?s.history.find(h=>h.projectId===id&&typeof h.projectTitle==='string')?.projectTitle:null;if(recorded)return recorded;const topicId=id===s.project?.id?s.project.topicId:s.history.find(h=>h.projectId===id&&h.topicId)?.topicId;const topic=topicById(topicId);return locale==='en'?englishProjectTitle(s.professorProfile?.fieldId,topicId,id):topic?topic.title:PROJECT_TITLES[(id-1)%PROJECT_TITLES.length].ko;}
 function newProject(s,id) { return {id,...(chooseTopic(s,id)?{topicId:chooseTopic(s,id).id}:{}),journal:s.publication?.journal??'standard',titleIndex:(id-1)%PROJECT_TITLES.length,phase:0,progress:0,conference:false,reviewMonths:0,submitted:false,submittedAt:null,revisions:0}; }
 export function createState(name='김하늘',seed=Date.now(),{gender,professorGender='other',locale='ko',age=42,fieldId='050',labMode,institution='national',difficulty='realistic',professorProfile}={}) {
   const requested=professorProfile??{gender:professorGender,age,fieldId,labMode,institution,difficulty};
@@ -131,12 +133,12 @@ export function createState(name='김하늘',seed=Date.now(),{gender,professorGe
   for (const k of Object.keys(s.temperament)) s.temperament[k]=gaussian(s,50,12);
   const funding=seededInitialFunding(seed,profile.institution);
   if(profile.difficulty==='beginner'&&funding.total<800){funding.total=800;funding.pool=profile.institution==='institute'?0:200;funding.funds=funding.total-funding.pool;}
-  Object.assign(s.lab,funding,{initialFunding:funding.total});delete s.lab.total;s.labRisk=initialLabRisk();s.creationSeed=Number(seed)>>>0;s.allocation=allocateCredits(s.allocation,facultyCapacity(s).credits);s.travel=initialTravel();s.impact=initialImpact();ensureFunding(s);s.creationSeed=Number(seed)>>>0;s.policies={...DEFAULT_POLICIES};s.professorName='지도교수';s.project=newProject(s,1);s.plan=proposeSchedule(s);return s;
+  Object.assign(s.lab,funding,{initialFunding:funding.total});delete s.lab.total;s.labRisk=initialLabRisk();s.creationSeed=Number(seed)>>>0;s.allocation=allocateCredits(s.allocation,facultyCapacity(s).credits);s.travel=initialTravel();s.impact=initialImpact();ensureFunding(s);s.creationSeed=Number(seed)>>>0;s.policies={...DEFAULT_POLICIES};s.professorName=s.locale==='en'?'Professor':'지도교수';s.project=newProject(s,1);s.plan=proposeSchedule(s);return s;
 }
 export function stage(s) { return s.month<24?'undergrad':s.route==='masters'&&(s.month<48||s.mastersExtended&&s.month<54)?'masters':'phd'; }
-export function calendarMonth(month,locale='ko') { return ((month+(locale==='en'?8:2))%12)+1; }
+export function calendarMonth(month,locale='ko') { return campusMonth(month,locale); }
 // Winter is a fictional scheduling preference, not a legal enrollment guarantee.
-export function studentTrainingActive(s){return s.service?.trainingStartMonth!==undefined&&s.month===s.service.trainingStartMonth;}
+export function studentTrainingActive(s){return s.locale==='ko'&&s.service?.trainingStartMonth!==undefined&&s.month===s.service.trainingStartMonth;}
 export function criticalRestCause(s){
  if(s.ending||studentTrainingActive(s))return null;
  const h=scores(s),physical=h.stamina<=8,mental=h.resilience<=8;
@@ -169,12 +171,14 @@ export function agreedRecoveryPlan(s,plan=s.plan){
  return next;
 }
 export function winterTrainingMonth(s){
+ if(s.locale!=='ko')return null;
  const preferred=(Math.imul((s.creationSeed??s.seed)^0x741,2654435761)>>>0)%4===0?2:1;
  for(let month=s.month;month<MONTHS;month++)if(calendarMonth(month,s.locale)===preferred)return month;
  return null;
 }
 // Integrated students count as master's students for their first four semesters (stipend, service).
-// The March decision follows the December verdict: work finished after a failed verdict needs the extension semester.
+// The next academic-year decision follows the earlier verdict: work finished
+// after a failed verdict needs the extension semester.
 export function mastersEligible(s){const verdict=s.history.filter(h=>h.kind==='thesis'&&h.level==='masters'&&h.step==='verdict').at(-1);return requirementsMet(s,'masters')&&verdict?.passed!==false;}
 export function doctoralPhase(s){return s.month>=24&&(s.route==='integrated'?s.month>=48:stage(s)==='phd');}
 export function salaryBase(s) { return s.month<24?13:doctoralPhase(s)?30:22; }
@@ -240,7 +244,7 @@ function academicDue(s) {
   if(s.month===s.sabbatical.start&&!s.history.some(h=>h.kind==='sabbatical')&&!s.sabbatical.active)queue(s,{kind:'sabbatical'});
   if(s.month===84&&s.locale==='ko'&&s.gender==='male'&&s.service.status==='planning'&&!s.service.completed)queue(s,{kind:'service-review'});
   if(s.month===MONTHS)queue(s,{kind:'defense'});
-  const exam=weekContext({...s,month:s.month-1},s.lastReport.results.length-1,s.lastReport.results.length);const finalExam=[6,12].includes(calendarMonth(s.month-1,s.locale));if(s.month<=48&&(exam.exam||finalExam))queue(s,{kind:'academic-exam',level:s.month<=24?'undergrad':'graduate',examType:finalExam?'기말고사':'중간고사'});
+  const exam=weekContext({...s,month:s.month-1},s.lastReport.results.length-1,s.lastReport.results.length);const finalExam=campusPolicy(s).finalMonths.includes(calendarMonth(s.month-1,s.locale));if(s.month<=48&&(exam.exam||finalExam))queue(s,{kind:'academic-exam',level:s.month<=24?'undergrad':'graduate',examType:finalExam?'기말고사':'중간고사'});
 }
 export function feedbackEffect(s,type){
  const r=s.lastReport;if(type==='harsh')return {effects:{rapport:-5,confidence:-3,motivation:-2,stress:6},efficiency:.85};if(!r||type==='listen')return {effects:{},efficiency:1};
@@ -394,12 +398,13 @@ function advanceProject(s,reviewTick=false) {
 }
 function required(s,req) {
   const list=Array.isArray(req)?req:req?[req]:[];
-  return list.every(r=>r==='paper'?s.career.papers>0:r==='top_paper'?s.career.topPapers>0:r==='conference'?s.career.conferences>0:r==='submission'?s.career.submissions>0:r==='revision'?s.project.submitted===true&&s.project.phase===5&&s.project.revisions>0:r==='low_motivation'?s.hidden.motivation<45:r==='stress'?s.hidden.stress>45:r==='graduate'?stage(s)!=='undergrad':r==='qual_preparation'?stage(s)!=='undergrad'&&s.career.qual!=='passed':r==='grading_period'?[6,12].includes(calendarMonth(Math.max(0,s.month-1),s.locale)):r==='early_graduate'?developmentalStage(s).level==='masters':r==='sabbatical'?s.sabbatical.active:r==='away_sabbatical'?s.sabbatical.active&&s.sabbatical.mode==='away':r==='research'?s.project.phase>=1:r==='qual_pending'?s.career.qual!=='passed'&&(s.route==='integrated'?s.month>=30:s.route==='masters'&&stage(s)==='phd'):r==='grant_active'?s.grants?.status==='active':r==='male_pair'?s.locale==='ko'&&s.gender==='male'&&s.professorProfile.gender==='male':r==='female_pair'?s.locale==='ko'&&s.gender==='female'&&s.professorProfile.gender==='female':r==='young_professor'?professorAge(s)<=37:r==='national'?s.professorProfile.institution==='national':r==='institute'?s.professorProfile.institution==='institute':false);
+  return list.every(r=>r==='paper'?s.career.papers>0:r==='top_paper'?s.career.topPapers>0:r==='conference'?s.career.conferences>0:r==='submission'?s.career.submissions>0:r==='revision'?s.project.submitted===true&&s.project.phase===5&&s.project.revisions>0:r==='low_motivation'?s.hidden.motivation<45:r==='stress'?s.hidden.stress>45:r==='graduate'?stage(s)!=='undergrad':r==='qual_preparation'?stage(s)!=='undergrad'&&s.career.qual!=='passed':r==='grading_period'?campusPolicy(s).finalMonths.includes(calendarMonth(Math.max(0,s.month-1),s.locale)):r==='early_graduate'?developmentalStage(s).level==='masters':r==='sabbatical'?s.sabbatical.active:r==='away_sabbatical'?s.sabbatical.active&&s.sabbatical.mode==='away':r==='research'?s.project.phase>=1:r==='qual_pending'?s.career.qual!=='passed'&&(s.route==='integrated'?s.month>=30:s.route==='masters'&&stage(s)==='phd'):r==='grant_active'?s.grants?.status==='active':r==='male_pair'?s.locale==='ko'&&s.gender==='male'&&s.professorProfile.gender==='male':r==='female_pair'?s.locale==='ko'&&s.gender==='female'&&s.professorProfile.gender==='female':r==='young_professor'?professorAge(s)<=37:r==='national'?s.professorProfile.institution==='national':r==='institute'?s.professorProfile.institution==='institute':false);
 }
 export function eventEligible(s,e) {
   if(studentTrainingActive(s)||!e.options.some(o=>Math.max(0,-(o.effects.lab?.funds??0))<=s.lab.funds))return false;
-  if(e.id==='military-hidden'&&(s.service.completed||s.service.trainingStartMonth!==undefined))return false;const flag=s.eventFlags[e.id];
-  return s.month>=(e.minMonth??0)&&s.month<=(e.maxMonth??MONTHS)&&(!e.stages||e.stages.includes(stage(s)))&&(!e.calendarMonths||e.calendarMonths.includes(calendarMonth(s.month,s.locale)))&&!(e.once&&flag?.count>0)&&(!flag||s.month-flag.lastMonth>=(e.cooldown??12))&&required(s,e.requires);
+  if(e.id==='military-hidden'&&(s.locale!=='ko'||s.service.completed||s.service.trainingStartMonth!==undefined))return false;const flag=s.eventFlags[e.id];
+  const calendarEligible=s.locale==='en'&&['counsel-coursework','teaching'].includes(e.id)?!isCampusBreak(s.month,s):!e.calendarMonths||e.calendarMonths.includes(calendarMonth(s.month,s.locale));
+  return s.month>=(e.minMonth??0)&&s.month<=(e.maxMonth??MONTHS)&&(!e.stages||e.stages.includes(stage(s)))&&calendarEligible&&!(e.once&&flag?.count>0)&&(!flag||s.month-flag.lastMonth>=(e.cooldown??12))&&required(s,e.requires);
 }
 const SOCIAL_EVENTS = new Set(['collaboration','seminar','internship']);
 // Fictional opportunity weights, not measured probabilities of academic collaborations.
@@ -482,14 +487,14 @@ export function simulateMonth(state,plan,options={}) {
   const capacity=facultyCapacity(state);const allocation=options.allocation??allocateCredits(state.allocation,capacity.credits),budget=options.budget??state.lab.budget,type=options.feedback??state.feedback,action=options.facultyAction??state.facultyAction;
   if(!checkAllocation(allocation,capacity.credits))throw new Error('Allocate the available faculty workload credits.');
   if(!checkBudget(budget))throw new Error('Invalid stipend percentage or operating budget.');
-  if(calendarMonth(state.month,state.locale)!==3&&budget.salary!==(state.stipendLock??state.lab.budget.salary))throw new Error('Stipend allocation changes only in March.');
+  if(calendarMonth(state.month,state.locale)!==campusPolicy(state).stipendMonth&&budget.salary!==(state.stipendLock??state.lab.budget.salary))throw new Error(state.locale==='en'?'Stipend allocation changes only in September.':'Stipend allocation changes only in March.');
   if(budget.publicity!==0)throw new Error('Publicity spending is no longer available.');
   const policies=options.policies??state.policies??DEFAULT_POLICIES;if(!validPolicies(policies))throw new Error('Invalid monthly advising policy.');
   const application=options.grantApplication??state.grantApplication??{role:'pi',years:3};if(!validApplication(application))throw new Error('Invalid grant application.');if(action==='funding'&&!canApplyGrant(state,application.role))throw new Error('Research participation limit reached.');if(action==='funding'&&!grantCallOpen(state))throw new Error('Grant calls open in March and September.');
   const selectedAttendance=options.attendance??state.attendance??{domestic:'together',overseas:'none'};if(!validAttendance(selectedAttendance))throw new Error('Invalid conference attendance.');
   if(professorAbroad(state)&&selectedAttendance.domestic==='professor')throw new Error('The professor cannot attend a domestic conference during an overseas sabbatical.');
   const attendance={...selectedAttendance,domestic:normalizedDomesticAttendance(state,selectedAttendance.domestic)};
-  const overseas=({abroad_student:'student',abroad_together:'together',abroad_shared:'together'})[action]??attendance.overseas;const actualMonth=calendarMonth(state.month,state.locale),festival=[4,10].includes(actualMonth);
+  const overseas=({abroad_student:'student',abroad_together:'together',abroad_shared:'together'})[action]??attendance.overseas;const actualMonth=calendarMonth(state.month,state.locale),policy=campusPolicy(state),festival=policy.conferenceMonths.includes(actualMonth);
   // This month's selected attendance can differ from the saved draft. Protect
   // its fixed conference slots before restoring an accepted recovery request.
   plan=agreedRecoveryPlan({...state,attendance:{...attendance,overseas}},plan);
@@ -498,9 +503,9 @@ export function simulateMonth(state,plan,options={}) {
   if(festival&&studentAttends(attendance.domestic)&&plan[2]!=='conference')throw new Error('The third week is the April/October conference festival.');
   const travel=overseas!=='none',studentTravel=studentAttends(overseas);
   if(training&&studentTravel)throw new Error('Student conference travel is unavailable during military training.');
-  if(action==='abstract'&&(![7,1].includes(actualMonth)||state.month<24))throw new Error('Abstract submission opens at the start of graduate vacation.');
+  if(action==='abstract'&&(!policy.abstractMonths.includes(actualMonth)||state.month<24))throw new Error('Abstract submission opens at the start of graduate vacation.');
   if(studentTravel&&!canTravel(state))throw new Error('An accepted abstract is required for this conference.');
-  if(travel&&![8,2].includes(actualMonth))throw new Error('Research travel is available in vacation months.');
+  if(travel&&!policy.travelMonths.includes(actualMonth))throw new Error('Research travel is available in vacation months.');
   const costs=conferenceCosts(state,plan,attendance,action),travelCost=costs.overseas;
   const cost=monthlyBudgetCost(state,budget,plan)+costs.domestic+travelCost;
   const stipend=salaryBase(state)*budget.salary/100;const operating=cost-stipend;
@@ -591,9 +596,9 @@ function monthlyIssues(s){
  for(const h of current){const id=['portfolio-selection','grant-selection'].includes(h.kind)?(h.awarded?'grant-selected':'grant-rejected'):h.kind==='presentation-award'?'presentation-award':null;if(id)ids.add(id);}
  for(const id of ids)if(s.pendingQueue.length<8)queue(s,{kind:'monthly-issue',id});
  if(studentTrainingActive(s))return;
- const previous=calendarMonth(s.month-1,s.locale);if([3,9].includes(calendarMonth(s.month,s.locale))&&s.month<MONTHS&&s.pendingQueue.length<8)queue(s,{kind:'conference-plan',scope:'domestic',targetMonth:s.month+1});
- if([7,1].includes(previous)&&s.month>=24&&s.pendingQueue.length<8)queue(s,{kind:'conference-plan',scope:'overseas'});
- if([7,1].includes(calendarMonth(s.month,s.locale))&&s.pendingQueue.length<8)queue(s,{kind:'workshop-plan'});
+ const previous=calendarMonth(s.month-1,s.locale),policy=campusPolicy(s);if(policy.conferenceMonths.map(month=>(month+10)%12+1).includes(calendarMonth(s.month,s.locale))&&s.month<MONTHS&&s.pendingQueue.length<8)queue(s,{kind:'conference-plan',scope:'domestic',targetMonth:s.month+1});
+ if(policy.abstractMonths.includes(previous)&&s.month>=24&&s.pendingQueue.length<8)queue(s,{kind:'conference-plan',scope:'overseas'});
+ if(policy.workshopMonths.includes(calendarMonth(s.month,s.locale))&&s.pendingQueue.length<8)queue(s,{kind:'workshop-plan'});
  const lastFailure=s.history.filter(h=>h.kind==='failure-support').at(-1)?.month??-6;
  if(failureRun(s)>=3&&s.month-lastFailure>=6&&s.pendingQueue.length<8)queue(s,{kind:'failure-counsel'});
  if(s.month<95&&s.pendingQueue.length<8&&s.month%6===3){const d=(Math.imul((s.creationSeed??s.seed)^(s.month*7919),2654435761)>>>0)/4294967296;if(d<.55)queue(s,{kind:'conversation-topic'});}
@@ -775,7 +780,12 @@ export function migrateSave(raw) {
     if(eventEligible(s,EVENTS.find(e=>e.id===previous.id)))s.pending=previous;
     else {log(s,{kind:'event-migration',id:previous.id});nextPending(s);}
   }
-  if(!validateSave(s))return null;updateGrowthRules(s);migrateFinance(s);ensureFunding(s);s.impact??=initialImpact();s.travel??=initialTravel();if(['abroad_student','abroad_together'].includes(s.facultyAction)){s.attendance.overseas=s.facultyAction==='abroad_student'?'student':'together';s.facultyAction='routine';}if(s.attendance.overseas!=='none'&&(![8,2].includes(calendarMonth(s.month,s.locale))||studentAttends(s.attendance.overseas)&&!canTravel(s)))s.attendance.overseas='none';if(!s.ending)adjustDomesticAttendance(s);s.plan=s.plan.map(currentActivity);if(!s.ending)s.allocation=allocateCredits(s.allocation,facultyCapacity(s).credits);return validateSave(s)?s:null;
+  if(!validateSave(s))return null;
+  // Earlier editions allowed language changes during a Korean run. Preserve
+  // those English saves and their history, without trapping them in a service
+  // decision that is inapplicable in the U.S. edition.
+  if(s.locale==='en'&&!s.ending){const domesticOnly=p=>['service','service-review'].includes(p?.kind)||p?.kind==='event'&&p.id==='military-hidden';s.pendingQueue=s.pendingQueue.filter(p=>!domesticOnly(p));if(domesticOnly(s.pending)){s.pending=null;nextPending(s);}}
+  updateGrowthRules(s);migrateFinance(s);ensureFunding(s);s.impact??=initialImpact();s.travel??=initialTravel();if(['abroad_student','abroad_together'].includes(s.facultyAction)){s.attendance.overseas=s.facultyAction==='abroad_student'?'student':'together';s.facultyAction='routine';}if(s.attendance.overseas!=='none'&&(!campusPolicy(s).travelMonths.includes(calendarMonth(s.month,s.locale))||studentAttends(s.attendance.overseas)&&!canTravel(s)))s.attendance.overseas='none';if(!s.ending)adjustDomesticAttendance(s);s.plan=s.plan.map(currentActivity);if(!s.ending)s.allocation=allocateCredits(s.allocation,facultyCapacity(s).credits);return validateSave(s)?s:null;
 }
 export function validateSave(s) {
   if(!plain(s)||s.version!==VERSION||typeof s.name!=='string'||!s.name.trim()||s.name.length>24||!integer(s.month,0,MONTHS)||!integer(s.seed,0,4294967295)||!['male','female','unspecified'].includes(s.gender)||!['male','female','other','unspecified'].includes(s.professorGender)||!['ko','en'].includes(s.locale)||![null,'masters','integrated'].includes(s.route)||typeof s.started!=='boolean'||!(s.ending===null||ENDINGS.includes(s.ending)))return false;

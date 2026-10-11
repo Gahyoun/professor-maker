@@ -21,11 +21,12 @@ test('qualification counseling remains available before an attempt or during a r
   assert.equal(eventEligible(undergraduate,event('counsel-qual')),false);
 });
 
-test('semester-end grading follows the completed June or December in either locale, and never precedes graduate admission',()=>{
+test('semester-end grading follows completed finals: June/December in Korean, May/December in U.S. English',()=>{
   for(const locale of ['ko','en'])for(const route of ['masters','integrated'])for(let month=25;month<37;month++){
     const s=graduate(month,locale);s.route=route;
     const completedMonth=calendarMonth(month-1,locale);
-    assert.equal(eventEligible(s,event('grading')),[6,12].includes(completedMonth),`${locale}/${route}/${completedMonth}`);
+    const finals=locale==='en'?[5,12]:[6,12];
+    assert.equal(eventEligible(s,event('grading')),finals.includes(completedMonth),`${locale}/${route}/${completedMonth}`);
   }
   const undergraduate=createState('검수학생',91);undergraduate.month=4;
   assert.equal(calendarMonth(undergraduate.month-1),6);

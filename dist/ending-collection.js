@@ -2,7 +2,8 @@ import {withParticle} from './korean.js';
 export const MAIN_ENDINGS=['true','postdoc','institute','corporate','unrelated','startup','unemployed','resident_researcher'];
 export function endingCollection(gallery){const seen=new Set(gallery.map(e=>e.ending));const count=MAIN_ENDINGS.filter(id=>seen.has(id)).length;return {count,total:MAIN_ENDINGS.length,unlocked:count>=5,complete:count===MAIN_ENDINGS.length};}
 export function keepGallery(entries){const first=new Map();for(const e of entries)if(!first.has(e.ending))first.set(e.ending,e);const retained=entries.slice(0,40);for(const e of first.values())if(!retained.some(r=>r.id===e.id)){const index=retained.findLastIndex(r=>first.get(r.ending)?.id!==r.id);if(index>=0)retained.splice(index,1,e);}return retained;}
-export function retirementScenes(gallery){
+export function retirementScenes(gallery,locale='ko'){
+ if(locale==='en')return retirementScenesEnglish(gallery);
  if(!endingCollection(gallery).unlocked)return [];
  const get=id=>gallery.find(e=>e.ending===id)?.name;
  const scenes=['퇴임식 날, 강당의 조명이 켜졌다. 제자들이 하나둘 자리를 채웠다.'];
@@ -17,5 +18,23 @@ export function retirementScenes(gallery){
  if(get('unrelated'))scenes.push(!['close','reserved'].includes(gallery.find(e=>e.ending==='unrelated').relationship)?`맨 뒷줄 빈자리에는 ${withParticle(get('unrelated'),'이/가')} 공개를 허락한 산 사진 엽서가 놓였다. “건강하세요.” 교수도 더 긴 연락을 요구하지 않았다.`:`${get('unrelated')}도 자리에 왔다. 회사 밖에서 배운 이야기를 하나 들려주겠다고 했다.`);
  scenes.push('마지막 인사를 준비하며 교수는 오래된 연구 노트를 펼쳤다. 수정한 문장 옆에 학생이 처음 적었던 질문이 남아 있었다. 강단에 올라 그 페이지를 화면에 띄우자, 객석 한쪽에서 작은 웃음이 났다.');
  if(endingCollection(gallery).complete)scenes.push('강당이 비어 가고, 연구실 문을 천천히 닫는다. 다음 질문을 이어 갈 사람들에게 자리를 남긴다.');
+ return scenes;
+}
+
+function retirementScenesEnglish(gallery){
+ if(!endingCollection(gallery).unlocked)return [];
+ const get=id=>gallery.find(e=>e.ending===id)?.name;
+ const scenes=['On the day of the retirement reception, the auditorium lights came on. Former students arrived one by one.'];
+ if(get('true'))scenes.push(`Professor ${get('true')} was preparing a tribute in the front row. “I learned to stay with a question until I understood it.” This time, the advisor listened from the audience.`);
+ if(get('postdoc'))scenes.push(`Dr. ${get('postdoc')} arrived from abroad. This time, they had called a week ahead. They would discuss the next study after the ceremony.`);
+ if(get('institute'))scenes.push(`${get('institute')} offered congratulations and asked about the next collaboration meeting. The advisor reached for a notebook, then smiled. “Today, let us eat first.”`);
+ if(get('corporate'))scenes.push(gallery.find(e=>e.ending==='corporate')?.relationship==='distant'?`${get('corporate')} left flowers at the reception desk and exchanged a brief greeting. They handed over a card before returning to the audience.`:`${get('corporate')} offered flowers instead of a company email. “Today, the coffee is on me.” Another former student suggested they go together after the ceremony.`);
+ if(get('startup'))scenes.push(`${get('startup')} arrived late and quietly found a seat. They showed a photo of their team’s revised product and promised to explain it after the ceremony.`);
+ if(get('resident_researcher'))scenes.push(`${get('resident_researcher')} helped a new researcher find a seat. Catching the advisor’s eye, they nodded and joined the audience.`);
+ if(get('unemployed'))scenes.push(`${get('unemployed')} caught up with the former student beside them. The advisor came over to say hello without first asking about the next application.`);
+ if(get('youtuber'))scenes.push(`Dr. ${get('youtuber')} checked the filming guidance and put the camera down. Today, they would make time to hear one another’s stories.`);
+ if(get('unrelated'))scenes.push(!['close','reserved'].includes(gallery.find(e=>e.ending==='unrelated').relationship)?`At the back of the room was a mountain postcard ${get('unrelated')} had agreed could be shared. “Please take care.” The advisor did not ask for more contact.`:`${get('unrelated')} also came, bringing a story about something learned beyond work.`);
+ scenes.push('Preparing the final remarks, the advisor opened an old research notebook. Beside a revised sentence was the student’s original question. When that page appeared on the screen, a small laugh came from one side of the audience.');
+ if(endingCollection(gallery).complete)scenes.push('As the auditorium emptied, the lab door closed gently. There would be room for the people who would carry the next questions forward.');
  return scenes;
 }

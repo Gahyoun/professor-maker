@@ -64,7 +64,7 @@ const equipmentNames={
 export const ENDING_FIELDS=Object.fromEntries(groups.flatMap(([ids,sector,company,institute,dryTask,wetTask,equipment])=>ids.split(' ').map(id=>[id,{sector,company,institute,dryTask,wetTask,equipment,equipmentName:equipmentNames[equipment]||equipment}])));
 export function researchSetting(context={}){
  // Current IDs are authoritative. Resolve legacy entries by an exact label only.
- const exact=context.field&&DISCIPLINES.find(d=>d.label===context.field);
+ const exact=context.field&&DISCIPLINES.find(d=>(d.label===context.field||d.labelEn===context.field));
  const d=DISCIPLINES.find(d=>d.id===context.fieldId)||exact;
  const profile=ENDING_FIELDS[d?.id]||{sector:'전공 관련',company:'전공과 관련된 업무를 검토하는 기업 연구팀',institute:'전공 관련 자료와 방법을 축적하는 공공 연구팀',dryTask:'자료와 분석 방법',wetTask:'측정 자료와 검증 절차',equipment:'연구 장비'};
  const dry=context.labMode==='dry',field=d?.label||context.field||'전공';
@@ -125,7 +125,7 @@ const englishGroups=[
 ];
 export const ENGLISH_ENDING_FIELDS=Object.fromEntries(englishGroups.flatMap(([ids,sector,dryTask,wetTask])=>ids.split(' ').map(id=>[id,{sector,dryTask,wetTask}])));
 export function englishResearchSetting(context={}){
- const p=researchSetting(context),id=context.fieldId||DISCIPLINES.find(d=>d.label===context.field)?.id;
+ const p=researchSetting(context),id=context.fieldId||DISCIPLINES.find(d=>(d.label===context.field||d.labelEn===context.field))?.id;
  const en=ENGLISH_ENDING_FIELDS[id]||{sector:'their research field',dryTask:'data and analytical methods',wetTask:'measurement data and verification procedures'};
  return {...p,...en,task:p.dry?en.dryTask:en.wetTask,equipment:p.dry?'workstation':'research instrument',equipmentName:p.dry?'workstation':'research instrument',storage:p.dry?'project archive':p.storage==='냉동고 맨 아래 칸'?'bottom freezer drawer':'research archive',material:p.dry?'raw data and analysis files':p.storage==='냉동고 맨 아래 칸'?'samples':'measurement data and test records',archive:p.dry?'documented data and analysis files':p.storage==='냉동고 맨 아래 칸'?'labeled tubes':'organized measurement data and test records'};
 }

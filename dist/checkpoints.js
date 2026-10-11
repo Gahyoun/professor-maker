@@ -1,6 +1,7 @@
 import {migrateSave,validateSave} from './engine.js';
-const DATABASE='pm-save-points',LIMIT=400;
-export const checkpointRun=state=>`${state.creationSeed??state.seed}:${state.name}`;
+import {EDITION} from './edition.js';
+const DATABASE=EDITION==='en'?'pm-us-save-points':'pm-save-points',LIMIT=400;
+export const checkpointRun=state=>`${state.locale==='en'?'us:':''}${state.creationSeed??state.seed}:${state.name}`;
 export const monthlyCheckpointId=state=>`${checkpointRun(state)}:month:${state.month}`;
 const database=()=>new Promise((resolve,reject)=>{const r=indexedDB.open(DATABASE,1);r.onupgradeneeded=()=>{r.result.createObjectStore('states',{keyPath:'id'});r.result.createObjectStore('index',{keyPath:'id'});};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
 export function checkpointRecord(state,{kind='manual',label='',now=Date.now(),id}={}){

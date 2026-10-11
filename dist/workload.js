@@ -1,10 +1,11 @@
+import {campusMonth,campusPolicy,isCampusBreak} from './campus-calendar.js';
 const keys=['research','teaching','admin','mentoring'];
 export const professorAge=state=>state.professorProfile.age+state.month/12;
 export const INSTITUTION_RULES={national:{adminLoad:.65,researchLoad:.15,label:'국립대',hint:'행정업무 부담 높음 · 행정 상태가 빠르게 감소 / 학술활동 요구 보통'},private:{adminLoad:.2,researchLoad:.15,label:'사립대',hint:'행정업무 부담 보통 / 학술활동 요구 보통'},institute:{adminLoad:.05,researchLoad:.75,label:'과학기술원',hint:'행정업무 부담 낮음 / 학술활동 요구 높음 · 연구비 지원은 넉넉함'}};
 export function facultyCapacity(state){
- const age=professorAge(state),month=((state.month+(state.locale==='en'?8:2))%12)+1;
- const vacation=[1,2,7,8].includes(month),sabbatical=state.sabbatical.active;
- const young=Math.max(0,Math.min(2,Math.round((50-age)/10))),busy=month===(state.locale==='en'?9:3)||month===(state.locale==='en'?1:9);
+ const age=professorAge(state),month=campusMonth(state.month,state);
+ const vacation=isCampusBreak(state.month,state),sabbatical=state.sabbatical.active;
+ const young=Math.max(0,Math.min(2,Math.round((50-age)/10))),busy=campusPolicy(state).termStartMonths.includes(month);
  const draw=(Math.imul((state.creationSeed??state.seed)^(state.month*104729),2654435761)>>>0)/4294967296,jitter=draw<.15?-1:draw>.85?1:0;
  // Preserve two credits per duty at the floor, with one fewer discretionary credit.
  const credits=Math.max(8,Math.min(10,7+young+(vacation?1:0)+(sabbatical?1:0)-(busy&&!sabbatical?1:0)+jitter));

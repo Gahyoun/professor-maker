@@ -14,3 +14,23 @@ export const THESIS_SCENES={
  revision:{title:'심사위원 논의와 수정·보완',body:'학생이 잠시 자리를 비우고 위원들이 논의를 이어 간다. 다시 들어온 학생은 수정할 부분을 적고 최종 제출을 준비한다.',choices:[['revise','수정 의견을 반영하고 최종본을 정리한다']]},
  verdict:{title:'학위논문 최종 판정',body:'심사위원들이 발표와 답변, 수정본을 검토하고 학위요건 충족 여부를 확인한다. 학생과 교수는 판정과 남은 제출 절차를 확인한다.',choices:[['confirm','최종 심사 결과를 확인한다']]}
 };
+
+// Source scenes stay unchanged for archived Korean runs. English copy follows
+// the September-start academic year and uses U.S. graduate-program vocabulary.
+export const CHAPTERS_EN=Object.freeze({
+ contact:{title:'The first research notebook',body:'The student opens a blank notebook and writes a first research question. The advisor nods: begin by saying what you do not yet understand.',options:['Work through one small question together','Encourage a record of attempts that did not work']},
+ firstyear:{title:'After the first academic year',body:'The student reopens the notebook from their first day in the lab. They try explaining the workspace to a new student, noting what now feels familiar and what still feels difficult.',options:['Reflect on what they have learned','Ask about life beyond research']},
+ graduate:{title:'A question of their own',body:'In the first semester of graduate school, the student asks, “Can I work on a question I care about now?” The advisor asks to hear the reasoning behind it before discussing a result.',options:['Refine the student’s own question together','Test its feasibility with a small pilot study']},
+ uncertainty:{title:'A month without results',body:'As research becomes familiar, the unknowns become clearer. The student describes a month with little to show. The advisor closes the laptop and listens.',options:['Ask what sustains them beyond research output','Agree on one manageable goal for the coming week']},
+ independence:{title:'Let me explain this time',body:'The student wants to explain their method and its limits in their own words. Before offering a conclusion, the advisor examines the evidence they brought. The parts that remain unclear become the next questions.',options:['Listen to the reasoning behind their decision','Make time for peer review and discussion']},
+ lastyear:{title:'The next chapter beyond the lab',body:'In the final academic year, career notes accumulate beside the dissertation file. The advisor asks what kind of life and research the student hopes to continue.',options:['Listen to the life they want next','Plan applications and recommendation letters together']}
+});
+export const THESIS_SCENES_EN=Object.freeze({
+ draft:{title:'The thesis draft and defense preparation',body:'Before sending the draft to the committee, review the question, methods, results and limitations. Leave time in the schedule to prepare slides and likely questions.',choices:[['outline','Review the argument and draft together'],['rehearse','Rehearse the presentation and likely questions']]},
+ presentation:{title:'The public thesis defense',body:'The student stands before the committee and their colleagues. They explain the motivation, methods, results and limitations in their own words. The advisor listens from the audience.',choices:[['present','Listen to the student’s public presentation']]},
+ questions:{title:'Committee questions and the argument',body:'The committee asks about the methods and interpretation. The student distinguishes what they know from what they have not yet established.',choices:[['answer','Answer the questions with evidence']]},
+ revision:{title:'Committee deliberation and revisions',body:'The student steps outside while the committee deliberates. On returning, they note the requested revisions and prepare the final submission.',choices:[['revise','Address the revisions and prepare the final version']]},
+ verdict:{title:'The final thesis decision',body:'The committee reviews the presentation, answers and revised document against the program requirements. Student and advisor confirm the decision and any remaining submission steps.',choices:[['confirm','Review the final committee decision']]}
+});
+export function getChapter(id,locale='ko'){return (locale==='en'?CHAPTERS_EN:CHAPTERS)[id];}
+export function getThesisScene(id,locale='ko'){return (locale==='en'?THESIS_SCENES_EN:THESIS_SCENES)[id];}

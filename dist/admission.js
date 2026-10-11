@@ -1,6 +1,6 @@
 import {createState,abilityScore} from './engine.js';
 import {getDiscipline} from './disciplines.js';
-import {generateKoreanName} from './names.js';
+import {generateStudentName} from './names.js';
 
 export const ADMISSION_KEY='pm-admission-v1';
 export const CANDIDATE_COUNT=3;
@@ -18,19 +18,20 @@ export function admissionSeed(intakeSeed,index){
 }
 export function admissionCandidates(intakeSeed,options={}){
  const discipline=getDiscipline(options.professorProfile?.fieldId??options.fieldId);
- const interests=['기초 원리와 문헌의 연결','계산·자료로 질문 검증','현장의 문제를 연구로 발전'];
- const impressions=['관심 주제를 짧고 또렷하게 설명했습니다.','답을 고른 뒤 신중하게 생각을 이어갔습니다.','궁금한 점을 먼저 묻고 대화를 이어갔습니다.','낯선 질문에는 잠시 멈췄지만 자신의 경험을 이야기했습니다.','준비한 이야기보다 대화 중 떠오른 질문을 더 많이 꺼냈습니다.'];
+ const en=options.locale==='en';
+ const interests=en?['Connecting foundational ideas with the literature','Testing questions with computation and data','Turning practical problems into research questions']:['기초 원리와 문헌의 연결','계산·자료로 질문 검증','현장의 문제를 연구로 발전'];
+ const impressions=en?['Explained a research interest clearly and concisely.','Thought carefully before expanding on an answer.','Asked a question and kept the conversation going.','Paused at an unfamiliar question, then drew on personal experience.','Raised more questions during the conversation than in the prepared remarks.']:['관심 주제를 짧고 또렷하게 설명했습니다.','답을 고른 뒤 신중하게 생각을 이어갔습니다.','궁금한 점을 먼저 묻고 대화를 이어갔습니다.','낯선 질문에는 잠시 멈췄지만 자신의 경험을 이야기했습니다.','준비한 이야기보다 대화 중 떠오른 질문을 더 많이 꺼냈습니다.'];
  return Array.from({length:CANDIDATE_COUNT},(_,index)=>{
   const seed=admissionSeed(intakeSeed,index),state=createState('',seed,options);
   // Grades are a noisy, fictional application record, never a hidden-trait rating.
   const noise=draw(intakeSeed,`grade:${index}`)/0x100000000-.5;
   const gpa=Math.max(2.6,Math.min(4.45,3.35+(abilityScore(state,'learning')-30)*.018+noise*.9));
-  return {index,name:generateKoreanName(seed,state.gender),gender:state.gender,gpa:Number(gpa.toFixed(2)),interest:`${discipline.label} · ${interests[draw(intakeSeed,`interest:${index}`)%interests.length]}`,impression:impressions[draw(intakeSeed,`impression:${index}`)%impressions.length]};
+  return {index,name:generateStudentName(seed,state.gender,options.locale),gender:state.gender,gpa:Number((en?gpa/4.5*4:gpa).toFixed(2)),...(en?{gpaScale:4}:{}),interest:`${en?discipline.labelEn:discipline.label} · ${interests[draw(intakeSeed,`interest:${index}`)%interests.length]}`,impression:impressions[draw(intakeSeed,`impression:${index}`)%impressions.length]};
  });
 }
 export function admitCandidate(intakeSeed,index,options={}){
  const seed=admissionSeed(intakeSeed,index),state=createState('',seed,options);
- state.name=generateKoreanName(seed,state.gender);
+ state.name=generateStudentName(seed,state.gender,options.locale);
  state.admission={intakeSeed,candidateIndex:index};
  return state;
 }

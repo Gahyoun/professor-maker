@@ -1,0 +1,81 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
+const base=(process.env.GAME_URL||'http://127.0.0.1:4194').replace(/\/$/,''),output=process.env.QA_OUTPUT_DIR||'/private/tmp/pm-us-storage';
+await fs.mkdir(output,{recursive:true});
+const browser=await chromium.launch({headless:true});
+try{
+ const context=await browser.newContext({serviceWorkers:'block'}),page=await context.newPage();
+ await page.goto(base+'/logos.html');
+ const report=await page.evaluate(async()=>{
+  const {createEditionStorage}=await import('./edition-storage.js');
+  localStorage.setItem('pm-save-v4','Korean progress sentinel');
+  localStorage.setItem('pm-letters-v3','Korean letters sentinel');
+  localStorage.setItem('pm-analysis-consent','anonymous-gameplay-v1');
+  localStorage.setItem('pm-us-analysis-consent','no');
+  localStorage.setItem('pm-us-save-v4','fallback English progress');
+  const recovered=await createEditionStorage('en');
+  if(recovered.kind!=='indexeddb'||recovered.getItem('pm-save-v4')!=='fallback English progress')throw Error('Fallback did not migrate');
+  if(localStorage.getItem('pm-us-save-v4')!==null||localStorage.getItem('pm-us-analysis-consent')!=='no')throw Error('Migration scope');
+  const a=await createEditionStorage('en'),b=await createEditionStorage('en');
+  a.setItem('pm-save-v4','A new run');await a.flush();b.setItem('pm-screen-guide','completed');await b.flush();
+  const combined=await createEditionStorage('en');
+  if(combined.getItem('pm-save-v4')!=='A new run'||combined.getItem('pm-screen-guide')!=='completed')throw Error('Stale tab erased another key');
+  a.setItem('pm-fast','true');a.removeItem('pm-fast');a.setItem('pm-fast','false');await a.flush();
+  if((await createEditionStorage('en')).getItem('pm-fast')!=='false')throw Error('Racing edit lost');
+  const original=IDBDatabase.prototype.transaction;
+  IDBDatabase.prototype.transaction=function(...args){const tx=original.apply(this,args);if(args[1]==='readwrite')queueMicrotask(()=>tx.abort());return tx;};
+  a.setItem('pm-save-v4','Should fail');let rejected=false;try{await a.flush();}catch{rejected=true;}
+  IDBDatabase.prototype.transaction=original;
+  if(!rejected||(await createEditionStorage('en')).getItem('pm-save-v4')!=='A new run')throw Error('Failed write corrupted durable state');
+  a.setItem('pm-save-v4','A new run');await a.flush();
+  let fills=0;try{while(fills<200)localStorage.setItem('qa-quota-'+fills++,'x'.repeat(100000));}catch{}
+  const full=await createEditionStorage('en');full.setItem('pm-letters-v3','z'.repeat(4400000));await full.flush();
+  const read=await createEditionStorage('en');
+  if(read.getItem('pm-letters-v3')?.length!==4400000||read.getItem('pm-save-v4')!=='A new run')throw Error('Full Korean localStorage blocked English progress');
+  if(localStorage.getItem('pm-save-v4')!=='Korean progress sentinel'||localStorage.getItem('pm-letters-v3')!=='Korean letters sentinel')throw Error('Korean records mutated');
+  const descriptor=Object.getOwnPropertyDescriptor(window,'indexedDB');Object.defineProperty(window,'indexedDB',{configurable:true,value:undefined});
+  const fallback=await createEditionStorage('en');
+  if(fallback.kind!=='local')throw Error('Unavailable IDB fallback');
+  Object.defineProperty(window,'indexedDB',descriptor);
+  return {migration:true,multiTab:true,rapidEdits:true,atomicFailureRollback:true,fullLocalStorage:true,englishArchiveCharacters:4400000,fallback:true,koreanPreserved:true};
+ });
+ await page.reload();
+ assert.equal(await page.evaluate(async()=>{const {createEditionStorage}=await import('./edition-storage.js');return (await createEditionStorage('en')).getItem('pm-letters-v3')?.length;}),4400000);
+ await context.close();
+ const recovery=await browser.newContext({serviceWorkers:'block'}),recoveryPage=await recovery.newPage();
+ await recoveryPage.goto(base+'/logos.html');
+ const recoveryReport=await recoveryPage.evaluate(async()=>{
+  const {createEditionStorage}=await import('./edition-storage.js');
+  localStorage.setItem('pm-save-v4','Korean fallback sentinel');
+  localStorage.setItem('pm-us-analysis-consent','no');
+  const guideOnly=await createEditionStorage('en');guideOnly.setItem('pm-screen-guide','existing guide');await guideOnly.flush();
+  localStorage.setItem('pm-us-save-v4','sole fallback English progress');
+  localStorage.setItem('pm-us-letters-v3','sole fallback English archive');
+  localStorage.setItem('pm-us-screen-guide','existing guide');
+  const recovered=await createEditionStorage('en');
+  if(recovered.getItem('pm-save-v4')!=='sole fallback English progress'||recovered.getItem('pm-letters-v3')!=='sole fallback English archive'||recovered.getItem('pm-screen-guide')!=='existing guide')throw Error('Guide-only database concealed fallback progress');
+  for(const key of ['pm-us-save-v4','pm-us-letters-v3','pm-us-screen-guide'])if(localStorage.getItem(key)!==null)throw Error('Confirmed migrated duplicate was not removed');
+  if(localStorage.getItem('pm-us-analysis-consent')!=='no'||localStorage.getItem('pm-save-v4')!=='Korean fallback sentinel')throw Error('Fallback recovery crossed edition or analytics boundaries');
+  recovered.setItem('pm-save-v4','newer durable English progress');await recovered.flush();
+  localStorage.setItem('pm-us-save-v4','older conflicting English fallback');
+  localStorage.setItem('pm-us-release-notes-v1','missing fallback metadata');
+  const conflict=await createEditionStorage('en');
+  if(conflict.getItem('pm-save-v4')!=='newer durable English progress'||localStorage.getItem('pm-us-save-v4')!=='older conflicting English fallback')throw Error('Conflicting fallback overwrote durable progress or was erased');
+  if(conflict.getItem('pm-release-notes-v1')!=='missing fallback metadata'||localStorage.getItem('pm-us-release-notes-v1')!==null)throw Error('Missing fallback key was not recovered');
+  return {guideOnlyFallbackRecovery:true,identicalFallbackCleanup:true,conflictingFallbackPreserved:true,missingFallbackKeysRecovered:true};
+ });
+ await recovery.close();
+ const privacy=await browser.newContext({serviceWorkers:'block'}),p=await privacy.newPage();
+ await p.addInitScript(()=>{localStorage.setItem('pm-analysis-consent','anonymous-gameplay-v1');localStorage.setItem('pm-analysis-sessions','{"ko":"preserved"}');});
+ await p.goto(base+'/en.html');
+ const privacyReport=await p.evaluate(async()=>{
+  const analytics=await import('./analytics.js');if(analytics.analyticsConsent())throw Error('Consent reused across editions');
+  await analytics.setAnalyticsConsent(false);
+  if(localStorage.getItem('pm-analysis-consent')!=='anonymous-gameplay-v1'||localStorage.getItem('pm-analysis-sessions')!=='{"ko":"preserved"}')throw Error('Korean consent erased');
+  return {consentIndependent:true,koreanConsentPreserved:true};
+ });
+ await privacy.close();
+ await fs.writeFile(output+'/report.json',JSON.stringify({...report,...recoveryReport,...privacyReport,reload:true},null,2));
+ console.log('U.S. storage PASS: fallback migration including guide-only databases, conflicting fallback preservation, concurrent tabs, rapid edits, atomic failure, full localStorage, reload and independent analytics consent.');
+}finally{await browser.close();}

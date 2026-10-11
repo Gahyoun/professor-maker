@@ -27,3 +27,15 @@ export function moveScreenGuide(progress,action){
  if(action==='next')return p.step===SCREEN_GUIDE_STEPS.length-1?{...p,status:'complete',seen:true}:{...p,step:p.step+1};
  return p;
 }
+
+const ENGLISH_GUIDE=[
+ ['One student, eight years, many possible futures','Guide a student through learning, research and graduation, then discuss their next step. Advising meetings, branching events, papers, conferences, faculty responsibilities and funding shape the story. Letters and a CV preserve your shared record. No specialist problem solving is required; comments and reports offer clues.'],
+ ['Three menus organize the dashboard','My lab contains this month’s plan. Records contains progress, achievements and saved checkpoints. Alumni contains letters and CVs after advising ends.'],
+ ['Agree on the weekly plan','The student’s proposal is a suggestion. Use Agreed schedule to choose the actual activity for each week. Fixed conference weeks are locked. Pay attention to energy and rest requests.'],
+ ['Allocate your faculty workload','Click the square blocks to allocate effort across four responsibilities. Stay within this month’s credit limit. Protect areas that are declining before they remain depleted.'],
+ ['Adjust stipends and research expenses','Open Adjust faculty workload & lab budget. Stipend allocations change each September. Research supplies and project support can change every month. Experiment and analysis weeks affect costs by field; baseline maintenance remains. The stipend reserve is restricted to student pay and cannot cover operations or debt.'],
+ ['Apply for grants here','Select Apply for additional funding under Additional faculty activity. Calls open in March and September. Choose your role and award duration in Research grants & stipend reserve above. Selection and payment notices arrive after advancing the month, with annual installments afterward. Plan the next application before borrowing accumulates.'],
+ ['Confirm to advance one month','If your funding runs out, an automatic departmental advance covers the shortfall; future funding repays it. Monthly interest and administrative strain apply. Additional borrowing for three consecutive months with debt above $25,000 closes the lab. Use warnings to plan costs and upcoming funding. If this button is unavailable, check workload totals and application eligibility. Rest requests are decided before the month starts.'],
+ ['Review the report and adjust','After the first month, expand Last month’s report and compare the agreed plan with actual work. Records keeps meetings, achievements and monthly checkpoints. After advising ends, Alumni keeps letters and CVs.']
+];
+export function screenGuideSteps(locale='ko'){return locale==='en'?SCREEN_GUIDE_STEPS.map((step,i)=>({...step,title:ENGLISH_GUIDE[i][0],body:ENGLISH_GUIDE[i][1]})):SCREEN_GUIDE_STEPS;}
