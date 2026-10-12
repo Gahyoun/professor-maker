@@ -151,8 +151,11 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  if(facing==='monitor'){
   for(const layer of [backHead,body,frontHead])for(const r of layer)r.fill(null);
   pixels=backHead;
-  const end=[0,0,0,68,79,91,99][l];
-  if(l>=3){poly([[18,32],[57,32],[60,end-7],[56,end],[52,end-4],[48,end],[23,end],[19,end-4],[16,end-9]],hairD);for(const x of [20,25,49,54])poly([[x,43],[x+3,42],[x+2,end-5],[x,end-2]],hairM);}
+  const end=[0,0,0,70,81,92,101][l];
+  if(l>=3){
+   poly([[13,32],[42,32],[44,46],[42,end-8],[38,end-2],[32,end],[24,end-2],[17,end-6],[13,end-10]],hairD);
+   poly([[16,40],[22,38],[21,end-7],[16,end-3]],mix(hairD,hair,.3));
+  }
   // The pelvis rests on the chair; thighs reach forward before the calves drop.
   pixels=body;
   box(35,63,45,68,skinD);
@@ -188,13 +191,69 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
   if(a.glasses){row(39,54,62,'#514658');row(51,54,62,'#514658');box(53,40,54,50,'#514658');box(62,40,63,50,'#514658');row(42,47,54,'#514658');put(55,40,'#f9eeec');}
   // The rear crown retains the saved length, fringe family, curls and highlights.
   const rearHair=l?hair:mix(hair,'#c8b2a0',.5);
-  oval(34,31,23,24,l?hairD:rearHair);
-  poly([[13,31],[16,22],[21,16],[30,11],[41,10],[49,14],[54,22],[55,29],[52,37],[47,39],[46,31],[39,35],[39,49],[34,55],[21,52],[15,46]],rearHair);
-  if(l){poly([[17,26],[24,19],[34,16],[43,17],[49,21],[43,22],[36,20],[27,22],[21,27]],hairM);poly([[22,21],[29,18],[36,18],[34,20],[27,23]],hairH);
-   poly([[42,21],[53,25],[57,30],[57,37],[53,35],[51,40],[49,33],[46,30+(fringe%3)]],fringe%2?hair:hairM);
-   if(l>=3){poly([[18,49],[23,51],[25,end-5],[22,end],[19,end-4]],hair);poly([[47,45],[52,41],[56,end-5],[53,end],[49,end-4]],hairD);for(const x of [22,50])poly([[x,52],[x+2,49],[x+2,end-6],[x,end-3]],hairM);}
-   if(a.curly){for(const [x,y]of [[18,23],[27,16],[39,14],[49,20],[15,35],[49,33]]){oval(x,y,4,4,hair);row(y-2,x-2,x+1,hairM);}if(l>=3)for(let y=53;y<end;y+=10){oval(18,y,3,4,hair);oval(53,y+2,3,4,hairD);}}
-  }else for(let x=18;x<52;x+=4)put(x,26+(x%3),hairM);
+  if(!l){
+   oval(34,31,22,24,hairD);oval(34,30,21,23,rearHair);
+   for(let x=18;x<52;x+=4)put(x,26+(x%3),hairM);
+  }else{
+   oval(34,32,23,24,hairD);
+   poly([[11,35],[12,26],[16,18],[24,13],[34,9],[45,10],[53,15],[58,23],[58,33],[54,39],[47,42],[45,33],[39,37],[39,51],[33,56],[22,54],[15,49],[11,41]],hair);
+   poly([[15,23],[22,16],[32,13],[43,14],[51,18],[46,20],[35,16],[25,19],[18,25]],hairM);
+   poly([[20,18],[27,14],[35,14],[34,17],[26,19]],hairH);poly([[38,16],[44,17],[48,20],[42,20]],hairH);
+   poly([[13,31],[17,27],[23,26],[25,34],[20,41],[14,40]],hairM);poly([[16,33],[20,30],[21,35],[17,37]],hairH);
+   poly([[16,47],[22,45],[33,48],[32,53],[22,52],[15,49]],hairD);
+   const fringeShift=(fringe%4)+(fringe>=8?1:0);
+   poly([[42,20],[53,24],[58,28],[58,37],[54,35],[52,41],[49,33],[46,30+fringeShift]],(fringe%2)?hair:hairM);
+   poly([[42,40],[46,42],[47,50],[44,52],[42,46]],hairD);put(45,45,hairM);
+   if(l===1){
+    poly([[15,45],[21,48],[31,51],[34,54],[28,55],[19,53],[14,48]],hair);
+    poly([[17,47],[23,50],[30,52],[28,54],[20,52]],hairD);row(51,20,26,hairM);
+   }else if(l===2){
+    poly([[13,44],[18,50],[21,58],[18,62],[15,57],[13,50]],hair);poly([[15,48],[19,53],[18,60],[16,56]],hairM);
+    poly([[19,49],[25,51],[29,59],[26,63],[22,60],[18,53]],hair);poly([[22,52],[26,55],[25,61],[21,57]],hairM);
+    poly([[27,51],[33,52],[35,58],[32,62],[28,59],[25,53]],hairD);poly([[29,53],[32,56],[31,60],[28,57]],hairM);
+   }else if(l===3){
+    poly([[13,44],[16,51],[19,59],[19,65],[17,69],[15,68],[14,63],[13,54]],hair);
+    poly([[15,48],[17,56],[18,64],[16,67],[15,63]],hairM);
+    poly([[17,48],[28,49],[38,49],[42,53],[42,61],[39,67],[35,70],[31,70],[27,68],[22,67],[19,63],[17,55]],hair);
+    poly([[19,51],[21,60],[22,66],[20,66],[18,55]],hairD);
+    poly([[24,50],[28,50],[29,64],[27,66],[25,54]],hairM);
+    poly([[25,53],[28,53],[28,61],[26,63],[25,55]],hairH);
+    poly([[31,51],[35,51],[36,62],[34,67],[32,67],[32,60]],hairD);
+    poly([[34,52],[38,52],[38,61],[36,65],[34,62]],hairM);
+    poly([[43,42],[49,41],[53,56],[50,60],[47,60],[45,52],[43,46]],hairD);
+    poly([[46,44],[49,43],[51,55],[48,58]],hairM);
+   }else{
+    const leftTip=end-6,midTip=end,rightTip=end-4,waistY=Math.round(54+(end-54)*.45);
+    poly([[13,44],[16,51],[18,60],[19,waistY],[18,leftTip-8],[19,leftTip-5],[17,leftTip],[15,leftTip-3],[14,leftTip-7],[13,55]],hair);
+    poly([[15,48],[17,57],[18,waistY],[17,leftTip-7],[16,leftTip-4]],hairM);
+    poly([[17,48],[27,49],[37,49],[42,53],[42,63],[40,waistY],[38,midTip-8],[36,midTip],[33,midTip-2],[30,rightTip],[27,rightTip-2],[24,end-8],[20,end-10],[18,waistY+4],[16,56]],hair);
+    poly([[18,51],[21,62],[21,waistY],[22,leftTip-6],[20,leftTip-4],[19,waistY-2],[17,55]],hairD);
+    poly([[24,50],[28,50],[29,Math.min(end-10,74)],[27,Math.min(end-8,76)],[25,54]],hairM);
+    poly([[25,53],[28,53],[28,Math.min(end-14,69)],[26,Math.min(end-12,71)],[25,55]],hairH);
+    poly([[31,51],[34,51],[35,waistY],[34,rightTip-6],[32,rightTip-3],[30,rightTip-5],[32,62]],hairD);
+    poly([[34,52],[38,52],[38,waistY-2],[36,rightTip-7],[34,rightTip-4],[34,63]],hairM);
+    const frontEnd=Math.min(60,end-7);
+    poly([[43,42],[49,41],[53,frontEnd-5],[50,frontEnd],[47,frontEnd],[45,52],[43,46]],hairD);
+    poly([[46,44],[49,43],[51,frontEnd-6],[48,frontEnd-2]],hairM);
+   }
+   if(a.curly){
+    for(const [x,y]of [[15,23],[23,15],[36,13],[47,17],[12,34],[47,33]]){oval(x,y,4,4,hair);row(y-2,x-2,x+1,hairM);}
+    if(l>=3){
+     for(let y=50;y<end-5;y+=8){
+      const wavePhase=Math.floor(y/8)%2;
+      const leftWaveX=wavePhase===0?14:16;
+      oval(leftWaveX,y,3,4,hair);row(y-1,leftWaveX-1,leftWaveX+1,hairM);
+      const midWaveX=25+(wavePhase===0?3:-2);
+      oval(midWaveX,y,4,4,hairM);row(y,midWaveX-1,midWaveX+2,hairH);
+      const rightWaveX=34+(wavePhase===0?-2:3);
+      oval(rightWaveX,y+2,3,4,hairD);
+     }
+     oval(16,end-5,3,3,hair);put(15,end-6,hairM);
+     oval(26,end-2,3,3,hairM);put(27,end-3,hairH);
+     oval(34,end-3,3,3,hair);put(35,end-4,hairM);
+    }
+   }
+  }
   oval(44,48,4,5,skinD);oval(45,47,3,4,skin);box(44,46,45,49,skinD);
  }
 
