@@ -417,23 +417,26 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
   pixels=backHead;
   const end=[0,0,0,70,81,92,101][l];
   if(isHijab){
-   poly([[14,30],[48,30],[52,48],[48,78],[40,82],[22,81],[14,74]],fabricD);
-   poly([[18,34],[44,34],[46,76],[38,80],[24,79],[18,72]],fabric);
-   for(const x of [22,32,40]){
+   poly([[20,30],[48,30],[52,48],[48,78],[40,82],[28,81],[25,74],[23,68],[21,64],[20,48]],fabricD);
+   poly([[22,34],[44,34],[46,76],[38,80],[29,79],[26,72],[24,68],[23,64]],fabric);
+   for(const x of [26,33,40]){
     poly([[x,40],[x+3,38],[x+2,76],[x,78]],fabricD);
     poly([[x+3,38],[x+5,38],[x+4,76],[x+2,76]],fabricM);
    }
   }else if(isAfro){
-   oval(34,26,30,28,hairD);
+   oval(40,26,21,22,hairD);
    for(let deg=0;deg<360;deg+=12){
     const rad=deg*Math.PI/180;
-    const bx=Math.round(34+29.5*Math.cos(rad));
-    const by=Math.round(26+27.5*Math.sin(rad));
-    if(by<54){put(bx,by,hairD);put(bx+(deg%2===0?1:-1),by,hair);}
+    const bx=Math.round(40+20.5*Math.cos(rad));
+    const by=Math.round(26+21.5*Math.sin(rad));
+    if(by<50){put(bx,by,hairD);put(bx+(deg%2===0?1:-1),by,hair);}
    }
-  }else if(!isBuzz&&!isBald&&l>=3){
-   poly([[13,32],[42,32],[44,46],[42,end-8],[38,end-2],[32,end],[24,end-2],[17,end-6],[13,end-10]],hairD);
-   poly([[16,40],[22,38],[21,end-7],[16,end-3]],mix(hairD,hair,.3));
+  }else if(!isBuzz&&!isBald&&l===3){
+   poly([[21,34],[42,34],[44,48],[43,62],[40,68],[35,70],[28,69],[24,66],[21,58]],hairD);
+   poly([[23,40],[27,38],[27,64],[24,65]],mix(hairD,hair,.3));
+  }else if(!isBuzz&&!isBald&&l>=4){
+   poly([[21,34],[41,34],[43,48],[42,64],[40,end-8],[37,end-2],[33,end],[29,end-2],[26,end-6],[25,Math.max(71,end-10)],[23,68],[21,64],[21,50]],hairD);
+   poly([[25,42],[29,40],[29,end-7],[26,end-4]],mix(hairD,hair,.3));
   }
   // The pelvis rests on the chair; thighs reach forward before the calves drop.
   pixels=body;
@@ -459,9 +462,11 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
   box(58,101,60,106,pantsH);box(71,101,72,106,pantsH);
   box(56,108,67,111,'#39303e');box(70,108,78,111,'#39303e');
   row(108,57,65,'#726174');row(108,71,77,'#726174');row(111,56,67,'#222432');row(111,70,78,'#222432');
-  // One eye and a stepped cheek silhouette make the viewing direction clear.
+  // Unified anatomical cranium, occipital-to-nape curve, and stepped cheek silhouette:
   pixels=frontHead;
-  oval(43,40,21,23,skinD);poly([[45,24],[56,29],[61,35],[61,40],[66,43],[63,46],[63,54],[57,61],[47,63],[39,58],[37,39]],skin);
+  poly([[35,14],[42,14],[49,17],[55,22],[58,28],[61,35],[61,40],[66,43],[63,46],[63,54],[57,61],[48,63],[46,66],[31,66],[31,58],[32,53],[29,48],[25,43],[22,37],[21,32],[21,27],[24,21],[29,17]],skinD);
+  poly([[35,15],[42,15],[49,18],[55,22],[58,28],[61,35],[61,40],[66,43],[63,46],[63,54],[57,60],[47,61],[45,65],[33,65],[33,57],[34,53],[31,48],[27,43],[24,37],[23,32],[23,27],[25,21],[30,17]],skin);
+  poly([[39,60],[47,61],[47,63],[39,61]],skinD);
   row(59,49,58,skinD);put(65,44,skinH);box(60,51,63,54,blush2);put(61,51,blushH);
   const closed=['happy','delighted','relieved'].includes(expression),eyeBottom=['tired','sad'].includes(expression)?47:50;
   if(closed){row(43,57,59,ink);row(44,56,57,ink);row(44,59,61,ink);}
@@ -471,28 +476,28 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
 
   // The rear crown / hijab / afro / buzz:
   if(isHijab){
-   oval(35,30,24,24,fabricD);
-   poly([[12,33],[14,22],[20,15],[30,10],[42,10],[52,16],[58,25],[58,36],[53,44],[46,52],[37,56],[24,55],[16,48],[12,39]],fabric);
-   poly([[18,18],[26,14],[36,13],[46,17],[42,20],[32,17],[23,20]],fabricM);
-   poly([[24,16],[32,15],[31,17],[24,18]],fabricH);
+   poly([[20,32],[20,26],[23,20],[27,15],[33,12],[43,12],[52,16],[58,25],[58,36],[53,44],[46,52],[37,56],[25,56],[21,49],[20,40]],fabricD);
+   poly([[21,32],[21,26],[24,20],[28,16],[34,13],[43,13],[52,16],[58,25],[58,36],[53,44],[46,52],[37,55],[26,55],[22,49],[21,40]],fabric);
+   poly([[25,20],[30,16],[38,14],[47,17],[43,20],[34,17],[27,21]],fabricM);
+   poly([[28,18],[35,15],[34,17],[28,20]],fabricH);
    poly([[43,24],[52,28],[55,34],[52,36],[45,30]],undercap);
    poly([[43,50],[48,52],[54,58],[48,62],[42,56]],fabric);
    poly([[34,54],[46,56],[48,66],[36,66]],fabricD);
    poly([[36,56],[44,57],[46,65],[38,65]],fabric);
-   poly([[14,58],[34,55],[48,57],[52,75],[46,80],[32,82],[20,80],[14,72]],fabricD);
-   poly([[18,60],[34,57],[44,59],[48,73],[42,78],[30,80],[22,78],[16,70]],fabric);
-   for(const x of [22,30,38]){
+   poly([[21,55],[34,54],[48,57],[52,75],[46,80],[33,82],[27,80],[25,72],[23,68],[21,64]],fabricD);
+   poly([[22,57],[34,56],[44,59],[48,73],[42,78],[32,80],[28,78],[26,70],[24,68],[22,64]],fabric);
+   for(const x of [27,33,39]){
     poly([[x,60],[x+3,59],[x+2,77],[x,78]],fabricD);
     poly([[x+3,59],[x+5,59],[x+4,76],[x+2,77]],fabricM);
    }
    put(47,53,pinGold);put(48,53,pinGoldH);put(47,54,pinGoldD);
   }else if(isAfro){
-   oval(34,25,29,27,hair);
-   oval(33,23,26,24,hairM);
-   poly([[20,16],[28,12],[42,12],[48,16],[44,19],[34,16],[24,19]],hairH);
+   oval(40,25,20,21,hair);
+   oval(39,23,18,19,hairM);
+   poly([[27,16],[34,12],[45,12],[51,16],[47,19],[39,16],[30,19]],hairH);
    for(let y=10;y<=42;y+=3){
-    for(let x=10;x<=58;x+=3){
-     const dx=(x-34)/29,dy=(y-25)/27;
+    for(let x=20;x<=58;x+=3){
+     const dx=(x-40)/20,dy=(y-25)/21;
      if(dx*dx+dy*dy<=0.88){
       const curlSeed=(x*19+y*29+fringe*5)%4;
       if(curlSeed===0){put(x,y,hairD);put(x+1,y,hairM);}
@@ -502,116 +507,124 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
     }
    }
   }else if(isBuzz){
-   oval(34,31,23,24,hairD);
-   oval(34,29,22,23,hair);
-   oval(33,27,19,20,hairM);
-   poly([[26,17],[42,17],[39,20],[29,20]],hairH);
-   for(let y=46;y<=54;y++){
-    const w=Math.floor((54-y)*1.5);
-    row(y,34-w,34+w,y>=51?hairD:hair);
-   }
-   for(let y=16;y<=44;y+=2){
-    for(let x=16+(y%3);x<=50-(y%3);x+=3){
-     put(x,y,(x+y)%2===0?hair:hairM);
+   poly([[34,13],[43,13],[50,16],[55,21],[57,28],[52,33],[49,37],[48,43],[42,47],[39,52],[31,53],[28,48],[24,43],[21,37],[20,32],[20,27],[23,21],[28,16]],hairD);
+   poly([[34,14],[43,14],[49,17],[54,22],[55,28],[51,32],[48,36],[46,42],[41,46],[38,50],[31,51],[29,47],[25,42],[22,37],[21,32],[21,27],[24,21],[29,17]],hair);
+   poly([[34,15],[42,15],[48,18],[52,23],[52,28],[48,32],[44,38],[37,42],[28,41],[24,35],[23,28],[26,21],[30,17]],hairM);
+   poly([[33,16],[42,16],[45,19],[39,20],[32,19]],hairH);
+   for(let y=17;y<=46;y+=2){
+    for(let x=23+(y%3);x<=52-(y%3);x+=3){
+     if(pixels[y][x]===hair||pixels[y][x]===hairM)put(x,y,(x+y)%2===0?hair:hairM);
     }
    }
   }else if(isBald){
    // Smooth bald scalp in monitor view facing screen:
-   oval(34,31,23,24,skinD);
-   oval(34,29,22,23,skin);
-   oval(33,26,19,20,skinH);
-   for(let y=46;y<=54;y++){
-    const w=Math.floor((54-y)*1.5);
-    row(y,34-w,34+w,y>=51?skinD:skin);
-   }
+   poly([[34,16],[42,16],[48,19],[52,23],[47,28],[38,30],[29,29],[25,25],[29,19]],skinH);
    // Specular scalp shine on crown in monitor view:
-   oval(32,17,7,3,scalpShine);
-   poly([[28,17],[35,16],[37,17],[33,18],[28,18]],scalpShineBright);
-   put(32,16,'#ffffff');put(33,16,'#ffffff');
-   put(31,17,scalpShineBright);put(34,17,scalpShine);
+   oval(38,18,6,3,scalpShine);
+   poly([[34,18],[41,17],[43,18],[39,19],[34,19]],scalpShineBright);
+   put(38,17,'#ffffff');put(39,17,'#ffffff');
+   put(37,18,scalpShineBright);put(40,18,scalpShine);
   }else{
-   oval(34,32,23,24,hairD);
-   poly([[11,35],[12,26],[16,18],[24,13],[34,9],[45,10],[53,15],[58,23],[58,33],[54,39],[47,42],[45,33],[39,37],[39,51],[33,56],[22,54],[15,49],[11,41]],hair);
-   poly([[15,23],[22,16],[32,13],[43,14],[51,18],[46,20],[35,16],[25,19],[18,25]],hairM);
-   poly([[20,18],[27,14],[35,14],[34,17],[26,19]],hairH);poly([[38,16],[44,17],[48,20],[42,20]],hairH);
-   poly([[13,31],[17,27],[23,26],[25,34],[20,41],[14,40]],hairM);poly([[16,33],[20,30],[21,35],[17,37]],hairH);
-   poly([[16,47],[22,45],[33,48],[32,53],[22,52],[15,49]],hairD);
+   poly([[20,32],[20,26],[23,20],[28,15],[34,12],[44,12],[52,15],[58,23],[58,33],[54,40],[49,44],[43,50],[35,54],[29,52],[24,46],[21,40]],hairD);
+   poly([[21,32],[21,26],[24,20],[29,16],[35,13],[44,13],[52,16],[58,23],[58,33],[54,39],[49,43],[46,43],[42,46],[40,51],[35,53],[29,51],[25,45],[22,39]],hair);
+   poly([[24,24],[29,18],[36,15],[44,15],[51,18],[46,20],[37,18],[30,21],[26,25]],hairM);
+   poly([[28,19],[33,16],[39,16],[38,18],[31,20]],hairH);poly([[41,16],[45,17],[49,20],[43,20]],hairH);
+   poly([[22,31],[25,27],[30,26],[32,34],[28,40],[23,39]],hairM);poly([[24,32],[27,29],[28,34],[25,36]],hairH);
    const fringeShift=(fringe%4)+(fringe>=8?1:0);
    poly([[42,20],[53,24],[58,28],[58,37],[54,35],[52,41],[49,33],[46,30+fringeShift]],(fringe%2)?hair:hairM);
-   poly([[42,40],[46,42],[47,50],[44,52],[42,46]],hairD);put(45,45,hairM);
+   poly([[45,38],[50,40],[50,48],[47,50],[45,45]],hair);
+   poly([[44,41],[47,42],[48,50],[45,51],[43,46]],hairD);put(48,43,hairM);
    if(l===1){
-    poly([[15,45],[21,48],[31,51],[34,54],[28,55],[19,53],[14,48]],hair);
-    poly([[17,47],[23,50],[30,52],[28,54],[20,52]],hairD);row(51,20,26,hairM);
+    poly([[23,43],[28,45],[35,49],[36,54],[32,56],[28,53],[24,48]],hair);
+    poly([[25,45],[30,47],[34,50],[33,54],[28,52]],hairM);
+    poly([[28,50],[33,52],[35,54],[32,56],[28,53]],hairD);
    }else if(l===2){
-    poly([[13,44],[18,50],[21,58],[18,62],[15,57],[13,50]],hair);poly([[15,48],[19,53],[18,60],[16,56]],hairM);
-    poly([[19,49],[25,51],[29,59],[26,63],[22,60],[18,53]],hair);poly([[22,52],[26,55],[25,61],[21,57]],hairM);
-    poly([[27,51],[33,52],[35,58],[32,62],[28,59],[25,53]],hairD);poly([[29,53],[32,56],[31,60],[28,57]],hairM);
+    poly([[21,38],[35,42],[37,56],[35,61],[28,60],[23,56],[21,48]],hairD);
+    poly([[22,38],[35,42],[37,56],[35,61],[28,60],[24,56],[22,48]],hair);
+    poly([[23,44],[26,48],[26,56],[24,54]],hairM);
+    poly([[27,46],[31,49],[31,58],[28,56]],hairM);
+    poly([[32,48],[35,51],[35,59],[32,57]],hairM);
+    poly([[25,54],[27,54],[27,59],[25,57]],hairD);
+    poly([[30,55],[32,55],[32,60],[30,58]],hairD);
+    poly([[34,56],[37,56],[35,61],[33,60]],hairD);
    }else if(l===3){
-    poly([[13,44],[16,51],[19,59],[19,65],[17,69],[15,68],[14,63],[13,54]],hair);
-    poly([[15,48],[17,56],[18,64],[16,67],[15,63]],hairM);
-    poly([[17,48],[28,49],[38,49],[42,53],[42,61],[39,67],[35,70],[31,70],[27,68],[22,67],[19,63],[17,55]],hair);
-    poly([[19,51],[21,60],[22,66],[20,66],[18,55]],hairD);
-    poly([[24,50],[28,50],[29,64],[27,66],[25,54]],hairM);
-    poly([[25,53],[28,53],[28,61],[26,63],[25,55]],hairH);
-    poly([[31,51],[35,51],[36,62],[34,67],[32,67],[32,60]],hairD);
-    poly([[34,52],[38,52],[38,61],[36,65],[34,62]],hairM);
-    poly([[43,42],[49,41],[53,56],[50,60],[47,60],[45,52],[43,46]],hairD);
-    poly([[46,44],[49,43],[51,55],[48,58]],hairM);
-   }else{
-    const leftTip=end-6,midTip=end,rightTip=end-4,waistY=Math.round(54+(end-54)*.45);
-    poly([[13,44],[16,51],[18,60],[19,waistY],[18,leftTip-8],[19,leftTip-5],[17,leftTip],[15,leftTip-3],[14,leftTip-7],[13,55]],hair);
-    poly([[15,48],[17,57],[18,waistY],[17,leftTip-7],[16,leftTip-4]],hairM);
-    poly([[17,48],[27,49],[37,49],[42,53],[42,63],[40,waistY],[38,midTip-8],[36,midTip],[33,midTip-2],[30,rightTip],[27,rightTip-2],[24,end-8],[20,end-10],[18,waistY+4],[16,56]],hair);
-    poly([[18,51],[21,62],[21,waistY],[22,leftTip-6],[20,leftTip-4],[19,waistY-2],[17,55]],hairD);
-    poly([[24,50],[28,50],[29,Math.min(end-10,74)],[27,Math.min(end-8,76)],[25,54]],hairM);
-    poly([[25,53],[28,53],[28,Math.min(end-14,69)],[26,Math.min(end-12,71)],[25,55]],hairH);
-    poly([[31,51],[34,51],[35,waistY],[34,rightTip-6],[32,rightTip-3],[30,rightTip-5],[32,62]],hairD);
-    poly([[34,52],[38,52],[38,waistY-2],[36,rightTip-7],[34,rightTip-4],[34,63]],hairM);
-    const frontEnd=Math.min(60,end-7);
-    poly([[43,42],[49,41],[53,frontEnd-5],[50,frontEnd],[47,frontEnd],[45,52],[43,46]],hairD);
-    poly([[46,44],[49,43],[51,frontEnd-6],[48,frontEnd-2]],hairM);
+    poly([[21,36],[24,46],[26,56],[26,64],[25,68],[23,66],[21,60],[21,48]],hair);
+    poly([[22,45],[24,53],[24,62],[23,65],[22,58]],hairM);
+    poly([[21,44],[31,46],[39,47],[44,52],[44,61],[41,67],[37,70],[31,70],[27,69],[24,66],[22,60],[21,52]],hair);
+    poly([[24,50],[26,59],[27,66],[25,65],[23,55]],hairD);
+    poly([[27,49],[31,49],[32,64],[30,67],[28,54]],hairM);
+    poly([[28,52],[31,52],[31,61],[29,63],[28,55]],hairH);
+    poly([[33,50],[37,50],[38,62],[36,68],[34,68],[34,60]],hairD);
+    poly([[36,51],[40,51],[40,61],[38,66],[36,62]],hairM);
+    poly([[43,42],[49,41],[52,55],[49,60],[45,61],[42,54]],hair);
+    poly([[45,44],[49,43],[50,55],[47,58]],hairM);
+    poly([[42,46],[45,48],[46,59],[43,60]],hairD);
     if(isTwoTone){
-     for(const x of [16,20,25,31,36]){
-      put(x,end-3,twoToneAccent);put(x,end-2,twoToneAccentH);
+     poly([[31,54],[35,54],[35,67],[32,69],[31,62]],twoToneAccent);
+     poly([[32,56],[34,56],[34,66],[32,67]],twoToneAccentH);
+    }
+   }else{
+    const leftTip=end-5,midTip=end,rightTip=end-3,waistY=Math.round(56+(end-56)*.45);
+    poly([[21,36],[24,47],[27,58],[28,waistY],[28,leftTip-6],[27,leftTip],[25,leftTip-2],[25,Math.max(71,leftTip-7)],[23,68],[21,64],[21,50]],hair);
+    poly([[22,46],[24,55],[26,waistY],[26,leftTip-5],[25,leftTip-3]],hairM);
+    poly([[21,44],[30,46],[38,47],[41,53],[41,62],[39,waistY],[38,midTip-8],[36,midTip],[33,midTip-2],[30,rightTip],[29,rightTip-2],[27,leftTip],[25,leftTip-3],[25,Math.max(71,waistY+4)],[23,68],[21,64],[21,52]],hair);
+    poly([[24,50],[27,61],[28,waistY],[29,leftTip-5],[27,leftTip-3],[26,waistY-2],[23,55]],hairD);
+    poly([[28,49],[32,49],[32,Math.min(end-10,74)],[30,Math.min(end-8,76)],[29,54]],hairM);
+    poly([[29,52],[32,52],[31,Math.min(end-14,69)],[29,Math.min(end-12,71)],[29,55]],hairH);
+    poly([[33,50],[36,50],[37,waistY],[35,rightTip-5],[33,rightTip-2],[31,rightTip-4],[33,62]],hairD);
+    poly([[36,51],[39,51],[39,waistY-2],[37,rightTip-6],[35,rightTip-3],[35,63]],hairM);
+    const frontEnd=Math.min(60,end-7);
+    poly([[43,42],[49,41],[52,frontEnd-5],[49,frontEnd],[45,frontEnd],[42,52]],hair);
+    poly([[45,44],[49,43],[50,frontEnd-6],[47,frontEnd-2]],hairM);
+    poly([[42,46],[45,48],[46,frontEnd-1],[43,frontEnd]],hairD);
+    if(isTwoTone){
+     poly([[31,55],[35,55],[35,rightTip-3],[32,rightTip-1],[31,64]],twoToneAccent);
+     poly([[32,57],[34,57],[34,rightTip-5],[32,rightTip-3]],twoToneAccentH);
+     for(const [tx,ty] of [[27,leftTip-2],[30,rightTip-2],[35,midTip-2]]){
+      put(tx,ty-1,twoToneAccent);put(tx,ty,twoToneAccentH);
      }
     }
    }
    if(isDisheveled){
-    for(const [x,y] of [[10,32],[9,40],[11,50],[12,62],[45,28],[48,34],[46,44]]){
+    for(const [x,y] of [[19,31],[19,41],[20,51],[20,61],[24,72],[45,28],[48,34],[46,44]]){
      put(x,y,hairD);put(x+(x<34?1:-1),y,hair);
     }
    }
    if(isCoily){
-    for(const [x,y]of [[15,23],[23,15],[36,13],[47,17],[12,34],[47,33]]){oval(x,y,4,4,hair);row(y-2,x-2,x+1,hairM);}
+    for(const [x,y]of [[29,15],[38,13],[47,17],[24,22],[22,31],[22,40],[47,33]]){oval(x,y,3,3,hair);row(y-2,x-1,x+1,hairM);}
     if(l>=3){
-     for(let y=48;y<end;y+=6){
+     for(let y=48;y<end-3;y+=6){
       const phase=Math.floor(y/6)%2;
-      const lx=15+(phase===0?0:3);
-      oval(lx,y,4,4,hair);row(y-1,lx-1,lx+2,hairM);put(lx,y-2,hairH);row(y+1,lx-1,lx+2,hairD);
-      const mx=26+(phase===0?3:-2);
+      const tailShift=y>63?Math.min(4,Math.round((y-63)*0.55)):0;
+      const lx=22+tailShift+(phase===0?0:1);
+      oval(lx,y,3,4,hair);row(y-1,lx-1,lx+1,hairM);put(lx,y-2,hairH);row(y+1,lx-1,lx+1,hairD);
+      const mx=29+Math.round(tailShift*0.5)+(phase===0?2:-1);
       oval(mx,y+1,4,5,hairM);row(y,mx-1,mx+2,hairH);put(mx+1,y-1,hairH);row(y+2,mx-1,mx+2,hairD);
-      const rx=35+(phase===0?-2:3);
-      oval(rx,y,4,4,hairD);row(y-1,rx-1,rx+2,hair);put(rx,y-2,hairM);
+      const rx=36+(phase===0?-1:1);
+      oval(rx,y,3,4,hairD);row(y-1,rx-1,rx+1,hair);put(rx,y-2,hairM);
      }
-     oval(16,end-3,4,4,hair);put(16,end-4,hairH);
-     oval(27,end-2,4,4,hairM);put(27,end-3,hairH);
-     oval(35,end-3,4,4,hairD);put(35,end-4,hairM);
+     const endShift=end>63?Math.min(4,Math.round((end-63)*0.55)):0;
+     oval(23+endShift,end-3,3,3,hair);put(23+endShift,end-4,hairH);
+     oval(29+Math.round(endShift*0.5),end-2,3,3,hairM);put(29+Math.round(endShift*0.5),end-3,hairH);
+     oval(35,end-3,3,3,hairD);put(35,end-4,hairM);
     }
    }else if(isCurly){
-    for(const [x,y]of [[15,23],[23,15],[36,13],[47,17],[12,34],[47,33]]){oval(x,y,4,4,hair);row(y-2,x-2,x+1,hairM);}
+    for(const [x,y]of [[29,15],[38,13],[47,17],[24,22],[22,31],[22,40],[47,33]]){oval(x,y,3,3,hair);row(y-2,x-1,x+1,hairM);}
     if(l>=3){
      for(let y=50;y<end-5;y+=8){
       const wavePhase=Math.floor(y/8)%2;
-      const leftWaveX=wavePhase===0?14:16;
+      const tailShift=y>63?Math.min(4,Math.round((y-63)*0.55)):0;
+      const leftWaveX=22+tailShift+(wavePhase===0?0:1);
       oval(leftWaveX,y,3,4,hair);row(y-1,leftWaveX-1,leftWaveX+1,hairM);
-      const midWaveX=25+(wavePhase===0?3:-2);
+      const midWaveX=29+Math.round(tailShift*0.5)+(wavePhase===0?2:-1);
       oval(midWaveX,y,4,4,hairM);row(y,midWaveX-1,midWaveX+2,hairH);
-      const rightWaveX=34+(wavePhase===0?-2:3);
+      const rightWaveX=36+(wavePhase===0?-1:1);
       oval(rightWaveX,y+2,3,4,hairD);
      }
-     oval(16,end-5,3,3,hair);put(15,end-6,hairM);
-     oval(26,end-2,3,3,hairM);put(27,end-3,hairH);
-     oval(34,end-3,3,3,hair);put(35,end-4,hairM);
+     const endShift=end>63?Math.min(4,Math.round((end-63)*0.55)):0;
+     oval(23+endShift,end-5,3,3,hair);put(22+endShift,end-6,hairM);
+     oval(29+Math.round(endShift*0.5),end-2,3,3,hairM);put(30+Math.round(endShift*0.5),end-3,hairH);
+     oval(35,end-3,3,3,hair);put(36,end-4,hairM);
     }
    }
   }

@@ -286,6 +286,51 @@ test('male student bald (대머리 / 완전 민머리) renders smooth scalp skin
   assert.match(buzzSvg, /data-hair-style="buzz"/);
   assert.match(buzzSvg, /aria-label="[^"]*까까머리[^"]*"/);
   assert.notEqual(frontSvg, buzzSvg, 'bald and buzz portraits must have distinct raster geometry');
+
+  // 4. Verify monitor-view occipital proportions, anatomical nape curve, and scanline continuity across all hairstyle families
+  for (const variant of [
+    baldIdentity,
+    buzzIdentity,
+    studentAppearance('탈색모', 'male', {hairLength: 1}),
+    studentAppearance('탈색모', 'male', {hairLength: 2}),
+    studentAppearance(101, 'female', {hairLength: 2, curly: false}),
+    studentAppearance(101, 'female', {hairLength: 3, curly: false}),
+    studentAppearance(101, 'female', {hairLength: 5, curly: false}),
+    studentAppearance('시크릿투톤', 'female', {hairLength: 3}),
+    studentAppearance('시크릿투톤', 'female', {hairLength: 4}),
+    studentAppearance(101, 'female', {hairLength: 4, curly: true, coily: false, hairStyle: 'curly'}),
+    studentAppearance(505, 'female', {hairLength: 4, hairStyle: 'coily', coily: true}),
+    studentAppearance('폐인장발', 'male'),
+    studentAppearance(606, 'female', {hijab: true, hijabColor: '#536b5c'}),
+    studentAppearance(404, 'female', {hairStyle: 'afro', afro: true, hairLength: 3}),
+  ]) {
+    const svg = renderPortrait(variant, '학생 초상화', 'neutral', 'seated', 'monitor');
+    const rects = [...svg.matchAll(/<rect x="(\d+)" y="(\d+)" width="(\d+)" height="1" fill="[^"]+"\/>/g)];
+    let minHeadX = Infinity;
+    let occiputMinX = Infinity;
+    let napeMinX = Infinity;
+    const rows = new Map();
+    for (const [, x, y, w] of rects) {
+      const xx = +x, yy = +y, ww = +w;
+      if (yy >= 30 && yy <= 84 && xx < minHeadX) minHeadX = xx;
+      if (yy >= 44 && yy <= 56 && xx < occiputMinX) occiputMinX = xx;
+      if (yy >= 78 && yy <= 82 && xx < napeMinX) napeMinX = xx;
+      if (yy >= 32 && yy <= 110) {
+        if (!rows.has(yy)) rows.set(yy, []);
+        rows.get(yy).push([xx, xx + ww - 1]);
+      }
+    }
+    assert.ok(minHeadX >= 53, `monitor-facing occiput must not bulge excessively backward (minHeadX=${minHeadX} for ${variant.hairStyle} l=${variant.hairLength})`);
+    if (!variant.hijab && (variant.bald || variant.hairStyle === 'buzz' || variant.hairLength <= 2)) {
+      assert.ok(napeMinX >= occiputMinX + 4, `short/cranial styles must curve inward from occiput (${occiputMinX}) to nape (${napeMinX})`);
+    }
+    for (const [yy, segs] of rows) {
+      segs.sort((a, b) => a[0] - b[0]);
+      for (let i = 1; i < segs.length; i++) {
+        assert.equal(segs[i][0], segs[i - 1][1] + 1, `monitor scanline y=${yy} must be contiguous without detached pixels (${variant.hairStyle} l=${variant.hairLength})`);
+      }
+    }
+  }
 });
 
 test('male student baldness triggers on low-probability natural seeds, easter egg seeds, and severe graduate stress', () => {
