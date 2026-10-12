@@ -14,5 +14,5 @@ test('Version notices remain one per version, reopenable, bounded and safe for m
  assert.equal(markReleaseNotesSeen(Array.from({length:20},(_,i)=>`4.0.${i}`)).length,20);
  assert.equal(RELEASE_NOTES.changes.length,6);
  const text=RELEASE_NOTES.changes.join(' ');
- for(const content of [/자동 차입/,/첫 화면/,/예산 조절/,/수학/,/미클리어/,/A4/,/연구실 그림/,/16:9/])assert.match(text,content);
+ for(const content of [/자동 차입/,/첫 화면/,/예산 조절/,/이름/,/북미/,/면담/,/정착지원/,/30분/,/연장/,/모바일/])assert.match(text,content);
 });

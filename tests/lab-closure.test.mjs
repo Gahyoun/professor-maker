@@ -13,7 +13,7 @@ function fixture(month=0,{difficulty='realistic',labMode='dry'}={}){
 // still go through decide, while unrelated academic pages are retained as data.
 function acknowledgeWarnings(s){while(s.pending?.kind==='lab-warning')s=decide(s,'acknowledge');return s;}
 function readyNextMonth(s){s=acknowledgeWarnings(s);s.pending=null;s.pendingQueue=[];return s;}
-function empty(s){s.lab.funds=0;s.lab.pool=0;s.lab.creditEnabled=false;return s;}
+function empty(s){s.lab.funds=0;s.lab.pool=0;s.lab.creditEnabled=false;if(s.professorProfile.difficulty==='realistic')s.labRisk.supportUsed=150;return s;}
 
 test('difficulty only buffers finite first-two-year funding and preserves seeded student abilities',()=>{
  for(let seed=1;seed<=80;seed++)for(const institution of ['national','private','institute']){
@@ -21,7 +21,7 @@ test('difficulty only buffers finite first-two-year funding and preserves seeded
   assert.equal(normal.professorProfile.difficulty,'realistic');assert.ok(easy.lab.initialFunding>=800&&easy.lab.initialFunding<=2000);assert.equal(easy.lab.initialFunding%100,0);
   assert.equal(easy.lab.funds+easy.lab.pool,easy.lab.initialFunding);assert.deepEqual(easy.hidden,normal.hidden);assert.equal(easy.seed,normal.seed);assert.deepEqual(easy.professor,normal.professor);assert.deepEqual(easy.grants,normal.grants);assert.ok(validateSave(easy));
  }
- const normal=fixture();assert.equal(difficultySettings(normal).totalSupport,0);assert.equal(difficultySettings(fixture(0,{difficulty:'beginner'})).totalSupport,300);
+ const normal=fixture();assert.equal(difficultySettings(normal).totalSupport,150);assert.equal(difficultySettings(fixture(0,{difficulty:'beginner'})).totalSupport,300);
 });
 test('old saves retain balances and adopt realistic mode without granting a fresh buffer',()=>{
  const old=fixture(20);delete old.professorProfile.difficulty;delete old.labRisk;old.lab.funds=14;old.lab.pool=3;const before=structuredClone(old),n=migrateSave(old);
@@ -93,7 +93,7 @@ test('suspended professor energy does not charge imaginary student research week
 test('thin funding is a prospective warning and invalid closure snapshots are rejected',()=>{
  assert.doesNotMatch(labWarningText({reason:'funding',keys:[],streak:0,remainingMonths:3}),/연속 보류/);assert.match(closureSummary({endingReason:'graduation_requirements'}),/학위 요건/);assert.match(closureSummary({endingReason:'time_limit'}),/8년/);assert.match(closureSummary({endingReason:null}),/이전 기록/);
  const s=fixture(5);s.ending='gameover';s.endingReason='lab_closure';assert.equal(validateSave(s),false);s.labClosure={reason:'funding',keys:[],streak:3,month:5,recovery:'funding'};assert.ok(validateSave(s));s.labClosure.keys=['admin'];assert.equal(validateSave(s),false);s.labClosure.keys=[];s.labClosure.streak=1;assert.equal(validateSave(s),false);
- const bad=fixture();bad.labRisk.supportUsed=1;assert.equal(validateSave(bad),false);bad.professorProfile.difficulty='beginner';bad.labRisk.supportUsed=301;assert.equal(validateSave(bad),false);
+ const bad=fixture();bad.labRisk.supportUsed=151;assert.equal(validateSave(bad),false);bad.professorProfile.difficulty='beginner';bad.labRisk.supportUsed=301;assert.equal(validateSave(bad),false);
  const exhausted=fixture(5);exhausted.professor.research=0;exhausted.labRisk.faculty.research=3;assert.equal(validateSave(exhausted),false);assert.throws(()=>simulateMonth(exhausted,rest),/Invalid saved/);
  const premature=fixture();premature.labRisk.faculty.research=2;assert.equal(validateSave(premature),false);premature.labRisk.faculty.research=0;premature.labRisk.funding=2;assert.equal(validateSave(premature),false);
 });

@@ -2,10 +2,17 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {editionStorageKey,campusEditionHref,currencyFormat} from '../dist/edition.js';
+import {labWarningText,closureSummary} from '../dist/lab-risk.js';
 test('regional entry links, save keys and modeled dollar budgets remain separate',()=>{
  assert.equal(campusEditionHref('en'),'./en.html');assert.equal(campusEditionHref('ko'),'./index.html');
  for(const key of ['pm-save-v4','pm-letters-v3','pm-admission-v1','pm-letter-passages-v1','pm-fast']){assert.equal(editionStorageKey(key,'ko'),key);assert.equal(editionStorageKey(key,'en'),'pm-us-'+key.slice(3));}
  assert.equal(currencyFormat(60,'en'),'$15,000');assert.equal(currencyFormat(60,'ko'),'600만원');
+});
+test('English borrowing warnings and closure reasons use the edition dollar scale',()=>{
+ const warning={reason:'funding',keys:[],mode:'borrowing',streak:1,remainingMonths:2},closure={labClosure:{...warning,streak:3}};
+ assert.match(labWarningText(warning,'en'),/\$25,000/);assert.match(closureSummary(closure,'en'),/\$25,000/);
+ assert.doesNotMatch(labWarningText(warning,'en')+closureSummary(closure,'en'),/KRW/);
+ assert.match(labWarningText(warning,'ko'),/1천만원/);assert.match(closureSummary(closure,'ko'),/1천만원/);
 });
 test('English entry and offline navigation retain the U.S. edition and its own install identity',async()=>{
  const root=new URL('../dist/',import.meta.url),[html,worker,manifest]=await Promise.all(['en.html','sw.js','manifest-en.webmanifest'].map(file=>readFile(new URL(file,root),'utf8')));

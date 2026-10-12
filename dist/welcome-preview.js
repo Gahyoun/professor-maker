@@ -1,12 +1,13 @@
 import {renderOnboardingFlow,renderAdmissionInterview,renderUpdateNotice} from './onboarding-ui.js';
 import {admissionCandidates} from './admission.js';
+import {CURRENT_NAMING_VERSION} from './names.js';
 import {createState} from './engine.js';
 import {roomScene} from './lab-scene.js';
 
 const main=document.querySelector('#main');
 const params=new URLSearchParams(location.search);
 const profile={gender:'female',age:38,fieldId:'072',labMode:'dry',institution:'national',difficulty:'beginner'};
-const candidates=admissionCandidates(0x1234abcd,{locale:'ko',professorGender:profile.gender,professorProfile:profile});
+const candidates=admissionCandidates(0x1234abcd,{locale:'ko',namingVersion:CURRENT_NAMING_VERSION,professorGender:profile.gender,professorProfile:profile});
 let selected=/^[0-2]$/.test(params.get('selected')??'')?Number(params.get('selected')):null;
 let view=['updates','interview','room'].includes(params.get('view'))?params.get('view'):'updates';
 let activity=['analysis','teach','experiment','rest','idle'].includes(params.get('activity'))?params.get('activity'):'analysis';

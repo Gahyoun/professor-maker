@@ -1,5 +1,8 @@
 import {englishText,CONTENT_EN} from './content-en.js';
 const UI_EN={
+ "초기 연구비는 그대로이며, 1–2년차 필수 지출 부족분에 제한된 정착지원을 제공합니다.": "Initial funding stays the same, with limited support for essential shortfalls in years one and two.",
+ "보통 · 첫 24개월, 정착지원 총 1,500만원 중 한 달 최대 150만원을 필수 지출 부족액만큼 지원합니다. 업무 균형도 함께 관리해 주세요.": "Standard · during the first 24 months, up to $3,750 a month covers essential shortfalls, within a $37,500 total support allowance. Keep faculty responsibilities balanced too.",
+
  "참석 경비":"Attendance cost",
  "새 학기, 함께 연구할 학생을 만납니다.": "A new academic year. A student to advise.",
  "응원하고 함께 배우는 여덟 번의 봄.": "One student, eight years of learning together.",

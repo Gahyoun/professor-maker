@@ -1,6 +1,8 @@
+import {studentAppearanceForState} from './appearance.js';
+import {studentBackground} from './student-background.js';
 import {createState,abilityScore} from './engine.js';
 import {getDiscipline} from './disciplines.js';
-import {generateStudentName} from './names.js';
+import {generateStudentName,validNamingVersion} from './names.js';
 
 export const ADMISSION_KEY='pm-admission-v1';
 export const CANDIDATE_COUNT=3;
@@ -17,6 +19,8 @@ export function admissionSeed(intakeSeed,index){
  return (draw(intakeSeed,'students')+Math.imul(index,0x9e3779b9))>>>0;
 }
 export function admissionCandidates(intakeSeed,options={}){
+ const namingVersion=options.namingVersion===undefined?1:options.namingVersion;if(!validNamingVersion(namingVersion)||options.locale!=='en'&&namingVersion===3)throw new Error('Invalid naming version.');
+ const usedNames=new Set();
  const discipline=getDiscipline(options.professorProfile?.fieldId??options.fieldId);
  const en=options.locale==='en';
  const interests=en?['Connecting foundational ideas with the literature','Testing questions with computation and data','Turning practical problems into research questions']:['기초 원리와 문헌의 연결','계산·자료로 질문 검증','현장의 문제를 연구로 발전'];
@@ -26,23 +30,27 @@ export function admissionCandidates(intakeSeed,options={}){
   // Grades are a noisy, fictional application record, never a hidden-trait rating.
   const noise=draw(intakeSeed,`grade:${index}`)/0x100000000-.5;
   const gpa=Math.max(2.6,Math.min(4.45,3.35+(abilityScore(state,'learning')-30)*.018+noise*.9));
-  return {index,name:generateStudentName(seed,state.gender,options.locale),gender:state.gender,gpa:Number((en?gpa/4.5*4:gpa).toFixed(2)),...(en?{gpaScale:4}:{}),interest:`${en?discipline.labelEn:discipline.label} · ${interests[draw(intakeSeed,`interest:${index}`)%interests.length]}`,impression:impressions[draw(intakeSeed,`impression:${index}`)%impressions.length]};
+  let name=generateStudentName(seed,state.gender,options.locale,namingVersion);
+  // Cosmetic collision handling never changes a candidate seed or hidden traits.
+  if(namingVersion>=2){let variant=0;while(usedNames.has(name)){if(++variant>10000)throw new Error('Candidate name pool exhausted.');name=generateStudentName(seed,state.gender,options.locale,namingVersion,variant);}usedNames.add(name);}
+  return {index,name,gender:state.gender,gpa:Number((en?gpa/4.5*4:gpa).toFixed(2)),...(en?{gpaScale:4}:{}),interest:`${en?discipline.labelEn:discipline.label} · ${interests[draw(intakeSeed,`interest:${index}`)%interests.length]}`,impression:impressions[draw(intakeSeed,`impression:${index}`)%impressions.length],...(en&&namingVersion===3?{background:studentBackground(seed,'en',3),appearance:studentAppearanceForState({locale:'en',admission:{namingVersion:3},creationSeed:seed,gender:state.gender})}:{})};
  });
 }
 export function admitCandidate(intakeSeed,index,options={}){
+ const namingVersion=options.namingVersion===undefined?1:options.namingVersion;if(!validNamingVersion(namingVersion)||options.locale!=='en'&&namingVersion===3)throw new Error('Invalid naming version.');
  const seed=admissionSeed(intakeSeed,index),state=createState('',seed,options);
- state.name=generateStudentName(seed,state.gender,options.locale);
- state.admission={intakeSeed,candidateIndex:index};
+ state.name=namingVersion>=2?admissionCandidates(intakeSeed,options)[index].name:generateStudentName(seed,state.gender,options.locale,1);
+ state.admission={intakeSeed,candidateIndex:index,...(namingVersion>=2?{namingVersion}:{})};
  return state;
 }
-export function admissionCode(intakeSeed,index){
- admissionSeed(intakeSeed,index);
- return `PM-${intakeSeed.toString(16).padStart(8,'0').toUpperCase()}-${index+1}`;
+export function admissionCode(intakeSeed,index,namingVersion=1){
+ admissionSeed(intakeSeed,index);if(!validNamingVersion(namingVersion))throw new Error('Invalid naming version.');
+ return `${namingVersion===1?'PM':`PM${namingVersion}`}-${intakeSeed.toString(16).padStart(8,'0').toUpperCase()}-${index+1}`;
 }
 export function parseAdmissionCode(value){
- const match=/^PM-([0-9a-f]{8})-([1-3])$/i.exec(String(value??'').trim());
- return match?{intakeSeed:parseInt(match[1],16),candidateIndex:Number(match[2])-1}:null;
+ const match=/^PM([23])?-([0-9a-f]{8})-([1-3])$/i.exec(String(value??'').trim());
+ return match?{intakeSeed:parseInt(match[2],16),candidateIndex:Number(match[3])-1,...(match[1]?{namingVersion:Number(match[1])}:{})}:null;
 }
 export function validAdmissionRecord(value){
- return Boolean(value&&validSeed(value.intakeSeed)&&Number.isInteger(value.candidateIndex)&&value.candidateIndex>=0&&value.candidateIndex<CANDIDATE_COUNT);
+ return Boolean(value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).length===(value.namingVersion===undefined?2:3)&&Object.keys(value).every(key=>['intakeSeed','candidateIndex','namingVersion'].includes(key))&&validSeed(value.intakeSeed)&&Number.isInteger(value.candidateIndex)&&value.candidateIndex>=0&&value.candidateIndex<CANDIDATE_COUNT&&(value.namingVersion===undefined||validNamingVersion(value.namingVersion)));
 }

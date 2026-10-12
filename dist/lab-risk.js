@@ -1,13 +1,16 @@
 // Fictional, visible recovery windows. These are game rules, not institutional policy.
 import {researchFinanceProfile} from './research-finance.js';
+import {currencyFormat} from './edition.js';
 export const LAB_RISK_KEYS=['research','teaching','admin','mentoring'];
 const labels={research:'학술활동',teaching:'교육',admin:'학교행정',mentoring:'연구실 운영'};
 const english={research:'Research',teaching:'Teaching',admin:'Administration',mentoring:'Lab management'};
 export const LAB_CLOSURE_MONTHS=3;
 export const difficultyOf=s=>s?.professorProfile?.difficulty==='beginner'?'beginner':'realistic';
 export function difficultySettings(s){
- const id=difficultyOf(s),easy=id==='beginner';
- return {id,label:easy?'신임교수(쉬움)':'현실(보통)',supportUntil:easy?24:0,supportFloor:easy?800:0,totalSupport:easy?300:0,monthlySupport:easy?30:0,remainingSupport:easy?Math.max(0,300-(s.labRisk?.supportUsed??0)):0};
+ const id=difficultyOf(s),easy=id==='beginner',totalSupport=easy?300:150;
+ // Both modes have a limited startup buffer; these are modeled game amounts,
+ // not an entitlement or a promise made by a real university.
+ return {id,label:easy?'신임교수(쉬움)':'현실(보통)',supportUntil:24,supportFloor:easy?800:0,totalSupport,monthlySupport:easy?30:15,remainingSupport:Math.max(0,totalSupport-(s.labRisk?.supportUsed??0))};
 }
 export function initialLabRisk(month=0){return {version:1,lastEvaluatedMonth:month,faculty:Object.fromEntries(LAB_RISK_KEYS.map(k=>[k,0])),funding:0,warned:Object.fromEntries([...LAB_RISK_KEYS,'funding'].map(k=>[k,0])),supportUsed:0};}
 export function settlementSupport(s,{stipend=0,credit=0}={}){
@@ -23,7 +26,7 @@ export function labRiskStatus(s){
  return {items,fundingStreak:risk.funding};
 }
 export function labWarningText(p,locale='ko'){
- if(p.reason==='funding')return !p.streak?(locale==='en'?'The balance available for essential commitments is below three months of expenses. The department chair asks you to review spending and upcoming grant deposits.':'필수 지출에 사용할 잔액이 3개월분보다 적습니다. 학과장이 지출 조정과 다음 연구과제 입금 확인을 요청했습니다.'):p.mode==='borrowing'?(locale==='en'?`Operations continued through department borrowing for ${p.streak} consecutive month(s), with more than 10 million KRW outstanding. There are ${p.remainingMonths} months to restore funding.`:`운영비가 부족해 ${p.streak}개월 연속 학과 차입으로 진행했으며 미상환액이 1천만원을 넘었습니다. 폐쇄 전 ${p.remainingMonths}개월 안에 지출과 과제 입금을 조정해 주세요.`):(locale==='en'?`Essential funding is unavailable. Operations have been suspended for ${p.streak} consecutive month(s). There are ${p.remainingMonths} months to restore funding.`:`필수 운영비가 부족해 연구실 운영을 ${p.streak}개월 연속 보류했습니다. 폐쇄 전 ${p.remainingMonths}개월의 회복 기회가 남았습니다.`);
+ if(p.reason==='funding')return !p.streak?(locale==='en'?'The balance available for essential commitments is below three months of expenses. The department chair asks you to review spending and upcoming grant deposits.':'필수 지출에 사용할 잔액이 3개월분보다 적습니다. 학과장이 지출 조정과 다음 연구과제 입금 확인을 요청했습니다.'):p.mode==='borrowing'?(locale==='en'?`Operations continued through department borrowing for ${p.streak} consecutive month(s), with more than ${currencyFormat(100,locale)} outstanding. There are ${p.remainingMonths} months to restore funding.`:`운영비가 부족해 ${p.streak}개월 연속 학과 차입으로 진행했으며 미상환액이 1천만원을 넘었습니다. 폐쇄 전 ${p.remainingMonths}개월 안에 지출과 과제 입금을 조정해 주세요.`):(locale==='en'?`Essential funding is unavailable. Operations have been suspended for ${p.streak} consecutive month(s). There are ${p.remainingMonths} months to restore funding.`:`필수 운영비가 부족해 연구실 운영을 ${p.streak}개월 연속 보류했습니다. 폐쇄 전 ${p.remainingMonths}개월의 회복 기회가 남았습니다.`);
  const names=p.keys.map(k=>(locale==='en'?english:labels)[k]).join(' · ');
  return p.streak?(locale==='en'?`${names} has remained at zero for ${p.streak} month(s). Restore it within ${p.remainingMonths} months.`:`${names}이 ${p.streak}개월 연속 0입니다. ${p.remainingMonths}개월 안에 해당 업무를 회복해야 합니다.`):(locale==='en'?`${names} is low. Review your workload before it reaches zero; closure requires three consecutive months at zero.`:`${names}이 낮아 학과장이 업무 조정을 요청했습니다. 해당 업무가 0으로 3개월 연속 지속되면 연구실 운영이 종료됩니다.`);
 }
@@ -32,7 +35,7 @@ export function closureSummary(s,locale='ko'){
   const reasons={graduation_requirements:['필요한 논문·발표 등 학위 요건 미충족','Degree requirements were not met.'],time_limit:['8년 안에 학위 과정 미완료','The degree was not completed within eight years.'],qual_failure:['박사과정 자격 요건 미충족 또는 과정 정리','Doctoral qualifying requirements were unmet or the track was discontinued.']};
   return reasons[s?.endingReason]?.[locale==='en'?1:0]??(locale==='en'?'The earlier record does not retain a detailed reason for ending.':'이전 기록에는 세부 종료 원인이 남아 있지 않습니다.');
  }
- if(cause.reason==='funding')return cause.mode==='borrowing'?(locale==='en'?`Operating funds shortage: department borrowing for ${cause.streak} consecutive months with more than 10 million KRW outstanding.`:`운영비 부족·학과 차입 ${cause.streak}개월 연속, 미상환액 1천만원 초과`):(locale==='en'?`Essential funding shortage: operations suspended for ${cause.streak} consecutive months.`:`필수 연구비 부족으로 연구실 운영 ${cause.streak}개월 연속 보류`);
+ if(cause.reason==='funding')return cause.mode==='borrowing'?(locale==='en'?`Operating funds shortage: department borrowing for ${cause.streak} consecutive months with more than ${currencyFormat(100,locale)} outstanding.`:`운영비 부족·학과 차입 ${cause.streak}개월 연속, 미상환액 1천만원 초과`):(locale==='en'?`Essential funding shortage: operations suspended for ${cause.streak} consecutive months.`:`필수 연구비 부족으로 연구실 운영 ${cause.streak}개월 연속 보류`);
  const names=cause.keys.map(k=>(locale==='en'?english:labels)[k]).join(' · ');
  return locale==='en'?`${names} remained at zero for ${cause.streak} consecutive months.`:`${names} 0 상태 ${cause.streak}개월 연속 미회복`;
 }

@@ -51,7 +51,7 @@ test('zero-cash months advance under each representative discipline, protecting 
  for(const [fieldId,labMode] of [['048','dry'],['089','dry'],['077','wet'],['072','wet'],['093','wet'],['112','wet']]){
   const s=createState('분야 검증',731,{fieldId,labMode});s.month=2;s.started=true;s.pending=null;s.attendance={domestic:'none',overseas:'none'};
   s.plan=Array(4).fill('analysis');s.lab.budget={salary:60,environment:0,performance:0,publicity:0};s.lab.funds=0;s.lab.pool=100;
-  const n=simulateMonth(s,s.plan),cost=monthlyBudgetCost(s);
-  assert.equal(n.month,3);assert.equal(n.lab.pool,92.2);assert.ok(Math.abs(n.lastReport.borrowed-(cost-7.8))<1e-8);assert.ok(validateSave(n));
+  const n=simulateMonth(s,s.plan),cost=monthlyBudgetCost(s),startup=researchFinanceProfile(s).fixed;
+  assert.equal(n.month,3);assert.equal(n.lab.pool,92.2);assert.equal(n.labRisk.supportUsed,startup);assert.ok(Math.abs(n.lastReport.borrowed-Math.max(0,cost-7.8-startup))<1e-8);assert.ok(validateSave(n));
  }
 });

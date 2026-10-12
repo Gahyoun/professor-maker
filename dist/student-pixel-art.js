@@ -26,7 +26,7 @@ function studentPortrait(a,label='학생 도트 초상화',expression='neutral',
  const l=hairStyle==='loose'?originalLength:2,fringe=(a.fringe??0)%16,outfit=a.outfit??0;
  const looseEnd=[0,0,0,67,68,89,100][l];
  const hair=mix(a.hair,'#766058',.14),hairD=mix(a.hair,'#19202d',.22),hairM=mix(hair,'#b4a09a',.18),hairH=mix(hair,'#cfb7a9',.35),edge=mix(hair,'#20202b',.58);
- const skin=mix(a.skin,'#fff0df',.25),skinD=mix(skin,'#b77968',.24),skinH=mix(skin,'#fff7e8',.4);
+ const modernSkin=a.skinPaletteVersion===2,skin=mix(a.skin,'#fff0df',modernSkin?.10:.25),skinD=mix(skin,modernSkin?'#3b201b':'#b77968',modernSkin?.20:.24),skinH=mix(skin,'#fff7e8',modernSkin?.18:.4);
  const buzz=mix(hair,skin,.32),buzzFade=mix(buzz,skin,.28),buzzLight=mix(buzz,skinH,.16);
  const shirt=a.shirt,white='#f4f0eb';
  // Saved outfit slots: coat, knit cardigan, zip hoodie, layered shirt, striped

@@ -37,7 +37,7 @@ test('English intake changes public names and 4.0 grades without redrawing the s
   assert.deepEqual(english.hidden,korean.hidden);assert.deepEqual(english.temperament,korean.temperament);assert.equal(english.seed,korean.seed);assert.equal(english.gender,korean.gender);assert.equal(english.name,en[index].name);assert.equal(korean.name,ko[index].name);
   assert.deepEqual(parseAdmissionCode(admissionCode(724,index)),{intakeSeed:724,candidateIndex:index});
  }
- assert.equal(generateStudentName(5,'female','ko'),generateKoreanName(5,'female'));assert.equal(generateStudentName(5,'other','en'),generateEnglishName(5,'other'));
+ assert.equal(generateStudentName(5,'female','ko',1),generateKoreanName(5,'female'));assert.equal(generateStudentName(5,'other','en',2),generateEnglishName(5,'other'));
  assert.match(generateEnglishName(5,'other'),/^[A-Za-z]+ [A-Za-z]+$/);
 });
 test('English chapters, defense scenes and all 18 ending guides expose no Korean source copy',()=>{
