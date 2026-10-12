@@ -1,4 +1,4 @@
-export const RELEASE_NOTES_VERSION='4.23.1';
+export const RELEASE_NOTES_VERSION='4.24.0';
 export const RELEASE_NOTES_KEY='pm-update-notes-v1';
 export const RELEASE_NOTES={title:'시간에 따라 변하는 헤어와 분석 기록 자동 정리.',changes:[
  '한국판의 흑갈색 헤어와 시스루·댄디 앞머리를 보강했습니다. 학부 첫 24개월에 일부 학생에게 투톤·밝은 염색을 적용하고 이후 자연색으로 톤다운합니다. 여성 캐릭터의 머리는 24개월마다 길어지며, 남성 캐릭터의 드문 긴 머리·민머리 연출을 추가했습니다. 외형은 능력치에 영향을 주지 않습니다. 한국어판의 신규 입학 후보에 이름 107종·113종과 성씨 59종을 사용합니다. 기존 학생과 진행 중인 면접·기존 공유 코드의 이름은 유지합니다. 새 공유 코드도 같은 후보를 재현합니다.',
