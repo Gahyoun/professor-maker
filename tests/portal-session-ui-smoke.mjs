@@ -25,9 +25,9 @@ async function buttonHit(locator){
 }
 async function utilityControls(page,width){
  const controls=[];
- await page.evaluate(()=>window.scrollTo(0,0));
+ await page.evaluate(()=>window.scrollTo({top:0,left:0,behavior:'instant'}));
  for(const control of await page.locator('.utility-bar button,.utility-bar a.edition-link').all()){
-  const hit=await buttonHit(control);assert.ok(hit.inside&&hit.hit,'utility control is visible and unobscured');if(width<900)assert.ok(hit.height>=44,'mobile utility controls have 44px touch targets');controls.push(hit);
+  const hit=await buttonHit(control);assert.ok(hit.inside&&hit.hit,'utility control is visible and unobscured: '+JSON.stringify(hit));if(width<900)assert.ok(hit.height>=44,'mobile utility controls have 44px touch targets');controls.push(hit);
  }
  for(let i=0;i<controls.length;i++)for(let j=i+1;j<controls.length;j++){const a=controls[i],b=controls[j],area=Math.max(0,Math.min(a.x+a.width,b.x+b.width)-Math.max(a.x,b.x))*Math.max(0,Math.min(a.y+a.height,b.y+b.height)-Math.max(a.y,b.y));assert.equal(area,0,'utility controls do not overlap');}
  return controls;
@@ -70,7 +70,7 @@ try{
   // wall time alone must be recognized when it becomes visible again.
   await page.evaluate(()=>Object.defineProperty(document,'hidden',{configurable:true,value:true}));await page.clock.setSystemTime(new Date(resumed.deadline+60000));await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));assert.equal(await page.locator('#modal').evaluate(el=>el.open),false);
   await page.evaluate(()=>{delete document.hidden;document.dispatchEvent(new Event('visibilitychange'));});await page.locator('#modal.portal-timeout[open]').waitFor();assert.deepEqual(await snapshot(page,locale),before);assert.equal(await page.evaluate(key=>sessionStorage.getItem(key),otherKey),otherSession);row.visibilityChecksWallClock=true;row.editionSessionIndependent=true;
-  await page.locator('[data-ui=portal-reconnect]').click();assert.equal(await page.locator('#portal-session-clock').innerText(),'30:00');await page.evaluate(()=>window.scrollTo(0,0));await page.screenshot({path:path.join(output,`${locale}-reconnected-${width}.png`)});
+  await page.locator('[data-ui=portal-reconnect]').click();assert.equal(await page.locator('#portal-session-clock').innerText(),'30:00');await page.evaluate(()=>window.scrollTo({top:0,left:0,behavior:'instant'}));await page.screenshot({path:path.join(output,`${locale}-reconnected-${width}.png`)});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);row.overflow=0;await context.close();console.log(`${locale} ${width}px portal clock, expiry, reload and reconnect PASS`);
  }
  report.opening=[];
@@ -81,7 +81,7 @@ try{
   const saved=await snapshot(page,locale);assert.equal(saved.month,0);await page.keyboard.press('Escape');assert.equal(await page.locator('#modal').evaluate(el=>el.open),true);await page.mouse.click(2,2);assert.equal(await page.locator('#modal').evaluate(el=>el.open),true);assert.deepEqual(await snapshot(page,locale),saved);
   await page.locator('[data-ui=opening-continue]').scrollIntoViewIfNeeded();const hit=await buttonHit(page.locator('[data-ui=opening-continue]'));assert.ok(hit.inside&&hit.hit&&hit.height>=44);row.continueControl=hit;row.openingCannotBeDismissed=true;await page.screenshot({path:path.join(output,`${locale}-opening-${width}.png`)});
   await page.clock.fastForward(SESSION_DURATION_MS);await page.locator('#modal.portal-timeout[open]').waitFor();assert.deepEqual(await snapshot(page,locale),saved);await page.locator('[data-ui=portal-reconnect]').click();await page.locator('#modal.opening-meeting[open]').waitFor();assert.deepEqual(await snapshot(page,locale),saved);row.timeoutReturnsToPendingOpening=true;
-  await page.locator('[data-ui=opening-continue]').click();await page.locator('#decision [data-choice=none]').click();const skip=page.locator('[data-ui=screen-guide-skip]');if(await skip.count())await skip.click();row.utilityControls=await utilityControls(page,width);const after=await snapshot(page,locale);assert.equal(after.name,saved.name);assert.equal(after.month,0);
+  await page.locator('[data-ui=opening-continue]').click();await page.locator('#decision [data-choice=none]').click();await page.locator('#decision').waitFor({state:'detached'});const skip=page.locator('[data-ui=screen-guide-skip]');if(await skip.count()){await skip.click();await page.locator('#screen-guide').waitFor({state:'detached'});}await page.clock.runFor(200);row.utilityControls=await utilityControls(page,width);const after=await snapshot(page,locale);assert.equal(after.name,saved.name);assert.equal(after.month,0);
   await page.reload();await page.locator('#portal-session-clock').waitFor();assert.equal(await page.locator('#modal.opening-meeting[open]').count(),0);assert.deepEqual(await snapshot(page,locale),after);row.openingSeenOnReload=true;assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);row.overflow=0;await context.close();console.log(`${locale} ${width}px opening modal, pending-opening timeout, and utility controls PASS`);
  }
  assert.deepEqual(report.errors,[]);report.passed=true;
