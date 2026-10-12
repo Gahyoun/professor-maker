@@ -1,11 +1,13 @@
+import {isServerAnalyticsHost,analyticsConsentCopy} from './analytics-consent.js';
 import {grantCounts} from './funding.js';
 import {DEFAULT_POLICIES} from './engine.js';
 import {EDITION,editionStorageKey} from './edition.js';
 const analysisStorage={getItem:key=>localStorage.getItem(editionStorageKey(key,EDITION)),setItem:(key,value)=>localStorage.setItem(editionStorageKey(key,EDITION),value),removeItem:key=>localStorage.removeItem(editionStorageKey(key,EDITION))};
-let enabled=false,session=null,status='기기 내 저장만 사용 중',pending=Promise.resolve(),sessions={};
+let enabled=false,session=null,status=analyticsConsentCopy(EDITION).disabledStatus,pending=Promise.resolve(),sessions={};
 try{enabled=analysisStorage.getItem('pm-analysis-consent')==='anonymous-gameplay-v1';session=JSON.parse(analysisStorage.getItem('pm-analysis-session')||'null');}catch{}
 try{sessions=JSON.parse(analysisStorage.getItem('pm-analysis-sessions')||'{}');if(session?.runKey)sessions[session.runKey]=session;}catch{}
-const hosted=typeof location!=='undefined'&&location.hostname==='professor-maker.gahyoun.chatgpt.site';
+const hosted=isServerAnalyticsHost(globalThis.location?.hostname??'');
+if(enabled)status=analyticsConsentCopy(EDITION).enabledStatus;
 export const analyticsStatus=()=>status;
 export const analyticsConsent=()=>enabled;
 const database=()=>new Promise((resolve,reject)=>{const request=indexedDB.open(EDITION==='en'?'pm-us-anonymous-analysis':'pm-anonymous-analysis',1);request.onupgradeneeded=()=>request.result.createObjectStore('months',{keyPath:'key'});request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
@@ -15,7 +17,7 @@ const request=async(path,method,body,token)=>{const response=await fetch(path,{m
 const persistSessions=()=>analysisStorage.setItem('pm-analysis-sessions',JSON.stringify(sessions));
 export async function setAnalyticsConsent(value){
  enabled=value;try{analysisStorage.setItem('pm-analysis-consent',enabled?'anonymous-gameplay-v1':'no');}catch{}
- if(enabled){status=hosted?'동의한 익명 기록을 제작자 서버에 보관합니다.':'분석용 익명 기록을 기기에 저장합니다. 직접 내보내기 전에는 전달되지 않습니다.';return;}
+ if(enabled){status=analyticsConsentCopy(EDITION).enabledStatus;return;}
  // Let an in-flight write finish, then delete it too. Queued writes check consent again.
  await pending;
  const db=await database();try{await new Promise((resolve,reject)=>{const tx=db.transaction('months','readwrite');tx.objectStore('months').clear();tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}finally{db.close();}

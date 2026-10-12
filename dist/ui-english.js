@@ -1,5 +1,10 @@
 import {englishText,CONTENT_EN} from './content-en.js';
 const UI_EN={
+ "익명 월별 기록을 이 기기에 보관했습니다.": "Anonymous monthly analytics saved on this device.",
+ "제작자 전용 서버에 익명 기록 저장 완료": "Anonymous analytics sent to the creator’s server.",
+ "분석 기록 저장에 실패했습니다. 게임 저장에는 영향을 주지 않습니다.": "Analytics could not be saved. Game progress is unaffected.",
+ "기기 기록 삭제 · 서버 삭제를 다시 시도해 주세요": "Device analytics deleted. Retry deleting the server records.",
+ "분석 동의 철회 · 기록 삭제 완료": "Consent withdrawn · analytics deleted.",
  "초기 연구비는 그대로이며, 1–2년차 필수 지출 부족분에 제한된 정착지원을 제공합니다.": "Initial funding stays the same, with limited support for essential shortfalls in years one and two.",
  "보통 · 첫 24개월, 정착지원 총 1,500만원 중 한 달 최대 150만원을 필수 지출 부족액만큼 지원합니다. 업무 균형도 함께 관리해 주세요.": "Standard · during the first 24 months, up to $3,750 a month covers essential shortfalls, within a $37,500 total support allowance. Keep faculty responsibilities balanced too.",
 
@@ -33,9 +38,7 @@ const UI_EN={
  "공유받은 학생이 있나요?": "Have a student share code?",
  "학생 공유 코드 (선택)": "Student share code (optional)",
  "비워 두면 이번 입학면접의 세 후보를 새로 준비합니다. 같은 코드를 넣으면 같은 후보를 만납니다. 면접을 열면 후보와 교수 설정이 그대로 보관됩니다.": "Leave this blank for three new applicants. The same code produces the same applicants. Opening the interview saves the candidates and your faculty setup.",
- "익명 게임기록 제공을 위한 기기 내 기록에 동의합니다 (선택).": "Allow anonymous gameplay records on this device (optional).",
  "기록 범위·보관 안내": "What is recorded and where",
- "제작자 김가현의 게임 밸런스 분석용: 무작위 실행 ID·월별 선택·가상 파라미터·엔딩. 실제 이름·연락처는 제외합니다. 일반 플레이어의 기록은 직접 내보내기 전까지 이 기기에만 남습니다. 제공된 서버 기록은 90일 보관하며, 거부해도 플레이할 수 있습니다.": "For balance analysis by creator Gahyoun Gim: random run ID, monthly choices, fictional game statistics and endings. Real names and contact details are excluded. Ordinary gameplay records stay on this device until you export them. Contributed server records are retained for 90 days. Consent is optional.",
  "입학면접 후보 3명 보기": "Meet three applicants",
  "매달 면담과 주별 계획으로 함께 자랍니다.": "Grow together through monthly meetings and weekly plans.",
  "교수 업무 포털 · PROFESSOR MAKER": "FACULTY SERVICES · PROFESSOR MAKER",
@@ -322,8 +325,6 @@ const UI_EN={
  "한국연구재단 대학 연구활동 실태조사 · 2024년 활동": "Original funding reference: NRF Korean university research survey (2024 activity)",
  "현재 학생의 지도가 끝나면 새로운 입학면접을 열 수 있습니다. 진행 중에는 학생을 바꾸지 않습니다.": "Open a new intake after advising this student ends. You cannot replace a student during an active run.",
  "이번 입학면접에서는 세 후보 중 한 명을 선택합니다. 후보를 새로 만들지는 않습니다.": "Choose one of the three fixed applicants. This interview does not reroll candidates.",
- "익명 게임기록 보관 동의 (선택)": "Allow anonymous gameplay records (optional)",
- "월별 선택·게임 파라미터·엔딩을 분석용으로 기기에 기록합니다. 일반 플레이어의 기록은 자동 전송되지 않습니다. 내보내기로 제작자에게 제공할지 직접 결정할 수 있습니다. 동의를 해제하면 기기 내 분석 기록이 삭제됩니다.": "Monthly choices, fictional statistics and endings are recorded on your device. Ordinary gameplay is not sent automatically. You decide whether to export and share it. Disabling consent deletes the device’s analytics records.",
  "익명 분석 기록 내보내기": "Export anonymous gameplay records",
  "함께한 시간은 각자의 다음 이야기로 이어집니다.": "Our shared years lead into each person’s next chapter.",
  "메일이 도착한 교수의 책상": "A letter at the faculty desk",
