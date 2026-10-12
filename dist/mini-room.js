@@ -18,7 +18,7 @@ const line=(a,b,color,width=1)=>{const [x,y]=projectRoom(...a),[xx,yy]=projectRo
 const front=(u,v,z,w,h,color)=>plane([[u,v,z],[u+w,v,z],[u+w,v,z+h],[u,v,z+h]],color);
 const left=(u,v,z,d,h,color)=>plane([[u,v,z],[u,v+d,z],[u,v+d,z+h],[u,v,z+h]],color);
 const isLecturing=(result,idle)=>!idle&&result.actual==='teach'&&result.performed===true&&result.outcome!=='training';
-export const ROOM_ANCHORS=Object.freeze({standing:Object.freeze([23,14]),deskSeat:Object.freeze([13.5,23.5]),deskOccupant:Object.freeze([13.8,24.3]),plant:Object.freeze([24,19]),cot:Object.freeze([20,5]),spareCot:Object.freeze([19,24])});
+export const ROOM_ANCHORS=Object.freeze({standing:Object.freeze([23,14]),deskSeat:Object.freeze([13.5,23.5]),deskOccupant:Object.freeze([13.8,24.3]),plant:Object.freeze([24,19]),sofa:Object.freeze([20,5]),cot:Object.freeze([20,5]),spareCot:Object.freeze([19,24])});
 function lectureDiagram(type,ink){
  const stroke=points=>`<path class="ta-board-stroke" pathLength="1" d="${points.map((p,i)=>`${i?'L':'M'}${projectRoom(...p).join(' ')}`).join('')}" fill="none" stroke="${ink}" stroke-width="1.3"/>`;
  return `<g class="ta-board-annotation" data-board-kind="${type}" aria-label="강의 개념 도표">`+
@@ -64,7 +64,7 @@ function chairParts(u,v,color,type=0,facing='front'){
  return {base:`<g data-chair="${type}" data-chair-facing="${facing}" aria-label="${labels[type]}">${base}${near?farArm:backrest+farArm+nearArm}</g>`,front:near?`<g class="chair-foreground" aria-hidden="true">${backrest}${nearArm}</g>`:'',backrest:near?backrest:'',nearArm:near?nearArm:''};
 }
 function chair(...args){const parts=chairParts(...args);return parts.base+parts.front;}
-function restFurniture(u,v,type){if(type===0)return `<g data-rest="sofa">${sofa(u,v)}</g>`;if(type===1)return `<g data-rest="cot">${cot(u,v)}</g>`;if(type===2)return `<g data-rest="beanbag">${box(u+.4,v+.4,4,4,6,'#c3b49b')+box(u+1,v+1,3,3,6,'#d7c8af',6)+box(u+1.6,v+.3,2,2,13,'#cabbab',6)}</g>`;return `<g data-rest="camp-chair">${campChair(u,v)}</g>`;}
+function restFurniture(u,v,type){if(type===0){const parts=sofaParts(u,v);return `<g data-rest="sofa">${parts.back}${parts.front}</g>`;}if(type===1)return `<g data-rest="cot">${cot(u,v)}</g>`;if(type===2)return `<g data-rest="beanbag">${box(u+.4,v+.4,4,4,6,'#c3b49b')+box(u+1,v+1,3,3,6,'#d7c8af',6)+box(u+1.6,v+.3,2,2,13,'#cabbab',6)}</g>`;return `<g data-rest="camp-chair">${campChair(u,v)}</g>`;}
 // A folding camp chair: the X frames stay inside the seat's two side faces, a sling seat
 // hangs between them and a fabric back rises from the far edge (the occupant faces the viewer).
 function campChair(u,v){
@@ -112,7 +112,26 @@ function bookshelf(u,v,wet,stock){let art=box(u,v,5.5,2,60,'#c6b296');for(const 
  if(!wet)for(let i=0;i<3;i++)art+=front(u+.55+i*1.3,v+2.12,25,1,10,['#cab897','#b7adb9','#aebfa8'][i]);return art;}
 function fridge(u,v){return box(u,v,3.5,3,45,'#d3d9d5')+front(u+.25,v+3.03,2,3,24,'#e7eae3')+front(u+.25,v+3.03,28,3,15,'#e7eae3')+front(u+.55,v+3.1,18,.25,5,'#96a4a1')+front(u+.55,v+3.1,33,.25,5,'#96a4a1')+front(u+2,v+3.1,36,.6,2,'#c6b6a0');}
 function server(u,v){let art=box(u,v,3,2.6,48,'#7d8994');for(let i=0;i<4;i++){art+=front(u+.25,v+2.63,4+i*10,2.5,7,'#9ca9b3')+front(u+.5,v+2.65,6+i*10,.25,1.2,'#c6d8a7');for(let j=0;j<3;j++)art+=front(u+1+j*.35,v+2.65,7+i*10,.15,2,'#637582');}return art;}
-function sofa(u,v){return box(u,v,4,8,9,'#a5b1bf')+box(u+.3,v+.7,3.4,6.6,8,'#c0cbd1',9)+box(u,v,1,8,27,'#b3c0c9')+box(u+3,v,.9,8,20,'#9caebb')+box(u,v,4,.8,20,'#afbcc7')+box(u,v+7.2,4,.8,20,'#afbcc7')+box(u+1.3,v+1.3,1.5,1.7,6,'#e0c9b4',16);}
+// A sofa has a far backrest and two short arms; its long front edge is open.
+// All heights use the room floor, and every horizontal face uses its tile axes.
+export function sofaGeometry(u,v){
+ const width=7,depth=3,legSize=.35,inset=.3,seat={u:u+.75,v:v+.7,width:5.5,depth:2,bottom:11,top:17};
+ const legs=[[u+inset,v+inset],[u+width-inset-legSize,v+inset],[u+inset,v+depth-inset-legSize],[u+width-inset-legSize,v+depth-inset-legSize]];
+ // actor() places the front-facing seated hip this far above its foot baseline.
+ const hipOffset=96.72*(1-376/496)-7;
+ return {u,v,width,depth,legs,legSize,legHeight:6,seat,backrest:{u,v:v+.1,width,depth:.55,bottom:11,top:36},arms:[{u,v,width:.65,depth,bottom:10,top:25},{u:u+width-.65,v,width:.65,depth,bottom:10,top:25}],occupant:{u:u+width/2,v:v+2.2,lift:seat.top-hipOffset,hipOffset},footprint:[[u,v],[u+width,v],[u+width,v+depth],[u,v+depth]]};
+}
+export function sofaParts(u,v){
+ const g=sofaGeometry(u,v),b=g.backrest,arm=a=>box(a.u,a.v,a.width,a.depth,a.top-a.bottom,'#afbdc6',a.bottom),part=(name,art)=>`<g data-sofa-part="${name}">${art}</g>`;
+ let back=part('floor-supports',g.legs.slice().sort((a,b)=>a[0]+a[1]-b[0]-b[1]).map(([a,b])=>`<g class="sofa-leg" data-floor="${a},${b}">${box(a,b,g.legSize,g.legSize,g.legHeight,'#7c8c8c')}</g>`).join(''));
+ back+=part('base',box(u+.1,v+.1,g.width-.2,g.depth-.2,5,'#a5b3bf',6));
+ back+=part('far-backrest',box(b.u,b.v,b.width,b.depth,b.top-b.bottom,'#adbdc7',b.bottom));
+ back+=part('far-arm',arm(g.arms[0]));
+ const seat=g.seat,cushionWidth=(seat.width-.12)/2;
+ back+=part('seat-cushions',[0,1].map(i=>box(seat.u+i*(cushionWidth+.12),seat.v,cushionWidth,seat.depth,seat.top-seat.bottom,'#c9d2d5',seat.bottom)).join(''));
+ back+=part('pillow',box(u+1,v+.72,1.1,1.05,5,'#e0c9b4',seat.top));
+ return {geometry:g,back:`<g class="room-sofa" data-floor="${u},${v}" data-size="${g.width},${g.depth}" aria-label="소파">${back}</g>`,front:part('near-arm',arm(g.arms[1]))};
+}
 export function cotGeometry(u,v){
  const width=7,depth=3,legSize=.5,inset=.3;
  const legs=[[u+inset,v+inset],[u+width-inset-legSize,v+inset],[u+inset,v+depth-inset-legSize],[u+width-inset-legSize,v+depth-inset-legSize]];
@@ -183,10 +202,12 @@ function miniRoomArtSource(state,kind,result,index,{idle=false,stock='balanced',
  const resting=!idle&&(kind==='rest'||result.actual==='coffee')&&result.outcome!=='training';
  // Keep each seat and its occupant together. Sorting by the chair's far
  // corner alone used to paint the backrest over the student's face.
- const [cotU,cotV]=ROOM_ANCHORS.cot,restSeats=[[24.3,8.5,5],[cotU+4,cotV+1.5,7],[24.1,7.5,1],[23.5,6.5,2]];
+ const [cotU,cotV]=ROOM_ANCHORS.cot,sofa=sofaParts(...ROOM_ANCHORS.sofa),sofaSeat=sofa.geometry.occupant;
+ const restSeats=[[sofaSeat.u,sofaSeat.v,sofaSeat.lift],[cotU+4,cotV+1.5,7],[24.1,7.5,1],[23.5,6.5,2]];
  const seat=restSeats[d.restType],restActor=resting&&student?actor(state,result,index,seat[0],seat[1],false,seat[2]):'';
- const restPlacement=d.restType===1?[cotU,cotV,7,3]:[22,5,4,8];
- add(...restPlacement,`<g class="rest-seat-layer" data-seat-type="${d.restType}">${restFurniture(restPlacement[0],restPlacement[1],d.restType)}${restActor}</g>`);
+ const restPlacement=d.restType===0?[...ROOM_ANCHORS.sofa,sofa.geometry.width,sofa.geometry.depth]:d.restType===1?[cotU,cotV,7,3]:[22,5,4,8];
+ const restArt=d.restType===0?`<g data-rest="sofa" data-layer-order="sofa-rear student near-arm">${sofa.back}${restActor}${sofa.front}</g>`:restFurniture(restPlacement[0],restPlacement[1],d.restType)+restActor;
+ add(...restPlacement,`<g class="rest-seat-layer" data-seat-type="${d.restType}">${restArt}</g>`);
  if(d.cot&&d.restType!==1)add(...ROOM_ANCHORS.spareCot,7,3,cot(...ROOM_ANCHORS.spareCot));
  if(d.printer)add(15,1,3.5,3,desk(15,1,3.5,3)+printer(15.5,1.7,26));
  const working=!idle&&['study','coursework','analysis','language','experiment','paper'].includes(result.actual),deskWorking=working&&!(result.actual==='experiment'&&wet)&&result.outcome!=='training';

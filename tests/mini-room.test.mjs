@@ -23,7 +23,7 @@ test('students have no ground shadow in any lab pose while furniture keeps its s
 });
 
 test('resting students sit at their own furniture anchor with the backrest behind them',()=>{
- const seen=new Set(),anchors=['24.3,8.5','24,6.5','24.1,7.5','23.5,6.5'];
+ const seen=new Set(),anchors=['23.5,7.2','24,6.5','24.1,7.5','23.5,6.5'];
  for(let seed=1;seed<=100&&seen.size<4;seed++){
   const s=createState('',seed,{labMode:'dry'}),type=roomDecorations(s).restType;if(seen.has(type))continue;seen.add(type);
   for(const actual of ['rest','coffee']){

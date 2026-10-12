@@ -260,6 +260,7 @@ export const CONTENT_EN=Object.freeze({
  "스킨답서스": "Pothos",
  "산세베리아": "Snake plant",
  "접이식 침대": "Folding cot",
+ "소파": "Sofa",
  "학생 도트 초상화": "Pixel portrait of the student",
  "창가 화분 선반": "Window plant shelf",
  "블랙보드": "Blackboard",
