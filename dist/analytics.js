@@ -98,7 +98,7 @@ export function setAnalyticsConsent(value){
 
 export function recordAnalytics(state){
  if(!enabled||!state.started)return Promise.resolve();
- const epoch=consentEpoch,runKey=String(state.creationSeed??state.seed),profile={version:'4.23.0',edition:EDITION,fieldId:state.professorProfile.fieldId,institution:state.professorProfile.institution,labMode:state.professorProfile.labMode},record=analysisRecord(state);
+ const epoch=consentEpoch,runKey=String(state.creationSeed??state.seed),profile={version:'4.23.1',edition:EDITION,fieldId:state.professorProfile.fieldId,institution:state.professorProfile.institution,labMode:state.professorProfile.labMode},record=analysisRecord(state);
  pending=pending.then(async()=>{
   if(!enabled||epoch!==consentEpoch)return;
   try{

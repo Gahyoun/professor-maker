@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {DatabaseSync} from 'node:sqlite';
 import {analyticsAPI,analyticsRetentionBatch} from '../backend/api.js';
+import {mintRetentionAccess} from '../backend/retention-access.js';
 import {ANALYTICS_POLICY_VERSION} from '../dist/analytics-policy.js';
 
 const origin='https://professor-maker.gahyoun.chatgpt.site';
@@ -59,6 +60,21 @@ test('retention maintenance key cannot read, import, export, or explicitly purge
   for(const target of ['/api/admin/summary','/api/admin/export'])assert.equal((await analyticsAPI(request(env,{target,method:'GET'}),env)).status,401);
   for(const target of ['/api/admin/import','/api/admin/policy-maintenance'])assert.equal((await analyticsAPI(request(env,{target,data:{...routineBody,purgeCurrent:true,reason:'purpose-complete'}}),env)).status,401);
   assert.deepEqual(counts(env),{runs:1,months:2});
+ }finally{env.close();}
+});
+
+test('short-lived retention tickets authorize routine deletion but never administrator actions',async context=>{
+ let now=Date.UTC(2031,9,12,9,0,0);context.mock.method(Date,'now',()=>now);
+ const env=environment();try{
+  seed(env,{retention:now});const retained=seed(env,{retention:now+86400000});
+  const access=await mintRetentionAccess(env.RETENTION_MAINTENANCE_KEY,ANALYTICS_POLICY_VERSION,now);
+  for(const target of ['/api/admin/summary','/api/admin/export'])assert.equal((await analyticsAPI(request(env,{target,method:'GET',token:access.token}),env)).status,401);
+  for(const target of ['/api/admin/import','/api/admin/policy-maintenance'])assert.equal((await analyticsAPI(request(env,{target,token:access.token,data:{...routineBody,purgeCurrent:true,reason:'purpose-complete'}}),env)).status,401);
+  assert.equal((await analyticsAPI(request(env,{token:access.token,data:{...routineBody,purgeCurrent:true}}),env)).status,400);
+  const wrongPolicy=await mintRetentionAccess(env.RETENTION_MAINTENANCE_KEY,'anonymous-gameplay-v1',now);
+  assert.equal((await analyticsAPI(request(env,{token:wrongPolicy.token}),env)).status,401);
+  const response=await analyticsAPI(request(env,{token:access.token}),env);assert.equal(response.status,200);const result=await response.json();assert.equal(result.deletedRuns,1);assert.equal(result.deletedMonthlyRecords,2);assert.equal(result.complete,true);assert.equal(env.db.prepare('SELECT id FROM game_runs').get().id,retained);
+  now=access.expiresAt;seed(env,{retention:now});assert.equal((await analyticsAPI(request(env,{token:access.token}),env)).status,401);assert.deepEqual(counts(env),{runs:2,months:4});
  }finally{env.close();}
 });
 

@@ -3,8 +3,9 @@ import {mergeRelationship} from '../dist/relationship.js';
 import {HIDDEN_RANGES,ACTIVITIES,LEGACY_ACTIVITIES,EVENTS} from '../dist/engine.js';
 import {DISCIPLINES} from '../dist/disciplines.js';
 import {ANALYTICS_POLICY_VERSION,ANALYTICS_RETENTION_YEARS,ANALYTICS_TOKEN_DAYS,analyticsRetentionUntil} from '../dist/analytics-policy.js';
+import {verifyRetentionAccess} from './retention-access.js';
 // Exact released schemas only; registration and administrator import share this gate.
-const SUPPORTED_ANALYTICS_VERSIONS=Object.freeze(['4.1.0','4.2.0','4.3.0','4.4.0','4.5.0','4.6.0','4.7.0','4.8.0','4.9.0','4.10.0','4.11.0','4.12.0','4.13.0','4.13.1','4.13.2','4.13.3','4.14.0','4.15.0','4.15.1','4.15.2','4.15.3','4.15.4','4.15.5','4.16.0','4.22.0','4.23.0']);
+const SUPPORTED_ANALYTICS_VERSIONS=Object.freeze(['4.1.0','4.2.0','4.3.0','4.4.0','4.5.0','4.6.0','4.7.0','4.8.0','4.9.0','4.10.0','4.11.0','4.12.0','4.13.0','4.13.1','4.13.2','4.13.3','4.14.0','4.15.0','4.15.1','4.15.2','4.15.3','4.15.4','4.15.5','4.16.0','4.22.0','4.23.0','4.23.1']);
 const validAnalyticsVersion=value=>typeof value==='string'&&SUPPORTED_ANALYTICS_VERSIONS.includes(value);
 const outcomes=['bachelor','masters','true','postdoc','institute','corporate','unrelated','startup','unemployed','youtuber','resident_researcher','leave','dropout','dismissed','unfinished','gameover','external_masters','external_phd'];
 const allowedOrigin=(request)=>{const origin=request.headers.get('Origin');return origin===new URL(request.url).origin||origin==='https://gahyoun.github.io'||/^http:\/\/127\.0\.0\.1:(4173|4174)$/.test(origin||'');};
@@ -86,7 +87,9 @@ async function purgeCurrentAnalytics(env){
 async function admin(request,env){const supplied=request.headers.get('Authorization')?.replace(/^Bearer /,'');return typeof env.ADMIN_KEY==='string'&&env.ADMIN_KEY.length>=32&&typeof supplied==='string'&&supplied.length<=256&&await hash(supplied)===await hash(env.ADMIN_KEY);}
 async function retentionOperator(request,env){
  const supplied=request.headers.get('Authorization')?.match(/^Bearer ([^\s]+)$/)?.[1],secret=env.RETENTION_MAINTENANCE_KEY;
- return typeof secret==='string'&&secret.length>=32&&secret.length<=256&&typeof supplied==='string'&&supplied.length>=32&&supplied.length<=256&&await hash(supplied)===await hash(secret);
+ if(typeof secret!=='string'||secret.length<32||secret.length>256||typeof supplied!=='string'||supplied.length<32||supplied.length>256)return false;
+ if(await hash(supplied)===await hash(secret))return true;
+ return verifyRetentionAccess(supplied,secret,ANALYTICS_POLICY_VERSION);
 }
 export async function analyticsAPI(request,env){
  const path=new URL(request.url).pathname;
