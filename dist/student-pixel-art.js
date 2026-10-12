@@ -127,10 +127,20 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  const top=[white,shirt,shirt,'#f0e9dd','#e2d0b5','#344056'][outfit]??shirt,topH=mix(top,'#fff4e9',.22),topD=mix(top,'#303244',.22);
 
  const isHijab=Boolean(a.hijab||a.headwear==='hijab'||a.hairStyle==='hijab');
- const isBuzz=!isHijab&&(a.hairStyle==='buzz'||Boolean(a.buzzCut)||l===0);
- const isAfro=!isHijab&&!isBuzz&&Boolean(a.afro||a.hairStyle==='afro');
- const isCoily=!isHijab&&!isBuzz&&!isAfro&&Boolean(a.coily||a.hairStyle==='coily');
- const isCurly=!isHijab&&!isBuzz&&!isAfro&&(Boolean(a.curly)||isCoily);
+ const isBald=!isHijab&&(a.hairStyle==='bald'||Boolean(a.bald));
+ const isBuzz=!isHijab&&!isBald&&(a.hairStyle==='buzz'||Boolean(a.buzzCut)||(l===0&&!isBald));
+ const isAfro=!isHijab&&!isBuzz&&!isBald&&Boolean(a.afro||a.hairStyle==='afro');
+ const isCoily=!isHijab&&!isBuzz&&!isBald&&!isAfro&&Boolean(a.coily||a.hairStyle==='coily');
+ const isCurly=!isHijab&&!isBuzz&&!isBald&&!isAfro&&(Boolean(a.curly)||isCoily);
+ const isDisheveled=!isHijab&&!isBald&&!isBuzz&&!isAfro&&(a.hairStyle==='disheveled'||Boolean(a.disheveled));
+ const isTwoTone=!isHijab&&!isBald&&!isBuzz&&(a.hairStyle==='twoTone'||Boolean(a.twoTone||a.secretTwoTone));
+ const isBleached=!isHijab&&!isBald&&!isBuzz&&(a.hairStyle==='bleached'||Boolean(a.bleached));
+
+ const scalpShine=mix(skinH,'#ffffff',0.48);
+ const scalpShineBright=mix(skinH,'#ffffff',0.82);
+ const twoToneAccent=a.twoToneColor??'#ede2c8';
+ const twoToneAccentH=mix(twoToneAccent,'#ffffff',0.45);
+ const twoToneAccentD=mix(twoToneAccent,'#523b18',0.45);
 
  // Traditional hijab fabric tones:
  const baseFabric=a.hijabColor??(a.shirt?mix(a.shirt,'#d0d8e0',0.22):'#536b5c');
@@ -157,12 +167,22 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
    const by=Math.round(25+27.5*Math.sin(rad));
    if(by<54){put(bx,by,hairD);put(bx+(deg%2===0?1:-1),by,hair);}
   }
- }else if(!isBuzz&&l){
+ }else if(!isBuzz&&!isBald&&l){
   oval(40,32,27,25,hairD);
   if(l>=3){const end=[0,0,0,67,77,89,100][l];poly([[14,32],[66,32],[67,end-8],[64,end-2],[60,end],[56,end-5],[53,end],[27,end],[24,end-4],[20,end],[16,end-2],[13,end-8]],hairD);
    for(const x of [17,22,57,62])poly([[x,40],[x+3,39],[x+2,end-5],[x,end-2]],hairM);
    poly([[14,42],[18,44],[17,end-4],[14,end-9]],hair);
    poly([[62,38],[65,35],[65,end-7],[62,end-2]],hair);
+   if(isTwoTone){
+    for(const x of [16,19,23,57,60,63]){
+     put(x,end-4,twoToneAccent);put(x,end-3,twoToneAccentH);put(x+1,end-2,twoToneAccentD);
+    }
+   }
+  }
+  if(isDisheveled){
+   for(const [x,y] of [[12,28],[11,36],[12,45],[67,27],[68,37],[67,46],[13,56],[66,57],[14,68],[65,69]]){
+    put(x,y,hairD);put(x+(x<40?1:-1),y,hair);
+   }
   }
  }
 
@@ -188,6 +208,18 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
    put(19,y,hairD);put(20,y,hair);
    put(61,y,hairD);put(60,y,hair);
   }
+ }else if(isBald){
+  // Smooth bald cranium (완전 대머리/민머리): pure skin tones with no follicle dots
+  oval(40,26,24,18,skinD);
+  oval(39,25,23,17,skin);
+  oval(39,22,21,14,skinH);
+  poly([[26,28],[54,28],[56,31],[24,31]],skin);
+  poly([[28,26],[52,26],[50,29],[30,29]],skinH);
+  // Specular scalp shine on crown (정수리에 은은하게 맺히는 두상 반짝임 하이라이트):
+  oval(37,16,7,3,scalpShine);
+  poly([[33,16],[41,15],[43,16],[39,17],[33,17]],scalpShineBright);
+  put(37,15,'#ffffff');put(38,15,'#ffffff');
+  put(36,16,scalpShineBright);put(39,16,scalpShine);
  }
 
  // Short torso, roomy shoulders and sleeves; two compact trouser legs.
@@ -286,7 +318,7 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
     }
    }
   }
- }else if(!isBuzz&&l){
+ }else if(!isBuzz&&!isBald&&l){
   const crown=fringe%4===0?[[14,30],[14,21],[19,16],[25,11],[36,9],[39,6],[45,10],[54,12],[61,19],[65,26],[65,34]]:
    fringe%4===1?[[13,31],[16,20],[23,14],[32,11],[46,10],[57,15],[63,22],[66,31],[64,36]]:
    fringe%4===2?[[14,32],[15,22],[22,16],[29,10],[38,10],[42,7],[46,11],[56,14],[62,21],[65,30],[64,35]]:
@@ -399,7 +431,7 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
     const by=Math.round(26+27.5*Math.sin(rad));
     if(by<54){put(bx,by,hairD);put(bx+(deg%2===0?1:-1),by,hair);}
    }
-  }else if(!isBuzz&&l>=3){
+  }else if(!isBuzz&&!isBald&&l>=3){
    poly([[13,32],[42,32],[44,46],[42,end-8],[38,end-2],[32,end],[24,end-2],[17,end-6],[13,end-10]],hairD);
    poly([[16,40],[22,38],[21,end-7],[16,end-3]],mix(hairD,hair,.3));
   }
@@ -483,6 +515,20 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
      put(x,y,(x+y)%2===0?hair:hairM);
     }
    }
+  }else if(isBald){
+   // Smooth bald scalp in monitor view facing screen:
+   oval(34,31,23,24,skinD);
+   oval(34,29,22,23,skin);
+   oval(33,26,19,20,skinH);
+   for(let y=46;y<=54;y++){
+    const w=Math.floor((54-y)*1.5);
+    row(y,34-w,34+w,y>=51?skinD:skin);
+   }
+   // Specular scalp shine on crown in monitor view:
+   oval(32,17,7,3,scalpShine);
+   poly([[28,17],[35,16],[37,17],[33,18],[28,18]],scalpShineBright);
+   put(32,16,'#ffffff');put(33,16,'#ffffff');
+   put(31,17,scalpShineBright);put(34,17,scalpShine);
   }else{
    oval(34,32,23,24,hairD);
    poly([[11,35],[12,26],[16,18],[24,13],[34,9],[45,10],[53,15],[58,23],[58,33],[54,39],[47,42],[45,33],[39,37],[39,51],[33,56],[22,54],[15,49],[11,41]],hair);
@@ -524,6 +570,16 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
     const frontEnd=Math.min(60,end-7);
     poly([[43,42],[49,41],[53,frontEnd-5],[50,frontEnd],[47,frontEnd],[45,52],[43,46]],hairD);
     poly([[46,44],[49,43],[51,frontEnd-6],[48,frontEnd-2]],hairM);
+    if(isTwoTone){
+     for(const x of [16,20,25,31,36]){
+      put(x,end-3,twoToneAccent);put(x,end-2,twoToneAccentH);
+     }
+    }
+   }
+   if(isDisheveled){
+    for(const [x,y] of [[10,32],[9,40],[11,50],[12,62],[45,28],[48,34],[46,44]]){
+     put(x,y,hairD);put(x+(x<34?1:-1),y,hair);
+    }
    }
    if(isCoily){
     for(const [x,y]of [[15,23],[23,15],[36,13],[47,17],[12,34],[47,33]]){oval(x,y,4,4,hair);row(y-2,x-2,x+1,hairM);}
@@ -583,14 +639,18 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  for(let y=0;y<outputH;y++)for(let x=0;x<outputW;x++)if(!pixels[y][x]){const n=[pixels[y-1]?.[x],pixels[y+1]?.[x],pixels[y][x-1],pixels[y][x+1]].find(Boolean);if(n)outlined[y][x]=mix(n,edge,.65);}
  let rects='';for(let y=0;y<outputH;y++){let x=0;while(x<outputW){const c=outlined[y][x];if(!c){x++;continue;}let end=x;while(end+1<outputW&&outlined[y][end+1]===c)end++;rects+=`<rect x="${x}" y="${y}" width="${end-x+1}" height="1" fill="${c}"/>`;x=end+1;}}
  const styles=['까까머리','크롭컷','짧은 머리','중간 길이 머리','단발','어깨 길이 머리','긴 머리'];
- const styleLabel=isHijab?'히잡':isAfro?'아프로':isBuzz?'까까머리':styles[l];
- const curlLabel=isHijab||isAfro?'':isCoily?' · 입체 곱슬머리':(isCurly&&l?' · 곱슬머리':'');
- const fringeLabel=(l&&!isHijab&&!isAfro)?` · 앞머리 ${fringe+1}`:'';
- const title=escape(`${label} · ${EXPRESSIONS[expression]} · ${styleLabel}${curlLabel}${a.glasses?' · 안경':''}${fringeLabel}${pose==='lecturing'?' · 칠판 앞에서 강의':''}${facing==='monitor'?' · 모니터를 바라보며 앉음':''}`);
+ const styleLabel=isHijab?'히잡':isAfro?'아프로':isBald?'대머리':isBuzz?'까까머리':isDisheveled?'폐인 장발':styles[l];
+ const curlLabel=isHijab||isAfro||isBald?'':isCoily?' · 입체 곱슬머리':(isCurly&&l?' · 곱슬머리':'');
+ const toneLabel=isTwoTone?' · 시크릿투톤':isBleached?' · 탈색모':'';
+ const fringeLabel=(l&&!isHijab&&!isAfro&&!isBald)?` · 앞머리 ${fringe+1}`:'';
+ const title=escape(`${label} · ${EXPRESSIONS[expression]} · ${styleLabel}${curlLabel}${toneLabel}${a.glasses?' · 안경':''}${fringeLabel}${pose==='lecturing'?' · 칠판 앞에서 강의':''}${facing==='monitor'?' · 모니터를 바라보며 앉음':''}`);
  // The raised TA arm shares the new torso coordinates; the pointer is shortened
  // independently so stretching the torso cannot pull its tip outside the frame.
  const armPoints=[[13,36],[16,36],[16,41],[12,41],[12,38],[10,38],[10,35],[8,35],[8,30],[11,30],[11,33],[13,33]].map(([x,y])=>[x*2,Math.round(bodyY(y*2))-1]);
  const palmTop=Math.round(bodyY(58)),palmBottom=Math.round(bodyY(64)),grip=Math.round(bodyY(60));
  const arm=pose==='lecturing'?`<g transform="translate(0 24) scale(4)" shape-rendering="crispEdges"><g class="ta-lecture-arm"><path d="M${armPoints.map(([x,y])=>`${x} ${y}`).join('L')}z" fill="${top}" stroke="${topD}" stroke-width="1.2"/><path d="M18 ${grip}V${grip-6}H16V7" fill="none" stroke="#756353" stroke-width="2" class="ta-pointer"/><path d="M16 7v2" stroke="#e9e5d8" stroke-width="2"/><path d="M16 ${palmTop}h6v${palmBottom-palmTop}h-6z" fill="${skin}" stroke="${skinD}" stroke-width="1"/></g></g>`:'';
- return `<svg class="portrait" data-expression="${expression}" data-pose="${pose}" data-outfit="${outfit}"${facing==='monitor'?' data-facing="monitor"':''} data-hair-style="${isHijab?'hijab':isAfro?'afro':isBuzz?'buzz':isCoily?'coily':isCurly?'curly':'standard'}" data-headwear="${isHijab?'hijab':'none'}" data-head-scale="${STUDENT_HEAD_SCALE}" data-body-proportion="3.5" viewBox="0 0 320 496" role="img" aria-label="${title}"><title>${title}</title><g class="hair-fringe chibi-grid ${expression==='sad'?'expression-tear':''}" shape-rendering="crispEdges" transform="translate(0 24) scale(2)">${rects}</g>${arm}</svg>`;
+ const hairStyleAttr=isHijab?'hijab':isAfro?'afro':isBald?'bald':isBuzz?'buzz':isDisheveled?'disheveled':isTwoTone?'twoTone':isBleached?'bleached':isCoily?'coily':isCurly?'curly':'standard';
+ const twoToneAttr=isTwoTone?' data-two-tone="true"':'';
+ const bleachedAttr=isBleached?' data-bleached="true"':'';
+ return `<svg class="portrait" data-expression="${expression}" data-pose="${pose}" data-outfit="${outfit}"${facing==='monitor'?' data-facing="monitor"':''} data-hair-style="${hairStyleAttr}"${twoToneAttr}${bleachedAttr} data-headwear="${isHijab?'hijab':'none'}" data-head-scale="${STUDENT_HEAD_SCALE}" data-body-proportion="3.5" viewBox="0 0 320 496" role="img" aria-label="${title}"><title>${title}</title><g class="hair-fringe chibi-grid ${expression==='sad'?'expression-tear':''}" shape-rendering="crispEdges" transform="translate(0 24) scale(2)">${rects}</g>${arm}</svg>`;
 }

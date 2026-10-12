@@ -253,3 +253,192 @@ test('appearance generation is purely cosmetic, deterministic, and preserves gam
   // Verify game state was not mutated
   assert.deepEqual(s, before);
 });
+
+test('male student bald (대머리 / 완전 민머리) renders smooth scalp skin tone and specular scalp shine without follicle marks in front and monitor views', () => {
+  const baldIdentity = studentAppearance(707, 'male', {hairStyle: 'bald', bald: true});
+  assert.equal(baldIdentity.hairLength, 0);
+  assert.equal(baldIdentity.hairStyle, 'bald');
+  assert.equal(baldIdentity.bald, true);
+
+  // 1. Front view
+  const frontSvg = renderPortrait(baldIdentity, '학생 초상화', 'neutral', 'standing', 'front');
+  assert.match(frontSvg, /aria-label="[^"]*대머리[^"]*"/);
+  assert.match(frontSvg, /data-hair-style="bald"/);
+  assert.ok(!frontSvg.includes('까까머리'), 'bald must not be labelled buzz cut');
+  assert.ok(!frontSvg.includes('앞머리'), 'bald must not include bangs label');
+  assert.ok(!frontSvg.includes('곱슬머리'), 'bald must not include curls label');
+  assert.ok(frontSvg.includes('fill="#ffffff"'), 'bald front view must feature specular scalp shine');
+  assert.ok(frontSvg.includes('viewBox="0 0 320 496"'));
+  assert.ok(!frontSvg.includes('NaN'));
+  assert.ok(!frontSvg.includes('undefined'));
+
+  // 2. Monitor view
+  const monitorSvg = renderPortrait(baldIdentity, '학생 초상화', 'neutral', 'seated', 'monitor');
+  assert.match(monitorSvg, /aria-label="[^"]*대머리[^"]*모니터를 바라보며 앉음/);
+  assert.match(monitorSvg, /data-facing="monitor"/);
+  assert.match(monitorSvg, /data-hair-style="bald"/);
+  assert.ok(monitorSvg.includes('fill="#ffffff"'), 'bald monitor view must feature specular scalp shine');
+  assert.notEqual(frontSvg, monitorSvg);
+
+  // 3. Contrast with buzz cut: buzz has follicle stippling and buzz style label, bald has smooth scalp
+  const buzzIdentity = studentAppearance(707, 'male', {hairLength: 0, hairStyle: 'buzz'});
+  const buzzSvg = renderPortrait(buzzIdentity, '학생 초상화', 'neutral', 'standing', 'front');
+  assert.match(buzzSvg, /data-hair-style="buzz"/);
+  assert.match(buzzSvg, /aria-label="[^"]*까까머리[^"]*"/);
+  assert.notEqual(frontSvg, buzzSvg, 'bald and buzz portraits must have distinct raster geometry');
+});
+
+test('male student baldness triggers on low-probability natural seeds, easter egg seeds, and severe graduate stress', () => {
+  // 1. Easter egg seeds
+  const eggStudent = studentAppearance('bald_easter_egg', 'male');
+  assert.equal(eggStudent.hairStyle, 'bald');
+  assert.equal(eggStudent.hairLength, 0);
+  assert.equal(eggStudent.bald, true);
+
+  const koEggStudent = studentAppearance('대머리', 'male');
+  assert.equal(koEggStudent.hairStyle, 'bald');
+  assert.equal(koEggStudent.hairLength, 0);
+
+  // 2. Severe stress in graduate school triggers stress-induced baldness
+  const stressedMaleState = {
+    gender: 'male',
+    creationSeed: 101, // normal hair seed
+    month: 24,
+    hidden: { stress: 92, stamina: 400, resilience: 300 },
+  };
+  const stressedApp = weeklyAppearance(stressedMaleState, 0);
+  assert.equal(stressedApp.hairStyle, 'bald', 'severe graduate stress must trigger baldness for male student');
+  assert.equal(stressedApp.hairLength, 0);
+  assert.equal(stressedApp.bald, true);
+
+  const stressedSvg = renderPortrait(stressedApp);
+  assert.match(stressedSvg, /data-hair-style="bald"/);
+  assert.match(stressedSvg, /aria-label="[^"]*대머리[^"]*"/);
+
+  // Mild stress should not cause baldness
+  const calmMaleState = {
+    gender: 'male',
+    creationSeed: 101,
+    month: 24,
+    hidden: { stress: 25, stamina: 700, resilience: 600 },
+  };
+  const calmApp = weeklyAppearance(calmMaleState, 0);
+  assert.notEqual(calmApp.hairStyle, 'bald', 'calm state must retain ordinary hair');
+});
+
+test('bald portrait renders reliably across all 4 poses and adaptive skin tones', () => {
+  const baldStudent = studentAppearance(707, 'male', {hairStyle: 'bald', bald: true});
+
+  // All 4 poses
+  for (const pose of ['standing', 'seated', 'experiment', 'lecturing']) {
+    const poseSvg = renderPortrait(baldStudent, '학생 초상화', 'neutral', pose, 'front');
+    assert.match(poseSvg, new RegExp(`data-pose="${pose}"`));
+    assert.match(poseSvg, /data-hair-style="bald"/);
+    assert.ok(poseSvg.includes('viewBox="0 0 320 496"'));
+    assert.ok(!poseSvg.includes('NaN'));
+    if (pose === 'lecturing') {
+      assert.ok(poseSvg.includes('ta-lecture-arm'));
+    }
+  }
+
+  // Fair and deep skin tones
+  const fairBald = renderPortrait({...baldStudent, skin: skinTone(0)});
+  const deepBald = renderPortrait({...baldStudent, skin: skinTone(1)});
+  assert.match(fairBald, /data-hair-style="bald"/);
+  assert.match(deepBald, /data-hair-style="bald"/);
+  assert.notEqual(fairBald, deepBald);
+  assert.ok(fairBald.includes('fill="#ffffff"'), 'fair skin bald has specular shine');
+  assert.ok(deepBald.includes('fill="#ffffff"'), 'deep skin bald has specular shine');
+});
+
+test('Korean hairstyle overhaul includes natural Korean palettes and preserves buzz cut alongside bald', () => {
+  // 1. Natural Korean palettes exist in HAIR_PALETTES
+  assert.ok(HAIR_PALETTES.naturalBlack, 'must have natural black');
+  assert.ok(HAIR_PALETTES.darkBrown, 'must have dark brown');
+  assert.ok(HAIR_PALETTES.ashBlack, 'must have ash black');
+  assert.ok(HAIR_PALETTES.bleachedBlonde, 'must have bleached blonde');
+
+  // 2. Both buzz cut and bald can be naturally or explicitly generated
+  const buzzStudent = studentAppearance(808, 'male', {hairLength: 0, hairStyle: 'buzz'});
+  const baldStudent = studentAppearance(808, 'male', {hairLength: 0, hairStyle: 'bald'});
+  assert.equal(buzzStudent.hairStyle, 'buzz');
+  assert.equal(baldStudent.hairStyle, 'bald');
+  assert.notEqual(renderPortrait(buzzStudent), renderPortrait(baldStudent));
+});
+
+test('undergraduate secret two-tone (시크릿투톤) and bleached hair (탈색모) render distinct highlights and labels', () => {
+  // 1. Secret two-tone
+  const twoToneStudent = studentAppearance('시크릿투톤', 'female', {hairLength: 4});
+  assert.equal(twoToneStudent.twoTone, true);
+  assert.equal(twoToneStudent.hairStyle, 'twoTone');
+
+  const twoToneSvg = renderPortrait(twoToneStudent, '학생 초상화', 'neutral', 'standing', 'front');
+  assert.match(twoToneSvg, /aria-label="[^"]*시크릿투톤[^"]*"/);
+  assert.match(twoToneSvg, /data-hair-style="twoTone"/);
+  assert.match(twoToneSvg, /data-two-tone="true"/);
+
+  const twoToneMonitor = renderPortrait(twoToneStudent, '학생 초상화', 'neutral', 'seated', 'monitor');
+  assert.match(twoToneMonitor, /aria-label="[^"]*시크릿투톤[^"]*"/);
+
+  // 2. Bleached hair
+  const bleachStudent = studentAppearance('탈색모', 'male', {hairLength: 2});
+  assert.equal(bleachStudent.bleached, true);
+  assert.equal(bleachStudent.hairStyle, 'bleached');
+
+  const bleachSvg = renderPortrait(bleachStudent, '학생 초상화', 'neutral', 'standing', 'front');
+  assert.match(bleachSvg, /aria-label="[^"]*탈색모[^"]*"/);
+  assert.match(bleachSvg, /data-hair-style="bleached"/);
+  assert.match(bleachSvg, /data-bleached="true"/);
+});
+
+test('female student hair naturally grows over semesters in graduate school', () => {
+  const femaleState = {
+    gender: 'female',
+    creationSeed: 555,
+    month: 0,
+    appearance: { hairLength: 2, hairStyle: 'standard' },
+  };
+
+  const earlyApp = weeklyAppearance(femaleState, 0);
+  assert.equal(earlyApp.hairLength, 2, 'month 0 retains initial short/medium hair');
+
+  // After 24 months (2 years)
+  const midState = { ...femaleState, month: 24 };
+  const midApp = weeklyAppearance(midState, 0);
+  assert.equal(midApp.hairLength, 3, 'hair grows by 1 level after 24 months');
+
+  // After 72 months (6 years)
+  const lateState = { ...femaleState, month: 72 };
+  const lateApp = weeklyAppearance(lateState, 0);
+  assert.equal(lateApp.hairLength, 5, 'hair grows up to longer locks over the PhD program');
+});
+
+test('male student disheveled long hair (폐인 장발) triggers from graduate burnout and renders unkempt locks', () => {
+  // 1. Easter egg seed or explicit option
+  const peinStudent = studentAppearance('폐인장발', 'male');
+  assert.equal(peinStudent.disheveled, true);
+  assert.equal(peinStudent.hairStyle, 'disheveled');
+  assert.ok(peinStudent.hairLength >= 5);
+
+  const peinSvg = renderPortrait(peinStudent, '학생 초상화', 'tired', 'standing', 'front');
+  assert.match(peinSvg, /aria-label="[^"]*폐인 장발[^"]*"/);
+  assert.match(peinSvg, /data-hair-style="disheveled"/);
+
+  // 2. Weekly appearance trigger from prolonged high stress in later graduate school
+  const burnedOutMaleState = {
+    gender: 'male',
+    creationSeed: 202,
+    month: 36,
+    hidden: { stress: 75, stamina: 300, resilience: 200 },
+  };
+  const burnedOutApp = weeklyAppearance(burnedOutMaleState, 0);
+  assert.equal(burnedOutApp.hairStyle, 'disheveled', 'high stress after 2 years triggers disheveled pein hair');
+  assert.equal(burnedOutApp.disheveled, true);
+  assert.ok(burnedOutApp.hairLength >= 5);
+
+  const burnedOutSvg = renderPortrait(burnedOutApp);
+  assert.match(burnedOutSvg, /aria-label="[^"]*폐인 장발[^"]*"/);
+  assert.match(burnedOutSvg, /data-hair-style="disheveled"/);
+});
+
+
