@@ -4,7 +4,7 @@ import {HIDDEN_RANGES,ACTIVITIES,LEGACY_ACTIVITIES,EVENTS} from '../dist/engine.
 import {DISCIPLINES} from '../dist/disciplines.js';
 import {ANALYTICS_POLICY_VERSION,ANALYTICS_RETENTION_YEARS,ANALYTICS_TOKEN_DAYS,analyticsRetentionUntil} from '../dist/analytics-policy.js';
 // Exact released schemas only; registration and administrator import share this gate.
-const SUPPORTED_ANALYTICS_VERSIONS=Object.freeze(['4.1.0','4.2.0','4.3.0','4.4.0','4.5.0','4.6.0','4.7.0','4.8.0','4.9.0','4.10.0','4.11.0','4.12.0','4.13.0','4.13.1','4.13.2','4.13.3','4.14.0','4.15.0','4.15.1','4.15.2','4.15.3','4.15.4','4.15.5','4.16.0','4.22.0']);
+const SUPPORTED_ANALYTICS_VERSIONS=Object.freeze(['4.1.0','4.2.0','4.3.0','4.4.0','4.5.0','4.6.0','4.7.0','4.8.0','4.9.0','4.10.0','4.11.0','4.12.0','4.13.0','4.13.1','4.13.2','4.13.3','4.14.0','4.15.0','4.15.1','4.15.2','4.15.3','4.15.4','4.15.5','4.16.0','4.22.0','4.23.0']);
 const validAnalyticsVersion=value=>typeof value==='string'&&SUPPORTED_ANALYTICS_VERSIONS.includes(value);
 const outcomes=['bachelor','masters','true','postdoc','institute','corporate','unrelated','startup','unemployed','youtuber','resident_researcher','leave','dropout','dismissed','unfinished','gameover','external_masters','external_phd'];
 const allowedOrigin=(request)=>{const origin=request.headers.get('Origin');return origin===new URL(request.url).origin||origin==='https://gahyoun.github.io'||/^http:\/\/127\.0\.0\.1:(4173|4174)$/.test(origin||'');};
@@ -57,6 +57,25 @@ async function cleanup(env){
 }
 // Trusted Worker lifecycle hook; HTTP maintenance still requires ADMIN_KEY.
 export async function analyticsMaintenance(env){if(!env.DB)return {error:'Database unavailable'};return cleanup(env);}
+const RETENTION_BATCH_LIMIT=500;
+// The same candidate subquery runs inside one D1 transaction. Removing monthly
+// rows does not change the selected runs, so the parent deletion uses the exact
+// same bounded set without binding hundreds of IDs or relying on cascade.
+export async function analyticsRetentionBatch(env){
+ if(!env.DB)throw new Error('Database unavailable');
+ const cutoff=Date.now(),policy=ANALYTICS_POLICY_VERSION;
+ const predicate='('+LEGACY_WHERE+') OR (consent_version = ? AND retention_until <= ?)';
+ const candidate='SELECT id FROM game_runs WHERE '+predicate+' ORDER BY COALESCE(retention_until,created_at),id LIMIT ?';
+ const args=[policy,policy,cutoff];
+ const results=await env.DB.batch([
+  env.DB.prepare('DELETE FROM game_months WHERE run_id IN ('+candidate+')').bind(...args,RETENTION_BATCH_LIMIT),
+  env.DB.prepare('DELETE FROM game_runs WHERE id IN ('+candidate+')').bind(...args,RETENTION_BATCH_LIMIT)
+ ]);
+ const changed=index=>{const n=results[index]?.meta?.changes;if(!Number.isInteger(n)||n<0)throw new Error('Invalid maintenance result');return n;};
+ const remaining=await env.DB.prepare('SELECT COUNT(*) AS n FROM game_runs WHERE '+predicate).bind(...args).first();
+ const remainingMonths=await env.DB.prepare('SELECT COUNT(*) AS n FROM game_months WHERE run_id IN (SELECT id FROM game_runs WHERE '+predicate+')').bind(...args).first();
+ return {cutoff,deletedRuns:changed(1),deletedMonthlyRecords:changed(0),remainingRuns:remaining.n,remainingMonthlyRecords:remainingMonths.n,complete:remaining.n===0,batchLimit:RETENTION_BATCH_LIMIT,retentionYears:ANALYTICS_RETENTION_YEARS};
+}
 async function purgeCurrentAnalytics(env){
  const policy=ANALYTICS_POLICY_VERSION;
  const runs=await env.DB.prepare('SELECT COUNT(*) AS n FROM game_runs WHERE consent_version = ?').bind(policy).first();
@@ -65,13 +84,24 @@ async function purgeCurrentAnalytics(env){
  return {currentDeleted:runs.n,currentMonthlyDeleted:months.n,reason:'purpose-complete'};
 }
 async function admin(request,env){const supplied=request.headers.get('Authorization')?.replace(/^Bearer /,'');return typeof env.ADMIN_KEY==='string'&&env.ADMIN_KEY.length>=32&&typeof supplied==='string'&&supplied.length<=256&&await hash(supplied)===await hash(env.ADMIN_KEY);}
+async function retentionOperator(request,env){
+ const supplied=request.headers.get('Authorization')?.match(/^Bearer ([^\s]+)$/)?.[1],secret=env.RETENTION_MAINTENANCE_KEY;
+ return typeof secret==='string'&&secret.length>=32&&secret.length<=256&&typeof supplied==='string'&&supplied.length>=32&&supplied.length<=256&&await hash(supplied)===await hash(secret);
+}
 export async function analyticsAPI(request,env){
  const path=new URL(request.url).pathname;
  if(!path.startsWith('/api/'))return null;
+ if(path==='/api/maintenance/analytics-retention'&&request.method!=='POST')return json({error:'Method not allowed'},405,{Allow:'POST'});
  const origin=request.headers.get('Origin'),cors=allowedOrigin(request)?{'Access-Control-Allow-Origin':origin,'Vary':'Origin','Access-Control-Allow-Headers':'Content-Type, Authorization','Access-Control-Allow-Methods':'POST, DELETE, OPTIONS'}:{};
  if(request.method==='OPTIONS')return new Response(null,{status:allowedOrigin(request)?204:403,headers:cors});
  if(!env.DB)return json({error:'Database unavailable'},503,cors);
  try{
+  if(path==='/api/maintenance/analytics-retention'){
+   if(!await retentionOperator(request,env))return json({error:'Unauthorized'},401);
+   const data=await body(request,1024);
+   if(!plain(data)||Object.keys(data).length!==1||data.consent!==ANALYTICS_POLICY_VERSION)return json({error:'Current policy acknowledgment required'},400);
+   return json(await analyticsRetentionBatch(env));
+  }
   if(path==='/api/admin/policy-maintenance'&&request.method==='POST'){
    if(!await admin(request,env))return json({error:'Unauthorized'},401);
    const data=await body(request);

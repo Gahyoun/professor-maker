@@ -1,4 +1,5 @@
 import {renderStudentPortrait} from './student-pixel-art.js';
+import {campusHairAppearance} from './hair-evolution.js';
 // Foundation-inspired light-to-medium spectrum; these are art colors, not product shade measurements.
 export function skinTone(sample){
  const anchors=['#f2d8c2','#eed0b7','#e8c6ab','#e1bda0','#d8b194','#cfa588','#c2987c'],position=Math.max(0,Math.min(1,sample))*6,index=Math.min(5,Math.floor(position)),fraction=position-index;
@@ -31,8 +32,8 @@ export function labHairStyle(seed,hairLength,labMode){
 }
 
 export function weeklyAppearance(state,index=0){
- const a=studentAppearanceForState(state),month=state.visualMonth??state.month;
+ const month=state.visualMonth??state.month,a=campusHairAppearance(state,studentAppearanceForState(state),month);
  const sequence=(a.outfit+Math.max(0,state.month-1)*5+index),outfit=state.professorProfile?.labMode==='dry'?1+sequence%5:sequence%6;
  const haircut=state.gender==='male'&&state.service?.trainingReturnMonth!==undefined&&(month>=state.service.trainingReturnMonth&&month<state.service.trainingReturnMonth+2||month===state.service.trainingStartMonth&&index>=3),hairLength=haircut?0:a.hairLength,labMode=state.professorProfile?.labMode;
- return {...a,hairLength,labMode,hairStyle:labHairStyle(state.creationSeed??state.seed,hairLength,labMode),outfit,shirt:['#456c87','#597a68','#906b71','#6c6587','#ba8659','#548b98'][(a.outfit+index+state.month)%6]};
+ return {...a,...(haircut?{cosmeticHairStyle:'regular',twoTone:false,bleached:false,hairAccent:null,hair:a.naturalHair,curly:false,hairTexture:'straight'}:{}),hairLength,labMode,hairStyle:labHairStyle(state.creationSeed??state.seed,hairLength,labMode),outfit,shirt:['#456c87','#597a68','#906b71','#6c6587','#ba8659','#548b98'][(a.outfit+index+state.month)%6]};
 }

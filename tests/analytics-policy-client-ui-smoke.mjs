@@ -5,6 +5,7 @@ import {fileURLToPath} from 'node:url';
 import {ANALYTICS_POLICY_VERSION,ANALYTICS_EXPORT_FORMAT,analyticsRetentionUntil} from '../dist/analytics-policy.js';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const dist=fileURLToPath(new URL('../dist/',import.meta.url)),dir=process.env.QA_OUTPUT||path.resolve('../outputs/pm4220-analysis-client');
+const releaseVersion=JSON.parse(await fs.readFile(new URL('../package.json',import.meta.url),'utf8')).version;
 await fs.mkdir(dir,{recursive:true});
 const browser=await chromium.launch(),report={scenarios:[],errors:[]};
 const current=ANALYTICS_POLICY_VERSION;
@@ -59,7 +60,7 @@ try{
    const preserved=await h.page.evaluate(({locale,other})=>{const key=(value,edition)=>edition==='en'?'pm-us-'+value.slice(3):value;return {game:localStorage.getItem(key('pm-save-v4',locale)),letters:localStorage.getItem(key('pm-letters-v3',locale)),otherConsent:localStorage.getItem(key('pm-analysis-consent',other)),oldId:localStorage.getItem(key('pm-analysis-id-44',locale)),oldSession:localStorage.getItem(key('pm-analysis-session',locale))};},{locale,other});
    assert.deepEqual(preserved,{game:'protected game save',letters:'protected letters',otherConsent:'anonymous-gameplay-v1',oldId:null,oldSession:null});assert.equal((await rows(h.page,editionKey('pm-checkpoints',locale)))[0].kind,'protected checkpoint');
    await h.page.evaluate(async()=>{await analysis.setAnalyticsConsent(true);await analysis.recordAnalytics(state);});
-   const exported=await h.page.evaluate(()=>analyticsExport());assert.equal(exported.runs.length,1);assert.equal(exported.runs[0].profile.edition,locale);assert.equal(exported.runs[0].profile.version,'4.22.0');assert.doesNotMatch(JSON.stringify(exported),/Private test name|Private faculty name/);
+   const exported=await h.page.evaluate(()=>analyticsExport());assert.equal(exported.runs.length,1);assert.equal(exported.runs[0].profile.edition,locale);assert.equal(exported.runs[0].profile.version,releaseVersion);assert.doesNotMatch(JSON.stringify(exported),/Private test name|Private faculty name/);
    const registrations=h.calls.filter(c=>c.path==='/api/runs');assert.equal(registrations.length,host==='professor-maker.gahyoun.chatgpt.site'?1:0);if(registrations.length){assert.equal(registrations[0].body.edition,locale);assert.equal(registrations[0].body.consent,current);}
    await h.page.evaluate(()=>analysis.setAnalyticsConsent(false));assert.equal((await rows(h.page,dbName(locale))).length,0);assert.equal((await rows(h.page,dbName(other))).length,1);
    assert.equal(await h.page.evaluate(key=>localStorage.getItem(key),editionKey('pm-save-v4',locale)),'protected game save');
