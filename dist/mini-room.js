@@ -132,7 +132,7 @@ function lectureDiagram(type,ink){
  stroke([[17.9,.26,43.5],[18.4,.26,43.5],[18.4,.26,45]])+
  stroke([[22.2,.26,43],[22.6,.26,42],[23.1,.26,45]])+'</g>';
 }
-export function roomDecorations(state){const seed=state.creationSeed??state.seed,draw=i=>(Math.imul(seed^(i*7919),2654435761)>>>0)/4294967296;return {fridge:draw(1)>.25,kettle:draw(2)>.2,plush:draw(3)>.45,cot:draw(4)>.65,board:true,boardType:Math.floor(draw(12)*4),chairType:Math.floor(draw(13)*4),restType:Math.floor(draw(14)*4),sofa:draw(6)>.5,server:state.professorProfile.labMode==='dry',palette:Math.floor(draw(5)*3),wallpaper:Math.floor(draw(7)*WALLPAPERS.length),floor:Math.floor(draw(8)*FLOOR_TILES.length),printer:draw(9)>.25,plant:true,bag:draw(10)>.35,deskLamp:true,clock:true,noticeboard:draw(11)>.3};}
+export function roomDecorations(state){const seed=state.creationSeed??state.seed,draw=i=>(Math.imul(seed^(i*7919),2654435761)>>>0)/4294967296;return {fridge:draw(1)>.25,kettle:draw(2)>.2,plush:true,plushPile:true,cot:draw(4)>.65,board:true,boardType:Math.floor(draw(12)*4),chairType:Math.floor(draw(13)*4),restType:Math.floor(draw(14)*4),sofa:draw(6)>.5,server:state.professorProfile.labMode==='dry',palette:Math.floor(draw(5)*3),wallpaper:Math.floor(draw(7)*WALLPAPERS.length),floor:Math.floor(draw(8)*FLOOR_TILES.length),printer:draw(9)>.25,plant:true,bag:draw(10)>.35,deskLamp:true,clock:true,noticeboard:draw(11)>.3,coffeeMaker:true,snackBox:true,cableOrganizer:true,wastebasket:true,calendar:true,boardTray:true,wallPostits:true};}
 function desk(u,v,w,d,color='#c5ab8e'){let art='';for(const [a,b] of [[u+.5,v+.5],[u+w-1,v+.5],[u+.5,v+d-1],[u+w-1,v+d-1]])art+=box(a,b,.65,.65,23,'#a58c73');art+=box(u,v,w,d,3,color,23);return art;}
 export function chairGeometry(u,v,type=0){
  const center=[u+1.5,v+1.5],seat={u:u+.4,v:v+.4,w:2.2,d:2.2,bottom:17,top:20};
@@ -237,12 +237,234 @@ function bookshelf(u,v,wet,stock,state){
  return art+'</g>';
 }
 function fridge(u,v){return box(u,v,3.5,3,45,'#d3d9d5')+front(u+.25,v+3.03,2,3,24,'#e7eae3')+front(u+.25,v+3.03,28,3,15,'#e7eae3')+front(u+.55,v+3.1,18,.25,5,'#96a4a1')+front(u+.55,v+3.1,33,.25,5,'#96a4a1')+front(u+2,v+3.1,36,.6,2,'#c6b6a0');}
-function server(u,v){let art=box(u,v,3,2.6,48,'#7d8994');for(let i=0;i<4;i++){art+=front(u+.25,v+2.63,4+i*10,2.5,7,'#9ca9b3')+front(u+.5,v+2.65,6+i*10,.25,1.2,'#c6d8a7');for(let j=0;j<3;j++)art+=front(u+1+j*.35,v+2.65,7+i*10,.15,2,'#637582');}return art;}
+function server(u,v){
+ let art=`<g class="dry-server-rack" data-equipment="server-rack" aria-label="건식 랩 서버 랙과 실시간 LED 인디케이터">`;
+ art+=box(u,v,3,2.6,48,'#64748b');
+ for(let i=0;i<4;i++){
+  const unitZ=4+i*10;
+  art+=front(u+.25,v+2.63,unitZ,2.5,7.2,'#334155');
+  art+=front(u+.35,v+2.64,unitZ+.6,2.3,6.0,'#1e293b');
+  art+=`<g class="server-led-indicator" aria-label="실시간 LED 인디케이터">`+
+   front(u+.5,v+2.66,unitZ+5.2,.25,1.2,'#22c55e')+
+   front(u+.8,v+2.66,unitZ+5.2,.2,1.0,'#f59e0b')+
+   front(u+1.05,v+2.66,unitZ+5.2,.2,1.0,'#06b6d4')+
+   front(u+1.3,v+2.66,unitZ+5.2,.2,1.0,'#3b82f6')+
+   '</g>';
+  for(let j=0;j<3;j++)art+=front(u+1.6+j*.32,v+2.65,unitZ+2.5,.18,3.2,'#64748b');
+  art+=front(u+.5,v+2.65,unitZ+1.5,.3,.8,['#ef4444','#3b82f6','#eab308','#10b981'][i%4]);
+  art+=front(u+.9,v+2.65,unitZ+1.5,.3,.8,['#3b82f6','#10b981','#ef4444','#eab308'][i%4]);
+ }
+ return art+'</g>';
+}
+function capsuleCoffeeMachine(u,v,z=26){
+ let art=`<g class="capsule-coffee-machine" data-object="capsule-coffee-machine" aria-label="캡슐 커피 머신">`;
+ art+=box(u,v,1.1,1.3,1.2,'#1e293b',z);
+ art+=box(u+.1,v+.1,.9,.4,.4,'#475569',z+1.2);
+ art+=box(u+.35,v+.15,.4,.3,1.4,'#f8fafc',z+1.6);
+ art+=box(u+.1,v+.4,.9,.8,8.2,'#b91c1c',z+1.2);
+ art+=front(u+.15,v+1.21,z+2.0,.8,6.5,'#1e293b');
+ art+=front(u+.25,v+1.22,z+6.5,.6,1.0,'#e2e8f0');
+ art+=box(u+.35,v+.5,.4,.5,1.0,'#cbd5e1',z+9.4);
+ art+=line([u+.55,v+.6,z+10.4],[u+.55,v+1.1,z+11.2],'#e2e8f0',1.8);
+ art+=box(u+.2,v+.95,.7,.3,7.0,'#93c5fd',z+1.5);
+ art+=line([u+.3,v+1.24,z+5.0],[u+.8,v+1.24,z+5.0],'#60a5fa',1.0);
+ return art+'</g>';
+}
+function labSnackBox(u,v,z=26){
+ let art=`<g class="lab-snack-box" data-object="lab-snack-box" aria-label="연구실 탕비 간식 박스">`;
+ art+=box(u,v,1.3,1.2,1.8,'#b45309',z);
+ art+=front(u+.05,v+1.22,z+.3,1.2,1.3,'#d97706');
+ art+=box(u+.15,v+.2,.3,.35,3.2,'#16a34a',z+1.8);
+ art+=line([u+.2,v+.22,z+3.8],[u+.4,v+.22,z+3.8],'#fef08a',.8);
+ art+=box(u+.5,v+.2,.3,.35,3.5,'#2563eb',z+1.8);
+ art+=line([u+.55,v+.22,z+4.1],[u+.75,v+.22,z+4.1],'#ffffff',.8);
+ art+=box(u+.85,v+.2,.35,.35,2.8,'#78350f',z+1.8);
+ art+=front(u+.86,v+.54,z+3.2,.33,1.0,'#fbbf24');
+ art+=box(u+.25,v+.65,.2,.25,4.2,'#eab308',z+1.8);
+ art+=box(u+.55,v+.65,.2,.25,3.9,'#dc2626',z+1.8);
+ return art+'</g>';
+}
+function cableOrganizer(u,v,z=0){
+ let art=`<g class="lab-cable-organizer" data-object="cable-organizer" aria-label="책상 밑 멀티탭 전선 정리함">`;
+ art+=box(u,v,2.2,1.0,1.8,'#e2e8f0',z);
+ art+=front(u+.2,v+1.02,z+.4,1.8,.3,'#94a3b8');
+ const [lx,ly]=projectRoom(u+1.8,v+1.03,z+1.2);
+ art+=`<circle cx="${lx}" cy="${ly}" r="0.8" fill="#22c55e"/>`;
+ art+=line([u+.4,v+1.0,z+.5],[u+.1,v+1.4,z],'#334155',1.5);
+ art+=line([u+.8,v+1.0,z+.5],[u+.7,v+1.6,z],'#475569',1.3);
+ art+=line([u+1.4,v+1.0,z+.5],[u+1.9,v+1.5,z],'#1e293b',1.4);
+ return art+'</g>';
+}
+function bagHanger(u,v,z=0){
+ let art=`<g class="lab-bag-hanger" data-object="bag-hanger" aria-label="연구원 가방 걸이와 백팩">`;
+ art+=box(u+.3,v-.1,.4,.3,1.2,'#64748b',25);
+ art+=line([u+.5,v,25],[u+.5,v,17],'#475569',2.0);
+ art+=line([u+.5,v,17],[u+.2,v+.2,18],'#475569',2.0);
+ art+=box(u-.2,v,1.6,1.5,9.5,'#1e293b',7);
+ art+=front(u-.1,v+1.52,9,1.4,6.5,'#334155');
+ art+=line([u,v+1.53,13.5],[u+1.2,v+1.53,13.5],'#94a3b8',1.0);
+ art+=line([u+.1,v+.1,17],[u-.1,v+.3,12],'#0f172a',1.6);
+ art+=line([u+1.1,v+.1,17],[u+1.3,v+.3,12],'#0f172a',1.6);
+ art+=box(u+1.4,v+.3,.3,.6,4.0,'#475569',8);
+ art+=box(u+1.42,v+.35,.25,.5,5.5,'#cbd5e1',9);
+ return art+'</g>';
+}
+function wastebasket(u,v,z=0){
+ let art=`<g class="lab-wastebasket" data-object="wastebasket" aria-label="연구실 페이퍼 바스켓 휴지통">`;
+ art+=box(u,v,1.4,1.4,4.5,'#475569',z);
+ art+=box(u+.1,v+.1,1.2,1.2,.5,'#1e293b',z+4.0);
+ art+=box(u+.2,v+.2,.45,.45,.8,'#f8fafc',z+3.8);
+ art+=box(u+.6,v+.3,.5,.4,.9,'#fef08a',z+3.9);
+ art+=box(u+.3,v+.65,.5,.45,.7,'#e2e8f0',z+4.1);
+ return art+'</g>';
+}
+function boardTray(u=16.2,v=0.22,z=34.5,boardType=0){
+ let art=`<g class="board-chalk-tray" data-object="board-tray" aria-label="칠판 하단 트레이의 분필과 지우개">`;
+ art+=front(u,v,z,8.6,0.8,'#78716c');
+ art+=line([u,v+.02,z+.8],[u+8.6,v+.02,z+.8],'#a8a29e',1.0);
+ art+=front(u+.6,v+.05,z+.3,1.5,0.9,'#3f3f46');
+ art+=front(u+.65,v+.06,z+.8,1.4,0.6,'#a16207');
+ if(boardType===1){
+  art+=front(u+2.8,v+.05,z+.3,.7,.4,'#dc2626');
+  art+=front(u+3.8,v+.05,z+.3,.7,.4,'#2563eb');
+  art+=front(u+4.8,v+.05,z+.3,.7,.4,'#0f172a');
+ }else{
+  art+=front(u+2.8,v+.05,z+.3,.65,.35,'#ffffff');
+  art+=front(u+3.7,v+.05,z+.3,.65,.35,'#fef08a');
+  art+=front(u+4.6,v+.05,z+.3,.65,.35,'#67e8f9');
+  art+=front(u+5.5,v+.05,z+.3,.65,.35,'#f472b6');
+ }
+ return art+'</g>';
+}
+function wallCalendar(u=25.4,v=0.2,z=46){
+ let art=`<g class="wall-calendar" data-object="wall-calendar" aria-label="연구 일정 벽걸이 달력">`;
+ art+=front(u,v,z+15.5,2.2,1.2,'#1e3a8a');
+ art+=line([u+.2,v+.02,z+16.8],[u+2.0,v+.02,z+16.8],'#d4af37',1.2);
+ art+=front(u,v,z,2.2,15.5,'#fdfbf7');
+ art+=line([u+.2,v+.02,z+13.5],[u+2.0,v+.02,z+13.5],'#e2e8f0',0.8);
+ art+=front(u+.3,v+.03,z+14.0,.5,.9,'#ffffff');
+ for(let r=0;r<4;r++){
+  const rz=z+11.5-r*2.4;
+  art+=line([u+.3,v+.02,rz],[u+1.9,v+.02,rz],'#cbd5e1',0.6);
+ }
+ const [cdx,cdy]=projectRoom(u+1.2,v+.04,z+6.8);
+ art+=`<circle cx="${cdx}" cy="${cdy}" r="2.2" fill="none" stroke="#ef4444" stroke-width="1.2"/>`;
+ const [cfx,cfy]=projectRoom(u+.6,v+.04,z+4.4);
+ art+=`<circle cx="${cfx}" cy="${cfy}" r="1.8" fill="none" stroke="#3b82f6" stroke-width="1.0"/>`;
+ return art+'</g>';
+}
+function wallPostIts(u=25.4,v=0.2,z=32){
+ let art=`<g class="wall-postits" data-object="wall-postits" aria-label="포스트잇과 자석 핀 메모">`;
+ art+=front(u,v,z+7,1.1,3.2,'#fef08a');
+ art+=line([u+.15,v+.02,z+9.2],[u+.95,v+.02,z+9.2],'#a16207',0.6);
+ art+=line([u+.15,v+.02,z+8.0],[u+.85,v+.02,z+8.0],'#a16207',0.6);
+ const [p1x,p1y]=projectRoom(u+.55,v+.04,z+10.0);
+ art+=`<circle cx="${p1x}" cy="${p1y}" r="1.1" fill="#ef4444"/>`;
+
+ art+=front(u+1.2,v,z+6.5,1.0,3.0,'#bbf7d0');
+ art+=line([u+1.35,v+.02,z+8.5],[u+2.05,v+.02,z+8.5],'#15803d',0.6);
+ art+=line([u+1.35,v+.02,z+7.4],[u+1.95,v+.02,z+7.4],'#15803d',0.6);
+ const [p2x,p2y]=projectRoom(u+1.7,v+.04,z+9.3);
+ art+=`<circle cx="${p2x}" cy="${p2y}" r="1.0" fill="#3b82f6"/>`;
+
+ art+=front(u+.2,v,z+1.5,1.2,3.4,'#fbcfe8');
+ art+=line([u+.35,v+.02,z+3.8],[u+1.25,v+.02,z+3.8],'#be185d',0.6);
+ art+=line([u+.35,v+.02,z+2.6],[u+1.15,v+.02,z+2.6],'#be185d',0.6);
+ const [p3x,p3y]=projectRoom(u+.8,v+.04,z+4.7);
+ art+=`<circle cx="${p3x}" cy="${p3y}" r="1.0" fill="#eab308"/>`;
+ return art+'</g>';
+}
+function wetLabFixtures(u=3.6,v=10.1,stock='balanced'){
+ let art=`<g class="wet-flask-drying-rack" data-equipment="flask-drying-rack" aria-label="습식 랩 플라스크 건조대와 시약 선반">`;
+ art+=box(u,v,2.5,.3,15,'#334155',27);
+ art+=front(u+.1,v+.32,28,2.3,13.5,'#475569');
+ for(let row=0;row<3;row++){
+  for(let col=0;col<3;col++){
+   const pz=29.5+row*4.2,pu=u+.35+col*.75;
+   art+=line([pu,v+.35,pz],[pu,v+.65,pz+1.2],'#94a3b8',1.2);
+   if((row+col)%2===0){
+    art+=box(pu-.25,v+.3,.5,.35,2.8,'#bae6fd',pz);
+    art+=front(pu-.2,v+.66,pz+.5,.4,1.8,'#f0f9ff');
+   }else if(col===1){
+    art+=box(pu-.15,v+.3,.3,.35,3.2,'#c2e7ff',pz);
+   }
+  }
+ }
+ art+=box(u+2.7,v,3.4,.5,1.0,'#64748b',27);
+ art+=box(u+2.7,v,3.4,.5,1.0,'#64748b',36);
+ art+=box(u+2.7,v,.3,.5,18,'#475569',27);
+ art+=box(u+5.8,v,.3,.5,18,'#475569',27);
+ art+=box(u+3.1,v+.05,.55,.4,5.0,'#b45309',28);
+ art+=box(u+3.2,v+.1,.35,.3,1.2,'#f8fafc',33);
+ art+=front(u+3.15,v+.46,29.2,.45,1.6,'#dc2626');
+ art+=front(u+3.22,v+.47,29.6,.3,0.8,'#fef08a');
+ art+=box(u+3.9,v+.05,.55,.4,4.5,'#0284c7',28);
+ art+=box(u+4.0,v+.1,.35,.3,1.0,'#f8fafc',32.5);
+ art+=box(u+4.7,v+.05,.5,.4,3.8,'#15803d',28);
+ art+=box(u+4.8,v+.1,.3,.3,1.0,'#e2e8f0',31.8);
+ art+=box(u+3.2,v+.05,.5,.4,4.2,'#475569',37);
+ art+=box(u+3.3,v+.1,.3,.3,1.0,'#f8fafc',41.2);
+ art+=box(u+4.0,v+.05,.45,.4,3.6,'#b45309',37);
+ art+=box(u+4.1,v+.1,.25,.3,0.8,'#f8fafc',40.6);
+ art+=box(u+4.8,v+.05,.9,.4,6.0,'#cbd5e1',37);
+ art+=line([u+5.0,v+.46,40],[u+5.0,v+.46,44],'#3b82f6',1.4);
+ art+=line([u+5.3,v+.46,40],[u+5.3,v+.46,44],'#22c55e',1.4);
+ art+=line([u+5.5,v+.46,40],[u+5.5,v+.46,44],'#eab308',1.4);
+ if(stock==='rich'){
+  art+=box(u+5.4,v+.05,.4,.4,3.2,'#7c3aed',28);
+  art+=box(u+5.45,v+.1,.3,.3,0.8,'#f8fafc',31.2);
+  art+=box(u+4.6,v+.05,.4,.4,3.5,'#ea580c',37);
+ }
+ return art+'</g>';
+}
 function sofa(u,v){return box(u,v,4,8,9,'#a5b1bf')+box(u+.3,v+.7,3.4,6.6,8,'#c0cbd1',9)+box(u,v,1,8,27,'#b3c0c9')+box(u+3,v,.9,8,20,'#9caebb')+box(u,v,4,.8,20,'#afbcc7')+box(u,v+7.2,4,.8,20,'#afbcc7')+box(u+1.3,v+1.3,1.5,1.7,6,'#e0c9b4',16);}
 function cot(u,v){let art=box(u,v,.5,.5,12,'#829594')+box(u+6.5,v+2.4,.5,.5,12,'#829594')+box(u,v,7,3,3,'#a9b7b3',12)+box(u+.2,v+.2,6.6,2.6,4,'#dbe1d8',15)+box(u+.4,v+.4,1.4,2.2,3,'#f7f0df',19)+box(u+2.4,v+.3,4,2.4,2,'#b8c9bf',19);return art;}
 function printer(u,v,z=0){return box(u,v,2.6,2,8,'#bac5c6',z)+box(u+.3,v+.1,2,1.4,2,'#dee2db',z+8)+front(u+.4,v+2.04,z+2,1.9,1.3,'#71868d')+box(u+.5,v-.1,1.8,.8,1,'#f8f4e8',z+10);}
 function kettle(u,v,z=0){return box(u,v,1.2,1.2,1,'#8a9b9c',z)+box(u+.2,v+.2,.8,.8,8,'#e9e3d3',z+1)+box(u+.3,v+.3,.6,.6,1,'#96a4a3',z+9)+line([u+1,v+.5,z+3],[u+1.6,v+.5,z+4],'#829996',2)+line([u+1.6,v+.5,z+4],[u+1.6,v+.5,z+8],'#829996',2);}
-function plush(u,v,z){const [x,y]=projectRoom(u,v,z);return `<g fill="#c6a281"><path d="M${x-7} ${y-16}h3v-3h4v2h5v-2h4v3h3v10h-3v7h-13v-7h-3z"/><path d="M${x-6} ${y-6}h12v5h-12z" fill="#e7d5b7"/><path d="M${x-4} ${y-12}h1v2h-1zm8 0h1v2h-1z" fill="#696060"/><path d="M${x-1} ${y-8}h3v1h-3z" fill="#a57c69"/></g>`;}
+function plush(u,v,z){
+ const [x,y]=projectRoom(u,v,z);
+ return `<g class="stacked-plushies" data-decor="plushie-pile" aria-label="작은 동물 인형 더미와 인형 피라미드">`+
+  `<g class="plushie-mochi-cat" aria-label="하얀 찹쌀떡 고양이 인형">`+
+  `<path d="M${x-16} ${y-4}h12v7h-12z" fill="#f8fafc"/>`+
+  `<path d="M${x-15} ${y-7}h2v3h-2zm8 0h2v3h-2z" fill="#f472b6"/>`+
+  `<path d="M${x-13} ${y-3}h2v2h-2zm6 0h2v2h-2z" fill="#334155"/>`+
+  `<path d="M${x-10} ${y-1}h2v1h-2z" fill="#f43f5e"/>`+
+  `<path d="M${x-14} ${y-1}h1v1h-1zm9 0h1v1h-1z" fill="#fda4af"/>`+
+  `</g>`+
+  `<g class="plushie-baby-bear" aria-label="갈색 아기 곰 인형">`+
+  `<path d="M${x} ${y-5}h13v8h-13z" fill="#c6a281"/>`+
+  `<path d="M${x+1} ${y-8}h3v3h-3zm8 0h3v3h-3z" fill="#a57c69"/>`+
+  `<path d="M${x+2} ${y-7}h1v1h-1zm8 0h1v1h-1z" fill="#e7d5b7"/>`+
+  `<path d="M${x+3} ${y-3}h7v4h-7z" fill="#e7d5b7"/>`+
+  `<path d="M${x+3} ${y-4}h1v1h-1zm6 0h1v1h-1z" fill="#1e293b"/>`+
+  `<path d="M${x+6} ${y-2}h2v1h-2z" fill="#696060"/>`+
+  `</g>`+
+  `<g class="plushie-pink-bunny" aria-label="쫑긋한 귀의 분홍 토끼 인형">`+
+  `<path d="M${x-9} ${y-16}h11v8h-11z" fill="#f472b6"/>`+
+  `<path d="M${x-8} ${y-23}h2v7h-2zm5 0h2v7h-2z" fill="#f472b6"/>`+
+  `<path d="M${x-7.5} ${y-22}h1v5h-1zm5 0h1v5h-1z" fill="#fbcfe8"/>`+
+  `<path d="M${x-6} ${y-13}h6v4h-6z" fill="#fff1f2"/>`+
+  `<path d="M${x-7} ${y-14}h1v1h-1zm5 0h1v1h-1z" fill="#1e293b"/>`+
+  `<path d="M${x-4} ${y-12}h1v1h-1z" fill="#be185d"/>`+
+  `<path d="M${x-8} ${y-12}h1v1h-1zm7 0h1v1h-1z" fill="#fda4af"/>`+
+  `</g>`+
+  `<g class="plushie-mint-frog" aria-label="민트 개구리 마스코트 인형">`+
+  `<path d="M${x+4} ${y-14}h9v7h-9z" fill="#86efac"/>`+
+  `<path d="M${x+5} ${y-16}h2v2h-2zm5 0h2v2h-2z" fill="#4ade80"/>`+
+  `<path d="M${x+5.5} ${y-15.5}h1v1h-1zm5 0h1v1h-1z" fill="#0f172a"/>`+
+  `<path d="M${x+7} ${y-11}h3v1h-3z" fill="#15803d"/>`+
+  `<path d="M${x+5} ${y-11}h1v1h-1zm5 0h1v1h-1z" fill="#fbcfe8"/>`+
+  `</g>`+
+  `<g class="plushie-yellow-chick" aria-label="샛노란 병아리 인형">`+
+  `<path d="M${x-3} ${y-26}h8v7h-8z" fill="#facc15"/>`+
+  `<path d="M${x} ${y-28}h2v2h-2z" fill="#f59e0b"/>`+
+  `<path d="M${x-4} ${y-23}h1v3h-1zm8 0h1v3h-1z" fill="#eab308"/>`+
+  `<path d="M${x-1} ${y-24}h1v1h-1zm3 0h1v1h-1z" fill="#0f172a"/>`+
+  `<path d="M${x} ${y-22}h2v2h-2z" fill="#ea580c"/>`+
+  `<path d="M${x-2} ${y-22}h1v1h-1zm5 0h1v1h-1z" fill="#fed7aa"/>`+
+  `</g>`+
+  '</g>';
+}
 function monitor(u,v,z,active=false){return box(u+1.5,v,.4,.6,7,'#7e909c',z)+box(u+.7,v-.2,2.2,1,1,'#9daeb1',z)+front(u,v+.3,z+7,4.7,21,'#788f9c')+front(u+.35,v+.32,z+8.5,4,17.7,'#d9e6de')+line([u+.7,v+.35,z+22],[u+3.7,v+.35,z+22],'#9cb9ac',1.4)+line([u+.7,v+.35,z+17],[u+3.3,v+.35,z+17],'#9cb9ac',1.4)+line([u+.7,v+.35,z+12],[u+2.4,v+.35,z+12],'#9cb9ac',1.4)+(active?monitorMotion(projectRoom,u,v,z):'');}
 function microscope(u,v,z){return box(u,v,2.3,2,2,'#d9dfd5',z)+box(u+1.5,v+.2,.55,.8,17,'#9eafb5',z+2)+box(u+.7,v+.2,1.8,.7,3,'#8e9fa8',z+19)+box(u+.6,v+.3,.4,.4,6,'#8395a0',z+13)+box(u+.4,v+.3,1.4,1.2,1,'#bdcbd0',z+7);}
 function actor(state,result,index,u,v,idle,lift=0,facing='front'){
@@ -264,18 +486,81 @@ export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'
  // Window, writing board and pinned papers sit on their respective wall planes.
  const seasonKey=miniRoomSeason(state),winSeason=WINDOW_SEASONS[seasonKey]??WINDOW_SEASONS.spring;
  art+=left(.15,8,33,11,47,'#d0c5af');
+ const farMtn={'spring':'#8da2b6','summer':'#628aa5','autumn':'#9b8796','winter':'#96a2b0'}[seasonKey]??'#8da2b6';
+ const midMtn={'spring':'#73899e','summer':'#4a728e','autumn':'#846c7b','winter':'#7d8c9e'}[seasonKey]??'#73899e';
+ const lawnBase={'spring':'#4ade80','summer':'#16a34a','autumn':'#ca8a04','winter':'#e2e8f0'}[seasonKey]??'#4ade80';
+ const lawnSlope={'spring':'#86efac','summer':'#22c55e','autumn':'#facc15','winter':'#f8fafc'}[seasonKey]??'#86efac';
+ const skyGrad1={'spring':'#e4effd','summer':'#b9dffe','autumn':'#fedebc','winter':'#dbe2eb'}[seasonKey]??'#e4effd';
+ const skyGrad2={'spring':'#ecf4fe','summer':'#dbeefe','autumn':'#fee8ce','winter':'#e7edf3'}[seasonKey]??'#ecf4fe';
+ const farParticlesBySeason={
+  spring:[[9.5,72,.18,.4,'#fbcfe8'],[12.2,68,.18,.4,'#fce7f3'],[15.8,70,.18,.4,'#f9a8d4'],[17.4,66,.18,.4,'#fbcfe8'],[10.6,63,.18,.4,'#fce7f3'],[14.0,65,.18,.4,'#f9a8d4']],
+  summer:[[9.5,72,.18,.4,'#bae6fd'],[12.2,68,.18,.4,'#e0f2fe'],[15.8,70,.18,.4,'#bae6fd'],[17.4,66,.18,.4,'#e0f2fe'],[10.6,63,.18,.4,'#bae6fd'],[14.0,65,.18,.4,'#e0f2fe']],
+  autumn:[[9.5,72,.18,.4,'#fed7aa'],[12.2,68,.18,.4,'#fde047'],[15.8,70,.18,.4,'#fca5a5'],[17.4,66,.18,.4,'#fcd34d'],[10.6,63,.18,.4,'#fed7aa'],[14.0,65,.18,.4,'#fca5a5']],
+  winter:[[9.5,72,.18,.4,'#ffffff'],[12.2,68,.18,.4,'#f0f9ff'],[15.8,70,.18,.4,'#ffffff'],[17.4,66,.18,.4,'#f0f9ff'],[10.6,63,.18,.4,'#ffffff'],[14.0,65,.18,.4,'#f0f9ff']]
+ };
+ const farParticles=farParticlesBySeason[seasonKey]??farParticlesBySeason.spring;
  art+=`<g class="window-scenery window-season-${seasonKey}" data-season="${seasonKey}" aria-label="창밖 ${winSeason.label} 풍경">`+
-  left(.2,8.6,36,9.8,40,winSeason.sky);
+  `<g class="window-view-far" data-layer="far-background" aria-label="원경 산 능선 및 지평선 층운">`+
+  left(.2,8.6,36,9.8,40,winSeason.sky)+
+  left(.204,8.6,44,9.8,4.5,skyGrad1)+
+  left(.204,8.6,40.5,9.8,3.5,skyGrad2)+
+  left(.206,8.6,46,2.2,4.5,farMtn)+left(.206,10.8,47,3.0,5.8,farMtn)+left(.206,13.8,46,2.6,6.5,farMtn)+left(.206,16.4,45,2.0,4.8,farMtn)+
+  left(.208,8.6,42,2.8,4.2,midMtn)+left(.208,11.4,43,3.2,5.2,midMtn)+left(.208,14.6,42,3.8,5.0,midMtn)+
+  left(.208,9.2,70.5,3.4,1.2,'#ffffff')+left(.208,9.8,71.7,2.2,0.7,'#f0f9ff')+
+  left(.208,14.0,67.2,3.8,1.1,'#ffffff')+left(.208,14.6,68.3,2.4,0.7,'#f0f9ff')+
+  left(.208,11.8,69.0,1.8,0.7,'#ffffff')+
+  `<g class="window-particles-far" data-layer="far-particles" aria-label="원경 원근 파티클">`+
+  farParticles.map(([v,z,d,h,c])=>left(.21,v,z,d,h,c)).join('')+
+  '</g></g>'+
+  `<g class="window-view-mid" data-layer="midground" aria-label="중경 캠퍼스 시계탑과 연구동">`+
+  left(.218,8.6,36,9.8,5,lawnBase)+left(.22,8.6,39,9.8,2,lawnSlope)+
+  left(.222,9.6,36.5,7.8,1.2,seasonKey==='winter'?'#cbd5e1':'#d6cbbe')+
+  `<g class="campus-clock-tower" data-midground="clock-tower" aria-label="캠퍼스 본관 시계탑 건물">`+
+  left(.226,10.1,38,1.6,17,'#64748b')+left(.228,10.1,38,.35,17,'#475569')+
+  left(.228,10.4,51,1.0,3.2,'#334155')+
+  left(.23,10.5,47,.8,2.4,'#f8fafc')+left(.232,10.45,46.8,.9,.2,'#1e293b')+
+  left(.234,10.85,47.9,.15,.7,'#0f172a')+left(.234,10.75,48.2,.25,.15,'#0f172a')+
+  left(.228,10.1,55,1.6,1.2,'#334155')+left(.228,10.3,56.2,1.2,1.2,'#334155')+left(.228,10.5,57.4,.8,1.2,'#334155')+
+  left(.23,10.8,58.6,.2,3.2,'#0f766e')+left(.232,10.75,61.8,.3,.3,'#d4af37')+
+  '</g>'+
+  `<g class="campus-research-wing" data-midground="research-building" aria-label="아치형 창문의 연구동 건물 실루엣">`+
+  left(.226,12.0,38,2.8,9.5,'#6b7280')+left(.228,11.9,47.5,3.0,.8,'#4b5563')+
+  [12.3,13.1,13.9].map(wv=>left(.23,wv,40.5,.55,3.6,'#1e293b')+left(.23,wv+.05,44.1,.45,.9,'#334155')+left(.232,wv+.08,41.2,.39,2.8,'#fde68a')).join('')+
+  '</g>'+
+  `<g class="campus-midground-trees" aria-label="캠퍼스 중경 가로수">`+
+  [9.0,15.0,16.4].map(tv=>left(.23,tv+.3,37,.25,3.5,'#573d26')+left(.232,tv,39,1.1,3.2,winSeason.trees[1])).join('')+
+  '</g></g>'+
+  `<g class="window-view-near" data-layer="foreground" aria-label="근경 가로수 및 창틀 디테일">`;
  for(let i=0;i<7;i++){
   const th=5+(i%3)*3;
+  art+=left(.25,9+i*1.3,36,.25,th-1.5,'#4a3319');
   art+=left(.27,9+i*1.3,36,1.4,th,winSeason.trees[i%3]);
   if(seasonKey==='winter')art+=left(.28,9+i*1.3,36+th-1,1.4,1.1,'#ffffff');
  }
- art+=`<g class="${winSeason.effectClass}" data-effect="${winSeason.effectAttr}" aria-label="${winSeason.effectLabel}">`+
+ art+=left(.26,9.5,48,1.8,.3,'#5c4033')+left(.27,9.8,47.5,1.0,1.2,winSeason.trees[0])+
+  left(.26,15.5,52,1.6,.3,'#5c4033')+left(.27,15.8,51.5,1.2,1.2,winSeason.trees[2])+
+  `<g class="window-frame-shadow" aria-label="창틀 그림자">`+
+  left(.22,8.6,36,9.8,1.0,'#b8a994')+left(.22,8.6,75.2,9.8,.8,'#b8a994')+
+  left(.22,8.6,36,.5,40,'#baa993')+left(.23,13.65,36,.35,40,'#c4b59f')+left(.23,8.6,53.4,9.8,.5,'#c4b59f')+
+  '</g></g>'+
+  `<g class="${winSeason.effectClass}" data-effect="${winSeason.effectAttr}" aria-label="${winSeason.effectLabel}">`+
   winSeason.particles.map(([v,z,d,h,c])=>left(.28,v,z,d,h,c)).join('')+
+  (seasonKey==='spring'?`<g class="spring-cherry-drifts" data-effect="cherry-drift" aria-label="흩날리는 벚꽃 꽃잎 다층 픽셀">`+
+   [[9.6,63,.45,.8,'#f472b6'],[9.9,62.6,.35,.6,'#fbcfe8'],[13.2,57,.45,.8,'#f472b6'],[13.5,56.6,.35,.6,'#fbcfe8'],[15.8,61,.45,.8,'#f472b6'],[16.1,60.6,.35,.6,'#fbcfe8'],[11.5,45,.45,.8,'#f472b6'],[11.8,44.6,.35,.6,'#fbcfe8']].map(([v,z,d,h,c])=>left(.285,v,z,d,h,c)).join('')+
+   '</g>':'')+
+  (seasonKey==='summer'?`<g class="summer-rain-streaks" data-effect="summer-shower" aria-label="여름 소나기 빗살 픽셀">`+
+   [[9.4,72,.15,2.4,'#bae6fd'],[11.2,66,.15,2.6,'#e0f2fe'],[13.0,74,.15,2.2,'#bae6fd'],[15.2,68,.15,2.5,'#e0f2fe'],[17.0,71,.15,2.4,'#bae6fd'],[10.5,55,.15,2.5,'#bae6fd'],[12.8,51,.15,2.6,'#e0f2fe'],[14.6,58,.15,2.3,'#bae6fd'],[16.4,53,.15,2.4,'#bae6fd']].map(([v,z,d,h,c])=>left(.285,v,z,d,h,c)).join('')+
+   '</g>':'')+
+  (seasonKey==='autumn'?`<g class="autumn-ginkgo-maple" data-effect="ginkgo-maple" aria-label="가을 단풍과 은행잎 픽셀">`+
+   [[9.5,65,.5,.6,'#facc15'],[9.8,64.6,.4,.5,'#eab308'],[12.5,58,.45,.7,'#dc2626'],[12.8,57.5,.35,.5,'#b91c1c'],[14.2,64,.5,.6,'#facc15'],[14.5,63.6,.4,.5,'#ca8a04'],[16.2,52,.45,.7,'#dc2626'],[16.5,51.5,.35,.5,'#991b1b'],[11.0,46,.5,.6,'#facc15'],[15.4,44,.45,.7,'#dc2626']].map(([v,z,d,h,c])=>left(.285,v,z,d,h,c)).join('')+
+   '</g>':'')+
+  (seasonKey==='winter'?`<g class="winter-snowflakes-3d" data-effect="heavy-snow" aria-label="펄펄 날리는 입체 함박눈 픽셀">`+
+   [[9.8,67,.6,1.2,'#ffffff'],[9.7,67.3,.8,.6,'#e0f2fe'],[12.4,61,.7,1.3,'#ffffff'],[12.3,61.3,.9,.7,'#bae6fd'],[15.2,65,.6,1.2,'#ffffff'],[15.1,65.3,.8,.6,'#e0f2fe'],[11.0,52,.7,1.3,'#ffffff'],[10.9,52.3,.9,.7,'#bae6fd'],[13.8,47,.6,1.2,'#ffffff'],[13.7,47.3,.8,.6,'#e0f2fe'],[16.5,54,.7,1.3,'#ffffff'],[16.4,54.3,.9,.7,'#bae6fd'],[10.4,40,.6,1.1,'#ffffff'],[14.8,38,.7,1.2,'#ffffff']].map(([v,z,d,h,c])=>left(.285,v,z,d,h,c)).join('')+
+   '</g>':'')+
   '</g></g>';
  art+=left(.24,13.2,36,.45,40,'#f4f0e4')+left(.24,8.6,54,9.8,.8,'#f4f0e4');
  const lecturing=isLecturing(result,idle),boardColors=['#526762','#faf8ee','#d7e5e0','#293e50'],boardInk=['#e4e6d6','#738781','#78948e','#afd5db'];art+=`<g data-board="${d.boardType}" aria-label="${['블랙보드','화이트보드','유리 벽면','전자칠판'][d.boardType]}">`+front(16,.15,33,9,39,d.boardType===2?'#b9cbc6':'#c6b194')+front(16.5,.2,36,8,33,boardColors[d.boardType]);for(let i=0;i<(lecturing?2:4);i++)art+=line([17.2,.24,63-i*6],[23-(i%2)*2,.24,63-i*6],boardInk[d.boardType],1.3);if(lecturing)art+=lectureDiagram(d.boardType,boardInk[d.boardType]);art+='</g>';
+ art+=boardTray(16.2,0.22,34.5,d.boardType)+wallCalendar(25.4,0.2,46)+wallPostIts(25.4,0.2,32);
  // The game emblem doubles as the lab's wall sign.
  art+='<g class="lab-logo-plaque" aria-label="연구실 로고">'+left(.2,2,55,4,20,'#f6f1e6');for(const [a,b]of [[[.28,2.8,61],[.28,5,70]],[[.28,5,70],[.28,5.4,60]],[[.28,2.8,61],[.28,5.4,60]]])art+=line(a,b,'#9ab7c8',1.5);for(const [v,z,color]of [[2.8,61,'#19384b'],[5,70,'#00a3d2']]){const[x,y]=projectRoom(.3,v,z);art+=`<circle cx="${x}" cy="${y}" r="3.5" fill="${color}"/>`;}art+='</g>';
  const certCount=Math.min(4,state?.career?.awards??0);
@@ -309,10 +594,19 @@ export function miniRoomArt(state,kind,result,index,{idle=false,stock='balanced'
  if(d.clock){art+=front(12,.2,63,2.8,16,'#b7b7a7')+front(12.3,.22,65,2.2,12,'#f9f4e7')+line([13.3,.24,71],[13.3,.24,76],'#82918d',1.4)+line([13.3,.24,71],[14,.24,70],'#82918d',1.4);}
  if(d.noticeboard){art+=left(.2,21,39,4.5,24,'#cdb597')+left(.25,21.4,42,1.5,15,'#f7efda')+left(.25,23.4,46,1.3,13,'#e6d6c8');}
  const objects=[],add=(u,v,w,depth,art)=>objects.push({depth:u+v+w+depth,art});
- add(4,1,5.5,2,bookshelf(4,1,wet,stock,state)+(d.plush?plush(5.5,2.3,60):''));
+ add(4,1,5.5,2,bookshelf(4,1,wet,stock,state)+plush(5.5,2.3,60));
  if(d.server)add(10,1,3,2.6,server(10,1));
+ if(wet)add(3.6,10.1,5.5,0.5,wetLabFixtures(3.6,10.1,stock));
  if(d.fridge)add(1,5,3.5,3,fridge(1,5));
- let tea=desk(1.5,21,3.8,3);if(d.kettle)tea+=kettle(2.2,22,26);tea+=box(3.5,22.5,.6,.6,4,'#c9ad92',26);add(1.5,21,3.8,3,tea);
+ let tea=desk(1.5,21,3.8,3);
+ tea+=capsuleCoffeeMachine(1.7,21.3,26);
+ if(d.kettle)tea+=kettle(2.8,22.0,26);
+ tea+=labSnackBox(3.9,21.4,26);
+ tea+=box(3.7,22.8,.6,.6,4,'#c9ad92',26);
+ add(1.5,21,3.8,3,tea);
+ add(10.2,17.2,2.2,1.0,cableOrganizer(10.2,17.2,0));
+ add(8.6,21.5,1.6,1.5,bagHanger(8.6,21.5,0));
+ add(8.8,22.8,1.4,1.4,wastebasket(8.8,22.8,0));
  const resting=!idle&&(kind==='rest'||result.actual==='coffee')&&result.outcome!=='training';
  // Keep each seat and its occupant together. Sorting by the chair's far
  // corner alone used to paint the backrest over the student's face.

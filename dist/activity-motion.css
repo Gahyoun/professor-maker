@@ -21,4 +21,8 @@
 @keyframes rest-note{0%,100%{opacity:0;transform:translateY(0)}30%,70%{opacity:.65;transform:translate(2px,-5px)}}
 @keyframes rehearse{0%,100%{opacity:.3}50%{opacity:.9;transform:translateX(2px)}}
 @keyframes rest-breathe{50%{transform:translateY(-.6px)}}
-@media(prefers-reduced-motion:reduce){.scene-active [data-motion] *,.mini-student.action-rest,.mini-student.action-coffee{animation:none!important}.study-page,.lab-droplet,.rest-note{opacity:0}.analysis-trace{stroke-dashoffset:0}.cup-steam{opacity:.55}}
+.server-led-indicator polygon:nth-child(2){animation:server-led-blink .85s steps(2,end) infinite}
+.server-led-indicator polygon:nth-child(3){animation:server-led-blink 1.4s steps(2,end) infinite;animation-delay:.3s}
+.server-led-indicator polygon:nth-child(4){animation:server-led-blink 2.2s steps(2,end) infinite;animation-delay:.7s}
+@keyframes server-led-blink{0%,100%{opacity:1}50%{opacity:.2}}
+@media(prefers-reduced-motion:reduce){.scene-active [data-motion] *,.mini-student.action-rest,.mini-student.action-coffee,.server-led-indicator polygon{animation:none!important}.study-page,.lab-droplet,.rest-note{opacity:0}.analysis-trace{stroke-dashoffset:0}.cup-steam{opacity:.55}.server-led-indicator polygon{opacity:1!important}}
