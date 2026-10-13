@@ -1,7 +1,7 @@
 import {facultyCapacity,allocateCredits} from '../dist/workload.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createState,simulateMonth,decide,proposeSchedule,validateSave,migrateSave} from '../dist/engine.js';
+import {createState,simulateMonth,decide,proposeSchedule,validateSave,migrateSave,monthlyBudgetCost,calendarMonth} from '../dist/engine.js';
 import {hIndex,advanceImpact} from '../dist/impact.js';
 import {grantCounts,canApplyGrant,advancePortfolio,depositGrant} from '../dist/funding.js';
 import {buildEndingCV} from '../dist/cv.js';
@@ -26,8 +26,8 @@ test('grant selection is probabilistic and grants last exactly two to five years
 });
 test('pooled stipend survives ended projects, pays first and cannot fund operations',()=>{
  const s=createState('',8);s.month=2;s.lab.funds=0;s.lab.pool=200;depositGrant(s,100);assert.equal(s.lab.funds,65);assert.equal(s.lab.pool,235);
- const n=simulateMonth(s,['rest','rest','rest','rest']);assert.equal(n.lab.pool,235-7.8);assert.equal(n.lab.funds,55);assert.equal(n.history.find(h=>h.kind==='stipend-payment').fromPool,7.8);
- s.lab.funds=0;assert.throws(()=>simulateMonth(s,['rest','rest','rest','rest']),/Budget/);
+ const n=simulateMonth(s,['rest','rest','rest','rest']);assert.equal(n.lab.pool,235-7.8);assert.equal(n.lab.funds,56.2);assert.equal(n.history.find(h=>h.kind==='stipend-payment').fromPool,7.8);
+ s.lab.funds=0;const bridged=simulateMonth(s,['rest','rest','rest','rest']);assert.equal(bridged.month,s.month+1);assert.equal(bridged.lab.pool,235-7.8);assert.ok(Math.abs(bridged.lastReport.borrowed-8.8)<1e-8);assert.equal(bridged.lab.funds,0);assert.ok(validateSave(bridged));
 });
 test('external admission is offered at undergraduate and master transitions and advice has distinct outcomes',()=>{
  for(const level of ['bachelor','masters']){
@@ -46,15 +46,36 @@ test('undergraduate conferences teach observation only, with a fixed final-year 
 test('faculty capacity and efficiency vary with seniority and seeded calendar pressure without consuming RNG',()=>{
  const young=createState('',12,{age:30}),senior=createState('',12,{age:55});let a=0,b=0;for(let month=0;month<12;month++){young.month=senior.month=month;a+=facultyCapacity(young).credits;b+=facultyCapacity(senior).credits;}assert.ok(a>b);assert.ok(facultyCapacity(senior).efficiency>facultyCapacity(young).efficiency);const before=structuredClone(young);assert.deepEqual(facultyCapacity(young),facultyCapacity(young));assert.deepEqual(young,before);
 });
-test('reduced faculty credits retain eight for maintenance and never exceed eleven',()=>{
+test('faculty credits retain eight for maintenance and never exceed ten',()=>{
  for(const age of [30,42,55]){
   const s=createState('',12,{age}),before=structuredClone(s);
   for(let month=0;month<96;month++)for(const active of [false,true]){
    const capacity=facultyCapacity({...s,month,sabbatical:{...s.sabbatical,active}});
-   assert.ok(capacity.credits>=8&&capacity.credits<=11);
+   assert.ok(capacity.credits>=8&&capacity.credits<=10);
   }
   assert.deepEqual(s,before);
  }
+});
+test('support-cost relief leaves stipends and fixed wet supplies payable in full',()=>{
+ const dry=createState('',12,{fieldId:'050',labMode:'dry'}),wet=structuredClone(dry);wet.professorProfile.labMode='wet';
+ const noSupport={salary:60,environment:0,performance:0,publicity:0};
+ assert.equal(monthlyBudgetCost(dry,noSupport,[]),7.8);
+ assert.equal(monthlyBudgetCost(wet,noSupport,[]),13.8);
+ assert.equal(monthlyBudgetCost(wet,noSupport,['experiment','experiment'])-monthlyBudgetCost(wet,noSupport,[]),4);
+ const support={...noSupport,environment:2,performance:3};
+ assert.ok(Math.abs(monthlyBudgetCost(dry,support,[])-16.6)<1e-9);
+ assert.ok(Math.abs(monthlyBudgetCost(wet,support,[])-25.24)<1e-9);
+});
+test('routine advising recovers slowly while an extra mentoring credit retains its effect',()=>{
+ const s=createState('',12,{age:30});
+ while(facultyCapacity(s).credits<9||[4,10].includes(calendarMonth(s.month)))s.month++;
+ const before=structuredClone(s),plan=proposeSchedule(s).map(()=> 'rest'),efficiency=facultyCapacity(s).efficiency;
+ const maintenance=simulateMonth(s,plan,{allocation:{research:2,teaching:2,admin:2,mentoring:2},facultyAction:'routine'});
+ const extra=simulateMonth(s,plan,{allocation:{research:2,teaching:2,admin:2,mentoring:3},facultyAction:'routine'});
+ assert.ok(Math.abs(maintenance.professor.mentoring-s.professor.mentoring-.35*efficiency)<1e-9);
+ assert.ok(Math.abs(extra.professor.mentoring-maintenance.professor.mentoring-2.3*efficiency)<1e-9);
+ assert.equal(extra.professor.teaching,maintenance.professor.teaching);
+ assert.deepEqual(s,before);
 });
 test('loading an over-budget workload fits the new cap and can advance without altering the original save',()=>{
  const old=createState('',12,{age:42});old.allocation={research:3,teaching:3,admin:3,mentoring:3};

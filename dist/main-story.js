@@ -2,7 +2,7 @@ export const CHAPTERS={
  contact:{title:'처음 적어 보는 연구 노트',body:'학생은 빈 노트를 펴고 첫 연구 질문을 적었다. 무엇을 모르는지 말하는 일부터 시작하자고, 교수는 조용히 고개를 끄덕였다.',options:['작은 질문부터 함께 정리한다','실패한 시도도 기록하도록 격려한다']},
  firstyear:{title:'첫 번째 봄을 지나',body:'학생은 처음 연구실에 왔을 때 적은 노트를 다시 펼친다. 후배에게 연구실의 사용법을 설명해 보려 한다. 익숙해진 것과 아직 어려운 것을 함께 적어 본다.',options:['배운 점을 함께 돌아본다','연구 밖의 생활도 물어본다']},
  graduate:{title:'남이 준 질문, 내가 고른 질문',body:'대학원 첫 학기. 학생은 “이제 제가 궁금한 것을 연구해도 될까요?”라고 묻는다. 교수는 결과보다 질문의 근거를 먼저 듣기로 한다.',options:['스스로 고른 질문을 함께 다듬는다','작은 실험으로 가능성을 확인한다']},
- uncertainty:{title:'결과가 없는 날에도',body:'연구가 익숙해질수록, 얼마나 모르는지 더 선명해진다. 학생은 성과가 없는 달의 이야기를 꺼낸다. 교수는 잠시 노트북을 닫는다.',options:['성과 밖에서 힘이 되는 것을 묻는다','다음 한 주의 작은 목표를 함께 정한다']},
+ uncertainty:{title:'결과가 없는 날에도',body:'연구가 익숙해질수록, 얼마나 모르는지 더 선명해진다. 학생은 성과가 없는 달의 이야기를 꺼냈다. 교수는 잠시 노트북을 닫았다.',options:['성과 밖에서 힘이 되는 것을 묻는다','다음 한 주의 작은 목표를 함께 정한다']},
  independence:{title:'교수님, 이번에는 제가 설명할게요',body:'학생은 선택한 방법과 그 한계를 자기 말로 정리해 보고 싶다고 말한다. 교수는 결론을 먼저 알려 주기 전에 학생이 적어 온 근거를 살펴본다. 아직 설명이 막히는 부분은 다음 질문으로 남긴다.',options:['학생의 판단 근거를 듣는다','동료와 서로 검토할 시간을 만든다']},
  lastyear:{title:'연구실 밖의 다음 장',body:'마지막 학년. 논문 파일 곁에 진로 메모가 늘어난다. 교수는 학생에게 어떤 삶과 연구를 이어 가고 싶은지 묻는다.',options:['학생이 바라는 다음 생활을 듣는다','지원과 추천 일정을 함께 정리한다']}
 };
@@ -12,5 +12,25 @@ export const THESIS_SCENES={
  presentation:{title:'공개 학위논문 발표',body:'학생이 심사위원과 동료들 앞에 섰다. 연구의 필요성에서 방법, 결과와 한계까지 자기 말로 설명한다. 교수는 청중석에서 발표를 듣는다.',choices:[['present','학생의 공개 발표를 지켜본다']]},
  questions:{title:'질의응답과 논리의 검토',body:'심사위원들은 방법의 타당성과 결과의 해석을 묻는다. 학생은 아는 것과 아직 확인하지 못한 것을 구분해 답한다.',choices:[['answer','근거를 바탕으로 질문에 답한다']]},
  revision:{title:'심사위원 논의와 수정·보완',body:'학생이 잠시 자리를 비우고 위원들이 논의를 이어 간다. 다시 들어온 학생은 수정할 부분을 적고 최종 제출을 준비한다.',choices:[['revise','수정 의견을 반영하고 최종본을 정리한다']]},
- verdict:{title:'학위논문 최종 판정',body:'발표와 답변, 수정본, 학위요건의 기록을 심사위원들이 확인한다. 함께한 시간이 다음 장으로 이어질 준비가 되었는지 살핀다.',choices:[['confirm','최종 심사 결과를 확인한다']]}
+ verdict:{title:'학위논문 최종 판정',body:'심사위원들이 발표와 답변, 수정본을 검토하고 학위요건 충족 여부를 확인한다. 학생과 교수는 판정과 남은 제출 절차를 확인한다.',choices:[['confirm','최종 심사 결과를 확인한다']]}
 };
+
+// Source scenes stay unchanged for archived Korean runs. English copy follows
+// the September-start academic year and uses U.S. graduate-program vocabulary.
+export const CHAPTERS_EN=Object.freeze({
+ contact:{title:'The first research notebook',body:'The student opens a blank notebook and writes a first research question. The advisor nods: begin by saying what you do not yet understand.',options:['Work through one small question together','Encourage a record of attempts that did not work']},
+ firstyear:{title:'After the first academic year',body:'The student reopens the notebook from their first day in the lab. They try explaining the workspace to a new student, noting what now feels familiar and what still feels difficult.',options:['Reflect on what they have learned','Ask about life beyond research']},
+ graduate:{title:'A question of their own',body:'In the first semester of graduate school, the student asks, “Can I work on a question I care about now?” The advisor asks to hear the reasoning behind it before discussing a result.',options:['Refine the student’s own question together','Test its feasibility with a small pilot study']},
+ uncertainty:{title:'A month without results',body:'As research becomes familiar, the unknowns become clearer. The student describes a month with little to show. The advisor closes the laptop and listens.',options:['Ask what sustains them beyond research output','Agree on one manageable goal for the coming week']},
+ independence:{title:'Let me explain this time',body:'The student wants to explain their method and its limits in their own words. Before offering a conclusion, the advisor examines the evidence they brought. The parts that remain unclear become the next questions.',options:['Listen to the reasoning behind their decision','Make time for peer review and discussion']},
+ lastyear:{title:'The next chapter beyond the lab',body:'In the final academic year, career notes accumulate beside the dissertation file. The advisor asks what kind of life and research the student hopes to continue.',options:['Listen to the life they want next','Plan applications and recommendation letters together']}
+});
+export const THESIS_SCENES_EN=Object.freeze({
+ draft:{title:'The thesis draft and defense preparation',body:'Before sending the draft to the committee, review the question, methods, results and limitations. Leave time in the schedule to prepare slides and likely questions.',choices:[['outline','Review the argument and draft together'],['rehearse','Rehearse the presentation and likely questions']]},
+ presentation:{title:'The public thesis defense',body:'The student stands before the committee and their colleagues. They explain the motivation, methods, results and limitations in their own words. The advisor listens from the audience.',choices:[['present','Listen to the student’s public presentation']]},
+ questions:{title:'Committee questions and the argument',body:'The committee asks about the methods and interpretation. The student distinguishes what they know from what they have not yet established.',choices:[['answer','Answer the questions with evidence']]},
+ revision:{title:'Committee deliberation and revisions',body:'The student steps outside while the committee deliberates. On returning, they note the requested revisions and prepare the final submission.',choices:[['revise','Address the revisions and prepare the final version']]},
+ verdict:{title:'The final thesis decision',body:'The committee reviews the presentation, answers and revised document against the program requirements. Student and advisor confirm the decision and any remaining submission steps.',choices:[['confirm','Review the final committee decision']]}
+});
+export function getChapter(id,locale='ko'){return (locale==='en'?CHAPTERS_EN:CHAPTERS)[id];}
+export function getThesisScene(id,locale='ko'){return (locale==='en'?THESIS_SCENES_EN:THESIS_SCENES)[id];}

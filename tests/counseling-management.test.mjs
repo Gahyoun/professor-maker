@@ -15,8 +15,8 @@ const rest=['rest','rest','rest','rest'];
 const clone=x=>structuredClone(x);
 
 test('stage-specific counseling covers career, academic learning and research without ranking careers',()=>{
- const s=createState('',6),counseling=EVENTS.filter(e=>e.kind==='counseling'&&e.id!=='military-hidden');assert.equal(counseling.length,16);
- for(const e of counseling){s.month=e.minMonth;s.route=s.month>=24?'integrated':null;s.project.phase=2;s.project.submitted=false;s.project.submittedAt=null;s.project.revisions=0;s.hidden.stress=20;if(e.requires==='stress')s.hidden.stress=50;if(e.requires==='revision'){s.project.submitted=true;s.project.phase=5;s.project.revisions=1;s.project.submittedAt=s.month;}if(e.requires==='graduate'){s.route='integrated';if(s.month<24)s.month=24;}if(e.stages?.includes('phd')){s.month=Math.max(s.month,49);s.route='integrated';}if(e.stages?.includes('undergrad')){s.month=Math.min(s.month,23);s.route=null;}assert.ok(eventEligible(s,e),e.id);s.pending={kind:'event',id:e.id};assert.ok(validateSave(s),e.id);
+ const s=createState('',6),counseling=EVENTS.filter(e=>e.kind==='counseling'&&e.id!=='military-hidden');assert.equal(counseling.length,10);
+ for(const e of counseling){s.month=e.minMonth;s.route=s.month>=24?(e.stages?.includes('masters')?'masters':'integrated'):null;s.project.phase=2;assert.ok(eventEligible(s,e),e.id);s.pending={kind:'event',id:e.id};assert.ok(validateSave(s),e.id);
   for(const choice of [0,1]){const n=decide(s,choice);assert.ok(validateSave(n));assert.ok(n.hidden.rapport>=s.hidden.rapport);assert.ok(endingMemoryNotes(n.history).length);n.ending='leave';const cv=buildEndingCV(n);assert.ok(validateCVModel(cv.model));assert.ok(cv.model.memories.some(m=>m.title===e.title.ko));}
   assert.ok(e.options.every(o=>!Object.hasOwn(o.effects?.career??{},'papers')),'A conversation never invents an achievement');
  }
@@ -50,7 +50,7 @@ test('domestic attendance costs 20 per person, permits ordinary student schedule
 test('overseas four-way attendance uses 400 per person; PI-only travel needs no student acceptance and gives no student outputs',()=>{
  assert.deepEqual(['none','professor','together','student'].map(m=>attendanceCost(m,true)),[0,40,80,40]);const reserved=createState('',6);reserved.month=29;assert.equal(conferenceCosts(reserved,['study','free','language','conference'],{domestic:'together',overseas:'student'}).domestic,0);const s=createState('',6);s.month=29;s.route='integrated';const attendance={domestic:'none',overseas:'professor'};
  const n=simulateMonth(s,rest,{attendance});assert.equal(n.career.conferences,0);assert.ok(n.lastReport.results.every(w=>!w.abroad));assert.equal(n.history.find(h=>h.kind==='research-travel').cost,40);assert.equal(n.attendance.overseas,'none');assert.ok(validateSave(n));const ended=clone(n);ended.ending='leave';assert.ok(!buildEndingCV(ended).model.memories.some(m=>m.title==='방학 중 해외학회'));
- assert.throws(()=>simulateMonth(s,rest,{attendance:{...attendance,overseas:'student'}}),/accepted abstract/);s.lab.funds=0;s.lab.pool=1000;assert.throws(()=>simulateMonth(s,rest,{attendance}),/funds/);
+ assert.throws(()=>simulateMonth(s,rest,{attendance:{...attendance,overseas:'student'}}),/accepted abstract/);s.lab.funds=0;s.lab.pool=1000;const bridged=simulateMonth(s,rest,{attendance});assert.equal(bridged.month,s.month+1);assert.equal(bridged.history.find(h=>h.kind==='research-travel').cost,40);assert.ok(bridged.lastReport.borrowed>=40);assert.equal(bridged.lab.pool,1000-13.2);assert.ok(validateSave(bridged));
 });
 test('journal IF and conference tiers require more preparation; accepted venue metrics persist as fictional CV data',()=>{
  const s=createState('',6),base=projectThresholds(s);s.project.journal='leading';s.publication.conference='flagship';const hard=projectThresholds(s);assert.ok(hard.submission>base.submission);assert.ok(hard.conference>base.conference);

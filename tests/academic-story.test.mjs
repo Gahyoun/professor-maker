@@ -1,11 +1,12 @@
-import {managedOptions,affordableEventChoice} from './play-support.mjs';
+import {managedOptions,affordableEventChoice,simulateWithRestConsent} from './play-support.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';
 import {academicWeeks,weekContext} from '../dist/academic-calendar.js';
-import {createState,simulateMonth,decide,proposeSchedule,validateSave,feedbackEffect} from '../dist/engine.js';
+import {createState,decide,proposeSchedule,validateSave,feedbackEffect} from '../dist/engine.js';
 import {facultyCapacity,allocateCredits} from '../dist/workload.js';
 import {studentAppearance,renderPortrait} from '../dist/appearance.js';
 import {weeklyScene} from '../dist/weekly-scene.js';
-const choices={'workshop-plan':'skip','monthly-issue':'acknowledge','conference-plan':'none','failure-counsel':'review','conversation-topic':'daily',story:'encourage','academic-exam':'support',event:0,route:'integrated','presentation-recovery':'rehearse','external-admission':'remain',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
+const simulateMonth=(s,plan,options)=>simulateWithRestConsent(s,plan,options,'allow');
+const choices={'rest-request':'allow','lab-warning':'acknowledge','workshop-plan':'skip','monthly-issue':'acknowledge','conference-plan':'none','failure-counsel':'review','conversation-topic':'daily',story:'encourage','academic-exam':'support',event:0,route:'integrated','presentation-recovery':'rehearse','external-admission':'remain',masters:'continue',qual:'exam',sabbatical:'home',service:'consult','service-review':'consult',defense:'defend'};
 function resolve(s,route='integrated',graduate=false){let guard=0;while(s.pending&&!s.ending){assert.ok(guard++<12);const p=s.pending;let c=choices[p.kind]??({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[p.step];if(p.kind==='event')c=affordableEventChoice(s,p.id);if(p.kind==='conference-plan')c=p.scope==='domestic'?'together':'none';if(p.kind==='route')c=route;if(p.kind==='masters'&&graduate)c='graduate';s=decide(s,c);}return s;}
 
 test('Korean academic years contain 52–53 seven-day weeks and exams do not collide with the conference week',()=>{

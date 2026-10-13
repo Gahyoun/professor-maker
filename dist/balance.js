@@ -1,7 +1,7 @@
 // Fictional simulation tuning; the owner editor lives outside the player service.
 export const GAME_BALANCE = {
   abilityGrowthScale: .5,
-  policyGrowthScale: .4,
+  policyGrowthScale: .2,
   graduateResilienceDecay: .14,
   earlyDoctoralResilienceDecay: .22,
   undergradResilienceDecay: .03,

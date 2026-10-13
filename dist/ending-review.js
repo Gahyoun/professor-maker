@@ -1,3 +1,4 @@
+import {closureSummary} from './lab-risk.js';
 import {ENDINGS,getEndingPages,getEndingStory} from './stories.js';
 import {MAIN_ENDINGS,endingCollection,retirementScenes} from './ending-collection.js';
 import {endingStatistics,renderStatistics} from './statistics.js';
@@ -17,19 +18,19 @@ export function reviewRecord(sample){
  const s=sample.state;
  if(!s?.ending||!Object.hasOwn(ENDINGS,s.ending))throw new Error('A completed simulation ending is required');
  const field=getDiscipline(s.professorProfile.fieldId),rapport=abilityScore(s,'rapport');
- return {id:`audit-${sample.run??sample.seed}-${s.ending}-${field.id}`,ending:s.ending,name:s.name,month:s.month,fieldId:field.id,field:field.label,labMode:s.professorProfile.labMode,relationship:rapport>=70?'close':rapport>=40?'reserved':'distant',rapport,endingReason:s.endingReason??null,statistics:endingStatistics(s),evidence:endingEvidence(s),memories:s.history.filter(h=>h.kind==='event'&&EVENTS.some(e=>e.id===h.id&&Number.isInteger(h.choice)&&h.choice>=0&&h.choice<e.options.length)).slice(-16).map(h=>({kind:'event',id:h.id,choice:h.choice,month:h.month})),career:{papers:s.career.papers,awards:s.career.awards,conferences:s.career.conferences},hIndex:s.impact?.hIndex??0,appearance:weeklyAppearance(s),source:{seed:sample.seed,run:sample.run??null,policy:sample.policy}};
+ return {id:`audit-${sample.run??sample.seed}-${s.ending}-${field.id}`,ending:s.ending,name:s.name,month:s.month,fieldId:field.id,field:field.label,labMode:s.professorProfile.labMode,relationship:rapport>=70?'close':rapport>=40?'reserved':'distant',rapport,endingReason:s.endingReason??null,...(s.labClosure?{labClosure:structuredClone(s.labClosure)}:{}),statistics:endingStatistics(s),evidence:endingEvidence(s),memories:s.history.filter(h=>h.kind==='event'&&EVENTS.some(e=>e.id===h.id&&Number.isInteger(h.choice)&&h.choice>=0&&h.choice<e.options.length)).slice(-16).map(h=>({kind:'event',id:h.id,choice:h.choice,month:h.month})),career:{papers:s.career.papers,awards:s.career.awards,conferences:s.career.conferences},hIndex:s.impact?.hIndex??0,appearance:weeklyAppearance(s),source:{seed:sample.seed,run:sample.run??null,policy:sample.policy}};
 }
 export function reviewMeta(record){
  const context={statistics:record.statistics,fieldId:record.fieldId,field:record.field,labMode:record.labMode,relationship:record.relationship},story=getEndingStory(record.ending,context);
  const meta={title:adaptResearchText(story.title.ko,context),career:careerDescription(record.ending,context,'ko',story.career.ko),time:story.time.ko,type:record.ending==='true'?'TRUE ENDING':record.ending==='youtuber'?'SPECIAL ENDING':MAIN_ENDINGS.includes(record.ending)?'EPILOGUE':'ENDING'};
  if(record.ending==='unrelated'&&record.relationship==='distant'){meta.title='연구실 밖의 길';meta.time='졸업 2년 뒤 · 메일 없이 남은 후일담';}
  if(record.ending==='gameover'){
-  const reason={graduation_requirements:['졸업 준비 미완료','학위요건 미충족'],time_limit:['마지막 학기의 끝','8년 내 학위 미완료'],qual_failure:['다음 길을 의논하다','자격시험 미통과']}[record.endingReason];
+  if(record.labClosure){meta.title='지속할 수 없었던 연구실';meta.career=closureSummary(record);}const reason={graduation_requirements:['졸업 준비 미완료','학위요건 미충족'],time_limit:['마지막 학기의 끝','8년 내 학위 미완료'],qual_failure:['다음 길을 의논하다','자격시험 미통과']}[record.endingReason];
   if(reason){[meta.title,meta.career]=reason;meta.time='지도 기간의 마지막 기록';}
  }
  return meta;
 }
-export function reviewPages(record){return getEndingPages(record.ending,'ko',record.relationship,record.name,record.endingReason,record.memories,{statistics:record.statistics,recommendation:record.evidence?.recommendation,fieldId:record.fieldId,field:record.field,labMode:record.labMode,passageIds:record.passageIds}).map(text=>researchText(text,{professorProfile:{labMode:record.labMode}}));}
+export function reviewPages(record){return getEndingPages(record.ending,'ko',record.relationship,record.name,record.endingReason,record.memories,{statistics:record.statistics,recommendation:record.evidence?.recommendation,fieldId:record.fieldId,field:record.field,labMode:record.labMode,labClosure:record.labClosure,passageIds:record.passageIds}).map(text=>researchText(text,{professorProfile:{labMode:record.labMode}}));}
 export function reviewCollection(records){
  const gallery=MAIN_ENDINGS.flatMap(id=>{const record=records.find(r=>r.ending===id);return record?[record]:[];});
  const special=records.find(r=>r.ending==='youtuber');if(special)gallery.push(special);

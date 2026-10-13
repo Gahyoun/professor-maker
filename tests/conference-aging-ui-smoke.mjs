@@ -12,9 +12,9 @@ try{
  await page.addInitScript(()=>localStorage.setItem('pm-fast','true'));
  const snapshot=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('pm-save-v4')));
  const inject=async state=>{state.started=true;assert.ok(validateSave(state));await page.evaluate(state=>localStorage.setItem('pm-save-v4',JSON.stringify(state)),state);await page.reload();await page.locator('#live-stage').waitFor();};
- await page.goto('http://127.0.0.1:4173/#lab');
+ await page.goto((process.env.GAME_URL||'http://127.0.0.1:4173/')+'#lab');
  await page.locator('[name=professorAge]').selectOption('40');
- await page.locator('#start-form button[type=submit]').click();
+ if(await page.locator('#onboarding-update').count())await page.locator('#onboarding-update [data-ui=update-close]').first().click();await page.locator('#start-form button[type=submit]').click();await page.locator('[name=candidateIndex][value="0"]').check();await page.locator('#admission-form button[type=submit]').click();
  await page.locator('#decision').waitFor();
  let state=await snapshot();
  assert.deepEqual(state.pending,{kind:'conference-plan',scope:'domestic',targetMonth:1});
@@ -29,7 +29,7 @@ try{
  await page.locator('#decision').scrollIntoViewIfNeeded();
  await page.screenshot({path:output+'/pm413-conference-prior-month.png'});
  await page.locator('#decision [data-choice=none]').click();
- await page.waitForFunction(()=>JSON.parse(localStorage.getItem('pm-save-v4')).pending===null);
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('pm-save-v4')).pending===null);if(await page.locator('[data-ui=screen-guide-skip]').count())await page.locator('[data-ui=screen-guide-skip]').click();
  assert.equal((await snapshot()).month,0);
  assert.equal((await snapshot()).attendance.domestic,'none');
  assert.equal(await page.locator('.domestic-conference-summary').count(),0);

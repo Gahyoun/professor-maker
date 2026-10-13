@@ -1,29 +1,20 @@
 import {EXPRESSIONS,normalizeExpression} from './student-reaction.js';
 
 const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-export const STUDENT_HEAD_SCALE=.58;
-
-function parseHex(hex){
- const m=String(hex||'#000000').replace('#','').match(/../g)||['00','00','00'];
- return m.map(c=>parseInt(c,16)||0);
-}
-function hexLum(hex){
- const [r,g,b]=parseHex(hex);
- return (0.299*r+0.587*g+0.114*b)/255;
-}
-const mix=(a,b,t)=>{
- const pA=parseHex(a),pB=parseHex(b);
- return '#'+pA.map((v,i)=>Math.round(v*(1-t)+pB[i]*t).toString(16).padStart(2,'0')).join('');
-};
+const mix=(a,b,t)=>'#'+a.slice(1).match(/../g).map((v,i)=>Math.round(parseInt(v,16)*(1-t)+parseInt(b.slice(1+i*2,3+i*2),16)*t).toString(16).padStart(2,'0')).join('');
+const luminosity=color=>color.slice(1).match(/../g).reduce((sum,value,index)=>sum+parseInt(value,16)*[.299,.587,.114][index],0)/255;
+export const STUDENT_HEAD_SCALE=.5;
+export const STUDENT_MONITOR_LAYERS=Object.freeze(['rear-head','far-arm','body','back-hair','face-fringe','near-arm']);
 
 // Integer raster art: the public 320 × 496 frame is shared by every activity.
 // Cosmetics are read from saved appearance fields and never consume game RNG.
-export function renderStudentPortrait(a,label='학생 도트 초상화',expression='neutral',pose='standing',facing='front'){
+function studentPortrait(a,label='학생 도트 초상화',expression='neutral',pose='standing',facing='front',hairOnly=false){
+ a=a??{};
  expression=normalizeExpression(expression);
  pose=['standing','seated','experiment','lecturing'].includes(pose)?pose:'standing';
  facing=pose==='seated'&&facing==='monitor'?'monitor':'front';
  const W=80,H=118,raster=()=>Array.from({length:H},()=>Array(W).fill(null));
- const backHead=raster(),body=raster(),frontHead=raster();let pixels=backHead;
+ const backHead=raster(),body=raster(),frontHead=raster(),backHair=raster(),napeHair=raster(),farArm=raster(),nearArm=raster();let pixels=backHead;
  const put=(x,y,c)=>{if(x>=0&&x<W&&y>=0&&y<H)pixels[y][x]=c;};
  const row=(y,x0,x1,c)=>{for(let x=x0;x<=x1;x++)put(x,y,c);};
  const box=(x0,y0,x1,y1,c)=>{for(let y=y0;y<=y1;y++)row(y,x0,x1,c);};
@@ -32,194 +23,130 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
   for(let y=lo;y<=hi;y++){const xs=[];for(let i=0;i<points.length;i++){const [x1,y1]=points[i],[x2,y2]=points[(i+1)%points.length];if((y1>y+.5)!==(y2>y+.5))xs.push(x1+(y+.5-y1)*(x2-x1)/(y2-y1));}xs.sort((a,b)=>a-b);for(let i=0;i+1<xs.length;i+=2)row(y,Math.ceil(xs[i]),Math.floor(xs[i+1]),c);}
  };
  const oval=(cx,cy,rx,ry,c)=>{for(let y=Math.floor(cy-ry);y<=cy+ry;y++){const d=(y+.5-cy)/ry;if(Math.abs(d)>1)continue;const r=Math.floor(rx*Math.sqrt(1-d*d));row(y,cx-r,cx+r,c);}};
- const l=Math.max(0,Math.min(6,a.hairLength??3)),fringe=(a.fringe??0)%16,outfit=a.outfit??0;
-
- // Global hair palette highlight & shadow derivation:
- const hairHex=a.hair??'#282827';
- const hairTones=(()=>{
-  const [r,g,b]=parseHex(hairHex);
-  const lum=(0.299*r+0.587*g+0.114*b)/255;
-  const isBlonde=lum>=0.52||(r>=165&&g>=135&&b>=60&&r>b*1.3);
-  const isRed=!isBlonde&&((r>=115&&r>g*1.25&&r>b*1.4)||(r>=130&&g<=95&&b<=75));
-  const isBrown=!isBlonde&&!isRed&&(lum>=0.13?(r>b*1.25&&r>=g):(r>b*1.6));
-  const isBlack=!isBlonde&&!isRed&&!isBrown;
-  if(isBlonde){
-   return {
-    hair:hairHex,
-    hairD:mix(hairHex,'#4a2c0c',0.42),
-    hairM:mix(hairHex,'#fff7dd',0.22),
-    hairH:mix(hairHex,'#fffdf2',0.45),
-    edge:mix(hairHex,'#2d1804',0.65),
-   };
+ // Optional saved art fields are descriptive only. Generation and simulation
+ // stay in appearance.js; a name or student background never selects headwear.
+ const hijab=Boolean(a.hijab||a.headwear==='hijab'||a.hairStyle==='hijab');
+ const requestedStyle=a.cosmeticHairStyle??a.hairStyle;
+ const cosmeticHairStyle=!hijab&&['disheveled','bald'].includes(requestedStyle)?requestedStyle:'regular',bald=cosmeticHairStyle==='bald';
+ const originalLength=bald?0:Math.max(0,Math.min(6,a.hairLength??3));
+ const hairStyle=!hijab&&a.labMode==='wet'&&originalLength>=5?(a.hairStyle==='braided-bun'?'braided-bun':'ponytail'):'loose';
+ const l=hairStyle==='loose'?originalLength:2,fringe=(a.fringe??0)%16,outfit=a.outfit??0;
+ const looseEnd=[0,0,0,67,68,89,100][l];
+ const afro=!hijab&&!bald&&originalLength>0&&hairStyle==='loose'&&Boolean(a.afro||a.hairStyle==='afro');
+ const modernHair=typeof a.hairPaletteKey==='string',coily=a.hairTexture==='coily'||Boolean(a.coily)||a.hairStyle==='coily',wavy=a.hairTexture==='wavy';
+ const curly=!hijab&&!bald&&Boolean(a.curly||coily);
+ const hairHex=a.hair??'#282827',skinHex=a.skin??'#e8c6ab';
+ // Blond highlights keep their warm hue rather than acquiring slate shadows.
+ // Legacy unversioned portraits retain their original pigment exactly.
+ const blond=modernHair&&!a.bleached&&luminosity(hairHex)>=.5;
+ const hair=mix(hairHex,a.bleached?'#f7edce':blond?'#fff7dd':'#766058',a.bleached?.08:blond?.08:.14),hairD=mix(hairHex,blond?'#4a2c0c':'#19202d',a.bleached?.16:blond?.35:.22),hairM=mix(hair,a.bleached?'#eee4c8':blond?'#fff7dd':'#b4a09a',a.bleached?.22:.18),hairH=mix(hair,a.bleached?'#fff7dc':blond?'#fffdf2':'#cfb7a9',a.bleached?.32:.35),hairEdge=mix(hair,blond?'#2d1804':'#20202b',.58);
+ const hairColors=new Set([hair,hairD,hairM,hairH]);
+ const accent=a.twoTone&&!bald&&!hijab&&/^#[0-9a-f]{6}$/i.test(a.hairAccent??'')?a.hairAccent:null;
+ // Peekaboo pigment belongs only to the existing underlayer. A mask keeps
+ // highlights off the skin, spectacles, clothes and either keyboard arm.
+ const underlayer=(x0,y0,x1,y1)=>{if(!accent)return;for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++)if(hairColors.has(pixels[y]?.[x]))put(x,y,(x+y)%5===0?mix(accent,hair,.28):accent);};
+ const modernSkin=a.skinPaletteVersion===2,skin=mix(skinHex,'#fff0df',modernSkin?.10:.25),skinD=mix(skin,modernSkin?'#3b201b':'#b77968',modernSkin?.20:.24),skinH=mix(skin,'#fff7e8',modernSkin?.18:.4);
+ const deepSkin=modernSkin&&luminosity(skinHex)<.46;
+ const blush1=deepSkin?mix(skin,'#762434',.38):'#e79a9f',blush2=deepSkin?mix(skin,'#8c3345',.4):'#edb0ac',blushH=deepSkin?mix(skin,'#a1485b',.42):'#ffe0d5';
+ const buzz=mix(hair,skin,.32),buzzFade=mix(buzz,skin,.28),buzzLight=mix(buzz,skinH,.16);
+ const shirt=a.shirt??'#456c87',white='#f4f0eb';
+ // Saved outfit slots: coat, knit cardigan, zip hoodie, layered shirt, striped
+ // tee and casual jacket. Contemporary everyday clothes share the same anatomy.
+ const pants=['#465871','#6e8aa4','#c8c1b3','#54728d','#b5a28a','#61666d'][outfit]??'#54728d';
+ const pantsH=mix(pants,'#e2e4de',.22),pantsD=mix(pants,'#283448',.24);
+ const top=[white,shirt,mix(shirt,'#77817e',.35),mix(shirt,'#f3eee7',.48),white,mix(shirt,'#5b6269',.4)][outfit]??shirt,topH=mix(top,'#fff4e9',.22),topD=mix(top,'#303244',.22);
+ const rib=mix(top,topD,.52),stitch=mix(top,topH,.55),stripe=mix(shirt,'#526272',.2);
+ const sneaker=(x,y,width=10)=>{box(x,y,x+width,y+3,'#e8e6dd');row(y,x+1,x+width-2,'#faf5e9');row(y+1,x+2,x+width-3,'#8d99a3');row(y+2,x+1,x+width,'#d1d5d2');row(y+3,x,x+width,'#f6f0e2');put(x+width,y+2,'#68788a');};
+ const hairTie=mix(shirt,'#b79b8c',.25);
+ const fabric=mix(a.hijabColor??mix(shirt,'#d0d8e0',.22),'#10151f',.08),fabricD=mix(fabric,'#04060b',.38),fabricM=mix(fabric,'#ffffff',.16),fabricH=mix(fabric,'#ffffff',.3);
+ const edge=hairEdge,fabricEdge=mix(fabric,'#10151f',.38),fabricColors=new Set([fabric,fabricD,fabricM,fabricH]);
+ const headwear=monitor=>{
+  if(!hijab)return;
+  if(monitor){
+   poly([[20,32],[20,26],[23,20],[27,15],[33,12],[43,12],[52,16],[58,25],[58,36],[53,44],[46,52],[37,56],[25,56],[21,49],[20,40]],fabricD);
+   poly([[21,32],[21,26],[24,20],[28,16],[34,13],[43,13],[52,16],[58,25],[58,36],[53,44],[46,52],[37,55],[26,55],[22,49],[21,40]],fabric);
+   poly([[25,20],[30,16],[38,14],[47,17],[43,20],[34,17],[27,21]],fabricM);
+   poly([[28,18],[35,15],[34,17],[28,20]],fabricH);
+   poly([[43,24],[52,28],[55,34],[52,36],[45,30]],fabricM);
+   poly([[43,50],[48,52],[53,58],[48,62],[42,56]],fabric);
+   poly([[21,55],[34,54],[48,57],[52,75],[46,80],[33,82],[27,80],[25,72],[23,68],[21,64]],fabricD);
+   poly([[22,57],[34,56],[44,59],[48,73],[42,78],[32,80],[28,78],[26,70],[24,68],[22,64]],fabric);
+   for(const x of [27,33,39])poly([[x,60],[x+3,59],[x+2,77],[x,78]],fabricM);
+  }else{
+   oval(40,29,27,24,fabric);oval(40,27,25,22,fabricM);
+   poly([[24,16],[32,12],[48,12],[56,16],[52,19],[40,15],[28,19]],fabricH);
+   poly([[25,29],[40,28],[55,29],[54,32],[40,31],[26,32]],fabricM);row(32,27,53,fabricD);
+   poly([[14,28],[24,28],[24,60],[28,64],[23,64],[14,56]],fabric);
+   poly([[16,30],[22,30],[22,58],[16,54]],fabricM);
+   poly([[66,28],[56,28],[56,60],[52,64],[57,64],[66,56]],fabricD);
+   poly([[64,30],[58,30],[58,58],[64,54]],fabric);
+   poly([[26,61],[54,61],[50,67],[40,68],[30,67]],fabric);
+   poly([[28,62],[52,62],[48,66],[40,67],[32,66]],fabricM);
+   poly([[22,68],[34,66],[46,66],[58,68],[59,81],[53,85],[40,86],[27,85],[21,81]],fabric);
+   poly([[35,67],[38,77],[36,84],[33,76]],fabricD);poly([[43,67],[46,77],[49,84],[46,76]],fabricH);
   }
-  if(isRed){
-   return {
-    hair:hairHex,
-    hairD:mix(hairHex,'#2b0704',0.42),
-    hairM:mix(hairHex,'#f88f58',0.22),
-    hairH:mix(hairHex,'#ffdfc4',0.42),
-    edge:mix(hairHex,'#1c0503',0.65),
-   };
+ };
+ const tiedHair=monitor=>{
+  if(hairStyle==='loose')return;
+  if(hairStyle==='braided-bun'){
+   const cx=monitor?17:64,cy=monitor?23:19;
+   oval(cx,cy,10,10,hairD);oval(cx,cy-1,8,8,hair);
+   for(const [dx,dy]of [[-5,-4],[0,-6],[4,-3],[5,2],[0,5],[-5,2]])poly([[cx+dx-2,cy+dy],[cx+dx,cy+dy-2],[cx+dx+3,cy+dy],[cx+dx+1,cy+dy+2]],hairM);
+   oval(cx,cy,3,3,hairD);row(cy+7,cx-4,cx+4,hairTie);
+  }else{
+   const end=originalLength===6?94:84;
+   if(monitor){poly([[17,29],[11,33],[10,44],[15,52],[14,end-12],[20,end-2],[23,end],[26,end-5],[20,end-18],[22,56],[25,43],[23,35]],hairD);
+    poly([[15,35],[13,44],[18,52],[18,end-12],[22,end-5],[23,end-10],[20,52],[22,43],[20,35]],hair);
+    poly([[15,39],[14,44],[18,51],[17,end-17],[19,end-11],[20,end-16],[20,51],[18,44]],hairM);
+    box(14,30,22,33,hairTie);row(31,15,21,mix(hairTie,'#eee2d4',.2));
+   }else{poly([[61,19],[69,20],[73,28],[76,41],[73,54],[73,end-12],[66,end-3],[64,end],[61,end-5],[65,end-15],[65,53],[62,43],[64,31],[58,27]],hairD);
+    poly([[65,28],[69,30],[72,42],[69,55],[70,end-14],[65,end-6],[66,end-15],[66,53],[65,44],[67,35]],hair);
+    poly([[67,34],[70,42],[68,55],[69,end-18],[66,end-13],[67,54],[66,44]],hairM);
+    box(59,22,68,25,hairTie);row(23,60,67,mix(hairTie,'#eee2d4',.2));
+   }
+   if(curly){const x=monitor?13:73;for(let y=43;y<end-8;y+=coily?8:wavy?15:11){oval(x,y,coily?3:4,wavy?6:5,hair);poly([[x-2,y-3],[x+2,y-2],[x+2,y],[x,y+2],[x-2,y]],hairM);}}
+   underlayer(monitor?18:65,end-16,monitor?21:68,end-5);
   }
-  if(isBlack){
-   return {
-    hair:hairHex,
-    hairD:mix(hairHex,'#07080c',0.45),
-    hairM:mix(hairHex,'#464856',0.25),
-    hairH:mix(hairHex,'#6c7082',0.48),
-    edge:mix(hairHex,'#040407',0.65),
-   };
-  }
-  // Brown (chestnut, warm brunette, espresso)
-  return {
-   hair:hairHex,
-   hairD:mix(hairHex,'#120a06',0.42),
-   hairM:mix(hairHex,'#a4704e',0.20),
-   hairH:mix(hairHex,'#cca17c',0.38),
-   edge:mix(hairHex,'#0d0705',0.65),
-  };
- })();
+  if(hairStyle==='braided-bun')underlayer(monitor?13:60,monitor?27:23,monitor?17:64,monitor?30:26);
+ };
 
- const hair=a.hairCustom??hairTones.hair;
- const hairD=a.hairD??hairTones.hairD;
- const hairM=a.hairM??hairTones.hairM;
- const hairH=a.hairH??hairTones.hairH;
- const edge=a.edge??hairTones.edge;
-
- // Global skin tone, neck shadow and blush derivation:
- const rawSkin=a.skin||'#e8c6ab';
- const skinTones=(()=>{
-  const lum=hexLum(rawSkin);
-  if(lum>=0.68){
-   const s=mix(rawSkin,'#fff5ea',0.14);
-   return {
-    skin:s,
-    skinD:mix(s,'#b77968',0.26),
-    skinH:mix(s,'#fff9ee',0.42),
-    blush1:'#e79a9f',blush2:'#edb0ac',blushH:'#ffe0d5',blushD:'#d68d92',
-   };
-  }
-  if(lum>=0.46){
-   const s=rawSkin;
-   return {
-    skin:s,
-    skinD:mix(s,'#5a2a16',0.36),
-    skinH:mix(s,'#ffdfbf',0.28),
-    blush1:'#c76858',blush2:'#d87f70',blushH:'#e9a393',blushD:'#a4473b',
-   };
-  }
-  // Deep brown / rich dark skin
-  const s=rawSkin;
-  return {
-   skin:s,
-   skinD:mix(s,'#140602',0.46),
-   skinH:mix(s,'#ba744b',0.30),
-   blush1:'#762434',blush2:'#8c3345',blushH:'#a1485b',blushD:'#581622',
-  };
- })();
-
- const skin=a.skinCustom??skinTones.skin;
- const skinD=a.skinD??skinTones.skinD;
- const skinH=a.skinH??skinTones.skinH;
- const {blush1,blush2,blushH,blushD}=skinTones;
-
- const shirt=a.shirt||'#456c87',pants='#354359',pantsH='#4e5c75',pantsD='#293143',white='#f4f0eb';
- const top=[white,shirt,shirt,'#f0e9dd','#e2d0b5','#344056'][outfit]??shirt,topH=mix(top,'#fff4e9',.22),topD=mix(top,'#303244',.22);
-
- const isHijab=Boolean(a.hijab||a.headwear==='hijab'||a.hairStyle==='hijab');
- const isBald=!isHijab&&(a.hairStyle==='bald'||Boolean(a.bald));
- const isBuzz=!isHijab&&!isBald&&(a.hairStyle==='buzz'||Boolean(a.buzzCut)||(l===0&&!isBald));
- const isAfro=!isHijab&&!isBuzz&&!isBald&&Boolean(a.afro||a.hairStyle==='afro');
- const isCoily=!isHijab&&!isBuzz&&!isBald&&!isAfro&&Boolean(a.coily||a.hairStyle==='coily');
- const isCurly=!isHijab&&!isBuzz&&!isBald&&!isAfro&&(Boolean(a.curly)||isCoily);
- const isDisheveled=!isHijab&&!isBald&&!isBuzz&&!isAfro&&(a.hairStyle==='disheveled'||Boolean(a.disheveled));
- const isTwoTone=!isHijab&&!isBald&&!isBuzz&&(a.hairStyle==='twoTone'||Boolean(a.twoTone||a.secretTwoTone));
- const isBleached=!isHijab&&!isBald&&!isBuzz&&(a.hairStyle==='bleached'||Boolean(a.bleached));
-
- const scalpShine=mix(skinH,'#ffffff',0.48);
- const scalpShineBright=mix(skinH,'#ffffff',0.82);
- const twoToneAccent=a.twoToneColor??'#ede2c8';
- const twoToneAccentH=mix(twoToneAccent,'#ffffff',0.45);
- const twoToneAccentD=mix(twoToneAccent,'#523b18',0.45);
-
- // Traditional hijab fabric tones:
- const baseFabric=a.hijabColor??(a.shirt?mix(a.shirt,'#d0d8e0',0.22):'#536b5c');
- const fabric=mix(baseFabric,'#10151f',0.08);
- const fabricD=mix(fabric,'#04060b',0.38);
- const fabricM=mix(fabric,'#ffffff',0.16);
- const fabricH=mix(fabric,'#ffffff',0.38);
- const undercap=mix(fabric,'#ffffff',0.28);
- const pinGold='#ffd700',pinGoldH='#fff4cc',pinGoldD='#b38600';
-
- // Back hair / drapery:
- if(isHijab){
+ // Rounded crown and tapered back locks, with long hair behind the sleeves.
+ if(hijab){
   poly([[16,32],[64,32],[66,52],[64,76],[58,80],[22,80],[16,76],[14,52]],fabricD);
-  poly([[20,36],[60,36],[62,74],[56,78],[24,78],[18,74]],fabric);
-  for(const x of [22,30,48,56]){
-   poly([[x,42],[x+3,40],[x+2,76],[x,78]],fabricD);
-   poly([[x+3,40],[x+5,40],[x+4,76],[x+2,76]],fabricM);
-  }
- }else if(isAfro){
+ }else if(afro){
   oval(40,25,31,28,hairD);
-  for(let deg=0;deg<360;deg+=12){
-   const rad=deg*Math.PI/180;
-   const bx=Math.round(40+30.5*Math.cos(rad));
-   const by=Math.round(25+27.5*Math.sin(rad));
-   if(by<54){put(bx,by,hairD);put(bx+(deg%2===0?1:-1),by,hair);}
-  }
- }else if(!isBuzz&&!isBald&&l){
+ }else if(l){
   oval(40,32,27,25,hairD);
-  if(l>=3){const end=[0,0,0,67,77,89,100][l];poly([[14,32],[66,32],[67,end-8],[64,end-2],[60,end],[56,end-5],[53,end],[27,end],[24,end-4],[20,end],[16,end-2],[13,end-8]],hairD);
+  if(l===4){
+   // A chin-length bob has a broad cheek-level volume and an inward hem,
+   // rather than the same straight curtain used for shoulder-length hair.
+   poly([[14,29],[66,29],[70,40],[69,57],[65,65],[57,68],[23,68],[15,65],[11,57],[10,41]],hairD);
+   poly([[13,35],[20,34],[23,55],[27,63],[22,66],[16,63],[13,57]],hair);
+   poly([[60,33],[66,37],[67,54],[64,62],[58,66],[54,64],[61,55]],hair);
+   poly([[14,41],[17,39],[18,55],[21,61],[18,61],[15,56]],hairM);
+   poly([[63,41],[65,44],[65,54],[62,60],[60,61],[63,53]],hairM);
+   row(66,21,27,hairD);row(66,54,60,hairD);
+  }else if(l>=3){const end=looseEnd;poly([[14,32],[66,32],[67,end-8],[64,end-2],[60,end],[56,end-5],[53,end],[27,end],[24,end-4],[20,end],[16,end-2],[13,end-8]],hairD);
    for(const x of [17,22,57,62])poly([[x,40],[x+3,39],[x+2,end-5],[x,end-2]],hairM);
    poly([[14,42],[18,44],[17,end-4],[14,end-9]],hair);
    poly([[62,38],[65,35],[65,end-7],[62,end-2]],hair);
-   if(isTwoTone){
-    for(const x of [16,19,23,57,60,63]){
-     put(x,end-4,twoToneAccent);put(x,end-3,twoToneAccentH);put(x+1,end-2,twoToneAccentD);
-    }
-   }
-  }
-  if(isDisheveled){
-   for(const [x,y] of [[12,28],[11,36],[12,45],[67,27],[68,37],[67,46],[13,56],[66,57],[14,68],[65,69]]){
-    put(x,y,hairD);put(x+(x<40?1:-1),y,hair);
-   }
   }
  }
-
+ tiedHair(false);
+ if(l>=3&&hairStyle==='loose'){underlayer(16,looseEnd-17,19,looseEnd-4);underlayer(61,looseEnd-13,64,looseEnd-3);}
+ if(bald){oval(40,33,25,26,skinD);oval(39,32,24,25,skin);}
  // Soft jaw: warm shadow on the lower and right edges, no rectangular chin.
  oval(40,42,22,24,skinD);oval(39,40,22,23,skin);
  box(17,42,20,48,skin);box(59,42,62,48,skinD);box(18,43,19,46,skinD);box(59,43,60,46,skin);
  poly([[24,35],[27,29],[35,25],[43,25],[42,29],[30,31]],skinH);
  row(62,33,46,skinD);row(63,36,43,skinD);
-
- if(isBuzz){
-  oval(40,26,24,18,hairD);
-  oval(40,25,23,17,hair);
-  oval(39,23,21,15,hairM);
-  poly([[30,15],[50,15],[46,18],[34,18]],hairH);
-  poly([[24,29],[56,29],[58,31],[60,36],[58,38],[56,31],[24,31],[22,38],[20,36],[22,31]],hairD);
-  poly([[26,30],[54,30],[56,33],[24,33]],hair);
-  for(let y=14;y<=29;y+=2){
-   for(let x=22+(y%3);x<=58-(y%3);x+=3){
-    put(x,y,(x+y)%2===0?hair:hairM);
-   }
-  }
-  for(let y=32;y<=42;y++){
-   put(19,y,hairD);put(20,y,hair);
-   put(61,y,hairD);put(60,y,hair);
-  }
- }else if(isBald){
-  // Smooth bald cranium (완전 대머리/민머리): pure skin tones with no follicle dots
-  oval(40,26,24,18,skinD);
-  oval(39,25,23,17,skin);
-  oval(39,22,21,14,skinH);
-  poly([[26,28],[54,28],[56,31],[24,31]],skin);
-  poly([[28,26],[52,26],[50,29],[30,29]],skinH);
-  // Specular scalp shine on crown (정수리에 은은하게 맺히는 두상 반짝임 하이라이트):
-  oval(37,16,7,3,scalpShine);
-  poly([[33,16],[41,15],[43,16],[39,17],[33,17]],scalpShineBright);
-  put(37,15,'#ffffff');put(38,15,'#ffffff');
-  put(36,16,scalpShineBright);put(39,16,scalpShine);
+ if(!l&&!bald&&!hijab){
+  // Close-cropped hair follows the scalp, leaving an open forehead instead of
+  // the deep solid edge of a bowl cut. Fine stubble and side fades stay subtle.
+  poly([[17,27],[19,19],[25,13],[34,10],[44,10],[54,13],[60,19],[63,28],[61,32],[57,30],[50,29],[43,30],[34,29],[27,30],[21,33],[17,31]],buzz);
+  poly([[19,22],[23,17],[29,14],[40,12],[49,14],[54,17],[46,16],[34,15],[26,18],[23,24]],buzzLight);
+  poly([[18,26],[22,25],[23,31],[21,35],[18,36]],buzzFade);poly([[57,24],[62,27],[62,35],[59,37],[58,30]],buzzFade);
+  for(let y=18;y<=28;y+=3)for(let x=23+(y%2);x<=56;x+=4)put(x,y,(x+y)%3?buzzLight:buzzFade);
  }
 
  // Short torso, roomy shoulders and sleeves; two compact trouser legs.
@@ -231,94 +158,100 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  poly([[27,71],[29,70],[29,85],[26,87],[24,85]],topH);
  row(91,27,53,topD);row(92,29,52,topD);
  box(24,89,28,92,skin);box(52,89,56,92,skinD);put(25,89,skinH);put(53,89,skin);
- box(29,94,51,98,pants);box(29,99,37,106,pants);box(43,99,51,106,pants);
- row(94,31,49,pantsH);box(30,98,32,103,pantsH);box(44,98,46,103,pantsH);box(36,99,37,105,pantsD);box(50,99,51,105,pantsD);
- box(28,107,38,110,'#39303e');box(43,107,53,110,'#39303e');row(107,29,36,'#726174');row(107,44,51,'#726174');row(110,28,38,'#222432');row(110,43,53,'#222432');put(29,109,'#b8a9ad');put(44,109,'#b8a9ad');
+ box(29,94,51,98,pants);box(28,99,38,106,pants);box(42,99,52,106,pants);
+ row(94,31,49,pantsH);box(30,98,32,103,pantsH);box(44,98,46,103,pantsH);box(37,99,38,105,pantsD);box(51,99,52,105,pantsD);
+ row(105,28,38,pantsD);row(105,42,52,pantsD);row(106,29,37,pantsH);row(106,43,51,pantsH);box(39,95,40,98,pantsD);put(40,95,'#b5aa91');
+ sneaker(28,107);sneaker(43,107);
  if(outfit===0){
   poly([[31,68],[35,68],[40,77],[45,68],[49,69],[45,82],[42,85],[39,81],[35,82]],'#e0e6e1');
   poly([[36,69],[44,69],[41,78],[39,78]],shirt);box(40,80,41,94,'#c4ceca');
   row(86,28,34,'#b8c7c8');row(87,28,34,'#e3e8e4');row(86,47,52,'#b8c7c8');box(26,93,54,97,white);box(40,93,41,97,'#c4ceca');
   for(const y of [82,88,94])put(42,y,'#84969d');
  }else if(outfit===1){
-  poly([[35,68],[45,68],[44,91],[36,91]],'#f4ebdf');poly([[30,69],[35,68],[34,75],[31,76],[35,81],[33,91],[28,91]],topH);
-  for(const y of [77,83,89])box(45,y,46,y+1,'#d3b882');row(87,28,32,topD);row(87,48,52,topD);
+  poly([[35,68],[45,68],[44,94],[36,94]],white);row(69,37,43,'#d5d9d2');
+  poly([[30,69],[35,68],[35,73],[38,80],[36,94],[29,93]],topH);poly([[49,69],[45,68],[45,73],[42,80],[44,94],[51,93]],top);
+  row(92,27,35,rib);row(92,45,53,rib);row(88,24,29,rib);row(88,51,56,rib);
+  for(const y of [79,85,91]){put(43,y,'#d5c9b5');put(44,y,topD);}
+  for(const x of [30,33,48,51])box(x,80,x,90,stitch);
+  row(85,29,33,rib);row(85,47,51,rib);row(94,36,44,'#d7dcd4');
  }else if(outfit===2){
   poly([[31,68],[36,66],[44,66],[49,68],[47,73],[33,73]],topD);row(68,36,43,topH);
-  box(36,73,36,79,'#e5dfd3');box(44,73,44,79,'#e5dfd3');poly([[32,84],[47,84],[49,89],[30,89]],topD);row(85,33,46,topH);
+  poly([[36,68],[44,68],[42,74],[38,74]],white);box(39,74,40,93,'#a9b4b1');put(40,75,'#e3e5db');
+  box(35,73,35,79,'#e5dfd3');box(45,73,45,79,'#e5dfd3');put(35,79,topD);put(45,79,topD);
+  poly([[31,84],[37,84],[37,89],[29,89]],topD);poly([[43,84],[49,84],[51,89],[43,89]],topD);row(85,32,36,topH);row(85,44,48,topH);
+  row(92,27,53,rib);row(88,24,29,rib);row(88,51,56,rib);row(94,29,51,white);
  }else if(outfit===3){
-  poly([[30,69],[36,67],[40,73],[44,67],[50,69],[45,75],[40,74],[35,75]],shirt);box(39,72,41,79,'#ad5f6b');row(79,39,41,'#8d4a58');
-  row(87,25,29,shirt);row(87,51,55,shirt);box(40,80,40,91,topD);
+  poly([[35,69],[44,69],[43,94],[36,94]],white);row(69,37,42,'#d2d9d3');
+  poly([[30,69],[35,67],[39,73],[35,75],[33,72]],topH);poly([[49,69],[45,67],[41,73],[45,75],[47,72]],topD);
+  box(34,76,35,93,topD);box(44,76,45,93,topH);for(const y of [79,85,91])put(45,y,'#e1ded3');
+  row(80,47,51,topD);box(47,81,47,84,topH);row(85,47,51,topH);
+  for(const x of [29,32,48,51])box(x,75,x,90,stitch);
+  row(88,24,29,topD);row(88,51,56,topD);row(89,24,29,topH);row(89,51,56,topH);row(94,36,43,'#d7dcd4');
  }else if(outfit===4){
-  poly([[35,68],[45,68],[43,72],[37,72]],white);for(const y of [78,86]){row(y,26,54,shirt);row(y+1,26,54,shirt);row(y+2,26,54,mix(shirt,top,.4));}
+  poly([[35,68],[45,68],[43,72],[37,72]],'#d7dcd4');row(69,37,43,white);
+  for(const y of [76,82,88]){row(y,26,54,stripe);row(y+1,26,54,mix(stripe,white,.2));}
+  row(87,23,28,stripe);row(87,52,57,stripe);row(92,27,53,'#d7dcd4');row(94,29,51,white);
  }else{
-  poly([[34,68],[46,68],[42,80],[38,80]],white);poly([[31,68],[35,69],[39,78],[34,76],[32,80]],topH);poly([[49,68],[45,69],[41,78],[46,76],[48,80]],topD);
-  box(39,70,41,80,shirt);for(const y of [84,89])box(40,y,41,y+1,'#b9a777');row(85,47,51,topH);
+  poly([[35,68],[45,68],[44,94],[36,94]],white);row(69,37,43,'#d0d5d0');
+  poly([[31,69],[35,68],[36,72],[35,91],[29,92]],topH);poly([[49,69],[45,68],[44,72],[45,91],[51,92]],top);
+  box(35,74,35,93,topD);box(44,74,44,93,'#bac0b7');put(44,75,white);
+  box(28,81,32,87,topD);row(81,28,32,stitch);box(48,81,52,87,topD);row(81,48,52,stitch);
+  row(92,27,35,rib);row(92,45,53,rib);row(88,24,29,rib);row(88,51,56,rib);row(94,36,43,'#d7dcd4');
  }
 
- // Bent thighs and forward forearms: sitting is an anatomical pose.
+ // Active front poses replace the hanging arms instead of painting a second
+ // pair on top. Only sleeve margins and the old hand pixels are cleared.
+ if(facing==='front'&&['seated','experiment','lecturing'].includes(pose)){
+  box(21,73,23,92,null);box(57,73,59,92,null);
+  box(24,88,24,92,null);box(56,88,56,92,null);
+  box(25,89,28,92,topH);box(52,89,55,92,topD);
+ }
+ // Relaxed elbows bend down towards two separate hands resting on the lap.
  if(pose==='seated'){
   box(22,98,57,111,null);poly([[29,94],[50,94],[54,98],[51,102],[39,101],[34,104],[28,101]],pants);
   box(28,100,35,106,pants);box(48,99,55,107,pants);row(100,40,53,pantsH);box(29,102,31,106,pantsH);
-  box(27,107,37,110,'#39303e');box(48,108,59,111,'#39303e');row(107,28,35,'#726174');row(108,49,57,'#726174');
-  poly([[25,75],[30,76],[29,84],[36,85],[37,89],[27,89],[23,84]],topH);poly([[55,75],[50,76],[51,84],[44,85],[43,89],[53,89],[57,84]],top);
-  box(35,86,39,89,skin);box(41,86,45,89,skin);row(89,35,39,skinD);row(89,41,45,skinD);
+  row(106,28,35,pantsD);row(107,48,55,pantsD);sneaker(27,107);sneaker(48,108,11);
+  poly([[27,71],[30,73],[29,80],[27,84],[24,84],[23,80],[24,75]],topH);
+  poly([[25,81],[29,81],[35,87],[36,91],[32,92],[26,87],[24,84]],topH);
+  poly([[53,71],[56,75],[57,80],[56,84],[53,84],[51,80],[50,73]],top);
+  poly([[51,81],[55,81],[56,84],[54,87],[48,92],[44,91],[45,87]],top);
+  poly([[31,87],[34,86],[37,90],[35,92],[33,91]],outfit===0?topD:rib);
+  poly([[46,86],[49,87],[47,91],[45,92],[43,90]],outfit===0?topD:rib);
+  poly([[35,90],[38,90],[39,92],[38,94],[35,94],[34,92]],skin);
+  poly([[42,90],[45,90],[46,92],[45,94],[42,94],[41,92]],skin);
+  row(93,35,38,skinD);row(93,42,45,skinD);put(36,90,skinH);put(43,90,skinH);
  }
  if(pose==='experiment'){
-  poly([[25,75],[30,77],[29,84],[36,85],[37,89],[26,89],[22,84]],topH);box(35,86,41,89,skin);
-  poly([[51,75],[56,76],[57,81],[65,82],[65,86],[54,87],[51,83]],top);box(64,81,68,84,skin);row(84,64,68,skinD);
+  poly([[27,71],[30,73],[29,80],[27,84],[23,84],[23,79],[25,74]],topH);
+  poly([[25,81],[29,80],[34,83],[36,83],[36,87],[31,87],[26,86],[23,83]],topH);
+  poly([[51,72],[54,71],[57,75],[59,80],[56,84],[53,80],[51,77]],top);
+  poly([[56,79],[59,78],[64,80],[65,81],[64,84],[59,84],[56,83]],top);
+  row(84,33,35,outfit===0?topD:rib);row(85,33,35,outfit===0?topD:rib);
+  box(62,80,64,83,outfit===0?topD:rib);
+  poly([[35,83],[39,83],[41,84],[41,86],[39,87],[35,87]],skin);
+  poly([[64,80],[68,80],[70,81],[69,83],[65,83],[64,82]],skin);
+  row(86,35,39,skinD);row(83,65,68,skinD);put(36,83,skinH);put(65,80,skinH);
  }
- if(pose==='lecturing')box(21,72,29,92,null);
+ if(pose==='lecturing'){
+  box(24,73,25,88,null);box(25,88,25,92,null);
+  // The left arm is animated below; the opposite arm stays relaxed.
+  poly([[26,72],[30,72],[30,89],[27,91],[26,87]],topH);
+  box(52,89,56,92,skinD);put(53,89,skin);
+ }
 
- // Headwear & hair front layer:
+ // Crown highlights follow grouped locks instead of straight horizontal bands.
  pixels=frontHead;
- if(isHijab){
-  oval(40,29,27,24,fabric);
-  oval(40,27,25,22,fabricM);
-  poly([[24,16],[32,12],[48,12],[56,16],[52,19],[40,15],[28,19]],fabricH);
-  poly([[30,13],[36,11],[44,11],[50,13],[46,15],[40,14],[34,15]],fabricH);
-
-  const capShift=(fringe%4)-1;
-  poly([[25,29+capShift],[40,28+capShift],[55,29+capShift],[54,32+capShift],[40,31+capShift],[26,32+capShift]],undercap);
-  row(32+capShift,27,53,fabricD);
-
-  poly([[14,28],[24,28],[24,60],[28,64],[23,64],[14,56]],fabric);
-  poly([[16,30],[22,30],[22,58],[16,54]],fabricM);
-  poly([[66,28],[56,28],[56,60],[52,64],[57,64],[66,56]],fabricD);
-  poly([[64,30],[58,30],[58,58],[64,54]],fabric);
-
-  poly([[26,61],[54,61],[50,67],[40,68],[30,67]],fabric);
-  poly([[28,62],[52,62],[48,66],[40,67],[32,66]],fabricM);
-  row(67,34,46,fabricD);
-
-  poly([[22,68],[34,66],[46,66],[58,68],[59,81],[53,85],[40,86],[27,85],[21,81]],fabric);
-  poly([[35,67],[38,77],[36,84],[33,76]],fabricD);
-  poly([[38,67],[42,78],[44,84],[40,77]],fabricM);
-  poly([[43,67],[46,77],[49,84],[46,76]],fabricH);
-  poly([[26,71],[31,80],[29,83]],fabricD);
-  poly([[54,71],[49,81],[51,84]],fabricH);
-
-  put(51,63,pinGold);put(52,63,pinGoldH);
-  put(51,64,pinGoldD);put(52,64,pinGold);
- }else if(isAfro){
-  oval(40,24,30,27,hair);
-  oval(40,22,27,24,hairM);
+ if(hijab){headwear(false);}
+ else if(afro){
+  oval(40,24,30,27,hair);oval(40,22,27,24,hairM);
   poly([[24,16],[32,11],[48,11],[56,16],[52,20],[40,16],[28,20]],hairH);
-  poly([[28,14],[36,12],[44,12],[52,14],[48,17],[40,15],[32,17]],hairH);
   poly([[22,33],[30,28],[50,28],[58,33],[54,36],[40,31],[26,36]],hairD);
-  poly([[24,32],[32,29],[48,29],[56,32],[52,34],[40,30],[28,34]],hair);
-  for(let y=10;y<=40;y+=3){
-   for(let x=15;x<=65;x+=3){
-    const dx=(x-40)/30,dy=(y-25)/27;
-    if(dx*dx+dy*dy<=0.88){
-     if(y>=31&&x>=26&&x<=54)continue;
-     const curlSeed=(x*17+y*31+fringe*7)%4;
-     if(curlSeed===0){put(x,y,hairD);put(x+1,y,hairM);put(x,y+1,hair);}
-     else if(curlSeed===1){put(x,y,hairM);put(x+1,y+1,hairH);}
-     else if(curlSeed===2){put(x,y,hairD);put(x+1,y+1,hair);}
-    }
-   }
+  for(let y=10;y<=37;y+=3)for(let x=15;x<=65;x+=3){
+   if(((x-40)/30)**2+((y-25)/27)**2>.88||y>=31&&x>=26&&x<=54)continue;
+   const curlSeed=(x*17+y*31+fringe*7)%4;
+   put(x,y,curlSeed<2?hairM:hairD);put(x+1,y+1,curlSeed===1?hairH:hair);
   }
- }else if(!isBuzz&&!isBald&&l){
+ }else if(l){
   const crown=fringe%4===0?[[14,30],[14,21],[19,16],[25,11],[36,9],[39,6],[45,10],[54,12],[61,19],[65,26],[65,34]]:
    fringe%4===1?[[13,31],[16,20],[23,14],[32,11],[46,10],[57,15],[63,22],[66,31],[64,36]]:
    fringe%4===2?[[14,32],[15,22],[22,16],[29,10],[38,10],[42,7],[46,11],[56,14],[62,21],[65,30],[64,35]]:
@@ -337,48 +270,44 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
    style===6?[[[16,28],[29,24],[32,29],[27,34],[24,39],[23,34]],[[28,25],[39,23],[44,28],[37,37],[35,34],[32,40]],[[40,24],[53,26],[55,32],[51,39],[48,35]],[[52,28],[62,31],[61,43],[55,40]]]:
    [[[16,29],[29,24],[34,25],[30,34],[25,35],[23,42]],[[31,24],[43,23],[48,28],[39,36],[36,39],[37,33]],[[44,25],[61,29],[63,40],[58,39],[55,35],[52,40]]];
   for(const [i,points]of locks.entries()){
-   const pts=points.map(([x,y])=>[x,y+shift]);poly(pts,i%2?hair:hairM);
+   const pts=points.map(([x,y])=>[x,Math.min(x>=24&&x<=54?41:43,y+shift+(y>=26?2:0))]);poly(pts,i%2?hair:hairM);
    const [x,y]=pts[0];poly([[x+3,y+1],[x+6,y],[x+7,y+3],[x+5,y+7],[x+3,y+8]],i%2?hairM:hair);
   }
-  if(l>=2){poly([[14,29],[20,28],[20,48],[23,55],[18,53],[16,57],[13,48]],hair);poly([[60,28],[65,31],[67,49],[64,55],[60,56],[58,51],[61,44]],hairD);poly([[15,33],[17,31],[17,49],[19,53],[16,51]],hairM);poly([[62,34],[64,36],[64,47],[62,51]],hairM);}
-  if(isCoily){
-   for(const [cx,cy] of [[16,19],[24,13],[33,10],[40,9],[47,11],[56,17],[63,24],[13,30],[65,31]]){
-    oval(cx,cy,5,5,hair);
-    poly([[cx-2,cy-2],[cx+2,cy-1],[cx+3,cy+2],[cx,cy+2],[cx-2,cy]],hairM);
-    put(cx,cy-2,hairH);put(cx+1,cy-1,hairH);
-    put(cx-1,cy+1,hairD);put(cx+2,cy+1,hairD);
-   }
-   if(l>=2){
-    const coilyEnd=[0,0,58,68,78,90,101][l];
-    for(let y=42;y<coilyEnd-4;y+=6){
-     const step=Math.floor((y-42)/6);
-     const shiftL=(step%2===0)?-1:2;
-     const shiftR=(step%2===0)?2:-1;
-     oval(15+shiftL,y,4,5,hair);
-     poly([[13+shiftL,y-2],[17+shiftL,y-1],[16+shiftL,y+2],[12+shiftL,y]],hairM);
-     put(15+shiftL,y-2,hairH);put(16+shiftL,y-1,hairH);
-     row(y+2,13+shiftL,16+shiftL,hairD);
-     oval(64+shiftR,y,4,5,hairD);
-     poly([[62+shiftR,y-2],[66+shiftR,y-1],[65+shiftR,y+2],[61+shiftR,y]],hair);
-     put(63+shiftR,y-2,hairM);put(64+shiftR,y-1,hairH);
-     row(y+2,62+shiftR,65+shiftR,edge);
-    }
-    oval(15,coilyEnd-2,4,4,hair);put(15,coilyEnd-3,hairH);put(16,coilyEnd-2,hairM);put(14,coilyEnd-1,hairD);
-    oval(64,coilyEnd-2,4,4,hairD);put(64,coilyEnd-3,hairM);put(65,coilyEnd-2,hairH);
-   }
-  }else if(isCurly){
-   for(const [x,y]of [[17,20],[25,14],[36,11],[48,13],[58,20],[13,32],[63,33]]){oval(x,y,5,4,hair);poly([[x-2,y-2],[x+2,y-2],[x+3,y],[x,y+1],[x-2,y]],hairM);put(x,y-1,hairH);}
-   if(l>=2){
-    for(let y=44;y<([0,0,58,67,77,89,100][l]);y+=8){
-     oval(15,y,4,5,hair);oval(64,y+2,4,5,hairD);row(y-2,13,16,hairM);row(y,62,65,hairM);
-     put(15,y-1,hairH);put(64,y+1,hairH);
-    }
-   }
+  if(modernHair){
+   // Fine, tapered openings show a little forehead between grouped locks.
+   // All openings stop above the eyes and glasses; no straight shaved band.
+   if(l<=2){poly([[43,28],[45,28],[45,32],[43,37],[42,37],[43,33]],skin);poly([[28,35],[29,34],[30,38],[29,40],[28,39]],skinH);}
+   else{poly([[32,33],[33,33],[34,37],[33,40],[32,39]],skin);poly([[42,34],[43,33],[44,37],[44,40],[43,39]],skinH);}
   }
+  if(l===4){
+   poly([[13,30],[21,29],[20,45],[23,56],[28,63],[22,65],[15,64],[11,58],[10,45]],hair);
+   poly([[61,28],[67,31],[70,46],[69,58],[65,64],[58,66],[54,64],[60,56],[61,44]],hairD);
+   poly([[14,35],[17,33],[17,52],[21,60],[19,61],[15,56]],hairM);
+   poly([[64,37],[66,42],[66,53],[62,61],[60,62],[64,53]],hairM);
+  }else if(l>=2){poly([[14,29],[20,28],[20,48],[23,55],[18,53],[16,57],[13,48]],hair);poly([[60,28],[65,31],[67,49],[64,55],[60,56],[58,51],[61,44]],hairD);poly([[15,33],[17,31],[17,49],[19,53],[16,51]],hairM);poly([[62,34],[64,36],[64,47],[62,51]],hairM);}
+  if(curly){for(const [x,y]of [[17,20],[25,14],[36,11],[48,13],[58,20],[13,32],[63,33]]){oval(x,y,coily?4:5,wavy?3:5,hair);poly([[x-2,y-3],[x+2,y-2],[x+3,y],[x,y+2],[x-2,y]],hairM);}
+   for(const [x,y]of [[23,30],[34,29],[46,30],[57,33]]){oval(x,y,4,4,hair);poly([[x-2,y-2],[x+1,y-2],[x+2,y],[x,y+2]],hairM);}
+   if(coily)for(const [x,y]of [[20,17],[30,12],[41,12],[53,17],[17,27],[62,27],[29,30],[41,30],[53,32]]){oval(x,y,3,3,hair);row(y-1,x-1,x+1,hairM);}
+   if(l>=3)for(let y=49;y<looseEnd-2;y+=coily?7:wavy?14:9){oval(l===4?12:15,y,coily?3:4,wavy?6:5,hair);oval(l===4?67:64,y+2,coily?3:4,wavy?6:5,hairD);row(y-2,l===4?10:13,l===4?13:16,hairM);row(y,l===4?65:62,l===4?68:65,hairM);}
+  }
+  if(cosmeticHairStyle==='disheveled'){
+   poly([[18,17],[19,12],[24,14],[26,11],[29,13],[27,19]],hair);
+   poly([[45,11],[48,8],[51,12],[57,13],[56,17],[50,16]],hair);
+   poly([[12,31],[10,35],[12,43],[16,40],[17,31]],hairD);
+   poly([[65,29],[69,33],[68,41],[65,39],[63,33]],hair);
+   row(14,21,23,hairM);row(12,48,50,hairM);
+  }
+  if(l>=3){underlayer(l===4?13:15,48,l===4?15:17,59);underlayer(63,49,65,60);}
+  else{underlayer(17,32,19,37);underlayer(60,32,62,37);}
+ }
+ if(bald){
+  // A hairless scalp is not a buzz cut: no stubble texture or dark hair cap.
+  poly([[27,17],[31,15],[36,15],[37,17],[32,17],[29,19],[27,19]],'#ffffff');
+  put(25,21,skinH);row(19,29,32,skinH);
  }
 
  // Open eye styles for every neutral face; expressive closed eyes use broad arcs.
- const ink='#303044',iris=mix(hair,'#405778',.55),eyeY=42;
+ const ink='#303044',iris=mix(a.naturalHair??hairHex,'#405778',.55),eyeY=42;
  for(const [x,right]of [[25,false],[47,true]]){
   const closed=['happy','delighted','relieved'].includes(expression),droop=['tired','sad'].includes(expression);
   if(closed){row(eyeY+4,x-1,x,ink);row(eyeY+2,x+1,x+4,ink);row(eyeY+3,x,x+1,ink);row(eyeY+3,x+4,x+5,ink);row(eyeY+4,x+5,x+6,ink);row(eyeY+5,x-1,x,ink);row(eyeY+5,x+5,x+6,ink);}
@@ -394,12 +323,8 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
   else if(expression==='focused'){row(38,right?x+2:x,right?x+5:x+3,hairD);row(39,right?x:x+3,right?x+2:x+5,hairD);}
   else row(38,x,x+5,hairD);
  }
- // Adaptive blush clusters, light cheek accents and distinct mouths.
- if(isHijab){
-  row(53,25,27,blush1);row(54,25,28,blush2);row(53,52,54,blush1);row(54,51,54,blush2);put(26,52,blushH);put(53,52,blushH);put(40,54,skinD);put(27,55,blushD);put(52,55,blushD);
- }else{
-  row(53,21,27,blush1);row(54,22,27,blush2);row(53,52,58,blush1);row(54,52,57,blush2);put(22,52,blushH);put(56,52,blushH);put(40,54,skinD);put(24,55,blushD);put(54,55,blushD);
- }
+ // Tiny blush clusters, light cheek accents and distinct mouths.
+ row(53,hijab?26:21,hijab?29:27,blush1);row(54,hijab?26:22,hijab?29:27,blush2);row(53,hijab?50:52,hijab?53:58,blush1);row(54,hijab?50:52,hijab?53:57,blush2);put(hijab?26:22,52,blushH);put(hijab?52:56,52,blushH);put(40,54,skinD);
  const mouth='#a85d69';
  if(['surprised','delighted'].includes(expression)){row(57,37,42,mouth);box(36,58,43,60,mouth);row(61,38,41,mouth);row(60,38,41,'#df9598');}
  else if(['sad','worried','tired'].includes(expression)){row(58,37,42,mouth);put(36,59,mouth);put(43,59,mouth);if(expression==='sad'){box(28,50,29,55,'#a1c7e0');put(28,51,'#e7f6f5');}if(expression==='worried'){box(63,39,64,42,'#a1c7e0');put(63,39,'#e7f6f5');}}
@@ -414,221 +339,172 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  // portrait. The face and both forearms point towards the screen at upper right.
  if(facing==='monitor'){
   for(const layer of [backHead,body,frontHead])for(const r of layer)r.fill(null);
-  pixels=backHead;
-  const end=[0,0,0,70,81,92,101][l];
-  if(isHijab){
+  // In a rear three-quarter view the hair lies on top of the shirt's back,
+  // rather than being hidden behind it or dangling in front of the cheek.
+  pixels=backHair;
+  const end=[0,0,61,68,68,91,99][l];
+  if(hijab){
    poly([[20,30],[48,30],[52,48],[48,78],[40,82],[28,81],[25,74],[23,68],[21,64],[20,48]],fabricD);
    poly([[22,34],[44,34],[46,76],[38,80],[29,79],[26,72],[24,68],[23,64]],fabric);
-   for(const x of [26,33,40]){
-    poly([[x,40],[x+3,38],[x+2,76],[x,78]],fabricD);
-    poly([[x+3,38],[x+5,38],[x+4,76],[x+2,76]],fabricM);
-   }
-  }else if(isAfro){
+  }else if(afro){
    oval(40,26,21,22,hairD);
-   for(let deg=0;deg<360;deg+=12){
-    const rad=deg*Math.PI/180;
-    const bx=Math.round(40+20.5*Math.cos(rad));
-    const by=Math.round(26+21.5*Math.sin(rad));
-    if(by<50){put(bx,by,hairD);put(bx+(deg%2===0?1:-1),by,hair);}
+  }else if(l===4){
+   poly([[14,36],[53,35],[59,43],[58,58],[54,66],[48,68],[22,68],[16,64],[12,57],[10,45]],hairD);
+   poly([[15,44],[22,42],[25,59],[30,64],[23,66],[17,63],[14,56]],hair);
+   poly([[29,44],[41,41],[51,44],[53,57],[48,65],[42,66],[33,64]],hair);
+   for(const x of [18,29,42,51])poly([[x,45],[x+2,44],[x+3,56],[x+1,62],[x-1,60]],hairM);
+   if(curly)for(const [x,y]of [[13,49],[15,58],[22,64],[34,65],[47,65],[55,57]]){oval(x,y,4,4,hair);poly([[x-2,y-2],[x+1,y-2],[x+2,y],[x,y+2]],hairM);}
+  }else if(l>=5&&modernHair){
+   // The local layered cascade follows the rounded rear cranium. Its S-curve
+   // narrows over the back and ends in staggered locks above the seated hip.
+   // This lives in the existing hair ownership mask, behind the near arm.
+   const leftTip=end-5,rightTip=end-3,waistY=Math.round(56+(end-56)*.45);
+   poly([[21,34],[46,34],[50,48],[49,64],[44,end-8],[40,end-2],[35,end],[30,end-2],[26,end-6],[25,Math.max(71,end-10)],[23,68],[21,64],[21,50]],hairD);
+   poly([[21,36],[24,47],[27,58],[28,waistY],[28,leftTip-6],[27,leftTip],[25,leftTip-2],[25,Math.max(71,leftTip-7)],[23,68],[21,64],[21,50]],hair);
+   poly([[22,46],[24,55],[26,waistY],[26,leftTip-5],[25,leftTip-3]],hairM);
+   poly([[21,44],[30,46],[40,47],[46,53],[46,62],[44,waistY],[41,end-8],[38,end],[35,end-2],[31,rightTip],[29,rightTip-2],[27,leftTip],[25,leftTip-3],[25,Math.max(71,waistY+4)],[23,68],[21,64],[21,52]],hair);
+   poly([[24,50],[27,61],[28,waistY],[29,leftTip-5],[27,leftTip-3],[26,waistY-2],[23,55]],hairD);
+   poly([[28,49],[32,49],[32,Math.min(end-10,74)],[30,Math.min(end-8,76)],[29,54]],hairM);
+   poly([[29,52],[32,52],[31,Math.min(end-14,69)],[29,Math.min(end-12,71)],[29,55]],hairH);
+   poly([[34,50],[37,50],[38,waistY],[37,rightTip-5],[35,rightTip-2],[33,rightTip-4],[34,62]],hairD);
+   poly([[38,51],[42,51],[42,waistY-2],[40,rightTip-6],[38,rightTip-3],[38,63]],hairM);
+   if(curly)for(let y=48;y<end-3;y+=coily?6:wavy?12:8){
+    const phase=Math.floor(y/(coily?6:8))%2,shift=y>63?Math.min(4,Math.round((y-63)*.55)):0,lx=22+shift+phase,mx=30+Math.round(shift*.5)+(phase?2:-1),rx=40+(phase?-1:1);
+    oval(lx,y,3,coily?4:5,hair);row(y-1,lx-1,lx+1,hairM);
+    oval(mx,y+1,coily?4:3,coily?5:6,hairM);row(y,mx-1,mx+2,hairH);
+    oval(rx,y,3,4,hairD);row(y-1,rx-1,rx+1,hair);
    }
-  }else if(!isBuzz&&!isBald&&l===3){
-   poly([[21,34],[42,34],[44,48],[43,62],[40,68],[35,70],[28,69],[24,66],[21,58]],hairD);
-   poly([[23,40],[27,38],[27,64],[24,65]],mix(hairD,hair,.3));
-  }else if(!isBuzz&&!isBald&&l>=4){
-   poly([[21,34],[41,34],[43,48],[42,64],[40,end-8],[37,end-2],[33,end],[29,end-2],[26,end-6],[25,Math.max(71,end-10)],[23,68],[21,64],[21,50]],hairD);
-   poly([[25,42],[29,40],[29,end-7],[26,end-4]],mix(hairD,hair,.3));
+  }else if(l>=2){poly([[18,43],[54,40],[58,end-8],[55,end-2],[51,end],[47,end-3],[24,end],[20,end-3],[17,end-8]],hairD);
+   poly([[21,46],[29,46],[28,end-4],[24,end-1],[20,end-5]],hair);
+   poly([[31,45],[42,44],[46,end-3],[40,end],[32,end-2]],hair);
+   for(const x of [23,31,47,52])poly([[x,47],[x+2,46],[x+2,end-6],[x,end-3]],hairM);
+   if(curly)for(let y=53;y<end;y+=coily?7:wavy?14:9){oval(19,y,3,wavy?6:4,hair);oval(54,y+1,3,wavy?6:4,hairD);row(y-2,18,20,hairM);}
   }
+  if(l>=2&&!hijab&&!afro){underlayer(modernHair&&l>=5?28:21,Math.max(47,end-17),modernHair&&l>=5?31:24,end-4);underlayer(modernHair&&l>=5?38:50,Math.max(48,end-13),modernHair&&l>=5?41:53,end-3);}
+  tiedHair(true);
   // The pelvis rests on the chair; thighs reach forward before the calves drop.
   pixels=body;
   box(35,63,45,68,skinD);
   poly([[27,68],[39,65],[50,67],[54,74],[54,91],[49,96],[28,94],[24,87],[24,75]],top);
   poly([[27,70],[32,68],[31,88],[28,91],[25,86],[25,74]],topH);
-  poly([[48,68],[54,72],[57,78],[53,83],[48,80]],topD);
+  poly([[48,68],[53,71],[55,75],[53,79],[49,77]],topD);
   row(92,29,49,topD);row(93,30,48,topD);
   if(outfit===0){poly([[31,68],[38,66],[46,67],[50,71],[44,73],[34,73]],'#dbe3df');box(40,74,41,92,'#c4ceca');row(86,29,35,'#c5d2d0');box(28,94,50,97,white);}
-  else if(outfit===2){poly([[29,69],[34,65],[44,65],[50,69],[47,73],[33,73]],topD);poly([[32,83],[46,83],[48,88],[30,88]],topH);}
-  else if(outfit===4){for(const y of [77,85]){row(y,27,51,shirt);row(y+1,27,51,shirt);}}
-  else if(outfit===5){poly([[30,68],[36,66],[42,67],[43,72],[36,73]],topH);box(42,73,43,92,topD);}
-  // Forearms reach the desktop, with the hands immediately above the keyboard.
-  poly([[28,73],[32,72],[37,81],[42,84],[49,83],[58,81],[60,83],[49,87],[41,89],[31,84],[27,77]],topH);
-  poly([[50,71],[55,72],[58,79],[68,82],[70,84],[66,87],[56,84],[52,77]],top);
-  box(58,81,63,83,skin);row(83,58,63,skinD);box(68,83,73,85,skin);row(85,68,73,skinD);
+  else if(outfit===1){for(const x of [29,33,47,51])box(x,77,x,90,stitch);row(91,28,50,rib);row(94,29,49,white);}
+  else if(outfit===2){poly([[29,69],[34,65],[44,65],[50,69],[47,74],[43,77],[34,75]],topD);poly([[33,69],[37,68],[44,69],[46,72],[40,74],[35,73]],topH);row(91,28,50,rib);row(94,29,49,white);}
+  else if(outfit===3){row(74,28,51,topD);for(const x of [29,33,47,51])box(x,76,x,90,stitch);row(92,29,49,topD);row(94,30,48,white);}
+  else if(outfit===4){for(const y of [76,82,88]){row(y,27,51,stripe);row(y+1,27,51,mix(stripe,white,.2));}row(92,29,49,'#d7dcd4');}
+  else if(outfit===5){poly([[30,68],[36,66],[45,68],[48,72],[34,73]],topH);row(77,29,51,topD);row(91,28,50,rib);row(94,29,49,white);}
+  // Each upper arm starts at the visible side of the torso, bends once at the
+  // elbow, then follows the desktop; no sleeve crosses the back or long hair.
+  // Both keyboard contact points are unchanged across clothing and hair styles.
+  pixels=farArm;
+  poly([[49,70],[53,70],[56,74],[58,79],[61,80],[67,81],[68,82],[68,86],[60,85],[56,84],[53,79],[50,75]],top);
+  poly([[53,75],[55,76],[58,81],[61,82],[66,83],[66,85],[59,84],[56,82]],topD);
+  box(66,82,67,85,outfit===0?topD:rib);
+  box(68,83,73,85,skin);row(85,68,73,skinD);
+  pixels=nearArm;
+  poly([[46,70],[50,70],[53,73],[54,79],[54,80],[58,80],[59,82],[58,84],[51,85],[48,83],[47,80],[45,74]],topH);
+  poly([[47,74],[49,75],[50,80],[52,82],[55,82],[55,84],[51,84],[48,82]],top);
+  row(82,49,51,topD);row(83,52,54,topD);
+  box(56,80,57,83,outfit===0?topD:rib);row(84,55,57,outfit===0?topD:rib);
+  box(58,81,63,83,skin);row(83,58,63,skinD);
+  pixels=body;
   poly([[43,94],[49,94],[69,95],[73,98],[72,102],[65,101],[57,98],[43,98]],pantsD);
   poly([[30,94],[43,94],[60,96],[64,98],[63,102],[57,102],[46,99],[32,99]],pants);
-  poly([[71,99],[76,99],[76,107],[71,108],[69,104]],pantsD);
-  poly([[58,99],[64,99],[63,107],[58,108],[56,104]],pants);
+  poly([[71,99],[76,99],[76,103],[71,104],[69,102]],pantsD);
+  /* The far calf hangs behind the seat and chair column in this view; only its knee shows. */
   poly([[34,94],[43,94],[59,96],[61,98],[55,98],[42,97]],pantsH);
   poly([[50,94],[57,94],[70,96],[72,98],[68,98],[57,97]],pantsH);
-  box(58,101,60,106,pantsH);box(71,101,72,106,pantsH);
-  box(56,108,67,111,'#39303e');box(70,108,78,111,'#39303e');
-  row(108,57,65,'#726174');row(108,71,77,'#726174');row(111,56,67,'#222432');row(111,70,78,'#222432');
-  // Unified anatomical cranium, occipital-to-nape curve, and stepped cheek silhouette:
+  box(71,100,72,102,pantsH);
+  /* The near foot rests forward under the desk edge, so it sits higher in the projection than the seat. */row(103,71,76,pantsD);sneaker(70,104,8);
+  // One eye and a stepped cheek silhouette make the viewing direction clear.
   pixels=frontHead;
-  poly([[35,14],[42,14],[49,17],[55,22],[58,28],[61,35],[61,40],[66,43],[63,46],[63,54],[57,61],[48,63],[46,66],[31,66],[31,58],[32,53],[29,48],[25,43],[22,37],[21,32],[21,27],[24,21],[29,17]],skinD);
-  poly([[35,15],[42,15],[49,18],[55,22],[58,28],[61,35],[61,40],[66,43],[63,46],[63,54],[57,60],[47,61],[45,65],[33,65],[33,57],[34,53],[31,48],[27,43],[24,37],[23,32],[23,27],[25,21],[30,17]],skin);
-  poly([[39,60],[47,61],[47,63],[39,61]],skinD);
+  if(modernHair||hijab||afro){
+   poly([[35,14],[42,14],[49,17],[55,22],[58,28],[61,35],[61,40],[66,43],[63,46],[63,54],[57,61],[48,63],[46,66],[31,66],[31,58],[32,53],[29,48],[25,43],[22,37],[21,32],[21,27],[24,21],[29,17]],skinD);
+   poly([[35,15],[42,15],[49,18],[55,22],[58,28],[61,35],[61,40],[66,43],[63,46],[63,54],[57,60],[47,61],[45,65],[33,65],[33,57],[34,53],[31,48],[27,43],[24,37],[23,32],[23,27],[25,21],[30,17]],skin);
+   poly([[39,60],[47,61],[47,63],[39,61]],skinD);
+  }else{oval(43,40,21,23,skinD);poly([[45,24],[56,29],[61,35],[61,40],[66,43],[63,46],[63,54],[57,61],[47,63],[39,58],[37,39]],skin);}
   row(59,49,58,skinD);put(65,44,skinH);box(60,51,63,54,blush2);put(61,51,blushH);
   const closed=['happy','delighted','relieved'].includes(expression),eyeBottom=['tired','sad'].includes(expression)?47:50;
   if(closed){row(43,57,59,ink);row(44,56,57,ink);row(44,59,61,ink);}
   else{box(56,41,61,eyeBottom,'#fff0e3');box(57,41,60,eyeBottom,iris);box(58,42,60,eyeBottom-2,ink);row(40,55,61,ink);box(57,41,58,43,'#fff8ec');put(59,eyeBottom-1,'#8399ad');}
   row(37,55,60,hairD);row(56,58,61,mouth);
   if(a.glasses){row(39,54,62,'#514658');row(51,54,62,'#514658');box(53,40,54,50,'#514658');box(62,40,63,50,'#514658');row(42,47,54,'#514658');put(55,40,'#f9eeec');}
-
-  // The rear crown / hijab / afro / buzz:
-  if(isHijab){
-   poly([[20,32],[20,26],[23,20],[27,15],[33,12],[43,12],[52,16],[58,25],[58,36],[53,44],[46,52],[37,56],[25,56],[21,49],[20,40]],fabricD);
-   poly([[21,32],[21,26],[24,20],[28,16],[34,13],[43,13],[52,16],[58,25],[58,36],[53,44],[46,52],[37,55],[26,55],[22,49],[21,40]],fabric);
-   poly([[25,20],[30,16],[38,14],[47,17],[43,20],[34,17],[27,21]],fabricM);
-   poly([[28,18],[35,15],[34,17],[28,20]],fabricH);
-   poly([[43,24],[52,28],[55,34],[52,36],[45,30]],undercap);
-   poly([[43,50],[48,52],[54,58],[48,62],[42,56]],fabric);
-   poly([[34,54],[46,56],[48,66],[36,66]],fabricD);
-   poly([[36,56],[44,57],[46,65],[38,65]],fabric);
-   poly([[21,55],[34,54],[48,57],[52,75],[46,80],[33,82],[27,80],[25,72],[23,68],[21,64]],fabricD);
-   poly([[22,57],[34,56],[44,59],[48,73],[42,78],[32,80],[28,78],[26,70],[24,68],[22,64]],fabric);
-   for(const x of [27,33,39]){
-    poly([[x,60],[x+3,59],[x+2,77],[x,78]],fabricD);
-    poly([[x+3,59],[x+5,59],[x+4,76],[x+2,77]],fabricM);
-   }
-   put(47,53,pinGold);put(48,53,pinGoldH);put(47,54,pinGoldD);
-  }else if(isAfro){
-   oval(40,25,20,21,hair);
-   oval(39,23,18,19,hairM);
-   poly([[27,16],[34,12],[45,12],[51,16],[47,19],[39,16],[30,19]],hairH);
-   for(let y=10;y<=42;y+=3){
-    for(let x=20;x<=58;x+=3){
-     const dx=(x-40)/20,dy=(y-25)/21;
-     if(dx*dx+dy*dy<=0.88){
-      const curlSeed=(x*19+y*29+fringe*5)%4;
-      if(curlSeed===0){put(x,y,hairD);put(x+1,y,hairM);}
-      else if(curlSeed===1){put(x,y,hairM);put(x+1,y+1,hairH);}
-      else if(curlSeed===2){put(x,y,hairD);put(x+1,y+1,hair);}
-     }
-    }
-   }
-  }else if(isBuzz){
-   poly([[34,13],[43,13],[50,16],[55,21],[57,28],[52,33],[49,37],[48,43],[42,47],[39,52],[31,53],[28,48],[24,43],[21,37],[20,32],[20,27],[23,21],[28,16]],hairD);
-   poly([[34,14],[43,14],[49,17],[54,22],[55,28],[51,32],[48,36],[46,42],[41,46],[38,50],[31,51],[29,47],[25,42],[22,37],[21,32],[21,27],[24,21],[29,17]],hair);
-   poly([[34,15],[42,15],[48,18],[52,23],[52,28],[48,32],[44,38],[37,42],[28,41],[24,35],[23,28],[26,21],[30,17]],hairM);
-   poly([[33,16],[42,16],[45,19],[39,20],[32,19]],hairH);
-   for(let y=17;y<=46;y+=2){
-    for(let x=23+(y%3);x<=52-(y%3);x+=3){
-     if(pixels[y][x]===hair||pixels[y][x]===hairM)put(x,y,(x+y)%2===0?hair:hairM);
-    }
-   }
-  }else if(isBald){
-   // Smooth bald scalp in monitor view facing screen:
-   poly([[34,16],[42,16],[48,19],[52,23],[47,28],[38,30],[29,29],[25,25],[29,19]],skinH);
-   // Specular scalp shine on crown in monitor view:
-   oval(38,18,6,3,scalpShine);
-   poly([[34,18],[41,17],[43,18],[39,19],[34,19]],scalpShineBright);
-   put(38,17,'#ffffff');put(39,17,'#ffffff');
-   put(37,18,scalpShineBright);put(40,18,scalpShine);
-  }else{
-   poly([[20,32],[20,26],[23,20],[28,15],[34,12],[44,12],[52,15],[58,23],[58,33],[54,40],[49,44],[43,50],[35,54],[29,52],[24,46],[21,40]],hairD);
-   poly([[21,32],[21,26],[24,20],[29,16],[35,13],[44,13],[52,16],[58,23],[58,33],[54,39],[49,43],[46,43],[42,46],[40,51],[35,53],[29,51],[25,45],[22,39]],hair);
-   poly([[24,24],[29,18],[36,15],[44,15],[51,18],[46,20],[37,18],[30,21],[26,25]],hairM);
-   poly([[28,19],[33,16],[39,16],[38,18],[31,20]],hairH);poly([[41,16],[45,17],[49,20],[43,20]],hairH);
-   poly([[22,31],[25,27],[30,26],[32,34],[28,40],[23,39]],hairM);poly([[24,32],[27,29],[28,34],[25,36]],hairH);
-   const fringeShift=(fringe%4)+(fringe>=8?1:0);
-   poly([[42,20],[53,24],[58,28],[58,37],[54,35],[52,41],[49,33],[46,30+fringeShift]],(fringe%2)?hair:hairM);
-   poly([[45,38],[50,40],[50,48],[47,50],[45,45]],hair);
-   poly([[44,41],[47,42],[48,50],[45,51],[43,46]],hairD);put(48,43,hairM);
-   if(l===1){
-    poly([[23,43],[28,45],[35,49],[36,54],[32,56],[28,53],[24,48]],hair);
-    poly([[25,45],[30,47],[34,50],[33,54],[28,52]],hairM);
-    poly([[28,50],[33,52],[35,54],[32,56],[28,53]],hairD);
-   }else if(l===2){
-    poly([[21,38],[35,42],[37,56],[35,61],[28,60],[23,56],[21,48]],hairD);
-    poly([[22,38],[35,42],[37,56],[35,61],[28,60],[24,56],[22,48]],hair);
-    poly([[23,44],[26,48],[26,56],[24,54]],hairM);
-    poly([[27,46],[31,49],[31,58],[28,56]],hairM);
-    poly([[32,48],[35,51],[35,59],[32,57]],hairM);
-    poly([[25,54],[27,54],[27,59],[25,57]],hairD);
-    poly([[30,55],[32,55],[32,60],[30,58]],hairD);
-    poly([[34,56],[37,56],[35,61],[33,60]],hairD);
-   }else if(l===3){
-    poly([[21,36],[24,46],[26,56],[26,64],[25,68],[23,66],[21,60],[21,48]],hair);
-    poly([[22,45],[24,53],[24,62],[23,65],[22,58]],hairM);
-    poly([[21,44],[31,46],[39,47],[44,52],[44,61],[41,67],[37,70],[31,70],[27,69],[24,66],[22,60],[21,52]],hair);
-    poly([[24,50],[26,59],[27,66],[25,65],[23,55]],hairD);
-    poly([[27,49],[31,49],[32,64],[30,67],[28,54]],hairM);
-    poly([[28,52],[31,52],[31,61],[29,63],[28,55]],hairH);
-    poly([[33,50],[37,50],[38,62],[36,68],[34,68],[34,60]],hairD);
-    poly([[36,51],[40,51],[40,61],[38,66],[36,62]],hairM);
-    poly([[43,42],[49,41],[52,55],[49,60],[45,61],[42,54]],hair);
-    poly([[45,44],[49,43],[50,55],[47,58]],hairM);
-    poly([[42,46],[45,48],[46,59],[43,60]],hairD);
-    if(isTwoTone){
-     poly([[31,54],[35,54],[35,67],[32,69],[31,62]],twoToneAccent);
-     poly([[32,56],[34,56],[34,66],[32,67]],twoToneAccentH);
-    }
+  // The rear crown retains the saved length, fringe family, curls and highlights.
+  const rearHair=bald?skin:l?hair:buzz;
+  if(!hijab&&!afro){
+   if(modernHair&&l){
+    poly([[20,32],[20,26],[23,20],[28,15],[34,12],[44,12],[52,15],[58,23],[58,33],[54,40],[49,44],[43,50],[35,54],[29,52],[24,46],[21,40]],hairD);
+    poly([[21,32],[21,26],[24,20],[29,16],[35,13],[44,13],[52,16],[58,23],[58,33],[54,39],[49,43],[46,43],[42,46],[40,51],[35,53],[29,51],[25,45],[22,39]],rearHair);
    }else{
-    const leftTip=end-5,midTip=end,rightTip=end-3,waistY=Math.round(56+(end-56)*.45);
-    poly([[21,36],[24,47],[27,58],[28,waistY],[28,leftTip-6],[27,leftTip],[25,leftTip-2],[25,Math.max(71,leftTip-7)],[23,68],[21,64],[21,50]],hair);
-    poly([[22,46],[24,55],[26,waistY],[26,leftTip-5],[25,leftTip-3]],hairM);
-    poly([[21,44],[30,46],[38,47],[41,53],[41,62],[39,waistY],[38,midTip-8],[36,midTip],[33,midTip-2],[30,rightTip],[29,rightTip-2],[27,leftTip],[25,leftTip-3],[25,Math.max(71,waistY+4)],[23,68],[21,64],[21,52]],hair);
-    poly([[24,50],[27,61],[28,waistY],[29,leftTip-5],[27,leftTip-3],[26,waistY-2],[23,55]],hairD);
-    poly([[28,49],[32,49],[32,Math.min(end-10,74)],[30,Math.min(end-8,76)],[29,54]],hairM);
-    poly([[29,52],[32,52],[31,Math.min(end-14,69)],[29,Math.min(end-12,71)],[29,55]],hairH);
-    poly([[33,50],[36,50],[37,waistY],[35,rightTip-5],[33,rightTip-2],[31,rightTip-4],[33,62]],hairD);
-    poly([[36,51],[39,51],[39,waistY-2],[37,rightTip-6],[35,rightTip-3],[35,63]],hairM);
-    const frontEnd=Math.min(60,end-7);
-    poly([[43,42],[49,41],[52,frontEnd-5],[49,frontEnd],[45,frontEnd],[42,52]],hair);
-    poly([[45,44],[49,43],[50,frontEnd-6],[47,frontEnd-2]],hairM);
-    poly([[42,46],[45,48],[46,frontEnd-1],[43,frontEnd]],hairD);
-    if(isTwoTone){
-     poly([[31,55],[35,55],[35,rightTip-3],[32,rightTip-1],[31,64]],twoToneAccent);
-     poly([[32,57],[34,57],[34,rightTip-5],[32,rightTip-3]],twoToneAccentH);
-     for(const [tx,ty] of [[27,leftTip-2],[30,rightTip-2],[35,midTip-2]]){
-      put(tx,ty-1,twoToneAccent);put(tx,ty,twoToneAccentH);
-     }
-    }
-   }
-   if(isDisheveled){
-    for(const [x,y] of [[19,31],[19,41],[20,51],[20,61],[24,72],[45,28],[48,34],[46,44]]){
-     put(x,y,hairD);put(x+(x<34?1:-1),y,hair);
-    }
-   }
-   if(isCoily){
-    for(const [x,y]of [[29,15],[38,13],[47,17],[24,22],[22,31],[22,40],[47,33]]){oval(x,y,3,3,hair);row(y-2,x-1,x+1,hairM);}
-    if(l>=3){
-     for(let y=48;y<end-3;y+=6){
-      const phase=Math.floor(y/6)%2;
-      const tailShift=y>63?Math.min(4,Math.round((y-63)*0.55)):0;
-      const lx=22+tailShift+(phase===0?0:1);
-      oval(lx,y,3,4,hair);row(y-1,lx-1,lx+1,hairM);put(lx,y-2,hairH);row(y+1,lx-1,lx+1,hairD);
-      const mx=29+Math.round(tailShift*0.5)+(phase===0?2:-1);
-      oval(mx,y+1,4,5,hairM);row(y,mx-1,mx+2,hairH);put(mx+1,y-1,hairH);row(y+2,mx-1,mx+2,hairD);
-      const rx=36+(phase===0?-1:1);
-      oval(rx,y,3,4,hairD);row(y-1,rx-1,rx+1,hair);put(rx,y-2,hairM);
-     }
-     const endShift=end>63?Math.min(4,Math.round((end-63)*0.55)):0;
-     oval(23+endShift,end-3,3,3,hair);put(23+endShift,end-4,hairH);
-     oval(29+Math.round(endShift*0.5),end-2,3,3,hairM);put(29+Math.round(endShift*0.5),end-3,hairH);
-     oval(35,end-3,3,3,hairD);put(35,end-4,hairM);
-    }
-   }else if(isCurly){
-    for(const [x,y]of [[29,15],[38,13],[47,17],[24,22],[22,31],[22,40],[47,33]]){oval(x,y,3,3,hair);row(y-2,x-1,x+1,hairM);}
-    if(l>=3){
-     for(let y=50;y<end-5;y+=8){
-      const wavePhase=Math.floor(y/8)%2;
-      const tailShift=y>63?Math.min(4,Math.round((y-63)*0.55)):0;
-      const leftWaveX=22+tailShift+(wavePhase===0?0:1);
-      oval(leftWaveX,y,3,4,hair);row(y-1,leftWaveX-1,leftWaveX+1,hairM);
-      const midWaveX=29+Math.round(tailShift*0.5)+(wavePhase===0?2:-1);
-      oval(midWaveX,y,4,4,hairM);row(y,midWaveX-1,midWaveX+2,hairH);
-      const rightWaveX=36+(wavePhase===0?-1:1);
-      oval(rightWaveX,y+2,3,4,hairD);
-     }
-     const endShift=end>63?Math.min(4,Math.round((end-63)*0.55)):0;
-     oval(23+endShift,end-5,3,3,hair);put(22+endShift,end-6,hairM);
-     oval(29+Math.round(endShift*0.5),end-2,3,3,hairM);put(30+Math.round(endShift*0.5),end-3,hairH);
-     oval(35,end-3,3,3,hair);put(36,end-4,hairM);
-    }
+    oval(34,31,23,24,bald?skinD:l?hairD:rearHair);
+    poly([[13,31],[16,22],[21,16],[30,11],[41,10],[49,14],[54,22],[55,29],[52,37],[47,39],[46,31],[39,35],[39,49],[34,55],[21,52],[15,46]],rearHair);
    }
   }
-  if(!isHijab){oval(44,48,4,5,skinD);oval(45,47,3,4,skin);box(44,46,45,49,skinD);}
+  if(l&&!hijab&&!afro){poly([[17,26],[24,19],[34,16],[43,17],[49,21],[43,22],[36,20],[27,22],[21,27]],hairM);poly([[22,21],[29,18],[36,18],[34,20],[27,23]],hairH);
+   poly([[42,21],[53,25],[57,30],[57,37],[53,35],[51,40],[49,33],[46,30+(fringe%3)]],fringe%2?hair:hairM);
+   if(l===4){poly([[14,42],[23,44],[25,57],[29,62],[25,66],[17,64],[12,57]],hair);poly([[15,45],[18,43],[20,55],[24,60],[21,62],[16,57]],hairM);}
+   else if(l>=2)poly([[18,45],[24,48],[26,61],[22,65],[18,60]],hair);
+   if(curly)for(const [x,y]of [[modernHair?24:18,23],[modernHair?31:27,16],[39,14],[49,20],[modernHair?23:15,35],[49,33]]){oval(x,y,coily?4:5,wavy?3:4,hair);poly([[x-2,y-2],[x+2,y-2],[x+3,y],[x,y+2]],hairM);}
+   if(coily)for(const [x,y]of [[22,18],[32,13],[43,16],[16,29],[24,29],[36,26],[47,28]]){oval(x,y,3,3,hair);row(y-1,x-1,x+1,hairM);}
+   // The forehead follows the forward crown in rear three-quarter view. A
+   // continuous hair cap prevents a shaved-looking skin strip at the temple.
+   // Its lower edge stays above the eye and the upper spectacle rim (y=39).
+   const foreheadCap=l===1?
+    [[48,23],[55,24],[59,27],[63,31],[63,34],[60,36],[57,34],[53,33],[50,29]]:
+    [[44,18],[52,18],[59,21],[64,25],[67,30],[67,35],[64,37],[61,38],[58,38],[55,36],[51,34],[47,29]];
+   poly(foreheadCap,hair);
+   poly([[49,23],[54,24],[59,27],[62,30],[60,31],[56,28],[52,27]],hairM);
+   // Saved fringe families end in different stepped locks above the brow.
+   // The buzz cut skips this branch and keeps its original cropped silhouette.
+   const sideFringe=l===1?[[50,25],[57,27],[61,31],[61,34],[58,32],[57,35],[55,31],[52,32]]:
+    fringe%4===0?[[49,24],[58,27],[61,31],[61,38],[58,35],[56,38],[55,32],[51,33],[50,29]]:
+    fringe%4===1?[[49,25],[57,27],[61,31],[62,35],[60,34],[59,38],[57,36],[56,32],[53,35],[53,30]]:
+    fringe%4===2?[[50,23],[56,25],[60,29],[60,33],[57,30],[55,33],[54,28],[51,29]]:
+    [[48,25],[54,25],[58,28],[62,33],[62,36],[59,35],[59,39],[57,36],[55,34],[54,31],[51,32]];
+   const fullerFringe=sideFringe.map(([x,y])=>[x+(x>=57?3:x>=53?1:0),Math.min(38,y+(y>=27?3:1))]);
+   poly(fullerFringe,hair);poly([[54,28],[58,29],[61,32],[59,31],[56,31]],hairM);
+   // Volume at the front hairline: a raised crown lip and a forward lock keep the fringe full in profile.
+   if(l>1){poly([[38,12],[47,12],[55,15],[61,20],[56,20],[49,17],[42,16]],hair);poly([[41,13],[48,13],[54,16],[48,15]],hairH);poly([[62,27],[66,29],[68,33],[66,37],[64,34],[62,36],[61,31]],fringe%2?hairM:hair);}
+   if(curly)for(const [x,y]of [[57,26],[61,30]]){oval(x,y,3,3,hair);poly([[x-2,y-2],[x+1,y-2],[x+2,y],[x,y+1]],hairM);}
+   if(modernHair){poly([[61,32],[62,32],[62,35],[61,37],[60,36]],skin);poly([[54,33],[55,34],[54,36]],skinH);}
+   if(cosmeticHairStyle==='disheveled'){
+    poly([[17,21],[17,16],[22,17],[25,14],[27,18],[24,22]],hair);
+    poly([[36,12],[40,8],[44,11],[47,11],[47,15],[41,15]],hair);
+    poly([[12,34],[10,39],[13,47],[17,45],[17,37]],hairD);
+    row(12,40,42,hairM);
+   }
+   underlayer(19,46,22,55);underlayer(47,34,49,40);
+  }else if(!bald&&!hijab&&!afro){
+   // Fade the close crop into the temple and nape; no fringe or tied tail.
+   poly([[17,24],[23,18],[33,14],[42,15],[49,20],[47,23],[39,19],[28,20],[21,26]],buzzLight);
+   poly([[16,38],[20,41],[24,47],[34,49],[38,44],[41,36],[47,34],[51,30],[54,28],[52,37],[47,39],[46,33],[42,39],[39,49],[34,55],[21,52],[15,46]],buzzFade);
+   for(let y=22;y<=38;y+=3)for(let x=19+(y%2);x<=46;x+=4)put(x,y,(x+y)%3?buzzLight:buzzFade);
+  }else if(bald){
+   poly([[23,17],[27,15],[32,15],[34,17],[28,18],[25,20],[23,20]],'#ffffff');
+   put(21,22,skinH);row(20,25,28,skinH);
+  }
+  oval(44,48,4,5,skinD);oval(45,47,3,4,skin);box(44,46,45,49,skinD);
+  if(hijab)headwear(true);
+  else if(afro){
+   oval(40,25,20,21,hair);oval(39,23,18,19,hairM);
+   poly([[27,16],[34,12],[45,12],[51,16],[47,19],[39,16],[30,19]],hairH);
+   for(let y=10;y<=42;y+=3)for(let x=20;x<=58;x+=3){
+    if(((x-40)/20)**2+((y-25)/21)**2>.88||x>=53&&y>=38)continue;
+    const curlSeed=(x*19+y*29+fringe*5)%4;
+    put(x,y,curlSeed<2?hairD:hairM);put(x+1,y+1,curlSeed===1?hairH:hair);
+   }
+  }
+  if(originalLength>=5&&!bald&&!hijab&&!afro){
+   // Long hair follows the rear jaw down to the collar. Resolve these locks
+   // after the face so its rounded skin base cannot show through at the nape;
+   // the ear, cheek, spectacles and tied-hair silhouette remain exposed.
+   pixels=napeHair;
+   poly([[20,48],[34,51],[39,53],[40,57],[43,60],[45,63],[51,67],[51,71],[43,73],[33,69],[25,62],[20,55]],hairD);
+   poly([[23,51],[31,53],[35,56],[36,61],[42,66],[45,70],[39,69],[30,64],[25,59]],hair);
+   poly([[25,53],[28,54],[30,59],[34,64],[32,64],[27,60]],hairM);
+  }
  }
 
  // About 3.5 head heights when standing: a 30px skull, a 38px torso and 36px
@@ -637,33 +513,46 @@ export function renderStudentPortrait(a,label='학생 도트 초상화',expressi
  const seated=pose==='seated',neck=seated?45:37,hip=seated?(facing==='monitor'?82:88):75,foot=111,precision=2;
  const bodyY=y=>y<=94?neck+(y-66)*(hip-neck)/28:hip+(y-94)*(foot-hip)/17;
  const outputW=W*precision,outputH=H*precision,composite=Array.from({length:outputH},()=>Array(outputW).fill(null));
- const overlay=(source,head)=>{for(let y=0;y<outputH;y++)for(let x=0;x<outputW;x++){
+ const owners=Array.from({length:outputH},()=>Array(outputW).fill(0));
+ const overlay=(source,head,part=0)=>{for(let y=0;y<outputH;y++)for(let x=0;x<outputW;x++){
   const px=x/precision,py=y/precision;
   const tail=py>neck;
   const headWidth=STUDENT_HEAD_SCALE+(tail?.15*Math.min(1,(py-neck)/8):0);
   const sx=Math.round(head?40+(px-40)/headWidth:px);
-  const sy=Math.round(head?66+(py-neck)/(tail?1.5:STUDENT_HEAD_SCALE):py<=hip?66+(py-neck)*28/(hip-neck):94+(py-hip)*17/(foot-hip));
-  const color=source[sy]?.[sx];if(color)composite[y][x]=color;
+  const sy=Math.round(head?66+(py-neck)/(tail?(facing==='monitor'?1.1:1.5):STUDENT_HEAD_SCALE):py<=hip?66+(py-neck)*28/(hip-neck):94+(py-hip)*17/(foot-hip));
+  const color=source[sy]?.[sx];if(color){composite[y][x]=color;owners[y][x]=part;}
  }};
- overlay(backHead,true);overlay(body,false);overlay(frontHead,true);pixels=composite;
+ if(facing==='monitor'){overlay(backHead,true,0);overlay(farArm,false,1);overlay(body,false,2);overlay(backHair,true,3);overlay(frontHead,true,4);overlay(napeHair,true,3);overlay(nearArm,false,5);}
+ else{overlay(backHead,true);overlay(body,false);overlay(frontHead,true);}
+ pixels=composite;
 
  // A single pixel coloured contour keeps the delicate edges readable at 80%.
- const outlined=pixels.map(r=>r.slice());
- for(let y=0;y<outputH;y++)for(let x=0;x<outputW;x++)if(!pixels[y][x]){const n=[pixels[y-1]?.[x],pixels[y+1]?.[x],pixels[y][x-1],pixels[y][x+1]].find(Boolean);if(n)outlined[y][x]=mix(n,edge,.65);}
- let rects='';for(let y=0;y<outputH;y++){let x=0;while(x<outputW){const c=outlined[y][x];if(!c){x++;continue;}let end=x;while(end+1<outputW&&outlined[y][end+1]===c)end++;rects+=`<rect x="${x}" y="${y}" width="${end-x+1}" height="1" fill="${c}"/>`;x=end+1;}}
+ const outlined=pixels.map(r=>r.slice()),outlinedOwners=owners.map(r=>r.slice());
+ for(let y=0;y<outputH;y++)for(let x=0;x<outputW;x++)if(!pixels[y][x]){const neighbor=[[x,y-1],[x,y+1],[x-1,y],[x+1,y]].find(([xx,yy])=>pixels[yy]?.[xx]);if(neighbor){const[xx,yy]=neighbor,color=pixels[yy][xx];outlined[y][x]=mix(color,hijab&&fabricColors.has(color)?fabricEdge:edge,.65);outlinedOwners[y][x]=owners[yy][xx];}}
+ const parts=STUDENT_MONITOR_LAYERS.map(()=>[]);let rects='';for(let y=0;y<outputH;y++){let x=0;while(x<outputW){const c=outlined[y][x];if(!c){x++;continue;}const owner=outlinedOwners[y][x];let end=x;while(end+1<outputW&&outlined[y][end+1]===c&&(facing!=='monitor'||outlinedOwners[y][end+1]===owner))end++;const rect=`<rect x="${x}" y="${y}" width="${end-x+1}" height="1" fill="${c}"/>`;if(facing==='monitor')parts[owner].push(rect);else rects+=rect;x=end+1;}}
+ if(facing==='monitor')rects=parts.map((part,i)=>`<g data-avatar-part="${STUDENT_MONITOR_LAYERS[i]}">${part.join('')}</g>`).join('');
+ // Only the already-visible hair pixels drape over a chair back. The resolved
+ // ownership mask excludes the face, shirt and both keyboard arms.
+ if(hairOnly)return `<svg class="student-hair-drape" viewBox="0 0 320 496" aria-hidden="true"><g shape-rendering="crispEdges" transform="translate(0 24) scale(2)"><g data-avatar-part="back-hair">${parts[3].join('')}</g></g></svg>`;
  const styles=['까까머리','크롭컷','짧은 머리','중간 길이 머리','단발','어깨 길이 머리','긴 머리'];
- const styleLabel=isHijab?'히잡':isAfro?'아프로':isBald?'대머리':isBuzz?'까까머리':isDisheveled?'폐인 장발':styles[l];
- const curlLabel=isHijab||isAfro||isBald?'':isCoily?' · 입체 곱슬머리':(isCurly&&l?' · 곱슬머리':'');
- const toneLabel=isTwoTone?' · 시크릿투톤':isBleached?' · 탈색모':'';
- const fringeLabel=(l&&!isHijab&&!isAfro&&!isBald)?` · 앞머리 ${fringe+1}`:'';
- const title=escape(`${label} · ${EXPRESSIONS[expression]} · ${styleLabel}${curlLabel}${toneLabel}${a.glasses?' · 안경':''}${fringeLabel}${pose==='lecturing'?' · 칠판 앞에서 강의':''}${facing==='monitor'?' · 모니터를 바라보며 앉음':''}`);
- // The raised TA arm shares the new torso coordinates; the pointer is shortened
- // independently so stretching the torso cannot pull its tip outside the frame.
- const armPoints=[[13,36],[16,36],[16,41],[12,41],[12,38],[10,38],[10,35],[8,35],[8,30],[11,30],[11,33],[13,33]].map(([x,y])=>[x*2,Math.round(bodyY(y*2))-1]);
- const palmTop=Math.round(bodyY(58)),palmBottom=Math.round(bodyY(64)),grip=Math.round(bodyY(60));
- const arm=pose==='lecturing'?`<g transform="translate(0 24) scale(4)" shape-rendering="crispEdges"><g class="ta-lecture-arm"><path d="M${armPoints.map(([x,y])=>`${x} ${y}`).join('L')}z" fill="${top}" stroke="${topD}" stroke-width="1.2"/><path d="M18 ${grip}V${grip-6}H16V7" fill="none" stroke="#756353" stroke-width="2" class="ta-pointer"/><path d="M16 7v2" stroke="#e9e5d8" stroke-width="2"/><path d="M16 ${palmTop}h6v${palmBottom-palmTop}h-6z" fill="${skin}" stroke="${skinD}" stroke-width="1"/></g></g>`:'';
- const hairStyleAttr=isHijab?'hijab':isAfro?'afro':isBald?'bald':isBuzz?'buzz':isDisheveled?'disheveled':isTwoTone?'twoTone':isBleached?'bleached':isCoily?'coily':isCurly?'curly':'standard';
- const twoToneAttr=isTwoTone?' data-two-tone="true"':'';
- const bleachedAttr=isBleached?' data-bleached="true"':'';
- return `<svg class="portrait" data-expression="${expression}" data-pose="${pose}" data-outfit="${outfit}"${facing==='monitor'?' data-facing="monitor"':''} data-hair-style="${hairStyleAttr}"${twoToneAttr}${bleachedAttr} data-headwear="${isHijab?'hijab':'none'}" data-head-scale="${STUDENT_HEAD_SCALE}" data-body-proportion="3.5" viewBox="0 0 320 496" role="img" aria-label="${title}"><title>${title}</title><g class="hair-fringe chibi-grid ${expression==='sad'?'expression-tear':''}" shape-rendering="crispEdges" transform="translate(0 24) scale(2)">${rects}</g>${arm}</svg>`;
+ const en=a.locale==='en',stylesEn=['Buzz cut','Cropped hair','Short hair','Medium hair','Bob','Shoulder-length hair','Long hair'];
+ const expressionEn={neutral:'Calm expression',happy:'Smiling expression',delighted:'Delighted expression',focused:'Focused expression',worried:'Worried expression',sad:'Sad expression',tired:'Tired expression',relieved:'Relieved expression',surprised:'Surprised expression'};
+ const cosmeticLabel=hijab?(en?'Hijab':'히잡'):afro?(en?'Afro':'아프로'):bald?(en?'Bald scalp':'민머리'):cosmeticHairStyle==='disheveled'?(en?'Natural long hair':'자연스러운 긴 머리'):en?stylesEn[originalLength]:styles[originalLength];
+ const pigmentLabel=accent?(en?' · Peekaboo highlights':' · 시크릿 투톤'):a.bleached&&!bald&&!hijab?(en?' · Lightly colored hair':' · 밝게 염색한 머리'):'';
+ const title=escape(`${label} · ${en?expressionEn[expression]:EXPRESSIONS[expression]} · ${cosmeticLabel}${hairStyle==='ponytail'?(en?' · Ponytail':' · 포니테일'):hairStyle==='braided-bun'?(en?' · Braided bun':' · 땋아올린 번'):''}${curly&&l&&!afro?(en?' · Curly hair':' · 곱슬머리'):''}${pigmentLabel}${a.glasses?(en?' · Glasses':' · 안경'):''}${l&&!hijab&&!afro?en?` · Fringe ${fringe+1}`:` · 앞머리 ${fringe+1}`:''}${pose==='lecturing'?(en?' · Teaching at the board':' · 칠판 앞에서 강의'):''}${facing==='monitor'?(en?' · Seated facing the monitor':' · 모니터를 바라보며 앉음'):''}`);
+ // The upper arm bends away from the shoulder and the forearm rises to the
+ // pointer. A shoulder pivot keeps the single animated arm attached in motion.
+ const armPoints=[[27,71],[30,73],[23,80],[18,80],[14,77],[13,73],[13,65],[18,64],[19,73],[23,73]].map(([x,y])=>[x,Math.round(bodyY(y))]);
+ const shoulderY=Math.round(bodyY(71)),palmTop=Math.round(bodyY(60)),palmBottom=Math.round(bodyY(65)),grip=Math.round(bodyY(61)),cuffY=Math.round(bodyY(64));
+ const arm=pose==='lecturing'?`<g transform="translate(0 24) scale(4)" shape-rendering="crispEdges"><g class="ta-lecture-arm" style="transform-origin:27px ${shoulderY}px"><path d="M${armPoints.map(([x,y])=>`${x} ${y}`).join('L')}z" fill="${top}" stroke="${topD}" stroke-width="1"/><path d="M15 ${Math.round(bodyY(73))}V${cuffY+2}M19 ${Math.round(bodyY(77))}L26 ${shoulderY+3}" fill="none" stroke="${topH}" stroke-width="1"/><path d="M13 ${cuffY}h5v2h-5z" fill="${outfit===0?topD:rib}"/><path d="M16 ${grip}V7" fill="none" stroke="#756353" stroke-width="1.5" class="ta-pointer"/><path d="M16 7v2" stroke="#e9e5d8" stroke-width="1.5"/><path d="M14 ${palmTop}h4l1 2v${palmBottom-palmTop-3}l-1 1h-4z" fill="${skin}" stroke="${skinD}" stroke-width=".6"/><path d="M16 ${palmTop+2}h3" stroke="${skinH}" stroke-width="1"/></g></g>`:'';
+ const resolvedStyle=hijab?'hijab':afro?'afro':hairStyle!=='loose'?hairStyle:cosmeticHairStyle!=='regular'?cosmeticHairStyle:null;
+ const cosmetics=`${resolvedStyle?` data-hair-style="${resolvedStyle}"`:''}${hijab?' data-headwear="hijab"':''}${cosmeticHairStyle!=='regular'?` data-hair-variant="${cosmeticHairStyle}"`:''}${a.hairTexture?` data-hair-texture="${escape(a.hairTexture)}"`:''}${accent?' data-two-tone="true"':''}${a.bleached&&!bald&&!hijab?' data-bleached="true"':''}`;
+ return `<svg class="portrait" data-expression="${expression}" data-pose="${pose}" data-outfit="${outfit}"${facing==='monitor'?' data-facing="monitor"':''} data-head-scale="${STUDENT_HEAD_SCALE}" data-body-proportion="3.5"${cosmetics} viewBox="0 0 320 496" role="img" aria-label="${title}"><title>${title}</title><g class="hair-fringe chibi-grid ${expression==='sad'?'expression-tear':''}" shape-rendering="crispEdges" transform="translate(0 24) scale(2)">${rects}</g>${arm}</svg>`;
+}
+
+export function renderStudentPortrait(a,label,expression,pose,facing){return studentPortrait(a,label,expression,pose,facing);}
+export function renderStudentHairDrape(a,expression='neutral'){
+ const long=(a.hairLength??3)>=5,hijab=a.hijab||a.headwear==='hijab'||a.hairStyle==='hijab',afro=(a.afro||a.hairStyle==='afro')&&a.labMode!=='wet';
+ if(a.cosmeticHairStyle==='bald'||a.hairStyle==='bald'||hijab||afro||!long||a.labMode==='wet'&&a.hairStyle==='braided-bun')return '';
+ return studentPortrait(a,'',expression,'seated','monitor',true);
 }

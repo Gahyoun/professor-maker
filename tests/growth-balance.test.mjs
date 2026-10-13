@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {GAME_BALANCE,validBalance} from '../dist/balance.js';
-import {createState,simulateMonth,decide,proposeSchedule,abilityScore,HIDDEN_RANGES,validateSave,migrateSave} from '../dist/engine.js';
+import {createState,simulateMonth,decide,proposeSchedule,abilityScore,HIDDEN_RANGES,validateSave,migrateSave,GROWTH_VERSION,projectThresholds} from '../dist/engine.js';
+import {abilityAfterChange,rapportAfterChange} from '../dist/relationship.js';
 
 const near=(actual,expected)=>assert.ok(Math.abs(actual-expected)<1e-9,`${actual} != ${expected}`);
 const setScore=(s,key,n)=>{const [lo,hi]=HIDDEN_RANGES[key];s.hidden[key]=lo+n*(hi-lo)/100;};
@@ -100,4 +101,49 @@ test('slower growth preserves actionable qualification preparation proposals wit
  s.month=50;s.history.push({month:49,kind:'month',results:[{actual:'coursework',performed:true},{actual:'coursework',performed:true}]});
  assert.deepEqual(proposeSchedule(s).slice(0,2),['presentation','presentation']);
  s.service.trainingStartMonth=s.month;assert.ok(proposeSchedule(s).every(id=>id==='free'));
+});
+
+test('advanced practice tapers continuously without changing rapport, recovery or losses',()=>{
+ for(const initial of [30,49.5,50,68,70,80,95]){
+  let score=initial;for(let i=0;i<80;i++)score=abilityAfterChange(score,.75);
+  near(score,abilityAfterChange(initial,60));
+  assert.ok(score<100);assert.ok(score>initial);
+ }
+ near(abilityAfterChange(69,2),abilityAfterChange(abilityAfterChange(69,1),1));
+ const gain=n=>abilityAfterChange(n,1)-n;
+ assert.ok(gain(50)>gain(70)&&gain(70)>gain(90)&&gain(90)>gain(95));
+ assert.ok(abilityAfterChange(95,40)<96,'a long high-level practice block must not fill the ceiling');
+ assert.ok(abilityAfterChange(90,5)<rapportAfterChange(90,5),'advanced skills taper more than rapport');
+ for(const initial of [1,50,95,100])assert.equal(abilityAfterChange(initial,-3),Math.max(0,initial-3));
+});
+
+test('old maximized records preserve accomplishments and mark where the new growth rules start',()=>{
+ const s=fixture();delete s.growthVersion;
+ for(const key of ['learning','research','language','social','autonomy','teaching','industry','enterprise','outreach','intuition','manners'])setScore(s,key,100);
+ const before=structuredClone(s),loaded=migrateSave(s);
+ assert.ok(loaded);assert.equal(loaded.growthVersion,GROWTH_VERSION);assert.equal(loaded.growthLegacyThrough,s.month);
+ assert.deepEqual(loaded.hidden,before.hidden);assert.deepEqual(loaded.career,before.career);assert.deepEqual(loaded.project,before.project);assert.deepEqual(s,before);
+ assert.equal(loaded.history.filter(h=>h.kind==='growth-rules').length,1);
+ assert.deepEqual(migrateSave(loaded),loaded,'repeated loading must not reapply a migration');
+ const oldEnding=structuredClone(s);oldEnding.ending='institute';
+ const restored=migrateSave(oldEnding);assert.deepEqual(restored.history,oldEnding.history);assert.deepEqual(restored.hidden,oldEnding.hidden);assert.equal(restored.ending,'institute');
+});
+
+test('new and legacy ongoing students use the same prospective growth without rewriting attained values',()=>{
+ const current=fixture(),legacy=structuredClone(current);delete legacy.growthVersion;
+ for(const s of [current,legacy])for(const key of ['learning','research','manners'])setScore(s,key,90);
+ const plan=recoveries(),currentNext=simulateMonth(current,plan,{...options(current),proposal:plan}),legacyNext=simulateMonth(legacy,plan,{...options(legacy),proposal:plan});
+ assert.deepEqual(legacyNext.hidden,currentNext.hidden);assert.equal(legacyNext.growthLegacyThrough,legacy.month);assert.equal(legacyNext.growthVersion,GROWTH_VERSION);
+ near(abilityScore(currentNext,'learning'),abilityAfterChange(90,.9*GAME_BALANCE.policyGrowthScale*GAME_BALANCE.abilityGrowthScale));
+ assert.ok(abilityScore(currentNext,'learning')-90<.01);
+ assert.equal(currentNext.growthLegacyThrough,undefined);
+ for(const value of [0,3,-1,NaN,'2'])assert.equal(validateSave({...current,growthVersion:value}),false);
+ assert.equal(validateSave({...current,growthLegacyThrough:current.month+1}),false);
+});
+
+test('later projects need further original work while the first research project and conference preparation stay accessible',()=>{
+ const s=fixture(),first=projectThresholds(s);s.project.id=2;const second=projectThresholds(s);s.project.id=8;const later=projectThresholds(s);
+ assert.ok(second.submission>first.submission);assert.ok(later.submission>second.submission);
+ assert.equal(second.conference,first.conference);assert.equal(later.conference,first.conference);
+ assert.equal(first.phaseTargets.slice(0,5).reduce((a,b)=>a+b,0),first.submission);
 });

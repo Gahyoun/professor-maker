@@ -1,0 +1,44 @@
+.utility-bar .container>div{display:flex;align-items:center;gap:3px}
+.utility-bar .edition-link{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;min-height:44px;padding:6px 10px}
+.portal-session{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;border-right:1px solid currentColor;padding-right:10px;margin-right:4px}
+.portal-session time{font:600 12px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;font-variant-numeric:tabular-nums;min-width:5ch;color:inherit}
+.portal-session-label{font-size:11px;color:inherit}
+.portal-session button{border:1px solid currentColor;border-radius:3px;min-height:44px;margin:3px 0;padding:0 8px;background:transparent;color:inherit;font-size:11px}
+.portal-session button:hover{background:#ffffff15}
+dialog.portal-timeout{width:min(480px,calc(100% - 32px));max-height:calc(100svh - 32px);border:2px solid #17304f;padding:0;box-sizing:border-box;border-radius:4px;color:#243447;background:white}
+.portal-timeout::backdrop{background:#10233bd9}
+.portal-timeout-card{padding:28px;line-height:1.8;overflow-wrap:anywhere}
+.portal-timeout-kicker{font-size:11px;letter-spacing:.06em;color:#536275}
+.portal-timeout h2{font-size:23px;line-height:1.4;margin:18px 0}
+.portal-timeout p{font-size:14px}
+.portal-timeout .portal-timeout-note{font-size:12px;color:#657386;margin:22px 0}
+.portal-timeout .primary{width:100%;min-height:44px}
+@media(max-width:899px){
+ .utility-bar .container{flex-wrap:wrap}
+ .utility-bar .container>div{flex-wrap:wrap;justify-content:flex-end}
+ body[data-onboarding] .utility-bar button{min-height:44px}
+ .utility-bar .edition-link{min-height:44px;padding:6px 8px}
+ .portal-session{flex-basis:100%;justify-content:flex-end;border-right:0;border-bottom:1px solid #ffffff20;margin:0;padding:3px 0}
+ .portal-session button{min-height:44px;margin:0;font-size:12px;padding:0 12px}
+ .portal-timeout-card{padding:22px}
+ .portal-timeout h2{font-size:21px}
+}
+@media(max-width:540px){.utility-bar .container>div{width:100%}}
+@media print{.portal-session{display:none!important}}
+dialog.opening-meeting{width:min(600px,calc(100% - 24px));max-height:calc(100svh - 24px);padding:0;border:2px solid #17304f;border-radius:6px;box-sizing:border-box;overflow:auto}
+.opening-meeting-card{padding:26px;line-height:1.8;color:#243447}
+.opening-meeting-card h2{font-size:23px;margin:10px 0 18px}
+.opening-meeting-kicker,.opening-meeting-speaker{font-size:12px;color:#617386}
+.opening-meeting-portrait{float:right;margin:0 0 12px 16px}
+.opening-meeting-portrait svg{width:55px;height:110px}
+.opening-meeting-card blockquote{margin:8px 0 22px;padding:12px 16px;border-left:3px solid #912c3e;background:#f5f7fa;font-size:15px}
+.opening-meeting-card .opening-professor-line{font-size:20px;font-weight:700}
+.opening-meeting-note{font-size:13px;color:#657386;clear:both}
+.opening-meeting-card .primary{min-height:44px;width:100%;margin-top:12px}
+.student-background{margin:14px 0;border:1px solid #d6dee7;padding:10px 12px;font-size:12px;line-height:1.8}
+.student-background summary{min-height:44px;display:flex;align-items:center;cursor:pointer}
+.student-background small{color:#657386}
+.candidate-background dd{font-weight:400!important;line-height:1.8}
+.candidate-heading .candidate-portrait{float:right;width:40px;height:80px;margin:0 0 8px 10px;overflow:hidden}
+.candidate-portrait svg{width:40px;height:80px;display:block}
+@media(max-width:899px){.opening-meeting-card{padding:18px}.opening-meeting-card .opening-professor-line{font-size:18px}.opening-meeting-card blockquote{font-size:14px;padding:10px 12px}}

@@ -7,7 +7,7 @@ const output='/private/tmp/professor-maker-qa';await fs.mkdir(output,{recursive:
 try{
  const context=await browser.newContext({viewport:{width:1360,height:950},serviceWorkers:'block'}),page=await context.newPage(),errors=[];
  page.on('pageerror',error=>errors.push(error.message));
- await page.goto('http://127.0.0.1:4173/#home');
+ await page.goto((process.env.GAME_URL||'http://127.0.0.1:4173/')+'#home');
  assert.equal(await page.locator('.brand-initial-p').first().evaluate(el=>getComputedStyle(el).color),'rgb(0, 158, 219)');
  assert.equal(await page.locator('.brand-initial-m').first().evaluate(el=>getComputedStyle(el).color),'rgb(0, 158, 219)');
  await page.locator('.header-nav a[href="#lab"]').click();
@@ -16,9 +16,9 @@ try{
  await page.locator('.skip-link').focus();await page.locator('.skip-link').press('Enter');
  assert.equal(await page.evaluate(()=>location.hash),'#lab');
  assert.equal(await page.evaluate(()=>document.activeElement.id),'main');
- await page.locator('#start-form button[type=submit]').click();
+ if(await page.locator('#onboarding-update').count())await page.locator('#onboarding-update [data-ui=update-close]').first().click();await page.locator('#start-form button[type=submit]').click();await page.locator('[name=candidateIndex][value="0"]').check();await page.locator('#admission-form button[type=submit]').click();
  await page.locator('#decision [data-choice=together]').click();
- await page.waitForFunction(()=>JSON.parse(localStorage.getItem('pm-save-v4')).pending===null);
+ await page.waitForFunction(()=>JSON.parse(localStorage.getItem('pm-save-v4')).pending===null);if(await page.locator('[data-ui=screen-guide-skip]').count())await page.locator('[data-ui=screen-guide-skip]').click();
  for(const width of [320,390,768,1360]){
   await page.setViewportSize({width,height:950});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${width}px overflows`);
@@ -29,6 +29,13 @@ try{
  await page.locator('[data-ui="advance"]').click();
  await page.waitForFunction(()=>document.body.classList.contains('month-playing'));
  await page.locator('.month-cue').waitFor();
+ await page.waitForTimeout(300);
+ const cueBounds=await page.evaluate(()=>{
+  const cue=document.querySelector('.month-cue'),header=cue.closest('.week-scene-header');
+  const c=cue.getBoundingClientRect(),h=header.getBoundingClientRect(),label=document.querySelector('#live-stage .room-label').getBoundingClientRect();
+  return {withinHeader:c.left>=h.left&&c.right<=h.right&&c.top>=h.top&&c.bottom<=h.bottom,beforeCaption:c.bottom<=label.top};
+ });
+ assert.deepEqual(cueBounds,{withinHeader:true,beforeCaption:true});
  assert.ok(await page.locator('.schedule').evaluate(el=>el.inert));
  assert.ok(await page.locator('[data-skip-weeks]').evaluate(el=>el===document.activeElement));
  await page.screenshot({path:output+'/pm413-month-cue.png'});
@@ -51,7 +58,7 @@ try{
  await page.locator('[data-ui=advance]').click();
  await page.locator('#funding-results .funding-awarded').waitFor();
  assert.match(await page.locator('#funding-results').innerText(),/5년/);
- assert.match(await page.locator('#toast').innerText(),/선정되었습니다/);
+ assert.match(await page.locator('#toast').innerText(),/좋은 소식!.*선정.*추가 연구비/);
  const real=await page.evaluate(()=>JSON.parse(localStorage.getItem('pm-save-v4')).lastReport.fundingResults);
  assert.deepEqual(real,expected);
  await page.locator('#funding-results').scrollIntoViewIfNeeded();

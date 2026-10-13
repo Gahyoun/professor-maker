@@ -11,18 +11,17 @@
  .decision.important-exam{padding:18px!important;min-height:0}
  .feedback-option{min-height:64px;cursor:pointer;touch-action:manipulation}
  dialog{max-height:calc(100dvh - 24px);overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
- .pixel-room[data-projection=isometric] .room-label{font-size:11px;line-height:1.5;padding:5px 7px;max-width:94%}
+ .pixel-room[data-projection=isometric] .room-label{font-size:10px;line-height:1.5;padding:5px 7px;max-width:94%}
  .week-plan .week-desc{font-size:12px;line-height:1.7}.week-plan>label{font-size:11px}
  .monthly-confirm{gap:12px;flex-wrap:wrap;padding-bottom:max(16px,env(safe-area-inset-bottom))}
  .monthly-confirm .primary{width:100%;min-height:48px}
- .credit-blocks button{min-width:38px;min-height:44px}
  .save-point-tools input{width:100%}.journal-restore button{width:100%}
  .mail-row{min-height:64px}.ending-review select{min-height:44px}
 }
 @media(max-width:420px){
  .header-nav{width:100%;justify-content:space-between;gap:8px;font-size:14px}
- .live-lab .room-label{font-size:11px}
- .progress-label{flex-wrap:wrap;gap:4px;font-size:11px}
+ .live-lab .room-label{font-size:9px}
+ .progress-label{flex-wrap:wrap;gap:4px}
 }
 @media(max-height:600px) and (max-width:899px){
  .live-lab .pixel-room[data-projection=isometric],.live-lab .pixel-room{height:clamp(100px,28dvh,155px)}

@@ -1,782 +1,795 @@
 {
-  "schemaVersion": 1,
-  "generatedAt": "2026-10-10T05:43:35.699Z",
-  "comparison": {
-    "beforeVersion": "4.13.3",
-    "afterVersion": "4.14.0",
-    "pairedPolicyRuns": 1250,
-    "totalExecutions": 2500,
-    "policies": [
-      "random",
-      "default",
-      "research",
-      "faculty",
-      "industry"
-    ],
-    "runsPerPolicyPerVersion": 250,
-    "seedFormula": "16 + 7919 * run (same across policies and versions)",
-    "scope": "Paired fixed-policy simulation, not a human-player or real-world probability estimate.",
-    "pairedPolicies": true,
-    "policySupportIdentical": true
+  "version": "4.16.0",
+  "runs": 1250,
+  "runsPerPolicy": 250,
+  "seedFormula": "16 + 7919 * run (same across policies and versions)",
+  "method": "Five fixed policies through production simulation-worker; no ability, funds, or output injection. All policies intentionally continue into doctoral study and use managed finances to isolate student growth. Random means uniform legal weekly activities, feedback and affordable event options; default accepts proposals and first affordable event options. These are test policies, not human-player or real-world probabilities.",
+  "sourceHashes": {
+    "scripts/growth-balance-audit.mjs": "d8253898e1125e7e5bf9db4d0c1c2c00a14d64df8efe761f1eb29ca3f79e14bf",
+    "tests/play-support.mjs": "374b02c0011d19bfb2895e0c2fd3df1a32129def32337cba5315f2a109dc7fca",
+    "dist/simulation-worker.js": "42f7d76ed7e1bf032f148e0529154d0c74fcdeb8bbd6b8ae66b7eaf8fabdabc1",
+    "dist/engine.js": "0d780a31b127bef2e910925f96b6a8dd888201dd095e22e6a055979f30736993",
+    "dist/balance.js": "b277d938f545e37ce9504d3c67410f79d67423af4bc611b6712740abd554f266",
+    "dist/relationship.js": "b1811893b26ef5ca08bfd41ee0e59555fb99b09754a3388370cb8d6886d881f7",
+    "dist/funding.js": "3fa08411f447a8c4301bc7144897e3fa3baf498c021c6687f42654a0a85fb19d",
+    "dist/grants.js": "41025c602683cf4ef2166232e1e8577714143bc794570447c960412e594b376d",
+    "dist/events.js": "3274c0c1b12b0027ba806fb137abf9d6e3eb80010eb7b7ef5134ef97a804cbba",
+    "dist/main-story.js": "8efa33109e1b805b1b5c51d5172ea265dc347281e5120ed5be9f95266f487614",
+    "dist/monthly-choices.js": "312863e5e64963f6f701d2df9df9460527bf15bed91e52bb1ee42dd1be59bf03",
+    "dist/workload.js": "e39f3d63b03cb27af3654ac3f86cff8e2bc68fd27606e19cb167b4f35e4f2e92",
+    "dist/impact.js": "570773136271fe9af48e3f972a627bba5fac7ce02902671fa0506ff3acd3d3d9",
+    "dist/disciplines.js": "4ea4655ed46843175b4460a14459a4d8ccafeb5f0c3acf6e96baa1cf6e16f5a3",
+    "dist/academic-calendar.js": "b876e6a34a89f9c02f1c15275eeeaafed5e2adcfa45c16437709ca35e5bce741",
+    "dist/travel.js": "9ad34619e88765df171cee03506328af1d538392d80ade55774bcf11d7e1fb11",
+    "dist/venues.js": "3e1055d7543c06446dd0c530ca328ccea033889b2a7fa3b871c97789b3365e36",
+    "dist/research-topics.js": "28416581b17218f09172144efdf20a0d8f6975e35a79d3d2043b77d5550a7e4f",
+    "dist/names.js": "5ad4c46408183aabdbc3e63f504df28eb3993f82a8052d422bd1c2a8e5a56a0f"
   },
-  "denominators": {
-    "outcomePercent": "Every outcome percentage is divided by all 250 runs of the corresponding policy and version, including incomplete runs.",
-    "doctoralMeans": "Legacy doctoralCount and doctoralMeans fields include every state with month === 96, without checking defense eligibility, actual degree completion or outcome. They describe 96-month arrival states, not all runs and not doctoral graduates only.",
-    "unresolved": "budget-blocked, incomplete and error are unfinished or exceptional runs, not ending IDs."
-  },
-  "sourceValidation": {
-    "currentSourceHashes": {
-      "scripts/growth-balance-audit.mjs": "c7b1a6e43bd8c01051b3eaf2fffeaef926f145052c9c970bab42c7160daff021",
-      "tests/play-support.mjs": "374b02c0011d19bfb2895e0c2fd3df1a32129def32337cba5315f2a109dc7fca",
-      "dist/simulation-worker.js": "42f7d76ed7e1bf032f148e0529154d0c74fcdeb8bbd6b8ae66b7eaf8fabdabc1",
-      "dist/engine.js": "672b2406d9b0fe909f8ee758b40c34dfc374863aa5b4b839bbe311a3af3e0001",
-      "dist/balance.js": "63d7f191bddc62b89a8785cf7ef32fd4103ab6377e87f779f3461f2858c66eda",
-      "dist/relationship.js": "795c973b329a40d75f1fc5091178a797f111038bd7d36051047113dea7d45cc2"
-    },
-    "checks": {
-      "scripts/growth-balance-audit.mjs": {
-        "recordedAfter": "c7b1a6e43bd8c01051b3eaf2fffeaef926f145052c9c970bab42c7160daff021",
-        "current": "c7b1a6e43bd8c01051b3eaf2fffeaef926f145052c9c970bab42c7160daff021",
-        "afterMatchesCurrent": true,
-        "beforeMatchesAfter": true
+  "byPolicy": {
+    "random": {
+      "policy": "random",
+      "runs": 250,
+      "outcomes": {
+        "bachelor": 217,
+        "dismissed": 10,
+        "leave": 12,
+        "gameover": 9,
+        "budget-blocked": 2
       },
-      "tests/play-support.mjs": {
-        "recordedAfter": "374b02c0011d19bfb2895e0c2fd3df1a32129def32337cba5315f2a109dc7fca",
-        "current": "374b02c0011d19bfb2895e0c2fd3df1a32129def32337cba5315f2a109dc7fca",
-        "afterMatchesCurrent": true,
-        "beforeMatchesAfter": true
+      "doctoralCount": 9,
+      "doctoralMeans": {
+        "learning": 79.053,
+        "research": 73.995,
+        "autonomy": 81.311,
+        "language": 79.727,
+        "industry": 58.553,
+        "teaching": 52.857,
+        "intuition": 70.329,
+        "manners": 66.043
       },
-      "dist/simulation-worker.js": {
-        "recordedAfter": "42f7d76ed7e1bf032f148e0529154d0c74fcdeb8bbd6b8ae66b7eaf8fabdabc1",
-        "current": "42f7d76ed7e1bf032f148e0529154d0c74fcdeb8bbd6b8ae66b7eaf8fabdabc1",
-        "afterMatchesCurrent": true,
-        "beforeMatchesAfter": true
+      "errors": [],
+      "samples": [],
+      "arrivalAbilityDistributions": {
+        "learning": {
+          "count": 9,
+          "min": 75.712,
+          "p50": 78.302,
+          "p95": 84.088,
+          "max": 84.088,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "research": {
+          "count": 9,
+          "min": 66.76,
+          "p50": 74.825,
+          "p95": 76.791,
+          "max": 76.791,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "autonomy": {
+          "count": 9,
+          "min": 80.414,
+          "p50": 81.057,
+          "p95": 82.836,
+          "max": 82.836,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "language": {
+          "count": 9,
+          "min": 76.077,
+          "p50": 79.931,
+          "p95": 84.136,
+          "max": 84.136,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "industry": {
+          "count": 9,
+          "min": 46.943,
+          "p50": 58.883,
+          "p95": 75.112,
+          "max": 75.112,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "teaching": {
+          "count": 9,
+          "min": 40,
+          "p50": 50,
+          "p95": 72.456,
+          "max": 72.456,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "intuition": {
+          "count": 9,
+          "min": 62.103,
+          "p50": 71.467,
+          "p95": 74.926,
+          "max": 74.926,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "manners": {
+          "count": 9,
+          "min": 44.956,
+          "p50": 64.744,
+          "p95": 89.7,
+          "max": 89.7,
+          "atLeast95": 0,
+          "atLeast99": 0
+        }
       },
-      "dist/engine.js": {
-        "recordedAfter": "672b2406d9b0fe909f8ee758b40c34dfc374863aa5b4b839bbe311a3af3e0001",
-        "current": "672b2406d9b0fe909f8ee758b40c34dfc374863aa5b4b839bbe311a3af3e0001",
-        "afterMatchesCurrent": true,
-        "beforeMatchesAfter": false
-      },
-      "dist/balance.js": {
-        "recordedAfter": "63d7f191bddc62b89a8785cf7ef32fd4103ab6377e87f779f3461f2858c66eda",
-        "current": "63d7f191bddc62b89a8785cf7ef32fd4103ab6377e87f779f3461f2858c66eda",
-        "afterMatchesCurrent": true,
-        "beforeMatchesAfter": false
-      },
-      "dist/relationship.js": {
-        "recordedAfter": "795c973b329a40d75f1fc5091178a797f111038bd7d36051047113dea7d45cc2",
-        "current": "795c973b329a40d75f1fc5091178a797f111038bd7d36051047113dea7d45cc2",
-        "afterMatchesCurrent": true,
-        "beforeMatchesAfter": true
+      "freshDoctoralPapers": {
+        "count": 0,
+        "min": null,
+        "p50": null,
+        "p95": null,
+        "max": null,
+        "atLeast95": 0,
+        "atLeast99": 0,
+        "mean": null
       }
     },
-    "discrepancies": [],
-    "passed": true
-  },
-  "totals": {
-    "before": {
-      "runs": 1250,
-      "completedEndings": 1159,
-      "unresolved": 91,
+    "default": {
+      "policy": "default",
+      "runs": 250,
       "outcomes": {
-        "bachelor": 219,
-        "dismissed": 24,
-        "leave": 13,
-        "gameover": 5,
-        "budget-blocked": 91,
-        "unrelated": 4,
-        "institute": 716,
-        "unemployed": 16,
-        "resident_researcher": 6,
-        "true": 132,
-        "postdoc": 9,
-        "corporate": 15
+        "unemployed": 167,
+        "dismissed": 32,
+        "gameover": 17,
+        "budget-blocked": 19,
+        "institute": 15
+      },
+      "doctoralCount": 199,
+      "doctoralMeans": {
+        "learning": 89.754,
+        "research": 75.88,
+        "autonomy": 80.647,
+        "language": 68.197,
+        "industry": 0.432,
+        "teaching": 19.808,
+        "intuition": 77.806,
+        "manners": 61.083
+      },
+      "errors": [],
+      "samples": [
+        {
+          "run": 31,
+          "seed": 245505,
+          "fieldId": "085",
+          "outcome": "institute",
+          "month": 96,
+          "papers": 4,
+          "skills": {
+            "learning": 91.56055842673592,
+            "research": 75.37860292029862,
+            "autonomy": 80.07537321911802,
+            "language": 71.63645697312428,
+            "industry": 0,
+            "teaching": 10,
+            "intuition": 79.134937774208,
+            "manners": 71.49045209632904
+          }
+        },
+        {
+          "run": 35,
+          "seed": 277181,
+          "fieldId": "089",
+          "outcome": "institute",
+          "month": 96,
+          "papers": 4,
+          "skills": {
+            "learning": 91.19397596216264,
+            "research": 78.61995675152362,
+            "autonomy": 80.7466991772078,
+            "language": 66.30115068345606,
+            "industry": 2,
+            "teaching": 10,
+            "intuition": 81.23389280544495,
+            "manners": 74.64285145548476
+          }
+        },
+        {
+          "run": 36,
+          "seed": 285100,
+          "fieldId": "090",
+          "outcome": "institute",
+          "month": 96,
+          "papers": 4,
+          "skills": {
+            "learning": 91.61638634323688,
+            "research": 76.63495092274694,
+            "autonomy": 79.46154153991007,
+            "language": 74.84673299246609,
+            "industry": 0,
+            "teaching": 10,
+            "intuition": 81.12976694284436,
+            "manners": 60.26056510362989
+          }
+        }
+      ],
+      "arrivalAbilityDistributions": {
+        "learning": {
+          "count": 199,
+          "min": 86.308,
+          "p50": 89.847,
+          "p95": 91.088,
+          "max": 91.616,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "research": {
+          "count": 199,
+          "min": 66.545,
+          "p50": 76.088,
+          "p95": 80.81,
+          "max": 83.368,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "autonomy": {
+          "count": 199,
+          "min": 77.748,
+          "p50": 80.467,
+          "p95": 83.648,
+          "max": 85.468,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "language": {
+          "count": 199,
+          "min": 61.084,
+          "p50": 68.194,
+          "p95": 71.353,
+          "max": 74.847,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "industry": {
+          "count": 199,
+          "min": 0,
+          "p50": 0,
+          "p95": 3.5,
+          "max": 5.5,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "teaching": {
+          "count": 199,
+          "min": 10,
+          "p50": 10,
+          "p95": 74.341,
+          "max": 77.43,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "intuition": {
+          "count": 199,
+          "min": 62.658,
+          "p50": 78.388,
+          "p95": 81.65,
+          "max": 83.344,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "manners": {
+          "count": 199,
+          "min": 32.406,
+          "p50": 60.649,
+          "p95": 76.022,
+          "max": 88.875,
+          "atLeast95": 0,
+          "atLeast99": 0
+        }
+      },
+      "freshDoctoralPapers": {
+        "count": 182,
+        "min": 3,
+        "p50": 3,
+        "p95": 4,
+        "max": 4,
+        "atLeast95": 0,
+        "atLeast99": 0,
+        "mean": 3.082
       }
     },
-    "after": {
-      "runs": 1250,
-      "completedEndings": 1133,
-      "unresolved": 117,
+    "research": {
+      "policy": "research",
+      "runs": 250,
       "outcomes": {
-        "bachelor": 221,
-        "dismissed": 65,
-        "leave": 8,
-        "gameover": 24,
-        "budget-blocked": 117,
-        "unrelated": 27,
-        "institute": 556,
-        "unemployed": 68,
-        "resident_researcher": 3,
-        "postdoc": 51,
-        "true": 60,
-        "corporate": 50
+        "institute": 203,
+        "bachelor": 5,
+        "budget-blocked": 22,
+        "unemployed": 14,
+        "resident_researcher": 4,
+        "dismissed": 2
+      },
+      "doctoralCount": 221,
+      "doctoralMeans": {
+        "learning": 86.491,
+        "research": 84.393,
+        "autonomy": 81.159,
+        "language": 59.145,
+        "industry": 0.529,
+        "teaching": 10,
+        "intuition": 81.755,
+        "manners": 59.745
+      },
+      "errors": [],
+      "samples": [
+        {
+          "run": 0,
+          "seed": 16,
+          "fieldId": "058",
+          "outcome": "institute",
+          "month": 96,
+          "papers": 4,
+          "skills": {
+            "learning": 87.39090251142888,
+            "research": 85.20872414994814,
+            "autonomy": 80.61607760606617,
+            "language": 60.90012110494329,
+            "industry": 0,
+            "teaching": 10,
+            "intuition": 83.72134662050905,
+            "manners": 60.61830942219007
+          }
+        },
+        {
+          "run": 1,
+          "seed": 7935,
+          "fieldId": "059",
+          "outcome": "institute",
+          "month": 96,
+          "papers": 4,
+          "skills": {
+            "learning": 87.3344279292721,
+            "research": 83.71113583914074,
+            "autonomy": 80.97260889616473,
+            "language": 52.19597303701196,
+            "industry": 0,
+            "teaching": 10,
+            "intuition": 83.24149569803325,
+            "manners": 75.98484613524568
+          }
+        },
+        {
+          "run": 3,
+          "seed": 23773,
+          "fieldId": "061",
+          "outcome": "institute",
+          "month": 96,
+          "papers": 4,
+          "skills": {
+            "learning": 85.80017153142481,
+            "research": 83.71640280942944,
+            "autonomy": 79.64962593052307,
+            "language": 42.278434207429655,
+            "industry": 0,
+            "teaching": 10,
+            "intuition": 82.53653636866767,
+            "manners": 43.111270261110505
+          }
+        }
+      ],
+      "arrivalAbilityDistributions": {
+        "learning": {
+          "count": 221,
+          "min": 81.884,
+          "p50": 86.647,
+          "p95": 88.326,
+          "max": 89.332,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "research": {
+          "count": 221,
+          "min": 81.032,
+          "p50": 84.524,
+          "p95": 86.377,
+          "max": 87.491,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "autonomy": {
+          "count": 221,
+          "min": 78.589,
+          "p50": 81.158,
+          "p95": 83.029,
+          "max": 83.605,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "language": {
+          "count": 221,
+          "min": 40.241,
+          "p50": 59.474,
+          "p95": 69.917,
+          "max": 75.118,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "industry": {
+          "count": 221,
+          "min": 0,
+          "p50": 0,
+          "p95": 3.5,
+          "max": 5.5,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "teaching": {
+          "count": 221,
+          "min": 10,
+          "p50": 10,
+          "p95": 10,
+          "max": 10,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "intuition": {
+          "count": 221,
+          "min": 74.925,
+          "p50": 82.036,
+          "p95": 84.532,
+          "max": 85.669,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "manners": {
+          "count": 221,
+          "min": 28.525,
+          "p50": 60.237,
+          "p95": 75.985,
+          "max": 88.875,
+          "atLeast95": 0,
+          "atLeast99": 0
+        }
+      },
+      "freshDoctoralPapers": {
+        "count": 221,
+        "min": 3,
+        "p50": 4,
+        "p95": 4,
+        "max": 5,
+        "atLeast95": 0,
+        "atLeast99": 0,
+        "mean": 3.973
+      }
+    },
+    "faculty": {
+      "policy": "faculty",
+      "runs": 250,
+      "outcomes": {
+        "true": 29,
+        "gameover": 53,
+        "postdoc": 23,
+        "institute": 91,
+        "budget-blocked": 46,
+        "dismissed": 6,
+        "resident_researcher": 2
+      },
+      "doctoralCount": 198,
+      "doctoralMeans": {
+        "learning": 85.893,
+        "research": 82.123,
+        "autonomy": 81.875,
+        "language": 72.867,
+        "industry": 0.641,
+        "teaching": 65.116,
+        "intuition": 79.025,
+        "manners": 65.335
+      },
+      "errors": [],
+      "samples": [
+        {
+          "run": 0,
+          "seed": 16,
+          "fieldId": "058",
+          "outcome": "true",
+          "month": 96,
+          "papers": 3,
+          "skills": {
+            "learning": 86.13013566365416,
+            "research": 84.39460150385266,
+            "autonomy": 81.78699205569846,
+            "language": 72.60469147260356,
+            "industry": 2,
+            "teaching": 65.11618369644846,
+            "intuition": 82.56138395199191,
+            "manners": 65.93395970980524
+          }
+        },
+        {
+          "run": 4,
+          "seed": 31692,
+          "fieldId": "062",
+          "outcome": "true",
+          "month": 96,
+          "papers": 3,
+          "skills": {
+            "learning": 83.54033436861536,
+            "research": 84.64980194215445,
+            "autonomy": 81.15784272891054,
+            "language": 70.49616694641905,
+            "industry": 0,
+            "teaching": 65.11618369644846,
+            "intuition": 79.93650953402593,
+            "manners": 60.55035705734461
+          }
+        },
+        {
+          "run": 6,
+          "seed": 47530,
+          "fieldId": "064",
+          "outcome": "institute",
+          "month": 96,
+          "papers": 3,
+          "skills": {
+            "learning": 87.65748263914013,
+            "research": 81.2219776825675,
+            "autonomy": 80.78369690362943,
+            "language": 71.3467676314255,
+            "industry": 0,
+            "teaching": 65.11618369644846,
+            "intuition": 78.41375284027694,
+            "manners": 73.32599595325246
+          }
+        }
+      ],
+      "arrivalAbilityDistributions": {
+        "learning": {
+          "count": 198,
+          "min": 81.842,
+          "p50": 86.078,
+          "p95": 87.805,
+          "max": 88.497,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "research": {
+          "count": 198,
+          "min": 76.063,
+          "p50": 82.21,
+          "p95": 84.65,
+          "max": 85.884,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "autonomy": {
+          "count": 198,
+          "min": 78.358,
+          "p50": 81.908,
+          "p95": 83.328,
+          "max": 83.659,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "language": {
+          "count": 198,
+          "min": 60.394,
+          "p50": 73.272,
+          "p95": 75.322,
+          "max": 76.347,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "industry": {
+          "count": 198,
+          "min": 0,
+          "p50": 0,
+          "p95": 3.5,
+          "max": 7,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "teaching": {
+          "count": 198,
+          "min": 65.116,
+          "p50": 65.116,
+          "p95": 65.116,
+          "max": 65.116,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "intuition": {
+          "count": 198,
+          "min": 69.193,
+          "p50": 79.433,
+          "p95": 82.561,
+          "max": 83.921,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "manners": {
+          "count": 198,
+          "min": 39.656,
+          "p50": 65.372,
+          "p95": 78.862,
+          "max": 89.443,
+          "atLeast95": 0,
+          "atLeast99": 0
+        }
+      },
+      "freshDoctoralPapers": {
+        "count": 145,
+        "min": 3,
+        "p50": 3,
+        "p95": 3,
+        "max": 4,
+        "atLeast95": 0,
+        "atLeast99": 0,
+        "mean": 3.048
+      }
+    },
+    "industry": {
+      "policy": "industry",
+      "runs": 250,
+      "outcomes": {
+        "corporate": 142,
+        "bachelor": 5,
+        "institute": 11,
+        "dismissed": 29,
+        "unrelated": 46,
+        "budget-blocked": 17
+      },
+      "doctoralCount": 199,
+      "doctoralMeans": {
+        "learning": 84.513,
+        "research": 83.507,
+        "autonomy": 84.203,
+        "language": 58.443,
+        "industry": 85.774,
+        "teaching": 10,
+        "intuition": 77.885,
+        "manners": 67.483
+      },
+      "errors": [],
+      "samples": [
+        {
+          "run": 0,
+          "seed": 16,
+          "fieldId": "058",
+          "outcome": "corporate",
+          "month": 96,
+          "papers": 4,
+          "skills": {
+            "learning": 85.07384631876494,
+            "research": 84.6011022302288,
+            "autonomy": 84.52550858062264,
+            "language": 61.017244967991,
+            "industry": 84.63425874232637,
+            "teaching": 10,
+            "intuition": 81.46312182011957,
+            "manners": 67.88571322005487
+          }
+        },
+        {
+          "run": 1,
+          "seed": 7935,
+          "fieldId": "059",
+          "outcome": "corporate",
+          "month": 96,
+          "papers": 4,
+          "skills": {
+            "learning": 85.85527811181746,
+            "research": 83.9171167372749,
+            "autonomy": 84.11584316624253,
+            "language": 48.29565616958111,
+            "industry": 86.70629474512506,
+            "teaching": 10,
+            "intuition": 80.81614531627615,
+            "manners": 79.5251365135513
+          }
+        },
+        {
+          "run": 3,
+          "seed": 23773,
+          "fieldId": "061",
+          "outcome": "corporate",
+          "month": 96,
+          "papers": 4,
+          "skills": {
+            "learning": 85.28226580330026,
+            "research": 82.58408305512025,
+            "autonomy": 83.97157092017095,
+            "language": 46.17843420742965,
+            "industry": 86.96673604479264,
+            "teaching": 10,
+            "intuition": 78.81821509578131,
+            "manners": 53.94678387061044
+          }
+        }
+      ],
+      "arrivalAbilityDistributions": {
+        "learning": {
+          "count": 199,
+          "min": 79.309,
+          "p50": 84.684,
+          "p95": 86.84,
+          "max": 87.716,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "research": {
+          "count": 199,
+          "min": 78.45,
+          "p50": 83.582,
+          "p95": 85.691,
+          "max": 86.915,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "autonomy": {
+          "count": 199,
+          "min": 80.802,
+          "p50": 84.195,
+          "p95": 85.527,
+          "max": 85.808,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "language": {
+          "count": 199,
+          "min": 33.745,
+          "p50": 59.205,
+          "p95": 71.021,
+          "max": 76.09,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "industry": {
+          "count": 199,
+          "min": 78.439,
+          "p50": 85.95,
+          "p95": 87.327,
+          "max": 87.802,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "teaching": {
+          "count": 199,
+          "min": 10,
+          "p50": 10,
+          "p95": 10,
+          "max": 10,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "intuition": {
+          "count": 199,
+          "min": 69.558,
+          "p50": 78.22,
+          "p95": 81.615,
+          "max": 83.312,
+          "atLeast95": 0,
+          "atLeast99": 0
+        },
+        "manners": {
+          "count": 199,
+          "min": 38.125,
+          "p50": 67.886,
+          "p95": 79.525,
+          "max": 89.686,
+          "atLeast95": 0,
+          "atLeast99": 0
+        }
+      },
+      "freshDoctoralPapers": {
+        "count": 199,
+        "min": 3,
+        "p50": 4,
+        "p95": 4,
+        "max": 5,
+        "atLeast95": 0,
+        "atLeast99": 0,
+        "mean": 3.819
       }
     }
   },
-  "summary": {
-    "defaultInstitute": {
-      "beforeCount": 209,
-      "afterCount": 129,
-      "beforePercent": 83.6,
-      "afterPercent": 51.6
-    },
-    "facultyTrue": {
-      "beforeCount": 132,
-      "afterCount": 60,
-      "beforePercent": 52.8,
-      "afterPercent": 24
-    }
-  },
-  "before": {
-    "version": "4.13.3",
-    "runs": 1250,
-    "runsPerPolicy": 250,
-    "seedFormula": "16 + 7919 * run (same across policies and versions)",
-    "method": "Five fixed policies through production simulation-worker; no ability, funds, or output injection. All policies intentionally continue into doctoral study and use managed finances to isolate student growth. Random means uniform legal weekly activities, feedback and affordable event options; default accepts proposals and first affordable event options. These are test policies, not human-player or real-world probabilities.",
-    "sourceHashes": {
-      "scripts/growth-balance-audit.mjs": "c7b1a6e43bd8c01051b3eaf2fffeaef926f145052c9c970bab42c7160daff021",
-      "tests/play-support.mjs": "374b02c0011d19bfb2895e0c2fd3df1a32129def32337cba5315f2a109dc7fca",
-      "dist/simulation-worker.js": "42f7d76ed7e1bf032f148e0529154d0c74fcdeb8bbd6b8ae66b7eaf8fabdabc1",
-      "dist/engine.js": "a5a8a3332b278867dcb4f95d21e8859fb32b5a32986f5da07a29a0ece8b452ad",
-      "dist/balance.js": "a37eca1a10cce3a7e3c1accabf9cdfe8e5dda419eb9f329c27a7ff0574c13393",
-      "dist/relationship.js": "795c973b329a40d75f1fc5091178a797f111038bd7d36051047113dea7d45cc2"
-    },
-    "byPolicy": {
-      "random": {
-        "policy": "random",
-        "runs": 250,
-        "outcomes": {
-          "bachelor": 217,
-          "dismissed": 9,
-          "leave": 13,
-          "gameover": 5,
-          "budget-blocked": 3,
-          "unrelated": 3
-        },
-        "doctoralCount": 8,
-        "doctoralMeans": {
-          "learning": 98.801,
-          "research": 96.964,
-          "autonomy": 99.47,
-          "language": 96.595,
-          "industry": 90.462,
-          "teaching": 77.699
-        },
-        "errors": [],
-        "samples": []
-      },
-      "default": {
-        "policy": "default",
-        "runs": 250,
-        "outcomes": {
-          "institute": 209,
-          "budget-blocked": 25,
-          "unemployed": 16
-        },
-        "doctoralCount": 225,
-        "doctoralMeans": {
-          "learning": 99.975,
-          "research": 97.244,
-          "autonomy": 99.727,
-          "language": 82.225,
-          "industry": 1.311,
-          "teaching": 27.26
-        },
-        "errors": [],
-        "samples": [
-          {
-            "run": 0,
-            "seed": 16,
-            "fieldId": "058",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 5,
-            "skills": {
-              "learning": 99.98286066507261,
-              "research": 97.75622383086116,
-              "autonomy": 99.658352916591,
-              "language": 83.30483144179159,
-              "industry": 0,
-              "teaching": 10
-            }
-          },
-          {
-            "run": 1,
-            "seed": 7935,
-            "fieldId": "059",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 4,
-            "skills": {
-              "learning": 99.98504224766732,
-              "research": 96.49567588797179,
-              "autonomy": 99.62989813283407,
-              "language": 81.71447282789343,
-              "industry": 0,
-              "teaching": 10
-            }
-          },
-          {
-            "run": 3,
-            "seed": 23773,
-            "fieldId": "061",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 4,
-            "skills": {
-              "learning": 99.98871646646252,
-              "research": 96.01497130902645,
-              "autonomy": 99.65835291659096,
-              "language": 82.23101856296934,
-              "industry": 0,
-              "teaching": 10
-            }
-          }
-        ]
-      },
-      "research": {
-        "policy": "research",
-        "runs": 250,
-        "outcomes": {
-          "institute": 234,
-          "budget-blocked": 12,
-          "bachelor": 1,
-          "resident_researcher": 3
-        },
-        "doctoralCount": 237,
-        "doctoralMeans": {
-          "learning": 99.859,
-          "research": 99.409,
-          "autonomy": 99.744,
-          "language": 80.473,
-          "industry": 1.342,
-          "teaching": 10
-        },
-        "errors": [],
-        "samples": [
-          {
-            "run": 0,
-            "seed": 16,
-            "fieldId": "058",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 6,
-            "skills": {
-              "learning": 99.88168360484755,
-              "research": 99.50925948014925,
-              "autonomy": 99.74891832504956,
-              "language": 81.69600449407059,
-              "industry": 0,
-              "teaching": 10
-            }
-          },
-          {
-            "run": 1,
-            "seed": 7935,
-            "fieldId": "059",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 6,
-            "skills": {
-              "learning": 99.90821464734928,
-              "research": 99.45447264781856,
-              "autonomy": 99.73762408004094,
-              "language": 80.19152488883796,
-              "industry": 0,
-              "teaching": 10
-            }
-          },
-          {
-            "run": 2,
-            "seed": 15854,
-            "fieldId": "060",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 5,
-            "skills": {
-              "learning": 99.72598632697321,
-              "research": 99.42447511712804,
-              "autonomy": 99.56827954477124,
-              "language": 84.46632451591712,
-              "industry": 0,
-              "teaching": 10
-            }
-          }
-        ]
-      },
-      "faculty": {
-        "policy": "faculty",
-        "runs": 250,
-        "outcomes": {
-          "true": 132,
-          "institute": 75,
-          "budget-blocked": 33,
-          "postdoc": 9,
-          "resident_researcher": 1
-        },
-        "doctoralCount": 217,
-        "doctoralMeans": {
-          "learning": 99.828,
-          "research": 99.307,
-          "autonomy": 99.671,
-          "language": 85.859,
-          "industry": 1.092,
-          "teaching": 66.484
-        },
-        "errors": [],
-        "samples": [
-          {
-            "run": 0,
-            "seed": 16,
-            "fieldId": "058",
-            "outcome": "true",
-            "month": 96,
-            "papers": 5,
-            "skills": {
-              "learning": 99.80449315445594,
-              "research": 99.4757778654995,
-              "autonomy": 99.67501524146644,
-              "language": 86.27636718513807,
-              "industry": 0,
-              "teaching": 66.48399769821805
-            }
-          },
-          {
-            "run": 1,
-            "seed": 7935,
-            "fieldId": "059",
-            "outcome": "true",
-            "month": 96,
-            "papers": 5,
-            "skills": {
-              "learning": 99.87579915491453,
-              "research": 99.26508639689808,
-              "autonomy": 99.64441003461637,
-              "language": 84.29294645198712,
-              "industry": 0,
-              "teaching": 66.48399769821805
-            }
-          },
-          {
-            "run": 2,
-            "seed": 15854,
-            "fieldId": "060",
-            "outcome": "true",
-            "month": 96,
-            "papers": 5,
-            "skills": {
-              "learning": 99.71268992816137,
-              "research": 99.24002733601728,
-              "autonomy": 99.63284713603062,
-              "language": 88.37671656467244,
-              "industry": 0,
-              "teaching": 66.48399769821805
-            }
-          }
-        ]
-      },
-      "industry": {
-        "policy": "industry",
-        "runs": 250,
-        "outcomes": {
-          "institute": 198,
-          "dismissed": 15,
-          "corporate": 15,
-          "budget-blocked": 18,
-          "resident_researcher": 2,
-          "unrelated": 1,
-          "bachelor": 1
-        },
-        "doctoralCount": 216,
-        "doctoralMeans": {
-          "learning": 99.712,
-          "research": 99.193,
-          "autonomy": 99.831,
-          "language": 79.944,
-          "industry": 99.545,
-          "teaching": 10
-        },
-        "errors": [],
-        "samples": [
-          {
-            "run": 0,
-            "seed": 16,
-            "fieldId": "058",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 6,
-            "skills": {
-              "learning": 99.72371009626123,
-              "research": 99.4309800384652,
-              "autonomy": 99.78040646168434,
-              "language": 80.09204561560426,
-              "industry": 99.1103533263403,
-              "teaching": 10
-            }
-          },
-          {
-            "run": 1,
-            "seed": 7935,
-            "fieldId": "059",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 5,
-            "skills": {
-              "learning": 99.83856920785797,
-              "research": 99.1427299794121,
-              "autonomy": 99.8230657341158,
-              "language": 76.8935943018519,
-              "industry": 99.61712225373313,
-              "teaching": 10
-            }
-          },
-          {
-            "run": 2,
-            "seed": 15854,
-            "fieldId": "060",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 5,
-            "skills": {
-              "learning": 99.47817312904189,
-              "research": 99.05868064136723,
-              "autonomy": 99.7843237837087,
-              "language": 84.0571527703877,
-              "industry": 99.55056227510809,
-              "teaching": 10
-            }
-          }
-        ]
-      }
-    },
-    "seconds": 21.156
-  },
-  "after": {
-    "version": "4.14.0",
-    "runs": 1250,
-    "runsPerPolicy": 250,
-    "seedFormula": "16 + 7919 * run (same across policies and versions)",
-    "method": "Five fixed policies through production simulation-worker; no ability, funds, or output injection. All policies intentionally continue into doctoral study and use managed finances to isolate student growth. Random means uniform legal weekly activities, feedback and affordable event options; default accepts proposals and first affordable event options. These are test policies, not human-player or real-world probabilities.",
-    "sourceHashes": {
-      "scripts/growth-balance-audit.mjs": "c7b1a6e43bd8c01051b3eaf2fffeaef926f145052c9c970bab42c7160daff021",
-      "tests/play-support.mjs": "374b02c0011d19bfb2895e0c2fd3df1a32129def32337cba5315f2a109dc7fca",
-      "dist/simulation-worker.js": "42f7d76ed7e1bf032f148e0529154d0c74fcdeb8bbd6b8ae66b7eaf8fabdabc1",
-      "dist/engine.js": "672b2406d9b0fe909f8ee758b40c34dfc374863aa5b4b839bbe311a3af3e0001",
-      "dist/balance.js": "63d7f191bddc62b89a8785cf7ef32fd4103ab6377e87f779f3461f2858c66eda",
-      "dist/relationship.js": "795c973b329a40d75f1fc5091178a797f111038bd7d36051047113dea7d45cc2"
-    },
-    "byPolicy": {
-      "random": {
-        "policy": "random",
-        "runs": 250,
-        "outcomes": {
-          "bachelor": 215,
-          "dismissed": 10,
-          "leave": 8,
-          "gameover": 13,
-          "budget-blocked": 3,
-          "unrelated": 1
-        },
-        "doctoralCount": 14,
-        "doctoralMeans": {
-          "learning": 84.321,
-          "research": 76.421,
-          "autonomy": 83.658,
-          "language": 83.161,
-          "industry": 59.82,
-          "teaching": 49.603
-        },
-        "errors": [],
-        "samples": []
-      },
-      "default": {
-        "policy": "default",
-        "runs": 250,
-        "outcomes": {
-          "institute": 129,
-          "unemployed": 68,
-          "budget-blocked": 31,
-          "dismissed": 22
-        },
-        "doctoralCount": 197,
-        "doctoralMeans": {
-          "learning": 97.504,
-          "research": 77.649,
-          "autonomy": 83.296,
-          "language": 69.179,
-          "industry": 0.548,
-          "teaching": 19.436
-        },
-        "errors": [],
-        "samples": [
-          {
-            "run": 0,
-            "seed": 16,
-            "fieldId": "058",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 4,
-            "skills": {
-              "learning": 98.02834802172971,
-              "research": 80.79316701203973,
-              "autonomy": 80.78823204832821,
-              "language": 68.49584727527495,
-              "industry": 0,
-              "teaching": 10
-            }
-          },
-          {
-            "run": 1,
-            "seed": 7935,
-            "fieldId": "059",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 4,
-            "skills": {
-              "learning": 98.23020751045907,
-              "research": 75.27475183215881,
-              "autonomy": 81.40257732183208,
-              "language": 68.02002639529879,
-              "industry": 0,
-              "teaching": 10
-            }
-          },
-          {
-            "run": 2,
-            "seed": 15854,
-            "fieldId": "060",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 4,
-            "skills": {
-              "learning": 97.63143408924012,
-              "research": 73.05714829081778,
-              "autonomy": 81.67945687389197,
-              "language": 72.03341851161193,
-              "industry": 0,
-              "teaching": 10
-            }
-          }
-        ]
-      },
-      "research": {
-        "policy": "research",
-        "runs": 250,
-        "outcomes": {
-          "institute": 227,
-          "bachelor": 3,
-          "budget-blocked": 17,
-          "resident_researcher": 2,
-          "dismissed": 1
-        },
-        "doctoralCount": 229,
-        "doctoralMeans": {
-          "learning": 94.474,
-          "research": 88.622,
-          "autonomy": 84.048,
-          "language": 60.798,
-          "industry": 0.642,
-          "teaching": 10
-        },
-        "errors": [],
-        "samples": [
-          {
-            "run": 0,
-            "seed": 16,
-            "fieldId": "058",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 5,
-            "skills": {
-              "learning": 95.20116644212489,
-              "research": 89.14912868179898,
-              "autonomy": 84.08084652330328,
-              "language": 61.86550055454378,
-              "industry": 0,
-              "teaching": 10
-            }
-          },
-          {
-            "run": 1,
-            "seed": 7935,
-            "fieldId": "059",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 5,
-            "skills": {
-              "learning": 94.67584779900979,
-              "research": 89.29428707621742,
-              "autonomy": 83.60423605502055,
-              "language": 51.618869014553,
-              "industry": 0,
-              "teaching": 10
-            }
-          },
-          {
-            "run": 3,
-            "seed": 23773,
-            "fieldId": "061",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 5,
-            "skills": {
-              "learning": 94.07156416738333,
-              "research": 86.72828587699645,
-              "autonomy": 82.72046237115129,
-              "language": 46.128434207429656,
-              "industry": 0,
-              "teaching": 10
-            }
-          }
-        ]
-      },
-      "faculty": {
-        "policy": "faculty",
-        "runs": 250,
-        "outcomes": {
-          "postdoc": 51,
-          "true": 60,
-          "institute": 73,
-          "gameover": 11,
-          "budget-blocked": 50,
-          "resident_researcher": 1,
-          "dismissed": 4
-        },
-        "doctoralCount": 196,
-        "doctoralMeans": {
-          "learning": 93.819,
-          "research": 85.362,
-          "autonomy": 84.749,
-          "language": 73.499,
-          "industry": 0.533,
-          "teaching": 65.116
-        },
-        "errors": [],
-        "samples": [
-          {
-            "run": 1,
-            "seed": 7935,
-            "fieldId": "059",
-            "outcome": "true",
-            "month": 96,
-            "papers": 3,
-            "skills": {
-              "learning": 94.37948992870015,
-              "research": 84.97286709485472,
-              "autonomy": 84.1126530131646,
-              "language": 70.94734474530195,
-              "industry": 0,
-              "teaching": 65.11618369644846
-            }
-          },
-          {
-            "run": 2,
-            "seed": 15854,
-            "fieldId": "060",
-            "outcome": "true",
-            "month": 96,
-            "papers": 3,
-            "skills": {
-              "learning": 92.50924210275193,
-              "research": 82.65103327876415,
-              "autonomy": 82.8152389535924,
-              "language": 76.42916178533451,
-              "industry": 0,
-              "teaching": 65.11618369644846
-            }
-          },
-          {
-            "run": 3,
-            "seed": 23773,
-            "fieldId": "061",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 3,
-            "skills": {
-              "learning": 92.86898735873257,
-              "research": 83.0937061599143,
-              "autonomy": 84.0250318674646,
-              "language": 71.4272255743934,
-              "industry": 3.5,
-              "teaching": 65.11618369644846
-            }
-          }
-        ]
-      },
-      "industry": {
-        "policy": "industry",
-        "runs": 250,
-        "outcomes": {
-          "institute": 127,
-          "dismissed": 28,
-          "bachelor": 3,
-          "corporate": 50,
-          "unrelated": 26,
-          "budget-blocked": 16
-        },
-        "doctoralCount": 203,
-        "doctoralMeans": {
-          "learning": 92.378,
-          "research": 87.299,
-          "autonomy": 88.241,
-          "language": 59.56,
-          "industry": 90.307,
-          "teaching": 10
-        },
-        "errors": [],
-        "samples": [
-          {
-            "run": 0,
-            "seed": 16,
-            "fieldId": "058",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 5,
-            "skills": {
-              "learning": 92.94258947252135,
-              "research": 89.70334042111291,
-              "autonomy": 88.21858835095323,
-              "language": 60.38850437581685,
-              "industry": 90.69958663138412,
-              "teaching": 10
-            }
-          },
-          {
-            "run": 3,
-            "seed": 23773,
-            "fieldId": "061",
-            "outcome": "institute",
-            "month": 96,
-            "papers": 5,
-            "skills": {
-              "learning": 93.69154165382426,
-              "research": 85.87999628206946,
-              "autonomy": 87.88404710372805,
-              "language": 43.57843420742965,
-              "industry": 91.0716590901763,
-              "teaching": 10
-            }
-          },
-          {
-            "run": 4,
-            "seed": 31692,
-            "fieldId": "062",
-            "outcome": "corporate",
-            "month": 96,
-            "papers": 4,
-            "skills": {
-              "learning": 89.47333858361702,
-              "research": 91.04928732756561,
-              "autonomy": 85.79600865950418,
-              "language": 58.42993369664177,
-              "industry": 87.25629935428196,
-              "teaching": 10
-            }
-          }
-        ]
-      }
-    },
-    "seconds": 22.771
-  }
+  "seconds": 104.093
 }

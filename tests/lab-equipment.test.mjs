@@ -11,6 +11,12 @@ const cases=[
  ['050','wet','measurement',['oscilloscope','optical-bench','sensor','lab-counter']],
  ['072','dry','design',['scale-model']],
  ['090','dry','computing',['workstation']],
+ ['057','wet','measurement',['soil-analyzer','soil-core-rack','water-probe','soil-sample-tray']],
+ ['077','dry','computing',['terrain-model']],
+ ['073','wet','measurement',['compression-frame','strain-controller','concrete-specimens']],
+ ['073','dry','design',['scale-model']],
+ ['075','wet','measurement',['compression-frame','soil-core-rack']],
+ ['075','dry','design',['bridge-model']],
 ];
 
 test('major-specific room equipment and executed tools follow the research method',()=>{
@@ -21,7 +27,7 @@ test('major-specific room equipment and executed tools follow the research metho
   assert.equal(equipmentProfile(s),kind);
   assert.match(html,new RegExp(`data-equipment-profile="${kind}"`));
   for(const item of items)assert.match(html,new RegExp(`data-equipment="${item}"`),`${fieldId}/${item}`);
-  if(labMode==='dry')assert.doesNotMatch(html,/data-equipment="(?:microscope|tube-rack|centrifuge|balance|spectrometer|hotplate)"|data-motion="(?:pipetting|measuring)"/);
+  if(labMode==='dry')assert.doesNotMatch(html,/data-equipment="(?:microscope|tube-rack|centrifuge|balance|spectrometer|hotplate|soil-analyzer|compression-frame|water-probe)"|data-motion="(?:pipetting|measuring)"/);
   if(kind==='measurement'){
    assert.match(html,/data-motion="measuring"/);
    assert.doesNotMatch(html,/data-motion="pipetting"/);

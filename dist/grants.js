@@ -1,11 +1,12 @@
-import {grantCounts} from './funding.js';
+import {grantCounts,increasedGrant,nextGrantAmount,GRANT_SCALE_VERSION} from './funding.js';
+import {researchFinanceProfile} from './research-finance.js';
 // Fictional grant management: timing, amounts and chances are game balance.
 export const GRANT_TITLES=['기초 현상의 구조와 동역학','복합 시스템의 변화와 회복력','연구 방법의 확장과 학술 생태계'];
 export const GRANT_SOURCE='https://webzine.nrf.re.kr/magazine/2604/sub1.php';
-export function annualGrantAmount(institution='national',labMode='dry'){return Math.round((institution==='institute'?450:300)*(labMode==='wet'?1.5:1));}
-export function initialGrants(institution='national',seed=0,labMode='dry'){
+export function annualGrantAmount(institution='national',labMode='dry',fieldId='050'){return Math.round((institution==='institute'?450:300)*(labMode==='wet'?1.5:1)*115/100*researchFinanceProfile({fieldId,labMode}).grantMultiplier);}
+export function initialGrants(institution='national',seed=0,labMode='dry',fieldId='050'){
  const years=2+((Math.imul((Number(seed)>>>0)^0x1357,2654435761)>>>0)%4);
- return {titleIndex:0,cycleStart:0,cycleEnd:years*12,annualAmount:annualGrantAmount(institution,labMode),status:'active',reportYears:[],applicationCycles:[],renewals:0,bridgeYears:0,lastPaymentMonth:0};
+ return {titleIndex:0,cycleStart:0,cycleEnd:years*12,annualAmount:annualGrantAmount(institution,labMode,fieldId),grantScaleVersion:GRANT_SCALE_VERSION,status:'active',reportYears:[],applicationCycles:[],renewals:0,bridgeYears:0,lastPaymentMonth:0};
 }
 export function advanceGrants(s,{random,log,application={role:'pi',years:3}}){
  const g=s.grants,offset=(s.month-1)%12,year=Math.floor((s.month-1)/12)+1;
@@ -21,11 +22,12 @@ export function advanceGrants(s,{random,log,application={role:'pi',years:3}}){
   const counts=grantCounts(s),room=counts.pi<3&&counts.total<5;
   const awarded=prepared&&credible&&room&&random()<probability,years=awarded?(g.applicationYears??3):1;
   g.status=awarded?'active':'bridge';g.cycleStart=s.month-1;g.cycleEnd=g.cycleStart+years*12;
-  if(awarded){g.annualAmount=annualGrantAmount(s.professorProfile.institution,s.professorProfile.labMode);g.renewals++;g.titleIndex=(g.titleIndex+1)%GRANT_TITLES.length;}
+  if(awarded){g.annualAmount=annualGrantAmount(s.professorProfile.institution,s.professorProfile.labMode,s.professorProfile.fieldId);g.grantScaleVersion=GRANT_SCALE_VERSION;g.renewals++;g.titleIndex=(g.titleIndex+1)%GRANT_TITLES.length;}
   log(s,{kind:'grant-selection',awarded,prepared,limitBlocked:!room,role:'pi',years:awarded?years:(g.applicationYears??3),annual:awarded?g.annualAmount:0,grantId:awarded?0:null,titleIndex:g.titleIndex,start:g.cycleStart,end:g.cycleStart+(awarded?years:(g.applicationYears??3))*12});
  }
  // A one-year, once-per-run bridge can ease a funding gap; it cannot replace a grant indefinitely.
- const amount=g.status==='bridge'?(g.bridgeYears===0?100:0):reported?g.annualAmount:Math.round(g.annualAmount*.6);
+ const nominal=nextGrantAmount(g.annualAmount,g.grantScaleVersion);
+ const amount=g.status==='bridge'?(g.bridgeYears===0?increasedGrant(100):0):reported?nominal:Math.round(nominal*.6);
  if(g.status==='bridge')g.bridgeYears++;
  g.lastPaymentMonth=s.month;
  s.lab.funds=Math.min(5000,s.lab.funds+amount);
@@ -34,5 +36,5 @@ export function advanceGrants(s,{random,log,application={role:'pi',years:3}}){
 }
 export function validateGrants(g){
  const int=(n,a,b)=>Number.isInteger(n)&&n>=a&&n<=b;
- return !!g&&typeof g==='object'&&!Array.isArray(g)&&int(g.titleIndex,0,GRANT_TITLES.length-1)&&int(g.cycleStart,0,96)&&int(g.cycleEnd,1,156)&&g.cycleEnd>g.cycleStart&&g.cycleEnd-g.cycleStart<=60&&int(g.annualAmount,0,1000)&&['active','bridge'].includes(g.status)&&Array.isArray(g.reportYears)&&g.reportYears.length<=8&&g.reportYears.every(n=>int(n,1,8))&&new Set(g.reportYears).size===g.reportYears.length&&Array.isArray(g.applicationCycles)&&g.applicationCycles.length<=8&&g.applicationCycles.every(n=>int(n,12,156)&&n%12===0)&&new Set(g.applicationCycles).size===g.applicationCycles.length&&int(g.renewals,0,4)&&int(g.bridgeYears,0,7)&&int(g.lastPaymentMonth,0,96)&&(g.applicationYears===undefined||[2,3,4,5].includes(g.applicationYears))&&(g.lastApplicationMonth===undefined||int(g.lastApplicationMonth,0,96));
+ return !!g&&typeof g==='object'&&!Array.isArray(g)&&(g.grantScaleVersion===undefined||g.grantScaleVersion===GRANT_SCALE_VERSION)&&int(g.titleIndex,0,GRANT_TITLES.length-1)&&int(g.cycleStart,0,96)&&int(g.cycleEnd,1,156)&&g.cycleEnd>g.cycleStart&&g.cycleEnd-g.cycleStart<=60&&int(g.annualAmount,0,1000)&&['active','bridge'].includes(g.status)&&Array.isArray(g.reportYears)&&g.reportYears.length<=8&&g.reportYears.every(n=>int(n,1,8))&&new Set(g.reportYears).size===g.reportYears.length&&Array.isArray(g.applicationCycles)&&g.applicationCycles.length<=8&&g.applicationCycles.every(n=>int(n,12,156)&&n%12===0)&&new Set(g.applicationCycles).size===g.applicationCycles.length&&int(g.renewals,0,4)&&int(g.bridgeYears,0,7)&&int(g.lastPaymentMonth,0,96)&&(g.applicationYears===undefined||[2,3,4,5].includes(g.applicationYears))&&(g.lastApplicationMonth===undefined||int(g.lastApplicationMonth,0,96));
 }

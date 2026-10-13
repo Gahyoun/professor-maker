@@ -34,19 +34,16 @@ export function enterWeek(stage,{first=false,monthLabel=''}={}){
  const outcome=stage?.querySelector('.week-outcome');
  animate(header,[{opacity:.7,transform:'translateY(-4px)'},{opacity:1,transform:'translateY(0)'}],{duration:180});
  animate(outcome,[{opacity:.45,transform:'translateY(5px)'},{opacity:1,transform:'translateY(0)'}],{duration:230,delay:150});
- if(!first||!motionAllowed()||!stage)return;
+ if(!first||!motionAllowed()||!header)return;
  const cue=document.createElement('div');
  cue.className='month-cue';cue.setAttribute('aria-hidden','true');
  const month=document.createElement('strong');month.textContent=monthLabel;
  const caption=document.createElement('span');caption.textContent='이번 달의 일정';
- cue.append(caption,month);stage.append(cue);
- const animation=animate(cue,[
-  {opacity:0,transform:'translateX(-18px)',offset:0},
-  {opacity:1,transform:'translateX(0)',offset:.2},
-  {opacity:1,transform:'translateX(0)',offset:.75},
-  {opacity:0,transform:'translateX(12px)',offset:1}
- ],{duration:650});
- if(animation)animation.finished.then(()=>cue.remove(),()=>cue.remove());else cue.remove();
+ cue.append(caption,month);header.classList.add('has-month-cue');header.prepend(cue);
+ animate(cue,[
+  {opacity:0,transform:'translateX(-10px)'},
+  {opacity:1,transform:'translateX(0)'}
+ ],{duration:260});
 }
 
 // A skip button remains available to keyboard users while other controls are inert.

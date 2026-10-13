@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {isServerAnalyticsHost,analyticsConsentCopy} from '../dist/analytics-consent.js';
+test('Disclosure and upload select the same exact official host; local and GitHub play stay device-only',()=>{
+ for(const host of ['gahyoun.github.io','localhost','127.0.0.1','','professor-maker-debug.gahyoun.chatgpt.site','professor-maker.gahyoun.chatgpt.site.example.com']){assert.equal(isServerAnalyticsHost(host),false);for(const locale of ['ko','en']){const copy=analyticsConsentCopy(locale,host);assert.equal(copy.scope,'device');assert.match(copy.label,locale==='en'?/on this device/:/이 기기에 저장/);assert.match(copy.paragraphs.join(' '),locale==='en'?/not automatically sent/:/자동 전송하지/);}}
+ for(const locale of ['ko','en']){const copy=analyticsConsentCopy(locale,'professor-maker.gahyoun.chatgpt.site');assert.equal(copy.scope,'server');assert.match(copy.sharing,locale==='en'?/research collaborators/:/연구 협력자/);assert.match(copy.label,locale==='en'?/sent to the creator’s server/:/서버로 전송/);assert.match(copy.paragraphs.join(' '),/Cloudflare D1/);assert.match(copy.paragraphs.join(' '),locale==='en'?/not a cloud save/:/클라우드 세이브가 아닙니다/);}
+});

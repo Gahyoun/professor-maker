@@ -39,7 +39,7 @@ test('a grant selection and its yearly payment each deposit only once',()=>{
  const options={random:()=>{draws++;return 0;},log};
  advancePortfolio(s,{role:'pi',years:2},options);const selected=structuredClone(s);
  advancePortfolio(s,{role:'pi',years:2},options);assert.equal(draws,1);assert.equal(s.lab.funds,selected.lab.funds);assert.equal(s.grants.portfolio.length,2);
- const r=fundingResults(s)[0];assert.deepEqual({awarded:r.awarded,years:r.years,annual:r.annual,source:r.source},{awarded:true,years:2,annual:150,source:'portfolio'});
+ const r=fundingResults(s)[0];assert.deepEqual({awarded:r.awarded,years:r.years,annual:r.annual,source:r.source},{awarded:true,years:2,annual:179,source:'portfolio'});
  s.month=13;s.facultyAction='routine';advancePortfolio(s,{role:'pi',years:2},options);const funds=s.lab.funds,pool=s.lab.pool;
  advancePortfolio(s,{role:'pi',years:2},options);assert.equal(s.lab.funds,funds);assert.equal(s.lab.pool,pool);
 });
@@ -57,10 +57,10 @@ test('renewal requires a real before-deadline application and a successful revie
 
 test('bridge funding ends after one year and report delay never compounds nominal grants',()=>{
  const s=createState('학생',8);s.grants.cycleEnd=24;s.month=25;s.facultyAction='routine';
- advanceGrants(s,{random:()=>1,log});assert.equal(s.history.find(h=>h.kind==='annual-grant').amount,100);
+ advanceGrants(s,{random:()=>1,log});assert.equal(s.history.find(h=>h.kind==='annual-grant').amount,115);
  s.month=37;advanceGrants(s,{random:()=>1,log});assert.equal(s.history.filter(h=>h.kind==='annual-grant').at(-1).amount,0);
  const report=createState('학생',8);report.month=12;const delayed=simulateMonth(report,proposeSchedule(report));
- assert.equal(delayed.grants.annualAmount,300);assert.equal(delayed.history.find(h=>h.kind==='annual-grant').amount,180);
+ assert.equal(delayed.grants.annualAmount,359);assert.equal(delayed.history.find(h=>h.kind==='annual-grant').amount,215);
 });
 
 test('legacy finance migration preserves an original backup, caps once and never re-credits',()=>{
@@ -94,10 +94,10 @@ test('bridge-to-active renewal cannot overbook a PI slot freed during the gap',(
 
 test('wet labs receive greater grant awards while retaining the same seeded initial cap',()=>{
  for(const institution of ['national','private','institute']){
-  assert.equal(annualGrantAmount(institution,'wet'),annualGrantAmount(institution,'dry')*1.5);
-  assert.equal(initialGrants(institution,8,'wet').annualAmount,initialGrants(institution,8,'dry').annualAmount*1.5);
+  assert.ok(Math.abs(annualGrantAmount(institution,'wet')-annualGrantAmount(institution,'dry')*1.5)<=1);
+  assert.ok(Math.abs(initialGrants(institution,8,'wet').annualAmount-initialGrants(institution,8,'dry').annualAmount*1.5)<=1);
   const awarded=[];
   for(const labMode of ['dry','wet']){const s=createState('학생',8,{institution,labMode});s.month=1;s.facultyAction='funding';advancePortfolio(s,{role:'co',years:3},{random:()=>0,log});awarded.push(s.grants.portfolio.at(-1).annual);assert.equal(s.lab.initialFunding,seededInitialFunding(8,institution).total);}
-  assert.deepEqual(awarded,[90,135]);
+  assert.deepEqual(awarded,[108,161]);
  }
 });

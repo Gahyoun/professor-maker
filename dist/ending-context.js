@@ -64,7 +64,7 @@ const equipmentNames={
 export const ENDING_FIELDS=Object.fromEntries(groups.flatMap(([ids,sector,company,institute,dryTask,wetTask,equipment])=>ids.split(' ').map(id=>[id,{sector,company,institute,dryTask,wetTask,equipment,equipmentName:equipmentNames[equipment]||equipment}])));
 export function researchSetting(context={}){
  // Current IDs are authoritative. Resolve legacy entries by an exact label only.
- const exact=context.field&&DISCIPLINES.find(d=>d.label===context.field);
+ const exact=context.field&&DISCIPLINES.find(d=>(d.label===context.field||d.labelEn===context.field));
  const d=DISCIPLINES.find(d=>d.id===context.fieldId)||exact;
  const profile=ENDING_FIELDS[d?.id]||{sector:'전공 관련',company:'전공과 관련된 업무를 검토하는 기업 연구팀',institute:'전공 관련 자료와 방법을 축적하는 공공 연구팀',dryTask:'자료와 분석 방법',wetTask:'측정 자료와 검증 절차',equipment:'연구 장비'};
  const dry=context.labMode==='dry',field=d?.label||context.field||'전공';
@@ -125,7 +125,7 @@ const englishGroups=[
 ];
 export const ENGLISH_ENDING_FIELDS=Object.fromEntries(englishGroups.flatMap(([ids,sector,dryTask,wetTask])=>ids.split(' ').map(id=>[id,{sector,dryTask,wetTask}])));
 export function englishResearchSetting(context={}){
- const p=researchSetting(context),id=context.fieldId||DISCIPLINES.find(d=>d.label===context.field)?.id;
+ const p=researchSetting(context),id=context.fieldId||DISCIPLINES.find(d=>(d.label===context.field||d.labelEn===context.field))?.id;
  const en=ENGLISH_ENDING_FIELDS[id]||{sector:'their research field',dryTask:'data and analytical methods',wetTask:'measurement data and verification procedures'};
  return {...p,...en,task:p.dry?en.dryTask:en.wetTask,equipment:p.dry?'workstation':'research instrument',equipmentName:p.dry?'workstation':'research instrument',storage:p.dry?'project archive':p.storage==='냉동고 맨 아래 칸'?'bottom freezer drawer':'research archive',material:p.dry?'raw data and analysis files':p.storage==='냉동고 맨 아래 칸'?'samples':'measurement data and test records',archive:p.dry?'documented data and analysis files':p.storage==='냉동고 맨 아래 칸'?'labeled tubes':'organized measurement data and test records'};
 }
@@ -140,7 +140,11 @@ export function adaptResearchText(text,context={},locale='ko'){
    .replaceAll('labeled tubes',p.archive)
    .replaceAll('old machine','old '+p.equipmentName);
   if(p.storage!=='bottom freezer drawer')result=result.replace(/freezer/gi,'research archive');
-  if(p.dry)result=result.replace(/lab coat/gi,'everyday clothes').replace(/experiment notebooks?/gi,'research notes').replace(/experiments?/gi,'study').replace(/cultivation schedule/gi,'analysis schedule').replace(/tubes/gi,'analysis files').replace(/equipment stopped/gi,'server stopped').replace(/shared facility/gi,'shared server');
+  if(p.dry)result=result.replace(/lab coat/gi,'everyday clothes')
+   .replace(/\ban experiment notebook\b/gi,'a research notebook')
+   .replace(/\bexperiment notebook(s?)\b/gi,(_,plural)=>plural?'research notebooks':'research notebook')
+   .replace(/\bexperiments\b/gi,'studies').replace(/\bexperiment\b/gi,'study')
+   .replace(/cultivation schedule/gi,'analysis schedule').replace(/tubes/gi,'analysis files');
   return result;
  }
  const p=researchSetting(context);
@@ -156,7 +160,7 @@ export function adaptResearchText(text,context={},locale='ko'){
   .replaceAll('실험 노트',p.record);
  for(const source of ['오래된 기계','그 기계','기사님을 부르는 기계'])result=replaceNounWithParticle(result,source,source.replace(/기계$/,p.equipmentName));
  if(p.storage!=='냉동고 맨 아래 칸')result=result.replaceAll('냉동고',p.dry?'자료 보관함':'연구 자료 보관함');
- if(p.dry)result=result.replaceAll('실험복','평상복').replaceAll('실험','연구').replaceAll('배양 일정','분석 일정').replaceAll('장비가 멈춘 날','서버가 멈춘 날').replaceAll('공동기기실에서','공용 서버에서');
+ if(p.dry)result=result.replaceAll('실험복','평상복').replaceAll('실험','연구').replaceAll('배양 일정','분석 일정');
  return result;
 }
 export function fieldWorkplace(context,kind,locale='ko'){if(locale==='en'){const p=englishResearchSetting(context);return `Their training continued in ${p.sector}. In ${kind==='corporate'?'an industrial R&D':'a public research'} team, they worked with colleagues on ${p.task} and documented the results.`;}const p=researchSetting(context);return `${p.field}에서 배운 방법은 ${p.sector} 분야의 새로운 일정 속에서도 이어졌다. ${kind==='corporate'?p.company:p.institute}에서 동료들과 ${withParticle(p.task,'을/를')} 검토하고 결과를 기록했다.`;}

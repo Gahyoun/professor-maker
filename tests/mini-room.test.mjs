@@ -2,15 +2,28 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createState} from '../dist/engine.js';
 import {roomScene,roomDecorations} from '../dist/lab-scene.js';
-import {projectRoom,chairGeometry,ROOM_ANCHORS,WALLPAPERS,FLOOR_TILES} from '../dist/mini-room.js';
+import {projectRoom,monitorGeometry,MONITOR_DISPLAY,chairGeometry,cotGeometry,ROOM_ANCHORS,WALLPAPERS,FLOOR_TILES,PLANT_SPECIES} from '../dist/mini-room.js';
 test('room floor axes have equal lengths and opposing slopes; height stays vertical',()=>{
  const delta=(a,b)=>a.map((v,i)=>v-b[i]),base=projectRoom(0,0),u=delta(projectRoom(1,0),base),v=delta(projectRoom(0,1),base);
  assert.equal(Math.hypot(...u),Math.hypot(...v));assert.equal(u[0],-v[0]);assert.equal(u[1],v[1]);
  for(const [a,b,h] of [[3,4,20],[19,14,48],[28,28,90]])assert.deepEqual(delta(projectRoom(a,b,h),projectRoom(a,b)),[0,-h]);
 });
 
+test('students have no ground shadow in any lab pose while furniture keeps its shadow',()=>{
+ for(const labMode of ['dry','wet']){
+  const state=createState('',9,{labMode}),before=structuredClone(state);
+  for(const actual of ['idle','analysis','experiment','presentation','coursework','rest','coffee']){
+   const scene=roomScene(state,{actual,performed:true,outcome:'completed'},0,{idle:actual==='idle'});
+   assert.equal((scene.match(/class="mini-student /g)||[]).length,1,`${labMode}/${actual}`);
+   assert.doesNotMatch(scene,/#b9b4a4|student-shadow|drop-shadow/);
+   assert.match(scene,/class="chair-floor-shadow"/,'furniture shading remains');
+  }
+  assert.deepEqual(state,before);
+ }
+});
+
 test('resting students sit at their own furniture anchor with the backrest behind them',()=>{
- const seen=new Set(),anchors=['24.3,8.5','26,6.5','24.1,7.5','23.5,6.5'];
+ const seen=new Set(),anchors=['23.5,7.2','24,6.5','24.1,7.5','23.5,6.5'];
  for(let seed=1;seed<=100&&seen.size<4;seed++){
   const s=createState('',seed,{labMode:'dry'}),type=roomDecorations(s).restType;if(seen.has(type))continue;seen.add(type);
   for(const actual of ['rest','coffee']){
@@ -24,13 +37,30 @@ test('resting students sit at their own furniture anchor with the backrest behin
  }
  assert.equal(seen.size,4);
 });
+test('folding beds and every support stay inside the floor with a margin, including rest occupants',()=>{
+ for(const anchor of [ROOM_ANCHORS.cot,ROOM_ANCHORS.spareCot]){
+  const geometry=cotGeometry(...anchor);
+  for(const [u,v]of geometry.footprint)assert.ok(u>=1&&u<=27&&v>=1&&v<=27,'the complete mattress footprint needs floor space on both axes');
+  for(const [u,v]of geometry.legs)for(const [a,b]of [[u,v],[u+geometry.legSize,v+geometry.legSize]])assert.ok(a>=1&&a<=27&&b>=1&&b<=27,'leg bases must touch the floor inside its rim');
+ }
+ const seen=new Set();
+ for(const labMode of ['dry','wet'])for(const seed of [57,5])for(const actual of ['idle','analysis','rest']){
+  const state=createState('',seed,{gender:'female',labMode}),before=structuredClone(state),decor=roomDecorations(state),scene=roomScene(state,{actual,performed:true,outcome:'completed'},0,{idle:actual==='idle'}),anchor=decor.restType===1?ROOM_ANCHORS.cot:ROOM_ANCHORS.spareCot;
+  assert.match(scene,new RegExp(`class="room-cot" data-floor="${anchor.join(',')}" data-size="7,3"`));
+  const geometry=cotGeometry(...anchor),rendered=[...scene.matchAll(/<g class="cot-leg" data-floor="([^\"]+)">([^]*?)<\/g>/g)];assert.equal(rendered.length,4);
+  for(const leg of rendered){const [u,v]=leg[1].split(',').map(Number);assert.ok(geometry.legs.some(p=>Math.abs(p[0]-u)<1e-9&&Math.abs(p[1]-v)<1e-9));for(const point of [projectRoom(u,v+geometry.legSize,0),projectRoom(u+geometry.legSize,v+geometry.legSize,0),projectRoom(u+geometry.legSize,v,0)])assert.ok(leg[2].includes(point.join(',')),'visible leg bases must use z=0, not a lower plane');}
+  if(actual==='rest'&&decor.restType===1)assert.match(scene,/class="mini-student [^>]+data-floor="24,6.5"/);
+  assert.deepEqual(state,before);seen.add(decor.restType===1?'primary':'spare');
+ }
+ assert.equal(seen.size,2);
+});
 test('desk work sits in front of the monitor and faces it, with one chair and aligned desktop tools',()=>{
  for(const labMode of ['dry','wet']){
   const state=createState('',9,{labMode}),before=structuredClone(state);
   for(const actual of ['study','coursework','analysis','language','paper',...(labMode==='dry'?['experiment']:[])]){
    const scene=roomScene(state,{actual,performed:true,outcome:'completed'});
    assert.match(scene,/data-pose="seated" data-outfit="[0-5]" data-facing="monitor"/);
-   assert.match(scene,/class="mini-student [^>]+data-floor="13.5,23.5"/);
+   assert.match(scene,/class="mini-student [^>]+data-floor="13.8,24.3"/);
    assert.match(scene,/class="desk-monitor" data-floor="14.2,18.3"/);
    assert.match(scene,/class="desk-keyboard" data-floor="13.5,21.3"/);
    assert.equal((scene.match(/data-chair=/g)||[]).length,1+(scene.includes('data-rest="camp-chair"')?1:0));
@@ -40,7 +70,7 @@ test('desk work sits in front of the monitor and faces it, with one chair and al
   }
   assert.deepEqual(state,before);
  }
- const seat=projectRoom(13.5,23.5),screen=projectRoom(16.55,18.6,44);
+ const seat=projectRoom(...ROOM_ANCHORS.deskOccupant),screen=projectRoom(16.55,18.6,44);
  assert.ok(screen[0]>seat[0]&&screen[1]<seat[1],'the seated student looks towards the upper-right screen');
 });
 test('all four desk chairs occlude the seated body, while the idle student stands clear of the plant',()=>{
@@ -76,16 +106,72 @@ test('office chairs connect five grounded casters to a visible support pole and 
   assert.match(scene,/class="chair-support-pole"/);
   assert.equal((scene.match(/class="chair-armrest"/g)||[]).length,2);
   assert.ok(scene.indexOf('class="chair-wheelbase"')<scene.indexOf('class="mini-student '),'the connected support is behind the seated body');
+  const occlusion=scene.indexOf('class="chair-leg-occlusion"');assert.ok(occlusion>scene.indexOf('class="mini-student '),'the chair column and casters repaint over the calves below the seat');
  }
 });
+test('the far chair arm stays behind the student while near desk edges occlude the legs',()=>{
+ const seen=new Set();
+ for(let seed=1;seed<=120&&seen.size<4;seed++){
+  const state=createState('',seed,{labMode:'dry'}),type=roomDecorations(state).chairType;if(seen.has(type))continue;seen.add(type);
+  const scene=roomScene(state,{actual:'analysis',performed:true,outcome:'completed'});
+  const seat=scene.indexOf('class="desk-seat-layer"'),keyboard=scene.indexOf('class="desk-keyboard"'),student=scene.indexOf('class="mini-student ',seat),backrest=scene.indexOf('data-chair-part="near-backrest"',seat),desk=scene.indexOf('class="desk-foreground"',seat);
+  assert.ok(keyboard<student&&student<backrest&&backrest<desk,'only near desk edges repaint after the avatar and chair back');
+  if(type>=2){assert.ok(scene.indexOf('data-chair-part="far-armrest"',seat)<student);assert.ok(scene.indexOf('data-chair-part="near-armrest"',seat)>student);}
+  assert.equal((scene.match(/class="desk-lower-occlusion"/g)||[]).length,1);
+  const hipY=projectRoom(...ROOM_ANCHORS.deskOccupant,20)[1];
+  assert.ok(scene.includes(`class="desk-lower-occlusion" x="0" y="${hipY}"`),'late desk repaint is clipped below the seat instead of covering the upper body');
+ }
+ assert.equal(seen.size,4);
+});
 test('cosmetic room variety is stable and never consumes gameplay state',()=>{
- const walls=new Set(),floors=new Set(),props=new Set();
+ const walls=new Set(),floors=new Set(),props=new Set(),plants=new Set();
  for(let seed=1;seed<=120;seed++){const s=createState('',seed,{labMode:seed%2?'wet':'dry'}),before=JSON.stringify(s),d=roomDecorations(s);assert.deepEqual(d,roomDecorations(s));walls.add(d.wallpaper);floors.add(d.floor);for(const [key,value]of Object.entries(d))if(value===true)props.add(key);const scene=roomScene(s,{actual:'idle'},0,{idle:true});assert.equal(JSON.stringify(s),before);assert.match(scene,/data-projection="isometric"/);assert.match(scene,/preserveAspectRatio="xMidYMid meet"/);assert.equal((scene.match(/class="portrait /g)||[]).length,1);assert.ok(!scene.includes('class="pixel-student'));
- }assert.equal(walls.size,WALLPAPERS.length);assert.equal(floors.size,FLOOR_TILES.length);for(const key of ['fridge','kettle','plush','cot','sofa','server','printer','plant','bag','deskLamp','clock','noticeboard'])assert.ok(props.has(key),key);
+  plants.add(d.plantType);assert.match(scene,/class="window-plant-shelf"/);assert.ok((scene.match(/data-plant-species=/g)||[]).length>=2);
+ }assert.equal(walls.size,WALLPAPERS.length);assert.equal(floors.size,FLOOR_TILES.length);assert.equal(plants.size,PLANT_SPECIES.length);for(const key of ['fridge','kettle','plush','cot','sofa','server','printer','plant','bag','deskLamp','clock','noticeboard'])assert.ok(props.has(key),key);
 });
 test('lab material scarcity, weekly outfit changes and conference/defense scenes survive the miniroom',()=>{
  const s=createState('',6,{labMode:'wet'});s.lab.funds=200;s.lab.budget.environment=4;s.lab.equipment=60;const rich=roomScene(s,{actual:'experiment',performed:true},0),nextWeek=roomScene(s,{actual:'experiment',performed:true},1);assert.match(rich,/data-supply="rich"/);assert.match(rich,/data-motion="measuring"/);assert.notEqual(rich,nextWeek);
  s.lab.funds=10;s.lab.budget.environment=0;const sparse=roomScene(s,{actual:'experiment',performed:true},0);assert.match(sparse,/data-supply="sparse"/);assert.ok(sparse.length<rich.length);
  assert.match(roomScene(s,{actual:'rest'}),/data-scene="rest" data-projection="isometric"/);assert.match(roomScene(s,{actual:'conference',abroad:true}),/INTERNATIONAL CONFERENCE/);
  s.pending={kind:'thesis',step:'questions'};assert.match(roomScene(s),/THESIS DEFENSE/);assert.match(roomScene(s),/질의응답/);
+});
+test('the desk occupant sits back over the seat and the camp chair frame stays inside its footprint',()=>{
+ const {seat}=chairGeometry(12,22,2),[u,v]=ROOM_ANCHORS.deskOccupant,[cu,cv]=ROOM_ANCHORS.deskSeat;
+ assert.ok(u>seat.u&&u<seat.u+seat.w&&v>seat.v&&v<seat.v+seat.d,'hips stay over the seat');
+ assert.ok(v>cv,'hips sit back towards the near backrest rather than on the front edge');
+ for(let seed=1;seed<400;seed++){
+  const s=createState('',seed);if(roomDecorations(s).restType!==3)continue;
+  const scene=roomScene(s,{actual:'idle',performed:false}),camp=scene.slice(scene.indexOf('data-rest="camp-chair"'),scene.indexOf('</g></g>',scene.indexOf('data-chair-part="near-frame"')));
+  const [minX]=projectRoom(22.5,7.5),[maxX]=projectRoom(24.5,5.5);
+  for(const m of camp.matchAll(/<path d="M([\d.]+) [\d.]+L([\d.]+) /g))for(const x of [+m[1],+m[2]])assert.ok(x>=minX-1&&x<=maxX+1,`frame x ${x} outside ${minX}–${maxX}`);
+  return;
+ }
+ assert.fail('no camp chair seed');
+});
+
+test('computer screens are16:9 before projection and visibly widescreen in all lab poses',()=>{
+ assert.equal(MONITOR_DISPLAY.width/MONITOR_DISPLAY.height,16/9);
+ for(const fieldId of ['090','072','077','056'])for(const labMode of fieldId==='056'?['wet']:['dry'])for(const actual of ['analysis','teach','experiment','rest']){
+  const state=createState('',9,{fieldId,labMode}),before=structuredClone(state),scene=roomScene(state,{actual,performed:true,outcome:'completed'});
+  const displays=[...scene.matchAll(/<g class="monitor-display" data-display-aspect="16:9"><polygon points="([^"]+)"/g)];
+  assert.ok(displays.length>0||labMode==='wet'&&actual!=='analysis');
+  for(const m of displays){
+   const p=m[1].split(' ').map(pair=>pair.split(',').map(Number)),width=p[1][0]-p[0][0],height=p[1][1]-p[2][1];
+   assert.ok(Math.abs(width/height-16/9)<1e-9);
+   const bboxHeight=Math.max(...p.map(x=>x[1]))-Math.min(...p.map(x=>x[1]));assert.ok(width/bboxHeight>1.3,'screen must read as landscape');
+  }
+  assert.deepEqual(state,before);
+ }
+});
+test('monitor frame meets the stand and keeps text and animated graphs inside its screen',()=>{
+ const geometry=monitorGeometry(14.2,18.3,26),{display,frame,center,point}=geometry;
+ assert.ok(point(0,0).every((n,i)=>Math.abs(n-projectRoom(15.9,18.6,33)[i])<1e-9));
+ assert.ok(display.x>frame.x&&display.x+display.width<frame.x+frame.width&&display.y>frame.y&&display.y+display.height<frame.height);
+ const scene=roomScene(createState('',9,{fieldId:'090',labMode:'dry'}),{actual:'analysis',performed:true,outcome:'completed'});
+ const content=scene.slice(scene.indexOf('<g class="desk-monitor"')).match(/<g class="monitor-content">([^]*?)<\/g><\/g><\/g>/)?.[1];assert.ok(content);
+ for(const path of content.matchAll(/<path(?: class="([^"]+)")? d="([^"]+)"/g)){
+  const coordinates=[...path[2].matchAll(/[ML]([\d.+-]+) ([\d.+-]+)/g)].map(m=>[Number(m[1]),Number(m[2])]);assert.ok(coordinates.length>=2);
+  const offsets=path[1]==='analysis-cursor'?[[0,0],[-5,2],[2,-3]]:[[0,0]];
+  for(const [dx,dy]of offsets)for(const [sx,sy]of coordinates){const x=sx+dx-center[0],y=center[1]+x*MONITOR_DISPLAY.tilt-(sy+dy);assert.ok(x>display.x+1&&x<display.x+display.width-1&&y>display.y+1&&y<display.y+display.height-1);}
+ }
 });

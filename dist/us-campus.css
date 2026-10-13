@@ -1,0 +1,48 @@
+/* Original faculty workspace styling; no institution's name, marks or logo. */
+:root:lang(en){
+ --ap-navy:#17304f;--ap-navy-deep:#10233b;--ap-action:#912c3e;--ap-action-dark:#752335;
+ --ap-text:#243447;--ap-muted:#536275;--ap-line:#ccd4de;--ap-line-soft:#e2e7ee;
+ --ap-canvas:#f4f6f8;--campus-action:var(--ap-action);--campus-action-dark:var(--ap-action-dark);
+ --campus-text:var(--ap-text);--campus-muted:var(--ap-muted);--muted:var(--ap-muted);
+}
+.us-campus{--action:var(--ap-action);--action-hover:var(--ap-action-dark);--blue:var(--ap-action);--banner:var(--ap-navy);--title:Georgia,'Times New Roman',serif;--body:Arial,Helvetica,sans-serif;font-family:Arial,Helvetica,sans-serif;background:var(--ap-canvas);line-height:1.6;word-break:normal}
+.us-campus button,.us-campus input,.us-campus select,.us-campus textarea{font-family:inherit}
+.us-campus .site-header{border-bottom:3px solid var(--ap-navy)}
+.us-campus .brand,.us-campus .welcome h1,.us-campus .welcome h2,.us-campus .page-title h1,.us-campus .home-page-title h1{font-family:Georgia,'Times New Roman',serif;letter-spacing:-.025em}
+.us-campus .header-content{min-height:84px}
+.us-campus .brand{font-size:29px}
+.us-campus .brand-name{font-family:Georgia,'Times New Roman',serif;letter-spacing:-.02em}
+.us-campus .utility-bar .container{min-height:38px;gap:12px}
+.us-campus .utility-bar a{color:#fff;font-size:12px;display:inline-flex;align-items:center;min-height:38px;padding:0 10px}
+.us-campus .utility-bar a:hover{background:#ffffff15}
+.us-campus .utility-bar a[aria-current]{border-bottom:2px solid #e1a7b1}
+.us-campus .header-nav a{font-size:14px;letter-spacing:.01em}
+.us-campus .page-title h1:before{background:var(--ap-action)}
+.us-campus .panel-title,.us-campus .section-kicker,.us-campus .onboarding-kicker{font-size:12px;letter-spacing:.07em;text-transform:uppercase}
+.us-campus .welcome,.us-campus .project-overview,.us-campus .student-panel,.us-campus .save-points,.us-campus .portal-login{border-top:3px solid var(--ap-navy)}
+.us-campus .welcome h1,.us-campus .welcome h2{font-size:clamp(28px,3vw,44px);line-height:1.2}
+.us-campus .welcome p,.us-campus .project-overview p{max-width:66ch}
+.us-campus .student-id h2{font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.2;overflow-wrap:anywhere}
+.us-campus .student-id p{line-height:1.5}
+.us-campus .primary,.us-campus button.primary{background:var(--ap-action);border-color:var(--ap-action);color:#fff}
+.us-campus .primary:hover:not(:disabled){background:var(--ap-action-dark);border-color:var(--ap-action-dark)}
+.us-campus .portal-button,.us-campus .choice{border-radius:3px}
+.us-campus .record-id,.us-campus .stat strong,.us-campus .budget-value{font-variant-numeric:tabular-nums}
+.us-campus .chapter-banner{border-left-color:var(--ap-action)}
+.us-campus .screen-guide{border-top-color:var(--ap-action)}
+.us-campus .live-lab{border-radius:3px}
+.us-campus .small-note{line-height:1.65}
+.us-campus .edition-note{margin:12px 0;color:var(--ap-muted);font-size:12px;line-height:1.6}
+.us-campus .screen-guide p,.us-campus .update-notice li,.us-campus .choice p{overflow-wrap:anywhere}
+@media(max-width:700px){
+ .us-campus .header-content{min-height:72px}
+ .us-campus .brand{font-size:24px}
+ .us-campus .header-nav{gap:0;justify-content:space-between}
+ .us-campus .header-nav a{padding:10px 7px;font-size:12px;min-height:44px}
+ .us-campus .utility-bar .container{flex-wrap:wrap;gap:2px 8px}
+ .us-campus .utility-bar a{min-height:44px;padding:4px 8px}
+ .us-campus .welcome h1,.us-campus .welcome h2{font-size:30px}
+ .us-campus .page-title h1{font-size:24px;line-height:1.3}
+ .us-campus .student-id h2{font-size:24px}
+}
+.us-campus .mobile-student-summary summary::after{content:'Degree & budget';}

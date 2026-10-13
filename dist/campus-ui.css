@@ -1,5 +1,4 @@
-/* GNU-inspired color system; Professor Maker keeps its original lab identity.
-   Reference: https://www.gnu.ac.kr/main/cm/cntnts/cntntsView.do?cntntsId=1198&mi=1369 */
+/* Navy/sky campus color system; Professor Maker keeps its original lab identity. */
 :root{
  --campus-navy:#17384b;
  --campus-sky:#009edb;
@@ -96,7 +95,9 @@ button:disabled{opacity:1;box-shadow:none;transform:none}
 .domestic-conference-summary strong{display:block;color:var(--campus-navy)}
 
 /* The room remains the spotlight during playback. No transform is applied to it. */
-.live-lab{outline:1px solid #c5d8e4;outline-offset:0;background:var(--campus-navy);border-radius:6px}
+.live-lab{position:relative;top:auto;outline:1px solid #c5d8e4;outline-offset:0;background:var(--campus-navy);border-radius:6px}
+.live-lab:before{display:none}
+body.month-playing #live-stage{position:relative;top:auto}
 .lab-scene-heading,.week-scene-header{background:var(--campus-navy);position:relative}
 .lab-scene-heading{padding:11px 16px}
 .lab-scene-heading:after{content:'';height:2px;position:absolute;bottom:0;left:0;right:0;background:var(--campus-sky);opacity:.8}
@@ -170,7 +171,7 @@ dialog::backdrop{background:rgb(14 32 46 / .65)}
 @media(max-height:600px) and (max-width:899px){
  .month-cue{top:42px;padding:5px 10px}
  .month-cue strong{font-size:15px}
- .month-cue>span{font-size:10px}
+ .month-cue>span{font-size:9px}
  .live-lab .week-outcome{padding:5px 8px}
 }
 @media(prefers-reduced-motion:reduce){
@@ -193,3 +194,84 @@ dialog::backdrop{background:rgb(14 32 46 / .65)}
 .funding-results article>span{font-size:12px;line-height:1.8;color:var(--campus-muted);display:block}
 .funding-results .funding-rejected>strong{color:#766454}
 @media(max-width:600px){.funding-results{padding:14px}.funding-results article>strong{font-size:14px}}
+/* Planning controls retain context, including on a small touch screen. */
+.recovery-plan-notice{display:flex;align-items:center;gap:20px;margin:16px 0 24px;padding:18px 20px;border:1px solid #b7cfc2;border-left:4px solid #54816a;border-radius:8px;background:#f2f7f3;color:#284d3b}
+.recovery-plan-notice>div{flex:1;min-width:0}.recovery-plan-notice strong{font-size:15px}.recovery-plan-notice p{font-size:13px;line-height:1.75;margin:7px 0}.recovery-plan-notice span{display:block;font-size:12px;color:#48634f}.recovery-plan-notice button{flex-shrink:0;min-height:44px}
+.budget-error p{margin:0 0 7px;font-size:13px;line-height:1.8}.budget-error button{min-height:44px;color:inherit;text-decoration:underline;text-underline-offset:4px}
+#monthly-plan,#faculty-allocation,#lab-budget,#decision h2{scroll-margin-top:calc(var(--lab-scroll-offset,60px) + 20px)}
+.credit-blocks button{width:44px;min-height:44px}.credit-blocks output{font-variant-numeric:tabular-nums}
+.faculty-credit-panel .allocation-row{gap:14px;align-items:flex-start}.credit-blocks{max-width:560px}
+#monthly-plan h2:focus,#decision h2:focus{outline:3px solid var(--campus-sky);outline-offset:6px;border-radius:2px}
+@media(max-width:899px){.recovery-plan-notice{align-items:stretch;flex-direction:column;gap:12px;padding:16px}.recovery-plan-notice button{width:100%}.credit-blocks{max-width:100%;gap:5px}.faculty-credit-panel .allocation-row{flex-wrap:wrap}.faculty-credit-panel .allocation-row>span:first-child{width:100%}.monthly-confirm>div>span{font-size:12px;line-height:1.65}.monthly-confirm strong{font-size:13px}}
+
+body[data-gameplay=true]:not(.month-playing) #live-stage{z-index:0}
+
+.recovery-plan-notice button[hidden]{display:none}
+
+/* Keep scene captions in their own row, outside the projected lab artwork. */
+.live-lab{min-width:0;max-width:100%}
+.lab-scene-heading{flex-wrap:wrap}
+.lab-scene-heading>*{min-width:0;overflow-wrap:anywhere}
+.pixel-room[data-projection=isometric]{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr)}
+.pixel-room[data-projection=isometric]>.pixel-room-art{position:static;grid-column:1;grid-row:2;min-width:0;min-height:0;width:100%;height:100%}
+.pixel-room[data-projection=isometric]>.room-label{position:static;grid-column:1;grid-row:1;justify-self:start;max-width:calc(100% - 24px);margin:8px 12px 0;padding:3px 0;background:transparent;overflow-wrap:anywhere;z-index:auto}
+@media(max-width:650px){.pixel-room[data-projection=isometric]>.room-label{max-width:calc(100% - 16px);margin:5px 8px 0;font-size:9px}.live-lab .lab-scene-heading{gap:4px 10px}}
+
+/* The first-week date belongs to the header, never on top of the caption/art. */
+.live-lab .week-scene-header.has-month-cue{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px}
+.week-scene-header.has-month-cue>.month-cue{position:static;grid-column:1/-1;grid-row:1;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;max-width:100%;min-width:0;padding:0;border:0;background:transparent;box-shadow:none;border-radius:0}
+.week-scene-header.has-month-cue>.month-cue strong{font-size:15px;overflow-wrap:anywhere}
+.week-scene-header.has-month-cue>span,.week-scene-header.has-month-cue>strong{grid-row:2;min-width:0;overflow-wrap:anywhere}
+@media(max-width:650px){.live-lab .week-scene-header.has-month-cue{gap:4px 8px}.week-scene-header.has-month-cue>.month-cue strong{font-size:13px}}
+
+/* The mode and recovery window are visible before the player commits a month. */
+.difficulty-setup{margin:12px 0 18px;padding:14px 16px;border:1px solid var(--campus-line);border-radius:5px;min-width:0}
+.difficulty-setup legend{font-weight:750;padding:0 8px}
+.difficulty-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.difficulty-option{display:flex!important;align-items:flex-start;gap:10px;min-height:70px;margin:0!important;padding:12px;border:1px solid #c4d5e0;border-radius:5px;cursor:pointer;background:#fff}
+.difficulty-option input[type=radio]{flex:0 0 auto;width:20px!important;height:20px!important;min-height:20px!important;margin:2px 0 0;accent-color:var(--campus-action)}
+.difficulty-option span{display:grid;gap:5px;min-width:0}.difficulty-option strong{font-size:14px;color:var(--campus-navy)}.difficulty-option small{font-size:12px;line-height:1.7;color:var(--campus-muted);overflow-wrap:anywhere}
+.difficulty-option.selected{border:2px solid var(--campus-action);padding:11px;background:#eef7fc}.difficulty-option:focus-within{outline:3px solid var(--campus-sky);outline-offset:2px}
+.difficulty-status{display:grid;gap:5px;padding:10px 12px;background:var(--campus-tint);border-radius:4px;margin:12px 0;font-size:11px;line-height:1.7}.difficulty-status strong{font-size:12px;color:var(--campus-navy)}.difficulty-status p{margin:0}
+.lab-risk-notice{border-left:4px solid #ae7c39;background:#fff8ed;padding:18px 20px;margin:18px 0;overflow-wrap:anywhere}.lab-risk-notice ul{padding-left:18px;margin:12px 0}.lab-risk-notice li p{margin:4px 0 10px}.lab-risk-notice>p{font-size:12px}.lab-risk-notice button{min-height:44px}
+.suspension-notice{padding:18px 20px;margin:18px 0;border:1px solid #d9bd93;background:#fff8ed;border-radius:6px;overflow-wrap:anywhere}.suspension-notice p{line-height:1.8;font-size:13px}.suspension-notice button{min-height:44px}
+.closure-cause{border-left:3px solid #a36648;background:#fbf3ed;padding:12px 15px;font-size:14px!important;line-height:1.7;overflow-wrap:anywhere}.closure-cause strong{color:#79553f}
+@media(max-width:600px){.difficulty-setup{padding:10px;margin:8px 0}.difficulty-options{grid-template-columns:1fr}.difficulty-option{min-height:68px}.difficulty-option strong{font-size:13px}.difficulty-option small{font-size:11px}.lab-risk-notice,.suspension-notice{padding:14px}.suspension-notice button{width:100%}.closure-cause{padding:10px 12px}}
+
+.rest-report-summary{margin:16px 0;padding:12px 14px;border-radius:6px;background:#f2f7f3;color:#284d3b;font-size:13px;line-height:1.8}
+.rest-outcome{display:block;margin:4px 0;font-style:normal;color:#356349;line-height:1.7}
+.critical-rest-warning{color:#795025;background:#fff7eb;border-left:3px solid #ba8542;padding:10px 12px;line-height:1.8}
+.weekly-recovery-warning{padding:12px 16px;background:#fff7eb;border-top:2px solid #ba8542;color:#795025;font-size:13px;line-height:1.75}
+.weekly-recovery-warning p{margin:4px 0 0}
+
+.onboarding-flow{margin:24px 0;padding:20px;border:1px solid #d2dee5;border-radius:8px;background:#f5f9fb}.onboarding-flow h3{margin:0 0 14px;color:#193a4a;font-size:17px}
+.onboarding-menu-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.onboarding-menu-map article{padding:14px;background:white;border:1px solid #dce5ea;border-radius:6px}.onboarding-menu-map strong{color:#086697;font-size:15px}.onboarding-menu-map p{margin:6px 0 0;font-size:13px;line-height:1.75;color:#536878}
+.onboarding-month-flow{display:flex;flex-wrap:wrap;gap:8px 24px;padding-left:20px;margin:18px 0 12px;font-size:13px;line-height:1.8;color:#334c5b}
+.screen-guide-invite{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:16px 18px;margin:16px 0;border:1px solid #b7d3e4;border-radius:8px;background:#f4faff}.screen-guide-invite>div{flex:1;min-width:180px}.screen-guide-invite strong{font-size:15px}.screen-guide-invite p{font-size:13px;margin:5px 0 0;line-height:1.75}.screen-guide-invite button{min-height:44px}
+.screen-guide{position:fixed;z-index:90;right:20px;bottom:20px;width:min(420px,calc(100% - 24px));box-sizing:border-box;padding:18px 20px;border:2px solid #447e9a;border-radius:10px;background:#fff;box-shadow:0 8px 28px #193a4a26;color:#193a4a}.screen-guide-top{display:flex;justify-content:space-between;align-items:center;gap:10px}.screen-guide-top span{font-size:12px;color:#557284}.screen-guide button{min-height:44px}.screen-guide h2{font-size:18px;line-height:1.55;margin:8px 0}.screen-guide p{font-size:13px;line-height:1.8;margin:8px 0 16px}.screen-guide-actions{display:flex;justify-content:space-between;gap:12px}.screen-guide-actions button{flex:1}.screen-guide-target{outline:3px solid #3496bd!important;outline-offset:5px;border-radius:5px;scroll-margin-top:90px}.screen-guide-target::selection{background:#bde6f5}.guide-restart{margin-bottom:20px}
+@media(max-width:899px){.onboarding-flow{padding:16px}.onboarding-menu-map{grid-template-columns:1fr;gap:8px}.onboarding-menu-map article{padding:12px}.screen-guide{right:12px;bottom:12px;padding:14px 16px}.screen-guide h2{font-size:16px}.screen-guide p{font-size:12px;line-height:1.75}.screen-guide-invite{padding:14px}.screen-guide-invite>div{flex-basis:100%}}
+@media(prefers-reduced-motion:reduce){.screen-guide-target{scroll-behavior:auto}}
+
+.confirm-borrowing{display:block;color:#923d25;font-size:12px;font-weight:700;line-height:1.6}.borrowing-report-summary,.funding-deposit-summary{font-size:13px;line-height:1.8;padding:12px 14px;background:#f7f1e9;border-left:3px solid #b38356}
+
+body.screen-guide-active #main{padding-bottom:var(--screen-guide-space,360px)}
+
+.research-budget-profile{margin:12px 0 20px;padding:16px;border:1px solid #cedce2;background:#f5f9fa}.research-budget-profile>p,.finance-profile-hint{font-size:13px;line-height:1.8}.budget-breakdown{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:16px 0}.budget-breakdown>div{background:white;padding:10px 12px}.budget-breakdown dt{font-size:12px;color:#617580}.budget-breakdown dd{margin:5px 0 0;font-weight:700}.finance-evidence{font-size:13px;line-height:1.8;border:1px solid #c8dce6;padding:14px;margin:18px 0}.finance-evidence summary{cursor:pointer;min-height:44px;display:flex;align-items:center}
+
+.onboarding-update{position:fixed;z-index:90;right:20px;bottom:20px;width:min(420px,calc(100% - 24px));box-sizing:border-box;padding:18px 20px;border:2px solid #447e9a;border-radius:10px;background:#fff;box-shadow:0 8px 28px #193a4a26;color:#193a4a}.onboarding-update h2{font-size:17px;line-height:1.6;margin:10px 0}.onboarding-update ul{padding-left:18px;margin:12px 0}.onboarding-update li,.onboarding-update p{font-size:12px;line-height:1.8}.onboarding-update li+li{margin-top:8px}.onboarding-update button{min-height:44px}.onboarding-update>.primary{width:100%}.update-replay{margin:0 0 12px}body.update-notice-active #main{padding-bottom:var(--update-notice-space,440px)}@media(max-width:899px){.onboarding-update{right:12px;bottom:12px;padding:14px 16px}.onboarding-update h2{font-size:15px}.onboarding-update li+li{margin-top:6px}}
+
+.admission-seed-setup{margin:22px 0;padding:18px;border:1px solid #c8d7e0}.admission-seed-setup label,.admission-share label{display:block;font-size:13px;margin:8px 0}.admission-seed-setup input,.admission-share input{max-width:100%;box-sizing:border-box;min-height:44px}.admission-candidates{border:0;padding:0;margin:24px 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.admission-candidates legend{font-weight:700;margin-bottom:16px}.candidate-option{display:flex;align-items:flex-start;gap:10px;padding:18px;border:1px solid #c8d7e0;border-radius:8px;background:#f7fafb;cursor:pointer;min-height:44px}.candidate-option.selected{border:2px solid #367697;padding:17px;background:#f0f8fc}.candidate-option>input{flex:none;margin-top:5px}.candidate-option article{min-width:0}.candidate-heading strong{display:block;font-size:18px}.candidate-heading span{font-size:12px;color:#5e7380;display:block;margin-top:8px}.candidate-option dl{font-size:13px;line-height:1.8;margin:20px 0 0}.candidate-option dl>div+div{margin-top:15px}.candidate-option dt{font-size:12px;color:#5e7380}.candidate-option dd{margin:4px 0 0}.admission-interview #admission-form>.primary{min-height:48px}.admission-share{border:1px solid #cbd9e0;padding:16px;margin-bottom:20px}.admission-share input{display:block;width:100%;margin:8px 0 12px;font-family:monospace;font-size:16px}.admission-share button{min-height:44px}@media(max-width:899px){.admission-candidates{grid-template-columns:1fr}.candidate-option{padding:16px}.candidate-option.selected{padding:15px}.admission-interview #admission-form>.primary{width:100%}}
+
+.onboarding-update{display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:8px;max-height:min(560px,calc(100svh - 32px))}.update-notice-body{min-height:0;overflow:auto;overscroll-behavior:contain;padding-right:4px}.onboarding-update .screen-guide-top{margin-bottom:0}.update-notice-body p{margin-bottom:0}@media(max-width:899px){.onboarding-update{max-height:65svh}}
+
+.release-note-review>span{font-size:12px;color:#587182}.release-note-review li{font-size:14px;line-height:1.8;margin:14px 0}.release-note-review button,.update-replay{min-height:44px}
+
+.ending-collection .letter-card.locked{opacity:1;background:#f4f8fa;cursor:pointer}.ending-collection .letter-card:focus-visible{outline:3px solid #3496bd;outline-offset:3px}.ending-card-action{grid-column:2;font-size:12px;font-style:normal;color:#246888}.ending-requirements-label{font-size:12px;color:#667c89}.ending-requirements h2{font-size:24px;line-height:1.5;margin:12px 0 18px}.ending-requirements h3{font-size:16px;margin:24px 0 10px}.ending-requirements p,.ending-requirements li,.ending-requirements dd{font-size:14px;line-height:1.9;overflow-wrap:anywhere}.ending-requirements ul{padding-left:20px;margin:10px 0}.ending-requirements li+li{margin-top:10px}.ending-requirements-context{padding:12px;background:#f1f6f8}.ending-requirements-timing dt{font-size:12px;color:#617580}.ending-requirements-timing dd{margin:6px 0 0}.ending-requirements-notes{padding:12px 16px;margin:24px 0;background:#faf7f0;border-left:3px solid #a88b64}.ending-requirements>button{min-height:44px;margin-top:20px}@media(max-width:899px){.ending-requirements h2{font-size:21px}.ending-requirements p,.ending-requirements li,.ending-requirements dd{font-size:13px}.ending-requirements>button{width:100%}}
+
+.onboarding-funding-basics{border-top:1px solid #cbdce5;margin:18px 0;padding-top:16px}.onboarding-funding-basics h4{font-size:14px;margin-bottom:10px}.onboarding-funding-basics ul{padding-left:18px;font-size:13px;line-height:1.9}.onboarding-funding-basics li+li{margin-top:8px}.guide-finance-basics{border:1px solid #c7dce5;background:#f6fafb;padding:16px;margin:20px 0}.guide-finance-basics h3{font-size:16px;line-height:1.7}.guide-finance-basics p{font-size:13px;line-height:1.9}.guide-control-shortcuts{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}.guide-control-shortcuts button{min-height:44px;flex:1}@media(max-width:899px){.guide-control-shortcuts{flex-direction:column}.onboarding-funding-basics ul{font-size:12px}}
+
+/* Keep small-screen guidance out of the controls it explains. The notice body
+   retains its own bounded text scrolling; the lab itself uses normal page flow. */
+.screen-guide.is-inline{position:static;inset:auto;z-index:auto;width:100%;max-width:none;margin:16px 0;box-sizing:border-box}
+@media(max-width:899px){.onboarding-update{max-height:min(360px,40svh)}}
+@media(max-width:899px){body.screen-guide-active .monthly-confirm{position:static;z-index:auto}}

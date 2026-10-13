@@ -8,13 +8,15 @@ import {managedOptions,affordableEventChoice} from '../tests/play-support.mjs';
 const seed=63352,gender='female';
 let reply;globalThis.self={postMessage:r=>{reply=r;}};await import('../dist/simulation-worker.js');
 const run=(type,state,more={})=>{reply=null;self.onmessage({data:{id:1,type,state,...more}});if(reply.error)throw Error(reply.error);return reply.state;};
-const choices={'workshop-plan':'skip','monthly-issue':'acknowledge','failure-counsel':'review','conversation-topic':'daily','presentation-recovery':'rehearse',story:'encourage','academic-exam':'support','external-admission':'remain',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',defense:'defend',service:'consult','service-review':'consult'};
+const choices={'rest-request':'allow','lab-warning':'acknowledge','workshop-plan':'skip','monthly-issue':'acknowledge','failure-counsel':'review','conversation-topic':'daily','presentation-recovery':'rehearse',story:'encourage','academic-exam':'support','external-admission':'remain',route:'integrated',masters:'continue',qual:'exam',sabbatical:'home',defense:'defend',service:'consult','service-review':'consult'};
 let s=createState(generateKoreanName(seed,gender),seed,{gender,age:38});
 for(let month=0;month<96&&!s.ending;month++){
  const plan=proposeSchedule(s);
  if(![4,10].includes(calendarMonth(s.month))){plan[3]='industry';if(s.month>=24)plan[0]='industry';}
  if(!plan.every(id=>Object.hasOwn(ACTIVITIES,id)))throw Error('Unavailable activity');
- s=run('month',s,{plan,options:managedOptions(s,month%4===0?'conversation':'routine')});
+ const options=managedOptions(s,month%4===0?'conversation':'routine'),previousMonth=s.month;
+ s=run('month',s,{plan,options});
+ if(s.month===previousMonth&&s.pending?.kind==='rest-request'){s=run('decision',s,{choice:'allow'});s=run('month',s,{plan:s.plan,options});}
  for(let guard=0;s.pending&&!s.ending;guard++){
   if(guard>=20)throw Error('Unterminated decision queue');const p=s.pending;
   const choice=p.kind==='event'?affordableEventChoice(s,p.id):p.kind==='conference-plan'?(p.scope==='domestic'?'together':'none'):choices[p.kind]??({draft:'outline',presentation:'present',questions:'answer',revision:'revise',verdict:'confirm'})[p.step];
