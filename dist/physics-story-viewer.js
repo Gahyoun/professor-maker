@@ -1,5 +1,5 @@
-import {getPhysicsStoryScenes} from './physics-story.js';
-import {physicsEndingRecord} from './physics-ending-record.js';
+import {getEndingStory} from './stories.js';
+import {physicsEndingRecord,physicsEndingContext,physicsEndingPages} from './physics-ending-record.js';
 import {renderStudentPortrait} from './student-pixel-art.js';
 import {renderConferenceArt} from './conference-art.js';
 
@@ -7,6 +7,11 @@ import {renderConferenceArt} from './conference-art.js';
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const phaseLabel={opening:'첫 면담',main:'함께한 8년',thesis:'학위 심사',ending:'다시 만난 두 교수'};
 const physicsFigure='<path d="M140 111L172 91 205 104 240 75 275 88 310 64 345 83" fill="none" stroke="#81a797" stroke-width="4"/>';
+
+export function getPublicPhysicsEndingScenes(){
+ const story=getEndingStory('true',physicsEndingContext);
+ return physicsEndingPages().map((body,index)=>({id:`ending-${index+1}`,phase:'ending',title:story.title.ko,time:story.time.ko,month:96,visual:index===2||index===3?'letter':index===0||index>=6?'conference':'memory',paragraphs:body.split('\n\n')}));
+}
 
 export function storySceneArt(item){
  const caption=item.phase==='opening'?'우리의 첫 면담':item.phase==='thesis'?'연구를 자기 말로 설명하는 자리':item.visual==='letter'?'소인이 두 번 찍힌 손편지':item.visual==='conference'?'국제학회 · 다시 만난 날':'함께한 시간';
@@ -21,7 +26,7 @@ export function storySceneArt(item){
 
 export function bootPhysicsStoryReader(doc=document){
  const reader=doc.querySelector('#sequence-reader');if(!reader)return;
- const scenes=getPhysicsStoryScenes(),paper=doc.querySelector('#sequence-paper'),scene=doc.querySelector('#sequence-scene'),heading=doc.querySelector('#sequence-heading');
+ const scenes=getPublicPhysicsEndingScenes(),paper=doc.querySelector('#sequence-paper'),scene=doc.querySelector('#sequence-scene'),heading=doc.querySelector('#sequence-heading');
  const previous=doc.querySelector('[data-sequence="previous"]'),next=doc.querySelector('[data-sequence="next"]'),first=doc.querySelector('[data-sequence="first"]'),contents=doc.querySelector('#sequence-contents');
  let index=0;
  contents.innerHTML=scenes.map((item,i)=>`<li><button type="button" data-scene-index="${i}">${escape(item.time)} · ${escape(item.title)}</button></li>`).join('');

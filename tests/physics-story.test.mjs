@@ -7,6 +7,18 @@ import {openingMeeting} from '../dist/opening-meeting.js';
 import {CHAPTERS,THESIS_STEPS,THESIS_SCENES} from '../dist/main-story.js';
 import {physicsEndingRecord,physicsEndingPages} from '../dist/physics-ending-record.js';
 import {physicsEndingRecord as legacyRecord,physicsEndingPages as legacyPages} from '../dist/physics-ending-viewer.js';
+import {getPublicPhysicsEndingScenes} from '../dist/physics-story-viewer.js';
+import {getEndingPages} from '../dist/stories.js';
+import {researchText} from '../dist/lab-scene.js';
+
+test('the current public page contains only the same ending paragraphs used by the playable game',()=>{
+ const record=physicsEndingRecord,context={statistics:record.statistics,recommendation:record.recommendation,fieldId:'050',field:'물리학',labMode:'dry',passageIds:record.passageIds};
+ const actualGamePages=getEndingPages('true','ko',record.relationship,record.name,null,record.memories,context).map(text=>researchText(text,{professorProfile:context}));
+ const scenes=getPublicPhysicsEndingScenes();
+ assert.equal(scenes.length,10);assert.ok(scenes.every(item=>item.phase==='ending'));
+ assert.deepEqual(scenes.map(item=>item.paragraphs.join('\n\n')),actualGamePages);
+ assert.doesNotMatch(scenes.flatMap(item=>item.paragraphs).join('\n'),/학생의 질문을 듣고, 함께 시도할 작은 다음 단계/);
+});
 
 test('the isolated physics reader goes from the first meeting through the complete true ending',()=>{
  const scenes=getPhysicsStoryScenes();
