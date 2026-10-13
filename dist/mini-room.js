@@ -197,30 +197,16 @@ function plant(u,v,type=0,{z=0,small=false}={}){
 }
 function bookshelf(u,v,wet,stock,state){
  let art=`<g class="lab-bookshelf antique-bookshelf" data-shelf="academic-library" aria-label="학술 저널과 학위논문 바인더 서가">`+box(u,v,5.5,2,60,'#6d492b');
- art+=box(u-.1,v-.1,5.7,2.2,2.5,'#52341b')+box(u-.1,v-.1,5.7,2.2,1.8,'#8e6139',59);
- for(const z of [4,22,40])art+=front(u+.4,v+2.02,z,4.7,17,'#e6ddcc')+front(u+.3,v+2.1,z-1,4.9,2,'#7d5431');
- art+=`<g class="shelf-thesis-binders" data-shelf-tier="theses" aria-label="학위논문 하드커버 바인더 서가">`;
- for(const [i,color]of ['#0f224a','#132a58','#3b1016','#151921','#0f2b4c','#1a3324'].entries()){
-  const a=u+.52+i*.51;
-  art+=front(a,v+2.08,5,.48,14.5,color)+line([a+.24,v+2.11,9],[a+.24,v+2.11,17.8],'#d4af37',.7);
- }
- art+=front(u+4.12,v+2.1,5,.14,7.5,'#b48c48')+front(u+4.32,v+2.1,5,.68,2.5,(state?.career?.papers??0)>0?'#1a365d':'#8fa389')+'</g>';
- art+=`<g class="shelf-textbooks" data-shelf-tier="textbooks" aria-label="전공 원서 및 학술 레퍼런스">`;
- const textbooks=[['#8b1e28',13.5],['#1b4332',15],['#1e3a8a',12.8],['#78350f',14.2],['#374151',11.8]];
- for(const[i,[color,h]]of textbooks.entries()){
-  const a=u+.52+i*.72;
-  art+=front(a,v+2.08,23,.6,h,color)+line([a+.06,v+2.1,23+h-2],[a+.54,v+2.1,23+h-2],'#dfb76c',.7);
- }
+ for(const z of [4,22,40])art+=front(u+.4,v+2.02,z,4.7,17,'#e6ddcc');
+ art+='<g class="shelf-thesis-binders" data-shelf-tier="theses" aria-label="학위논문 하드커버 바인더 서가">';
+ for(const[i,c]of ['#0f224a','#3b1016','#151921'].entries())art+=front(u+.55+i*.8,v+2.08,5,.65,14,c);
+ art+='</g><g class="shelf-textbooks" data-shelf-tier="textbooks" aria-label="전공 원서 및 학술 레퍼런스">';
+ for(const[i,c]of ['#8b1e28','#1b4332','#1e3a8a'].entries())art+=front(u+.55+i*.9,v+2.08,23,.75,12+i,c);
  art+='</g><g class="shelf-journals" data-shelf-tier="journals" aria-label="알록달록한 학술 저널 컬렉션">';
- for(const[i,color]of ['#dc2626','#d97706','#0284c7','#16a34a','#7c3aed','#0d9488'].entries()){
-  const a=u+.52+i*.38,h=11.5+(i%3)*.7;
-  art+=front(a,v+2.08,41,.32,h,color)+front(a+.03,v+2.09,41+h-3.8,.26,1.4,'#ffffff');
- }
+ for(const[i,c]of ['#dc2626','#0284c7','#16a34a','#7c3aed'].entries())art+=front(u+.55+i*.65,v+2.08,41,.5,12,c);
  art+='</g>';
- if(wet)for(let i=0;i<({sparse:1,balanced:4,rich:8})[stock];i++){
-  const a=u+3.68+(i%4)*.32,z=i<4?41:23;
-  art+=front(a,v+2.09,z,.25,7,['#a7c5c9','#c8b2c2','#b6c9a6'][i%3])+front(a+.04,v+2.1,z+7,.17,2,'#879a99');
- }
+ const bottles=wet?({sparse:1,balanced:3,rich:5})[stock]:0;
+ for(let i=0;i<bottles;i++)art+=front(u+3.7+(i%3)*.32,v+2.09,i<3?41:23,.25,8,['#a7c5c9','#c8b2c2','#b6c9a6'][i%3]);
  return art+'</g>';
 }
 function fridge(u,v){return box(u,v,3.5,3,45,'#d3d9d5')+front(u+.25,v+3.03,2,3,24,'#e7eae3')+front(u+.25,v+3.03,28,3,15,'#e7eae3')+front(u+.55,v+3.1,18,.25,5,'#96a4a1')+front(u+.55,v+3.1,33,.25,5,'#96a4a1')+front(u+2,v+3.1,36,.6,2,'#c6b6a0');}
@@ -230,124 +216,32 @@ function server(u,v){
  for(let i=0;i<4;i++){
   const unitZ=4+i*10;
   art+=front(u+.25,v+2.63,unitZ,2.5,7.2,'#334155');
-  art+=front(u+.35,v+2.64,unitZ+.6,2.3,6.0,'#1e293b');
   art+=`<g class="server-led-indicator" aria-label="실시간 LED 인디케이터">`+
    front(u+.5,v+2.66,unitZ+5.2,.25,1.2,'#22c55e')+
    front(u+.8,v+2.66,unitZ+5.2,.2,1.0,'#f59e0b')+
    front(u+1.05,v+2.66,unitZ+5.2,.2,1.0,'#06b6d4')+
    front(u+1.3,v+2.66,unitZ+5.2,.2,1.0,'#3b82f6')+
    '</g>';
-  for(let j=0;j<3;j++)art+=front(u+1.6+j*.32,v+2.65,unitZ+2.5,.18,3.2,'#64748b');
-  art+=front(u+.5,v+2.65,unitZ+1.5,.3,.8,['#ef4444','#3b82f6','#eab308','#10b981'][i%4]);
-  art+=front(u+.9,v+2.65,unitZ+1.5,.3,.8,['#3b82f6','#10b981','#ef4444','#eab308'][i%4]);
+  for(let j=0;j<2;j++)art+=front(u+1.6+j*.45,v+2.65,unitZ+2.5,.18,3.2,'#64748b');
  }
  return art+'</g>';
 }
-function capsuleCoffeeMachine(u,v,z=26){
- return `<g class="capsule-coffee-machine" data-object="capsule-coffee-machine" aria-label="캡슐 커피 머신">`+
- box(u,v,1.1,1.3,1.2,'#1e293b',z)+box(u+.1,v+.4,.9,.8,8.2,'#b91c1c',z+1.2)+
- front(u+.15,v+1.21,z+2,.8,6.5,'#1e293b')+front(u+.25,v+1.22,z+6.5,.6,1,'#e2e8f0')+
- front(u+.2,v+1.23,z+1.5,.7,7,'#93c5fd')+box(u+.35,v+.15,.4,.3,2,'#f8fafc',z+1.6)+
- line([u+.55,v+.6,z+9.4],[u+.55,v+1.1,z+10.2],'#e2e8f0',1.8)+'</g>';
-}
-function labSnackBox(u,v,z=26){
- return `<g class="lab-snack-box" data-object="lab-snack-box" aria-label="연구실 탕비 간식 박스">`+
- box(u,v,1.3,1.2,1.8,'#b45309',z)+front(u+.15,v+.6,z+1.8,.3,3.2,'#16a34a')+
- front(u+.5,v+.6,z+1.8,.3,3.5,'#2563eb')+front(u+.85,v+.6,z+1.8,.3,2.8,'#78350f')+
- front(u+.25,v+1.0,z+1.8,.2,4.2,'#eab308')+front(u+.55,v+1.0,z+1.8,.2,3.9,'#dc2626')+'</g>';
-}
-function cableOrganizer(u,v,z=0){
- let art=`<g class="lab-cable-organizer" data-object="cable-organizer" aria-label="책상 밑 멀티탭 전선 정리함">`;
- art+=box(u,v,2.2,1.0,1.8,'#e2e8f0',z);
- art+=front(u+.2,v+1.02,z+.4,1.8,.3,'#94a3b8');
- const [lx,ly]=projectRoom(u+1.8,v+1.03,z+1.2);
- art+=`<circle cx="${lx}" cy="${ly}" r="0.8" fill="#22c55e"/>`;
- art+=line([u+.4,v+1.0,z+.5],[u+.1,v+1.4,z],'#334155',1.5);
- art+=line([u+.8,v+1.0,z+.5],[u+.7,v+1.6,z],'#475569',1.3);
- art+=line([u+1.4,v+1.0,z+.5],[u+1.9,v+1.5,z],'#1e293b',1.4);
- return art+'</g>';
-}
-function bagHanger(u,v){
- return `<g class="lab-bag-hanger" data-object="bag-hanger" aria-label="연구원 가방 걸이와 백팩">`+
- line([u+.5,v,25],[u+.5,v,17],'#475569',2)+box(u-.2,v,1.6,1.5,9.5,'#1e293b',7)+
- front(u-.1,v+1.52,9,1.4,6.5,'#334155')+line([u,v+1.53,13.5],[u+1.2,v+1.53,13.5],'#94a3b8',1)+
- line([u+.1,v+.1,17],[u-.1,v+.3,12],'#0f172a',1.6)+front(u+1.4,v+1.52,9,.3,5.5,'#cbd5e1')+'</g>';
-}
-function wastebasket(u,v,z=0){
- return `<g class="lab-wastebasket" data-object="wastebasket" aria-label="연구실 페이퍼 바스켓 휴지통">`+
- box(u,v,1.4,1.4,4.5,'#475569',z)+plane([[u+.1,v+.1,z+4.1],[u+1.3,v+.1,z+4.1],[u+1.3,v+1.3,z+4.1],[u+.1,v+1.3,z+4.1]],'#1e293b')+
- front(u+.2,v+.8,z+3.8,.45,.8,'#f8fafc')+front(u+.6,v+.9,z+3.9,.5,.9,'#fef08a')+'</g>';
-}
-function boardTray(u=16.2,v=0.22,z=34.5,boardType=0){
- let art=`<g class="board-chalk-tray" data-object="board-tray" aria-label="칠판 하단 트레이의 분필과 지우개">`;
- art+=front(u,v,z,8.6,0.8,'#78716c');
- art+=line([u,v+.02,z+.8],[u+8.6,v+.02,z+.8],'#a8a29e',1.0);
- art+=front(u+.6,v+.05,z+.3,1.5,0.9,'#3f3f46');
- art+=front(u+.65,v+.06,z+.8,1.4,0.6,'#a16207');
- if(boardType===1){
-  art+=front(u+2.8,v+.05,z+.3,.7,.4,'#dc2626');
-  art+=front(u+3.8,v+.05,z+.3,.7,.4,'#2563eb');
-  art+=front(u+4.8,v+.05,z+.3,.7,.4,'#0f172a');
- }else{
-  art+=front(u+2.8,v+.05,z+.3,.65,.35,'#ffffff');
-  art+=front(u+3.7,v+.05,z+.3,.65,.35,'#fef08a');
-  art+=front(u+4.6,v+.05,z+.3,.65,.35,'#67e8f9');
-  art+=front(u+5.5,v+.05,z+.3,.65,.35,'#f472b6');
- }
- return art+'</g>';
-}
-function wallCalendar(u=25.4,v=0.2,z=46){
- let art=`<g class="wall-calendar" data-object="wall-calendar" aria-label="연구 일정 벽걸이 달력">`;
- art+=front(u,v,z+15.5,2.2,1.2,'#1e3a8a');
- art+=line([u+.2,v+.02,z+16.8],[u+2.0,v+.02,z+16.8],'#d4af37',1.2);
- art+=front(u,v,z,2.2,15.5,'#fdfbf7');
- art+=line([u+.2,v+.02,z+13.5],[u+2.0,v+.02,z+13.5],'#e2e8f0',0.8);
- art+=front(u+.3,v+.03,z+14.0,.5,.9,'#ffffff');
- for(let r=0;r<4;r++){
-  const rz=z+11.5-r*2.4;
-  art+=line([u+.3,v+.02,rz],[u+1.9,v+.02,rz],'#cbd5e1',0.6);
- }
- const [cdx,cdy]=projectRoom(u+1.2,v+.04,z+6.8);
- art+=`<circle cx="${cdx}" cy="${cdy}" r="2.2" fill="none" stroke="#ef4444" stroke-width="1.2"/>`;
- const [cfx,cfy]=projectRoom(u+.6,v+.04,z+4.4);
- art+=`<circle cx="${cfx}" cy="${cfy}" r="1.8" fill="none" stroke="#3b82f6" stroke-width="1.0"/>`;
- return art+'</g>';
-}
-function wallPostIts(u=25.4,v=0.2,z=32){
- let art=`<g class="wall-postits" data-object="wall-postits" aria-label="포스트잇과 자석 핀 메모">`;
- art+=front(u,v,z+7,1.1,3.2,'#fef08a');
- art+=line([u+.15,v+.02,z+9.2],[u+.95,v+.02,z+9.2],'#a16207',0.6);
- art+=line([u+.15,v+.02,z+8.0],[u+.85,v+.02,z+8.0],'#a16207',0.6);
- const [p1x,p1y]=projectRoom(u+.55,v+.04,z+10.0);
- art+=`<circle cx="${p1x}" cy="${p1y}" r="1.1" fill="#ef4444"/>`;
-
- art+=front(u+1.2,v,z+6.5,1.0,3.0,'#bbf7d0');
- art+=line([u+1.35,v+.02,z+8.5],[u+2.05,v+.02,z+8.5],'#15803d',0.6);
- art+=line([u+1.35,v+.02,z+7.4],[u+1.95,v+.02,z+7.4],'#15803d',0.6);
- const [p2x,p2y]=projectRoom(u+1.7,v+.04,z+9.3);
- art+=`<circle cx="${p2x}" cy="${p2y}" r="1.0" fill="#3b82f6"/>`;
-
- art+=front(u+.2,v,z+1.5,1.2,3.4,'#fbcfe8');
- art+=line([u+.35,v+.02,z+3.8],[u+1.25,v+.02,z+3.8],'#be185d',0.6);
- art+=line([u+.35,v+.02,z+2.6],[u+1.15,v+.02,z+2.6],'#be185d',0.6);
- const [p3x,p3y]=projectRoom(u+.8,v+.04,z+4.7);
- art+=`<circle cx="${p3x}" cy="${p3y}" r="1.0" fill="#eab308"/>`;
- return art+'</g>';
-}
+// Small decorative tools use one projected front canvas. Their room anchors and
+// heights remain physical, while pixel silhouettes avoid storing repeated box faces.
+function decorIcon(u,v,z,body){const[x,y]=projectRoom(u,v,z);return `<g transform="matrix(1 .5 0 1 ${x} ${y})">${body}</g>`;}
+function capsuleCoffeeMachine(u,v,z=26){return `<g class="capsule-coffee-machine" data-object="capsule-coffee-machine" aria-label="캡슐 커피 머신">`+decorIcon(u,v+1.2,z,'<path d="M0 0v-10h11V0z" fill="#b91c1c"/><path d="M2 0v-7h7V0zM0-1h12v2H0z" fill="#1e293b"/><path d="M3-2v-3h5v3z" fill="#f8fafc"/>')+'</g>';}
+function labSnackBox(u,v,z=26){return `<g class="lab-snack-box" data-object="lab-snack-box" aria-label="연구실 탕비 간식 박스">`+decorIcon(u,v+1.2,z,'<path d="M0 0v-3h12V0z" fill="#b45309"/><path d="M2-3v-4h3v4z" fill="#16a34a"/><path d="M6-3v-5h3v5z" fill="#2563eb"/>')+'</g>';}
+function cableOrganizer(u,v,z=0){return `<g class="lab-cable-organizer" data-object="cable-organizer" aria-label="책상 밑 멀티탭 전선 정리함">`+decorIcon(u,v+1,z,'<path d="M0 0v-2h18V0z" fill="#e2e8f0"/><path d="M3 0l-3 3h3M8 0l-2 2h4" fill="none" stroke="#334155"/><path d="M14-2h2v1h-2z" fill="#22c55e"/>')+'</g>';}
+function bagHanger(u,v){return `<g class="lab-bag-hanger" data-object="bag-hanger" aria-label="연구원 가방 걸이와 백팩">`+decorIcon(u,v+1.5,7,'<path d="M1 0v-9h12V0z" fill="#1e293b"/><path d="M3-1v-4h8v4z" fill="#334155"/><path d="M13-1v-6h2v6z" fill="#cbd5e1"/><path d="M6-9v-8h3" fill="none" stroke="#64748b"/>')+'</g>';}
+function wastebasket(u,v,z=0){return `<g class="lab-wastebasket" data-object="wastebasket" aria-label="연구실 페이퍼 바스켓 휴지통">`+decorIcon(u,v+1.4,z,'<path d="M0 0v-5h12V0z" fill="#475569"/><path d="M2-4v-2h4v2zM7-3v-2h3v2z" fill="#f8fafc"/>')+'</g>';}
+function boardTray(u=16.2,v=.22,z=34.5,boardType=0){return `<g class="board-chalk-tray" data-object="board-tray" aria-label="칠판 하단 트레이의 분필과 지우개">`+front(u,v,z,8.6,.8,'#78716c')+front(u+.6,v+.05,z+.3,1.5,1.2,'#a16207')+'</g>';}
+function wallCalendar(u=25.4,v=.2,z=46){return `<g class="wall-calendar" data-object="wall-calendar" aria-label="연구 일정 벽걸이 달력">`+decorIcon(u,v,z,'<path d="M0 0v-16h20V0z" fill="#fdfbf7"/><path d="M0-16v-2h20v2z" fill="#1e3a8a"/><path d="M4-4h3v2H4zM12-8h3v2h-3z" fill="#ef4444"/>')+'</g>';}
+function wallPostIts(u=25.4,v=.2,z=32){return `<g class="wall-postits" data-object="wall-postits" aria-label="포스트잇과 자석 핀 메모">`+front(u,v,z+7,1.1,3.2,'#fef08a')+front(u+1.2,v,z+6.5,1,3,'#bbf7d0')+front(u+.2,v,z+1.5,1.2,3.4,'#fbcfe8')+'</g>';}
 function wetLabFixtures(u=3.6,v=10.1,stock='balanced'){
- let art=`<g class="wet-flask-drying-rack" data-equipment="flask-drying-rack" aria-label="습식 랩 플라스크 건조대와 시약 선반">`+box(u,v,2.5,.3,15,'#334155',27);
- for(let row=0;row<2;row++)for(let col=0;col<2;col++){
-  const a=u+.5+col*1.3,z=30+row*6;
-  art+=line([a,v+.35,z],[a,v+.65,z+1.2],'#94a3b8',1.2)+front(a-.2,v+.66,z,.4,2.8,'#bae6fd')+front(a-.08,v+.67,z+2.8,.16,1,'#f0f9ff');
- }
- art+=box(u+2.7,v,3.4,.5,1,'#64748b',27)+box(u+2.7,v,3.4,.5,1,'#64748b',36);
- art+=line([u+2.85,v+.5,27],[u+2.85,v+.5,44],'#475569',2)+line([u+5.95,v+.5,27],[u+5.95,v+.5,44],'#475569',2);
- const count=({sparse:1,balanced:3,rich:5})[stock];
- for(let i=0;i<count;i++){
-  const a=u+3.1+(i%3)*.8,z=i<3?28:37;
-  art+=front(a,v+.46,z,.5,4.5,['#b45309','#0284c7','#15803d'][i%3])+front(a+.1,v+.47,z+4.5,.3,1,'#f8fafc');
-  if(i===0)art+=front(a+.08,v+.48,z+1.2,.34,1.6,'#dc2626')+front(a+.14,v+.49,z+1.6,.22,.8,'#fef08a');
- }
+ let art=`<g class="wet-flask-drying-rack" data-equipment="flask-drying-rack" aria-label="습식 랩 플라스크 건조대와 시약 선반">`+front(u,v+.3,27,2.5,15,'#334155');
+ for(let i=0;i<3;i++)art+=front(u+.25+i*.75,v+.66,31,.4,5,'#bae6fd');
+ art+=front(u+2.7,v+.5,27,3.4,1,'#64748b')+front(u+2.7,v+.5,36,3.4,1,'#64748b');
+ for(let i=0;i<({sparse:1,balanced:3,rich:5})[stock];i++)art+=front(u+3.1+(i%3)*.8,v+.46,i<3?28:37,.5,5.5,['#b45309','#0284c7','#15803d'][i%3]);
  return art+'</g>';
 }
 // A sofa has a far backrest and two short arms; its long front edge is open.
@@ -386,48 +280,14 @@ function cot(u,v){
 function printer(u,v,z=0){return box(u,v,2.6,2,8,'#bac5c6',z)+box(u+.3,v+.1,2,1.4,2,'#dee2db',z+8)+front(u+.4,v+2.04,z+2,1.9,1.3,'#71868d')+box(u+.5,v-.1,1.8,.8,1,'#f8f4e8',z+10);}
 function kettle(u,v,z=0){return box(u,v,1.2,1.2,1,'#8a9b9c',z)+box(u+.2,v+.2,.8,.8,8,'#e9e3d3',z+1)+box(u+.3,v+.3,.6,.6,1,'#96a4a3',z+9)+line([u+1,v+.5,z+3],[u+1.6,v+.5,z+4],'#829996',2)+line([u+1.6,v+.5,z+4],[u+1.6,v+.5,z+8],'#829996',2);}
 function plush(u,v,z){
- const [x,y]=projectRoom(u,v,z);
+ const [x,y]=projectRoom(u,v,z),toy=(name,label,a,b,c,ears,face)=>`<g class="plushie-${name}" aria-label="${label}"><path d="M${x+a} ${y+b}h10v7h-10z${ears}" fill="${c}"/><path d="${face}" fill="#334155"/></g>`;
  return `<g class="stacked-plushies" data-decor="plushie-pile" aria-label="작은 동물 인형 더미와 인형 피라미드">`+
-  `<g class="plushie-mochi-cat" aria-label="하얀 찹쌀떡 고양이 인형">`+
-  `<path d="M${x-16} ${y-4}h12v7h-12z" fill="#f8fafc"/>`+
-  `<path d="M${x-15} ${y-7}h2v3h-2zm8 0h2v3h-2z" fill="#f472b6"/>`+
-  `<path d="M${x-13} ${y-3}h2v2h-2zm6 0h2v2h-2z" fill="#334155"/>`+
-  `<path d="M${x-10} ${y-1}h2v1h-2z" fill="#f43f5e"/>`+
-  `<path d="M${x-14} ${y-1}h1v1h-1zm9 0h1v1h-1z" fill="#fda4af"/>`+
-  `</g>`+
-  `<g class="plushie-baby-bear" aria-label="갈색 아기 곰 인형">`+
-  `<path d="M${x} ${y-5}h13v8h-13z" fill="#c6a281"/>`+
-  `<path d="M${x+1} ${y-8}h3v3h-3zm8 0h3v3h-3z" fill="#a57c69"/>`+
-  `<path d="M${x+2} ${y-7}h1v1h-1zm8 0h1v1h-1z" fill="#e7d5b7"/>`+
-  `<path d="M${x+3} ${y-3}h7v4h-7z" fill="#e7d5b7"/>`+
-  `<path d="M${x+3} ${y-4}h1v1h-1zm6 0h1v1h-1z" fill="#1e293b"/>`+
-  `<path d="M${x+6} ${y-2}h2v1h-2z" fill="#696060"/>`+
-  `</g>`+
-  `<g class="plushie-pink-bunny" aria-label="쫑긋한 귀의 분홍 토끼 인형">`+
-  `<path d="M${x-9} ${y-16}h11v8h-11z" fill="#f472b6"/>`+
-  `<path d="M${x-8} ${y-23}h2v7h-2zm5 0h2v7h-2z" fill="#f472b6"/>`+
-  `<path d="M${x-7.5} ${y-22}h1v5h-1zm5 0h1v5h-1z" fill="#fbcfe8"/>`+
-  `<path d="M${x-6} ${y-13}h6v4h-6z" fill="#fff1f2"/>`+
-  `<path d="M${x-7} ${y-14}h1v1h-1zm5 0h1v1h-1z" fill="#1e293b"/>`+
-  `<path d="M${x-4} ${y-12}h1v1h-1z" fill="#be185d"/>`+
-  `<path d="M${x-8} ${y-12}h1v1h-1zm7 0h1v1h-1z" fill="#fda4af"/>`+
-  `</g>`+
-  `<g class="plushie-mint-frog" aria-label="민트 개구리 마스코트 인형">`+
-  `<path d="M${x+4} ${y-14}h9v7h-9z" fill="#86efac"/>`+
-  `<path d="M${x+5} ${y-16}h2v2h-2zm5 0h2v2h-2z" fill="#4ade80"/>`+
-  `<path d="M${x+5.5} ${y-15.5}h1v1h-1zm5 0h1v1h-1z" fill="#0f172a"/>`+
-  `<path d="M${x+7} ${y-11}h3v1h-3z" fill="#15803d"/>`+
-  `<path d="M${x+5} ${y-11}h1v1h-1zm5 0h1v1h-1z" fill="#fbcfe8"/>`+
-  `</g>`+
-  `<g class="plushie-yellow-chick" aria-label="샛노란 병아리 인형">`+
-  `<path d="M${x-3} ${y-26}h8v7h-8z" fill="#facc15"/>`+
-  `<path d="M${x} ${y-28}h2v2h-2z" fill="#f59e0b"/>`+
-  `<path d="M${x-4} ${y-23}h1v3h-1zm8 0h1v3h-1z" fill="#eab308"/>`+
-  `<path d="M${x-1} ${y-24}h1v1h-1zm3 0h1v1h-1z" fill="#0f172a"/>`+
-  `<path d="M${x} ${y-22}h2v2h-2z" fill="#ea580c"/>`+
-  `<path d="M${x-2} ${y-22}h1v1h-1zm5 0h1v1h-1z" fill="#fed7aa"/>`+
-  `</g>`+
-  '</g>';
+ toy('mochi-cat','하얀 찹쌀떡 고양이 인형',-15,-4,'#f8fafc',`M${x-14} ${y-7}h2v3h-2zM${x-8} ${y-7}h2v3h-2z`,`M${x-13} ${y-2}h1v1h-1zM${x-8} ${y-2}h1v1h-1z`)+
+ toy('baby-bear','갈색 아기 곰 인형',1,-4,'#c6a281',`M${x+1} ${y-7}h3v3h-3zM${x+8} ${y-7}h3v3h-3z`,`M${x+3} ${y-2}h1v1h-1zM${x+8} ${y-2}h1v1h-1zM${x+5} ${y}h2v1h-2z`)+
+ toy('pink-bunny','쫑긋한 귀의 분홍 토끼 인형',-9,-14,'#f472b6',`M${x-8} ${y-21}h2v7h-2zM${x-3} ${y-21}h2v7h-2z`,`M${x-7} ${y-12}h1v1h-1zM${x-3} ${y-12}h1v1h-1z`)+
+ toy('mint-frog','민트 개구리 마스코트 인형',3,-14,'#86efac',`M${x+4} ${y-16}h2v2h-2zM${x+9} ${y-16}h2v2h-2z`,`M${x+5} ${y-14}h1v1h-1zM${x+10} ${y-14}h1v1h-1zM${x+6} ${y-10}h4v1h-4z`)+
+ toy('yellow-chick','샛노란 병아리 인형',-3,-23,'#facc15',`M${x} ${y-25}h2v2h-2z`,`M${x-1} ${y-21}h1v1h-1zM${x+3} ${y-21}h1v1h-1z`)+
+ `<path d="M${x} ${y-19}h2v1h-2z" fill="#ea580c"/></g>`;
 }
 // Draw a 16:9 screen before projecting it. The monitor turns towards the room
 // camera, independently of the desk axes, so it still reads as a widescreen.
@@ -459,85 +319,34 @@ function actor(state,result,index,u,v,idle,lift=0,facing='front',hairOnly=false)
  return `<g class="mini-student pose-${pose} expression-${expression} ${idle?'mini-idle':'mini-working'} action-${activity.replace(/[^a-z_-]/g,'')}" data-floor="${u},${v}"><g class="room-reaction" transform="translate(${x} ${headCenter}) scale(.7)">${reactionEffects(expression,index)}</g>${portrait}${props}</g>`;
 }
 function campusSeasonalWindow(state,{idle=false}={}){
- const [x,y]=projectRoom(.2,8.6,76),width=9.8*9,height=40;
- // Draw in the window's local pixel canvas, then project the whole clipped view.
- // No document-wide clip IDs, so exports and multiple room scenes remain independent.
- const left=(_u,v,z,d,h,color)=>`<rect x="${(v-8.6)*9}" y="${76-z-h}" width="${d*9}" height="${h}" fill="${color}"/>`;
- let art='';
- const seasonKey=labSeason(state,{idle}),winSeason=WINDOW_SEASONS[seasonKey]??WINDOW_SEASONS.spring;
- const farMtn={'spring':'#8da2b6','summer':'#628aa5','autumn':'#9b8796','winter':'#96a2b0'}[seasonKey]??'#8da2b6';
- const midMtn={'spring':'#73899e','summer':'#4a728e','autumn':'#846c7b','winter':'#7d8c9e'}[seasonKey]??'#73899e';
- const lawnBase={'spring':'#4ade80','summer':'#16a34a','autumn':'#ca8a04','winter':'#e2e8f0'}[seasonKey]??'#4ade80';
- const lawnSlope={'spring':'#86efac','summer':'#22c55e','autumn':'#facc15','winter':'#f8fafc'}[seasonKey]??'#86efac';
- const skyGrad1={'spring':'#e4effd','summer':'#b9dffe','autumn':'#fedebc','winter':'#dbe2eb'}[seasonKey]??'#e4effd';
- const skyGrad2={'spring':'#ecf4fe','summer':'#dbeefe','autumn':'#fee8ce','winter':'#e7edf3'}[seasonKey]??'#ecf4fe';
- const farParticlesBySeason={
-  spring:[[9.5,72,.18,.4,'#fbcfe8'],[12.2,68,.18,.4,'#fce7f3'],[15.8,70,.18,.4,'#f9a8d4'],[17.4,66,.18,.4,'#fbcfe8'],[10.6,63,.18,.4,'#fce7f3'],[14.0,65,.18,.4,'#f9a8d4']],
-  summer:[[9.5,72,.18,.4,'#bae6fd'],[12.2,68,.18,.4,'#e0f2fe'],[15.8,70,.18,.4,'#bae6fd'],[17.4,66,.18,.4,'#e0f2fe'],[10.6,63,.18,.4,'#bae6fd'],[14.0,65,.18,.4,'#e0f2fe']],
-  autumn:[[9.5,72,.18,.4,'#fed7aa'],[12.2,68,.18,.4,'#fde047'],[15.8,70,.18,.4,'#fca5a5'],[17.4,66,.18,.4,'#fcd34d'],[10.6,63,.18,.4,'#fed7aa'],[14.0,65,.18,.4,'#fca5a5']],
-  winter:[[9.5,72,.18,.4,'#ffffff'],[12.2,68,.18,.4,'#f0f9ff'],[15.8,70,.18,.4,'#ffffff'],[17.4,66,.18,.4,'#f0f9ff'],[10.6,63,.18,.4,'#ffffff'],[14.0,65,.18,.4,'#f0f9ff']]
- };
- const farParticles=farParticlesBySeason[seasonKey]??farParticlesBySeason.spring;
- art+=`<g class="window-scenery window-season-${seasonKey}" data-season="${seasonKey}" aria-label="창밖 ${winSeason.label} 풍경">`+
-  `<g class="window-view-far" data-layer="far-background" aria-label="원경 산 능선 및 지평선 층운">`+
-  left(.2,8.6,36,9.8,40,winSeason.sky)+
-  left(.204,8.6,44,9.8,4.5,skyGrad1)+
-  left(.204,8.6,40.5,9.8,3.5,skyGrad2)+
-  left(.206,8.6,46,2.2,4.5,farMtn)+left(.206,10.8,47,3.0,5.8,farMtn)+left(.206,13.8,46,2.6,6.5,farMtn)+left(.206,16.4,45,2.0,4.8,farMtn)+
-  left(.208,8.6,42,2.8,4.2,midMtn)+left(.208,11.4,43,3.2,5.2,midMtn)+left(.208,14.6,42,3.8,5.0,midMtn)+
-  left(.208,9.2,70.5,3.4,1.2,'#ffffff')+left(.208,9.8,71.7,2.2,0.7,'#f0f9ff')+
-  left(.208,14.0,67.2,3.8,1.1,'#ffffff')+left(.208,14.6,68.3,2.4,0.7,'#f0f9ff')+
-  left(.208,11.8,69.0,1.8,0.7,'#ffffff')+
-  `<g class="window-particles-far" data-layer="far-particles" aria-label="원경 원근 파티클">`+
-  farParticles.filter((_,i)=>i%2===0).map(([v,z,d,h,c])=>left(.21,v,z,d,h,c)).join('')+
-  '</g></g>'+
-  `<g class="window-view-mid" data-layer="midground" aria-label="중경 캠퍼스 시계탑과 연구동">`+
-  left(.218,8.6,36,9.8,5,lawnBase)+left(.22,8.6,39,9.8,2,lawnSlope)+
-  left(.222,9.6,36.5,7.8,1.2,seasonKey==='winter'?'#cbd5e1':'#d6cbbe')+
-  `<g class="campus-clock-tower" data-midground="clock-tower" aria-label="캠퍼스 본관 시계탑 건물">`+
-  left(.226,10.1,38,1.6,17,'#64748b')+left(.228,10.1,38,.35,17,'#475569')+
-  left(.228,10.4,51,1.0,3.2,'#334155')+
-  left(.23,10.5,47,.8,2.4,'#f8fafc')+left(.232,10.45,46.8,.9,.2,'#1e293b')+
-  left(.234,10.85,47.9,.15,.7,'#0f172a')+left(.234,10.75,48.2,.25,.15,'#0f172a')+
-  left(.228,10.1,55,1.6,1.2,'#334155')+left(.228,10.3,56.2,1.2,1.2,'#334155')+left(.228,10.5,57.4,.8,1.2,'#334155')+
-  left(.23,10.8,58.6,.2,3.2,'#0f766e')+left(.232,10.75,61.8,.3,.3,'#d4af37')+
-  '</g>'+
-  `<g class="campus-research-wing" data-midground="research-building" aria-label="아치형 창문의 연구동 건물 실루엣">`+
-  left(.226,12.0,38,2.8,9.5,'#6b7280')+left(.228,11.9,47.5,3.0,.8,'#4b5563')+
-  [12.3,13.1,13.9].map(wv=>left(.23,wv,40.5,.55,3.6,'#1e293b')+left(.23,wv+.05,44.1,.45,.9,'#334155')+left(.232,wv+.08,41.2,.39,2.8,'#fde68a')).join('')+
-  '</g>'+
-  `<g class="campus-midground-trees" aria-label="캠퍼스 중경 가로수">`+
-  [9.0,15.0,16.4].map(tv=>left(.23,tv+.3,37,.25,3.5,'#573d26')+left(.232,tv,39,1.1,3.2,winSeason.trees[1])).join('')+
-  '</g></g>'+
-  `<g class="window-view-near" data-layer="foreground" aria-label="근경 가로수 및 창틀 디테일">`;
- for(let i=0;i<7;i++){
-  const th=5+(i%3)*3;
-  art+=left(.25,9+i*1.3,36,.25,th-1.5,'#4a3319');
-  art+=left(.27,9+i*1.3,36,1.4,th,winSeason.trees[i%3]);
-  if(seasonKey==='winter')art+=left(.28,9+i*1.3,36+th-1,1.4,1.1,'#ffffff');
+ const season=labSeason(state,{idle}),p=WINDOW_SEASONS[season],[x,y]=projectRoom(.2,8.6,76),width=9.8*9,height=40;
+ // Intrinsic window pixels share one wall transform. Compact silhouettes retain
+ // atmospheric depth without storing dozens of near-identical flecks in every CV.
+ const r=(a,b,w,h,c)=>`<rect x="${a}" y="${b}" width="${w}" height="${h}" fill="${c}"/>`,path=(d,c)=>`<path d="${d}" fill="${c}"/>`;
+ const mountains={spring:['#8da2b6','#73899e'],summer:['#628aa5','#4a728e'],autumn:['#9b8796','#846c7b'],winter:['#96a2b0','#7d8c9e']}[season];
+ let art=`<g class="window-scenery window-season-${season}" data-season="${season}" aria-label="창밖 ${p.label} 풍경">`;
+ art+='<g class="window-view-far" data-layer="far-background" aria-label="원경 산 능선 및 지평선 층운">'+r(0,0,width,height,p.sky)+
+ path('M0 29h12v-4h16v-3h18v4h13v-5h13v4h17v15H0z',mountains[0])+path('M0 33h17v-3h12v-4h14v5h20v-3h25v12H0z',mountains[1])+
+ path('M8 7h5V5h8v2h6v2H8zM55 11h6V9h10v2h8v2H55z','#f0f9ff');
+ art+='<g class="window-particles-far" data-layer="far-particles" aria-label="원경 원근 파티클">'+path('M33 7h1v1h-1zM75 20h1v1h-1z',p.trees[0])+'</g></g>';
+ art+='<g class="window-view-mid" data-layer="midground" aria-label="중경 캠퍼스 시계탑과 연구동">'+r(0,34,width,6,season==='winter'?'#e2e8f0':p.trees[1])+r(15,37,59,2,season==='winter'?'#cbd5e1':'#d6cbbe');
+ art+='<g class="campus-clock-tower" data-midground="clock-tower" aria-label="캠퍼스 본관 시계탑 건물">'+r(52,20,11,15,'#64748b')+
+ path('M51 20h13v-2h-3v-2h-3v-3h-2v3h-2v2h-3z','#334155')+r(57,10,1,5,'#0f766e')+r(55,23,5,4,'#f8fafc')+
+ path('M57 23v3h3v1h-4v-4z','#0f172a')+'</g>';
+ art+='<g class="campus-research-wing" data-midground="research-building" aria-label="아치형 창문의 연구동 건물 실루엣">'+r(25,27,23,9,'#6b7280')+r(24,26,25,1,'#4b5563')+
+ path('M28 30h3v5h-3zM35 30h3v5h-3zM42 30h3v5h-3z','#fde68a')+'</g><g class="campus-midground-trees" aria-label="캠퍼스 중경 가로수">'+
+ path('M10 35h4v-5h-1v-2h-2v2h-1zM71 36h5v-5h-1v-2h-3v2h-1z',p.trees[1])+'</g></g>';
+ art+='<g class="window-view-near" data-layer="foreground" aria-label="근경 가로수 및 창틀 디테일">';
+ for(const [i,a]of [7,78].entries()){
+  art+=path(`M${a} 40v-13h2v5h4v1h-4v7z`,'#5c4033')+path(`M${a-5} 27h2v-4h7v2h3v5h-12z`,p.trees[i*2]);
+  if(season==='winter')art+=r(a-4,25,9,1,'#ffffff');
  }
- art+=left(.26,9.5,48,1.8,.3,'#5c4033')+left(.27,9.8,47.5,1.0,1.2,winSeason.trees[0])+
-  left(.26,15.5,52,1.6,.3,'#5c4033')+left(.27,15.8,51.5,1.2,1.2,winSeason.trees[2])+
-  `<g class="window-frame-shadow" aria-label="창틀 그림자">`+
-  left(.22,8.6,36,9.8,1.0,'#b8a994')+left(.22,8.6,75.2,9.8,.8,'#b8a994')+
-  left(.22,8.6,36,.5,40,'#baa993')+left(.23,13.65,36,.35,40,'#c4b59f')+left(.23,8.6,53.4,9.8,.5,'#c4b59f')+
-  '</g></g>'+
-  `<g class="${winSeason.effectClass}" data-effect="${winSeason.effectAttr}" aria-label="${winSeason.effectLabel}">`+
-  winSeason.particles.filter((_,i)=>i%2===0).map(([v,z,d,h,c])=>left(.28,v,z,d,h,c)).join('')+
-  (seasonKey==='spring'?`<g class="spring-cherry-drifts" data-effect="cherry-drift" aria-label="흩날리는 벚꽃 꽃잎 다층 픽셀">`+
-   [[9.6,63,.45,.8,'#f472b6'],[9.9,62.6,.35,.6,'#fbcfe8'],[13.2,57,.45,.8,'#f472b6'],[13.5,56.6,.35,.6,'#fbcfe8'],[15.8,61,.45,.8,'#f472b6'],[16.1,60.6,.35,.6,'#fbcfe8'],[11.5,45,.45,.8,'#f472b6'],[11.8,44.6,.35,.6,'#fbcfe8']].filter((_,i)=>i%2===0).map(([v,z,d,h,c])=>left(.285,v,z,d,h,c)).join('')+
-   '</g>':'')+
-  (seasonKey==='summer'?`<g class="summer-rain-streaks" data-effect="summer-shower" aria-label="여름 소나기 빗살 픽셀">`+
-   [[9.4,72,.15,2.4,'#bae6fd'],[11.2,66,.15,2.6,'#e0f2fe'],[13.0,74,.15,2.2,'#bae6fd'],[15.2,68,.15,2.5,'#e0f2fe'],[17.0,71,.15,2.4,'#bae6fd'],[10.5,55,.15,2.5,'#bae6fd'],[12.8,51,.15,2.6,'#e0f2fe'],[14.6,58,.15,2.3,'#bae6fd'],[16.4,53,.15,2.4,'#bae6fd']].filter((_,i)=>i%2===0).map(([v,z,d,h,c])=>left(.285,v,z,d,h,c)).join('')+
-   '</g>':'')+
-  (seasonKey==='autumn'?`<g class="autumn-ginkgo-maple" data-effect="ginkgo-maple" aria-label="가을 단풍과 은행잎 픽셀">`+
-   [[9.5,65,.5,.6,'#facc15'],[9.8,64.6,.4,.5,'#eab308'],[12.5,58,.45,.7,'#dc2626'],[12.8,57.5,.35,.5,'#b91c1c'],[14.2,64,.5,.6,'#facc15'],[14.5,63.6,.4,.5,'#ca8a04'],[16.2,52,.45,.7,'#dc2626'],[16.5,51.5,.35,.5,'#991b1b'],[11.0,46,.5,.6,'#facc15'],[15.4,44,.45,.7,'#dc2626']].filter((_,i)=>i%2===0).map(([v,z,d,h,c])=>left(.285,v,z,d,h,c)).join('')+
-   '</g>':'')+
-  (seasonKey==='winter'?`<g class="winter-snowflakes-3d" data-effect="heavy-snow" aria-label="펄펄 날리는 입체 함박눈 픽셀">`+
-   [[9.8,67,.6,1.2,'#ffffff'],[9.7,67.3,.8,.6,'#e0f2fe'],[12.4,61,.7,1.3,'#ffffff'],[12.3,61.3,.9,.7,'#bae6fd'],[15.2,65,.6,1.2,'#ffffff'],[15.1,65.3,.8,.6,'#e0f2fe'],[11.0,52,.7,1.3,'#ffffff'],[10.9,52.3,.9,.7,'#bae6fd'],[13.8,47,.6,1.2,'#ffffff'],[13.7,47.3,.8,.6,'#e0f2fe'],[16.5,54,.7,1.3,'#ffffff'],[16.4,54.3,.9,.7,'#bae6fd'],[10.4,40,.6,1.1,'#ffffff'],[14.8,38,.7,1.2,'#ffffff']].filter((_,i)=>i%2===0).map(([v,z,d,h,c])=>left(.285,v,z,d,h,c)).join('')+
-   '</g>':'')+
-  '</g></g>';
- return `<g class="seasonal-window" data-season="${seasonKey}" aria-label="창밖의 ${winSeason.label}" transform="matrix(-1 .5 0 1 ${x} ${y})"><svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" overflow="hidden" preserveAspectRatio="none" aria-hidden="true">${art}</svg></g>`;
+ art+='<g class="window-frame-shadow" aria-label="창틀 그림자">'+r(0,39,width,1,'#b8a994')+r(0,0,1,height,'#baa993')+'</g></g>';
+ art+=`<g class="${p.effectClass}" data-effect="${p.effectAttr}" aria-label="${p.effectLabel}">`;
+ art+=path('M19 15h2v1h-2zM66 6h2v1h-2z',p.particles[0][4]);
+ const effects={spring:['spring-cherry-drifts','cherry-drift','흩날리는 벚꽃 꽃잎 다층 픽셀'],summer:['summer-rain-streaks','summer-shower','여름 소나기 빗살 픽셀'],autumn:['autumn-ginkgo-maple','ginkgo-maple','가을 단풍과 은행잎 픽셀'],winter:['winter-snowflakes-3d','heavy-snow','펄펄 날리는 입체 함박눈 픽셀']}[season];
+ art+=`<g class="${effects[0]}" data-effect="${effects[1]}" aria-label="${effects[2]}">`+path('M23 20h2v1h-2zM61 30h2v1h-2z',p.trees[0])+'</g></g></g>';
+ return `<g class="seasonal-window" data-season="${season}" aria-label="창밖의 ${p.label}" transform="matrix(-1 .5 0 1 ${x} ${y})"><svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" overflow="hidden" preserveAspectRatio="none" aria-hidden="true">${art}</svg></g>`;
 }
 function miniRoomArtSource(state,kind,result,index,{idle=false,stock='balanced',student=true}={}){
  const d=roomDecorations(state),wall=WALLPAPERS[d.wallpaper],[tile,tileAlt,grout]=FLOOR_TILES[d.floor],wet=state.professorProfile.labMode==='wet';
@@ -564,23 +373,9 @@ function miniRoomArtSource(state,kind,result,index,{idle=false,stock='balanced',
  for(let i=0;i<certCount;i++){
   const spec=awardSpecs[i%awardSpecs.length];
   const u=5.8+i*1.55;
-  art+=`<g class="award-certificate" data-certificate="${spec.type}" aria-label="${spec.label}">`+
-   front(u,.2,65.5,1.4,13.5,spec.frame)+
-   front(u+.07,.22,65.9,1.26,12.7,spec.gold)+
-   front(u+.14,.24,66.4,1.12,11.7,spec.paper)+
-   front(u+.07,.23,78.2,.2,.2,'#fff0a6')+
-   front(u+1.13,.23,78.2,.2,.2,'#fff0a6')+
-   front(u+.07,.23,66.0,.2,.2,'#fff0a6')+
-   front(u+1.13,.23,66.0,.2,.2,'#fff0a6')+
-   line([u+.26,.27,75.8],[u+1.14,.27,75.8],spec.ink1,.8)+
-   line([u+.28,.27,74.0],[u+1.12,.27,74.0],spec.ink2,.6)+
-   line([u+.28,.27,72.4],[u+1.06,.27,72.4],spec.ink2,.5)+
-   line([u+.32,.27,70.8],[u+1.02,.27,70.8],spec.ink2,.5);
-  const [sx,sy]=projectRoom(u+.7,.28,68.2);
-  art+=`<polygon points="${sx-1.1},${sy+1.2} ${sx-1.8},${sy+2.5} ${sx},${sy+1.9} ${sx+1.8},${sy+2.5} ${sx+1.1},${sy+1.2}" fill="${spec.ribbon}"/>`+
-   `<circle cx="${sx}" cy="${sy}" r="1.6" fill="${spec.seal}"/>`+
-   `<circle cx="${sx}" cy="${sy}" r="0.8" fill="${spec.sealCore}"/>`+
-   `</g>`;
+  const corners=[[u+.07,78.2],[u+1.13,78.2],[u+.07,66],[u+1.13,66]].map(([a,z])=>{const points=[[a,.23,z],[a+.2,.23,z],[a+.2,.23,z+.2],[a,.23,z+.2]].map(p=>projectRoom(...p));return `M${points.map(p=>p.join(' ')).join('L')}z`;}).join('');
+  art+=`<g class="award-certificate" data-certificate="${spec.type}" aria-label="${spec.label}">`+front(u,.2,65.5,1.4,13.5,spec.gold)+front(u+.14,.24,66.4,1.12,11.7,spec.paper)+`<path d="${corners}" fill="#fff0a6"/>`;
+  const [sx,sy]=projectRoom(u+.7,.28,68.2);art+=`<circle cx="${sx}" cy="${sy}" r="1.6" fill="${spec.seal}"/></g>`;
  }
  if(d.clock){art+=front(12,.2,63,2.8,16,'#b7b7a7')+front(12.3,.22,65,2.2,12,'#f9f4e7')+line([13.3,.24,71],[13.3,.24,76],'#82918d',1.4)+line([13.3,.24,71],[14,.24,70],'#82918d',1.4);}
  if(d.noticeboard){art+=left(.2,21,39,4.5,24,'#cdb597')+left(.25,21.4,42,1.5,15,'#f7efda')+left(.25,23.4,46,1.3,13,'#e6d6c8');}
@@ -621,45 +416,11 @@ function miniRoomArtSource(state,kind,result,index,{idle=false,stock='balanced',
  work+=wet&&deskWorking?equipment.accessories+stockArt:'';
  const fieldId=state?.professorProfile?.fieldId??'050';
  const discipline=getDiscipline(fieldId),fieldLabel=(state.locale==='en'?discipline?.labelEn:discipline?.label)??(state.locale==='en'?'Academic research':'학술 연구');
- let monuments='';
- monuments+=box(9.2,16.1,4.0,0.8,3.2,wet?'#8fa49f':'#a38e75',26);
- monuments+=`<g class="desk-thesis-binder" data-binder="thesis-draft" aria-label="학위논문 초안 및 연구 바인더">`+
-  box(9.4,16.25,0.7,0.6,3.2,'#1e3a8a',29.2)+
-  front(9.42,16.85,29.8,0.66,2.2,'#0f172a')+
-  line([9.45,16.86,31.4],[10.05,16.86,31.4],'#e5c158',.8)+
-  line([9.45,16.86,30.2],[10.05,16.86,30.2],'#e5c158',.8)+
-  `</g>`;
- monuments+=`<g class="lab-founding-plaque" data-monument="lab-plaque" aria-label="${fieldLabel} 연구실 현판">`+
-  box(10.25,16.25,1.15,0.3,0.4,'#b48c48',29.2)+
-  box(10.3,16.3,1.05,0.2,2.4,'#1e293b',29.6)+
-  front(10.32,16.51,29.8,1.01,2.0,'#dfb76c')+
-  line([10.38,16.52,31.0],[11.28,16.52,31.0],'#1e293b',.8)+
-  line([10.42,16.52,30.3],[11.22,16.52,30.3],'#52452e',.6)+
-  `</g>`;
- if((state?.career?.awards??0)>=1){
-  const [csx,csy]=projectRoom(11.95,16.65,32.2);
-  monuments+=`<g class="trophy-plaque crystal-plaque" data-monument="crystal-trophy" aria-label="학술대회 Best Paper Award 크리스털 기념패">`+
-   box(11.55,16.25,0.85,0.4,0.5,'#1e293b',29.2)+
-   front(11.6,16.66,29.3,0.75,0.3,'#d4af37')+
-   box(11.62,16.3,0.72,0.25,4.0,'#bae6fd',29.7)+
-   front(11.64,16.56,29.9,0.68,3.6,'#e0f2fe')+
-   line([11.68,16.57,30.3],[12.28,16.57,33.3],'#ffffff',.8)+
-   `<circle cx="${csx}" cy="${csy}" r="1.1" fill="#0284c7"/>`+
-   `<circle cx="${csx}" cy="${csy}" r="0.6" fill="#ffd700"/>`+
-   `</g>`;
- }
- if((state?.career?.awards??0)>=2||(state?.career?.completedProjects??0)>=1||(state?.career?.papers??0)>=1){
-  const [tx,ty]=projectRoom(12.85,16.65,31.4);
-  monuments+=`<g class="trophy-plaque championship-trophy" data-monument="championship-trophy" aria-label="연구 우승 팻말 및 챔피언십 기념패">`+
-   box(12.5,16.25,0.8,0.4,0.4,'#4e2d17',29.2)+
-   box(12.55,16.3,0.7,0.2,3.3,'#78350f',29.6)+
-   front(12.57,16.51,29.8,0.66,2.9,'#ffd700')+
-   front(12.61,16.52,30.0,0.58,2.5,'#fffbeb')+
-   `<circle cx="${tx}" cy="${ty}" r="0.9" fill="#f59e0b"/>`+
-   `<circle cx="${tx}" cy="${ty}" r="0.5" fill="#ffd700"/>`+
-   line([12.63,16.53,30.4],[13.15,16.53,30.4],'#b45309',.6)+
-   `</g>`;
- }
+ let monuments=box(9.2,16.1,4,.8,3.2,wet?'#8fa49f':'#a38e75',26);
+ monuments+=`<g class="desk-thesis-binder" data-binder="thesis-draft" aria-label="학위논문 초안 및 연구 바인더">`+front(9.4,16.85,29.2,.7,3.2,'#1e3a8a')+'</g>';
+ monuments+=`<g class="lab-founding-plaque" data-monument="lab-plaque" aria-label="${fieldLabel} 연구실 현판">`+front(10.25,16.51,29.2,1.15,2.8,'#b48c48')+'</g>';
+ if((state?.career?.awards??0)>=1)monuments+=`<g class="trophy-plaque crystal-plaque" data-monument="crystal-trophy" aria-label="학술대회 Best Paper Award 크리스털 기념패">`+front(11.62,16.67,29.7,.72,4,'#bae6fd')+'</g>';
+ if((state?.career?.awards??0)>=2||(state?.career?.completedProjects??0)>=1||(state?.career?.papers??0)>=1)monuments+=`<g class="trophy-plaque championship-trophy" data-monument="championship-trophy" aria-label="연구 우승 팻말 및 챔피언십 기념패">`+front(12.57,16.52,29.8,.66,2.9,'#ffd700')+'</g>';
  work+=monuments;
 
  work+=wet&&deskWorking?`<g class="desk-monitor" data-floor="14.2,18.3">${monitor(14.2,18.3,26,result.performed===true&&result.actual==='analysis')}</g>`:equipment.primary+equipment.accessories;

@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createState} from '../dist/engine.js';
-import {roomScene} from '../dist/lab-scene.js';
+import {roomScene,supplyLevel} from '../dist/lab-scene.js';
+import {createCVLabScene,validateCVLabScene} from '../dist/cv-lab-scene.js';
 import {DISCIPLINES} from '../dist/disciplines.js';
 
 test('achievement art reflects existing awards and papers without inventing milestones',()=>{
@@ -17,7 +18,9 @@ test('achievement art reflects existing awards and papers without inventing mile
    assert.equal((scene.match(/class="award-certificate"/g)||[]).length,Math.min(awards,4));
    assert.match(scene,/data-monument="crystal-trophy"/);
    assert.equal(scene.includes('championship-trophy'),awards>=2);
-   assert.equal((scene.match(/fill="#fff0a6"/g)||[]).length,Math.min(awards,4)*4);
+   const corners=[...scene.matchAll(/<path d="([^"]+)" fill="#fff0a6"/g)];
+   assert.equal(corners.length,Math.min(awards,4));
+   for(const [,d]of corners)assert.equal((d.match(/M/g)||[]).length,4,'four corner brackets share one compact path');
    assert.deepEqual(s,before);
   }
   s.career.awards=0;s.career.papers=1;
@@ -68,4 +71,20 @@ test('free time uses the existing desk occlusion and render-only lighting',()=>{
   assert.doesNotMatch(roomScene(s,{actual:'free',performed:false}),/free-desk-lamp-light|data-motion="free-thought"/);
   assert.deepEqual(s,before);
  }
+});
+
+test('decorated mature labs retain strict CV limits with rich supplies and variable furniture',()=>{
+ let max=0;
+ for(const gender of ['female','male'])for(const seed of [16,5,42,7919])for(const locale of ['ko','en'])for(const labMode of ['wet','dry'])for(const awards of [0,1,2,4]){
+  const state=createState('김하늘',seed,{gender,locale,professorProfile:{gender:'female',age:38,fieldId:'058',labMode,institution:'national'}});
+  state.month=96;state.route='integrated';state.ending='institute';state.career.awards=awards;state.career.papers=2;state.career.completedProjects=2;
+  state.lab.funds=200;state.lab.equipment=60;state.lab.budget.environment=3;
+  assert.equal(supplyLevel(state),'rich');
+  const before=structuredClone(state),scene=createCVLabScene(state);
+  assert.ok(validateCVLabScene(scene,96),`${seed}/${locale}/${labMode}/awards=${awards}`);
+  const svg=decodeURIComponent(scene.image.slice('data:image/svg+xml,'.length));
+  max=Math.max(max,svg.length);assert.ok(svg.length<60000);
+  assert.deepEqual(state,before);
+ }
+ assert.ok(max<60000,`largest decorated lab ${max}`);
 });
