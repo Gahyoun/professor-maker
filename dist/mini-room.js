@@ -154,7 +154,7 @@ function chairParts(u,v,color,type=0,facing='front'){
  return {base:`<g data-chair="${type}" data-chair-facing="${facing}" aria-label="${labels[type]}">${base}${near?farArm:backrest+farArm+nearArm}</g>`,front:near?`<g class="chair-foreground" aria-hidden="true">${backrest}${nearArm}</g>`:'',backrest:near?backrest:'',nearArm:near?nearArm:''};
 }
 function chair(...args){const parts=chairParts(...args);return parts.base+parts.front;}
-function restFurniture(u,v,type){if(type===0){const parts=sofaParts(u,v);return `<g data-rest="sofa">${parts.back}${parts.front}</g>`;}if(type===1)return `<g data-rest="cot">${cot(u,v)}</g>`;if(type===2)return `<g data-rest="beanbag">${box(u+.4,v+.4,4,4,6,'#c3b49b')+box(u+1,v+1,3,3,6,'#d7c8af',6)+box(u+1.6,v+.3,2,2,13,'#cabbab',6)}</g>`;return `<g data-rest="camp-chair">${campChair(u,v)}</g>`;}
+export function restFurniture(u,v,type,options={}){if(type===0){const parts=sofaParts(u,v);return `<g data-rest="sofa">${parts.back}${parts.front}</g>`;}if(type===1)return `<g data-rest="cot">${cot(u,v,options)}</g>`;if(type==='yoga-mat'||options.cotType==='yoga-mat')return `<g data-rest="cot" data-cot-type="yoga-mat">${yogaMat(u,v)}</g>`;if(type===2)return `<g data-rest="beanbag">${box(u+.4,v+.4,4,4,6,'#c3b49b')+box(u+1,v+1,3,3,6,'#d7c8af',6)+box(u+1.6,v+.3,2,2,13,'#cabbab',6)}</g>`;return `<g data-rest="camp-chair">${campChair(u,v)}</g>`;}
 // A folding camp chair: the X frames stay inside the seat's two side faces, a sling seat
 // hangs between them and a fabric back rises from the far edge (the occupant faces the viewer).
 function campChair(u,v){
@@ -269,13 +269,127 @@ export function cotGeometry(u,v){
  const legs=[[u+inset,v+inset],[u+width-inset-legSize,v+inset],[u+inset,v+depth-inset-legSize],[u+width-inset-legSize,v+depth-inset-legSize]];
  return {u,v,width,depth,legs,legSize,legHeight:12,footprint:[[u,v],[u+width,v],[u+width,v+depth],[u,v+depth]]};
 }
-function cot(u,v){
- const geometry=cotGeometry(u,v);
- // All supports start at the same floor plane; the footprint, not the mattress
- // silhouette, determines whether the folding bed fits inside the room.
- let art=geometry.legs.slice().sort((a,b)=>a[0]+a[1]-b[0]-b[1]).map(([a,b])=>`<g class="cot-leg" data-floor="${a},${b}">${box(a,b,geometry.legSize,geometry.legSize,geometry.legHeight,'#829594')}</g>`).join('');
- art+=box(u,v,geometry.width,geometry.depth,3,'#a9b7b3',12)+box(u+.2,v+.2,6.6,2.6,4,'#dbe1d8',15)+box(u+.4,v+.4,1.4,2.2,3,'#f7f0df',19)+box(u+2.4,v+.3,4,2.4,2,'#b8c9bf',19);
- return `<g class="room-cot" data-floor="${u},${v}" data-size="${geometry.width},${geometry.depth}" aria-label="접이식 침대">${art}</g>`;
+export function cot(u,v,options={}){
+ const cotType=options.cotType||'cot';
+ if(cotType==='yoga-mat'){
+  return `<g class="room-cot" data-floor="${u},${v}" data-size="7,3" data-cot-type="yoga-mat" aria-label="스트레칭 폼 요가매트">${yogaMat(u+.5,v+.4,{w:6.0,d:2.2})}</g>`;
+ }
+ const geometry=cotGeometry(u,v),w=geometry.width,d=geometry.depth;
+ // 1. Floor contact shadow underneath cot
+ let art=`<g class="cot-floor-shadow" opacity=".18">${plane([[u+.2,v+.2,0],[u+w-.2,v+.2,0],[u+w-.2,v+d-.2,0],[u+.2,v+d-.2,0]],'#65706c')}</g>`;
+ // 2. 4 corner legs (retaining exact test fixture compatibility with z=0 contact)
+ art+=geometry.legs.slice().sort((a,b)=>a[0]+a[1]-b[0]-b[1]).map(([a,b])=>`<g class="cot-leg" data-floor="${a},${b}">${box(a,b,geometry.legSize,geometry.legSize,geometry.legHeight,'#829594')}</g>`).join('');
+ // 3. Tubular crossbars and folding center leg supports & struts
+ art+=box(u+.32,v+.35,.2,d-.7,.3,'#586774',1.0);
+ art+=box(u+w/2-.1,v+.35,.2,d-.7,.3,'#586774',1.0);
+ art+=box(u+w-.52,v+.35,.2,d-.7,.3,'#586774',1.0);
+ art+=box(u+w/2-.1,v+.3,.2,.2,geometry.legHeight-1,'#71808f',1.0);
+ art+=box(u+w/2-.1,v+d-.5,.2,.2,geometry.legHeight-1,'#71808f',1.0);
+ art+=line([u+1.3,v+.42,12],[u+.45,v+.42,2],'#64748b',1.2);
+ art+=line([u+w-1.3,v+.42,12],[u+w-.45,v+.42,2],'#64748b',1.2);
+ art+=line([u+1.3,v+d-.42,12],[u+.45,v+d-.42,2],'#64748b',1.2);
+ art+=line([u+w-1.3,v+d-.42,12],[u+w-.45,v+d-.42,2],'#64748b',1.2);
+ // 4. Steel tubular perimeter bed deck frame (z=12 to 14.5, h=2.5)
+ art+=box(u,v,w,d,2.5,'#788896',12);
+ art+=line([u,v+d,14.5],[u+w,v+d,14.5],'#94a3b8',1.0);
+ art+=line([u+w,v,14.5],[u+w,v+d,14.5],'#94a3b8',1.0);
+ art+=box(u+w/2-.25,v+d-.12,.5,.22,2.8,'#475569',11.8);
+ art+=box(u+w/2-.25,v-.1,.5,.22,2.8,'#475569',11.8);
+ const [hpx,hpy]=projectRoom(u+w/2,v+d+.05,13.2);
+ art+=`<circle cx="${hpx}" cy="${hpy}" r="0.8" fill="#cbd5e1"/>`;
+ // 5. Foldable High-Density Mattress (z=14.5 to 18.5, h=4.0)
+ art+=box(u+.15,v+.15,w-.3,d-.3,4.0,'#dbe2dd',14.5);
+ art+=line([u+.18,v+d-.15,18.5],[u+w-.15,v+d-.15,18.5],'#eef5f1',1.0);
+ art+=line([u+w-.15,v+.18,18.5],[u+w-.15,v+d-.15,18.5],'#eef5f1',1.0);
+ art+=line([u+w/2,v+.18,18.5],[u+w/2,v+d-.15,18.5],'#b6c3be',1.2);
+ art+=line([u+w/2,v+d-.15,14.5],[u+w/2,v+d-.15,18.5],'#a5b3ae',1.0);
+ art+=line([u+w/3,v+.18,18.5],[u+w/3,v+d-.15,18.5],'#c2cfc9',0.8);
+ art+=line([u+2*w/3,v+.18,18.5],[u+2*w/3,v+d-.15,18.5],'#c2cfc9',0.8);
+ // 6. Soft Recessed Pillow at head (z=18.5 to 21.2)
+ art+=box(u+.35,v+.4,1.4,2.2,2.7,'#f7f2e4',18.5);
+ art+=box(u+.6,v+.7,.9,1.6,.6,'#ede4ce',21.2);
+ art+=line([u+.35,v+2.6,21.2],[u+1.75,v+2.6,21.2],'#fefaf0',0.8);
+ art+=line([u+1.75,v+.4,21.2],[u+1.75,v+2.6,21.2],'#fefaf0',0.8);
+ // 7. Quilt / Blanket with rolled collar, side drape, and fold wrinkles (담요 주름)
+ art+=box(u+2.1,v+.15,w-2.2,d-.3,2.2,'#b2c5bb',18.5);
+ art+=box(u+2.1,v+d-.2,w-2.2,.32,4.2,'#a3b8ad',15.0);
+ art+=box(u+1.95,v+.12,.5,d-.24,2.5,'#cdded5',18.6);
+ art+=line([u+1.95,v+d-.15,21.1],[u+2.45,v+d-.15,21.1],'#e0ece5',1.0);
+ art+=line([u+2.45,v+.15,21.1],[u+2.45,v+d-.15,21.1],'#e0ece5',1.0);
+ art+=line([u+2.8,v+.45,20.7],[u+3.8,v+d-.25,20.7],'#9eb3a7',1.1);
+ art+=line([u+3.0,v+.45,20.7],[u+4.0,v+d-.25,20.7],'#c5d7cd',0.8);
+ art+=line([u+4.2,v+.35,20.7],[u+5.2,v+d-.25,20.7],'#9eb3a7',1.1);
+ art+=line([u+4.4,v+.35,20.7],[u+5.4,v+d-.25,20.7],'#c5d7cd',0.8);
+ art+=line([u+5.4,v+.35,20.7],[u+6.3,v+d-.25,20.7],'#9eb3a7',1.1);
+ art+=line([u+2.8,v+d+.1,15.2],[u+2.8,v+d+.1,18.8],'#879e92',1.2);
+ art+=line([u+4.1,v+d+.1,15.2],[u+4.1,v+d+.1,18.8],'#879e92',1.2);
+ art+=line([u+5.3,v+d+.1,15.2],[u+5.3,v+d+.1,18.8],'#879e92',1.2);
+ const withMat=options.withMat??(v<20);
+ if(withMat){
+  art+=yogaMat(u+.8,v+d+.15,{w:5.0,d:1.2});
+ }
+ const cotLabel=cotType==='fishing-cot'?'낚시침대':cotType==='camp-cot'?'간이침대':cotType==='rakuraku'?'라꾸라꾸 침대':'접이식 침대';
+ return `<g class="room-cot" data-floor="${u},${v}" data-size="${geometry.width},${geometry.depth}" data-cot-type="${cotType}" aria-label="${cotLabel}">${art}</g>`;
+}
+export function yogaMat(u,v,{w=5.0,d=1.2,color}={}){
+ const matColors=['#c4b5fd','#a7f3d0','#c7d2fe','#fbcfe8'];
+ const matColor=color||matColors[Math.abs(Math.floor(u*3+v*7))%matColors.length];
+ let art=`<g class="lab-yoga-mat" data-cot-type="yoga-mat" data-object="yoga-mat" aria-label="스트레칭 폼 요가매트와 폼롤러">`;
+ art+=plane([[u,v,.2],[u+w,v,.2],[u+w,v+d,.2],[u,v+d,.2]],matColor);
+ art+=plane([[u,v+d,0],[u+w,v+d,0],[u+w,v+d,.2],[u,v+d,.2]],shade(matColor,-18));
+ art+=plane([[u+w,v,0],[u+w,v+d,0],[u+w,v+d,.2],[u+w,v,.2]],shade(matColor,-22));
+ for(let i=1;i<5;i++){
+  const ru=u+i*(w/5);
+  art+=line([ru,v+.08,.22],[ru,v+d-.08,.22],shade(matColor,-12),.7);
+ }
+ art+=`<g class="yoga-foam-roller" data-object="foam-roller" aria-label="스트레칭 폼롤러">`+
+  box(u+.2,v+.15,.5,d-.3,1.2,'#38bdf8',.2)+
+  line([u+.2,v+.45,1.4],[u+.7,v+.45,1.4],'#0284c7',.8)+
+  line([u+.2,v+d-.45,1.4],[u+.7,v+d-.45,1.4],'#0284c7',.8)+
+  '</g>';
+ art+=`<g class="yoga-nap-cushion" data-object="nap-cushion" aria-label="휴게 쪽잠 쿠션">`+
+  box(u+w-1.1,v+.18,.9,d-.36,1.1,'#fde68a',.2)+
+  line([u+w-1.1,v+d-.18,1.3],[u+w-.2,v+d-.18,1.3],'#fef08a',.8)+
+  '</g></g>';
+ return art;
+}
+function restNightstand(u,v,{resting=false,actual='idle'}={}){
+ let art=`<g class="rest-nightstand" data-object="bedside-nightstand" aria-label="머리맡 원목 협탁과 휴게 소품">`;
+ art+=`<g class="nightstand-floor-shadow" opacity=".18">${plane([[u+.1,v+.1,0],[u+1.4,v+.1,0],[u+1.4,v+1.4,0],[u+.1,v+1.4,0]],'#65706c')}</g>`;
+ for(const [a,b] of [[u+.1,v+.1],[u+1.2,v+.1],[u+.1,v+1.2],[u+1.2,v+1.2]])art+=box(a,b,.2,.2,13.5,'#7c624b');
+ art+=box(u+.1,v+.1,1.3,1.3,.8,'#8e7156',3.5);
+ art+=box(u+.25,v+.25,.8,.7,.5,'#334155',4.3)+front(u+.26,v+.96,4.4,.78,.4,'#e2e8f0');
+ art+=box(u+.08,v+.08,1.34,1.34,5.5,'#94785e',8.0);
+ art+=front(u+.15,v+1.44,8.8,1.2,4.0,'#836850');
+ const [knobX,knobY]=projectRoom(u+.75,v+1.46,10.8);
+ art+=`<circle cx="${knobX}" cy="${knobY}" r="0.9" fill="#d4af37"/>`;
+ art+=box(u,v,1.5,1.5,1.2,'#a6886c',13.5);
+ art+=box(u+.18,v+.2,.65,.55,.6,'#b45309',14.7)+line([u+.2,v+.76,15.1],[u+.8,v+.76,15.1],'#fef3c7',.6);
+ art+=`<g class="nightstand-mug" data-object="rest-mug" aria-label="머리맡 머그잔">`;
+ art+=box(u+.95,v+.3,.45,.45,.3,'#b49c7f',14.7);
+ art+=box(u+1.0,v+.35,.35,.35,2.0,'#f8fafc',15.0);
+ art+=front(u+1.02,v+.71,15.2,.31,1.6,'#e2e8f0');
+ art+=plane([[u+1.02,v+.37,16.9],[u+1.33,v+.37,16.9],[u+1.33,v+.68,16.9],[u+1.02,v+.68,16.9]],'#452b1e');
+ art+=line([u+1.36,v+.42,15.4],[u+1.46,v+.42,15.9],'#cbd5e1',1.0)+line([u+1.46,v+.42,15.9],[u+1.36,v+.42,16.4],'#cbd5e1',1.0);
+ const [smx1,smy1]=projectRoom(u+1.12,v+.5,17.2),[smx2,smy2]=projectRoom(u+1.05,v+.5,18.5),[smx3,smy3]=projectRoom(u+1.15,v+.5,19.8);
+ const [smx4,smy4]=projectRoom(u+1.24,v+.5,17.2),[smx5,smy5]=projectRoom(u+1.32,v+.5,18.5),[smx6,smy6]=projectRoom(u+1.22,v+.5,20.0);
+ art+=`<g class="cup-steam" aria-label="따뜻한 머그잔 김"><path d="M${smx1} ${smy1} Q${smx2} ${smy2} ${smx3} ${smy3}" fill="none" stroke="#e2e8f0" stroke-width="0.8" opacity="0.7"/><path d="M${smx4} ${smy4} Q${smx5} ${smy5} ${smx6} ${smy6}" fill="none" stroke="#e2e8f0" stroke-width="0.8" opacity="0.6"/></g></g>`;
+ art+=`<g class="nightstand-lamp" data-object="mood-lamp" aria-label="머리맡 스탠드 무드등">`;
+ art+=box(u+.35,v+.8,.5,.5,.6,'#64748b',14.7);
+ art+=box(u+.5,v+.95,.18,.18,7.0,'#d4af37',15.3);
+ art+=box(u+.45,v+.9,.28,.28,1.0,'#b48c48',22.3);
+ art+=box(u+.25,v+.7,.7,.7,4.0,resting?'#fef08a':'#fef3c7',23.3);
+ art+=front(u+.26,v+1.41,23.4,.68,3.8,resting?'#fde047':'#fef08a');
+ art+=box(u+.52,v+.97,.14,.14,.6,'#d4af37',27.3)+'</g>';
+ if(resting){
+  const [lx,ly]=projectRoom(u+.6,v+1.05,25.0);
+  art+=`<g class="rest-lamp-lighting" aria-label="따뜻한 스탠드 무드등 조명"><circle cx="${lx}" cy="${ly}" r="5" fill="#fef08a" opacity="0.55"/><circle cx="${lx}" cy="${ly}" r="2.5" fill="#fffbeb" opacity="0.85"/>`+
+   plane([[u+.1,v+.4,14.8],[u+1.4,v+.4,14.8],[u+1.4,v+1.4,14.8],[u+.1,v+1.4,14.8]],'#fef08a').replace('fill="#fef08a"','fill="#fef08a" opacity="0.32"')+
+   plane([[u-.5,v-.5,0.05],[u+3.5,v-.5,0.05],[u+3.5,v+3.5,0.05],[u-.5,v+3.5,0.05]],'#fef9c3').replace('fill="#fef9c3"','fill="#fef9c3" opacity="0.22"')+
+   front(u-.3,0.18,10,4.0,22,'#fef9c3').replace('fill="#fef9c3"','fill="#fef9c3" opacity="0.18"')+
+   '</g>';
+ }
+ return art+'</g>';
 }
 function printer(u,v,z=0){return box(u,v,2.6,2,8,'#bac5c6',z)+box(u+.3,v+.1,2,1.4,2,'#dee2db',z+8)+front(u+.4,v+2.04,z+2,1.9,1.3,'#71868d')+box(u+.5,v-.1,1.8,.8,1,'#f8f4e8',z+10);}
 function kettle(u,v,z=0){return box(u,v,1.2,1.2,1,'#8a9b9c',z)+box(u+.2,v+.2,.8,.8,8,'#e9e3d3',z+1)+box(u+.3,v+.3,.6,.6,1,'#96a4a3',z+9)+line([u+1,v+.5,z+3],[u+1.6,v+.5,z+4],'#829996',2)+line([u+1.6,v+.5,z+4],[u+1.6,v+.5,z+8],'#829996',2);}
@@ -397,11 +511,17 @@ function miniRoomArtSource(state,kind,result,index,{idle=false,stock='balanced',
  // Keep each seat and its occupant together. Sorting by the chair's far
  // corner alone used to paint the backrest over the student's face.
  const [cotU,cotV]=ROOM_ANCHORS.cot,sofa=sofaParts(...ROOM_ANCHORS.sofa),sofaSeat=sofa.geometry.occupant;
+ const nightstandPos=[cotU-1.6,cotV-1.8];
+ if(d.restType===1||resting)add(nightstandPos[0],nightstandPos[1],1.4,1.4,restNightstand(nightstandPos[0],nightstandPos[1],{resting,actual:result.actual}));
  const restSeats=[[sofaSeat.u,sofaSeat.v,sofaSeat.lift],[cotU+4,cotV+1.5,7],[24.1,7.5,1],[23.5,6.5,2]];
  const seat=restSeats[d.restType],restActor=resting&&student?actor(state,result,index,seat[0],seat[1],false,seat[2]):'';
+ const cotLapDrape=(resting&&student&&d.restType===1)?`<g class="cot-lap-drape" aria-label="포근한 무릎 담요 주름">${box(cotU+3.2,cotV+.8,2.2,1.9,1.4,'#b2c5bb',18.5)}${line([cotU+3.2,cotV+2.7,19.9],[cotU+5.4,cotV+2.7,19.9],'#cdded5',1.0)}${line([cotU+3.6,cotV+1.1,19.9],[cotU+4.7,cotV+2.6,19.9],'#9eb3a7',1.0)}</g>`:'';
  const restPlacement=d.restType===0?[...ROOM_ANCHORS.sofa,sofa.geometry.width,sofa.geometry.depth]:d.restType===1?[cotU,cotV,7,3]:[22,5,4,8];
- const restArt=d.restType===0?`<g data-rest="sofa" data-layer-order="sofa-rear student near-arm">${sofa.back}${restActor}${sofa.front}</g>`:restFurniture(restPlacement[0],restPlacement[1],d.restType)+restActor;
+ const restArt=d.restType===0?`<g data-rest="sofa" data-layer-order="sofa-rear student near-arm">${sofa.back}${restActor}${sofa.front}</g>`:restFurniture(restPlacement[0],restPlacement[1],d.restType)+restActor+cotLapDrape;
  add(...restPlacement,`<g class="rest-seat-layer" data-seat-type="${d.restType}">${restArt}</g>`);
+ if(resting){
+  add(18,1,0,0,`<g class="rest-scene-atmosphere" data-rest-ambience="warm-glow" aria-label="따뜻하고 나른한 휴식 분위기 조명">${plane([[18,3,.06],[28,3,.06],[28,11,.06],[18,11,.06]],'#fef08a').replace('fill="#fef08a"','fill="#fef08a" opacity=".14"')}${left(.285,8.6,36,9.8,40,'#fef08a').replace('fill="#fef08a"','fill="#fef08a" opacity=".12"')}<rect width="600" height="360" fill="#fef3c7" opacity=".05" class="rest-warm-tint" pointer-events="none"/></g>`);
+ }
  if(d.cot&&d.restType!==1)add(...ROOM_ANCHORS.spareCot,7,3,cot(...ROOM_ANCHORS.spareCot));
  if(d.printer)add(15,1,3.5,3,desk(15,1,3.5,3)+printer(15.5,1.7,26));
  const working=!idle&&['study','coursework','analysis','language','experiment','paper','free'].includes(result.actual),deskWorking=working&&!(result.actual==='experiment'&&wet)&&result.outcome!=='training';
@@ -453,5 +573,5 @@ function miniRoomArtSource(state,kind,result,index,{idle=false,stock='balanced',
  return `<svg class="pixel-room-art mini-room-art" viewBox="0 0 600 360" role="img" aria-label="도트로 표현한 작은 ${wet?'Wet':'Dry'} lab 연구실" preserveAspectRatio="xMidYMid meet" data-wallpaper="${d.wallpaper}" data-floor-tile="${d.floor}" data-equipment-profile="${equipment.kind}" data-field-kit="${equipment.specialty}" data-season="${labSeason(state,{idle})}"><g shape-rendering="crispEdges">${art}</g></svg>`;
 }
 
-const ROOM_ART_EN={"학술 저널과 학위논문 바인더 서가":"Academic journals and dissertation bookshelf","학위논문 하드커버 바인더 서가":"Hardcover dissertation volumes","전공 원서 및 학술 레퍼런스":"Textbooks and academic references","알록달록한 학술 저널 컬렉션":"Academic journal collection","건식 랩 서버 랙과 실시간 LED 인디케이터":"Dry-lab server rack and status LEDs","실시간 LED 인디케이터":"Server status LEDs","캡슐 커피 머신":"Capsule coffee machine","연구실 탕비 간식 박스":"Break-area snack basket","책상 밑 멀티탭 전선 정리함":"Under-desk cable organizer","연구원 가방 걸이와 백팩":"Bag hook and backpack","연구실 페이퍼 바스켓 휴지통":"Paper wastebasket","칠판 하단 트레이의 분필과 지우개":"Board tray with chalk and eraser","연구 일정 벽걸이 달력":"Research calendar","포스트잇과 자석 핀 메모":"Sticky notes and magnetic memo pins","습식 랩 플라스크 건조대와 시약 선반":"Wet-lab flask drying rack and reagent shelf","작은 동물 인형 더미와 인형 피라미드":"Stacked animal plush toys","하얀 찹쌀떡 고양이 인형":"White cat plush toy","갈색 아기 곰 인형":"Brown bear plush toy","쫑긋한 귀의 분홍 토끼 인형":"Pink rabbit plush toy","민트 개구리 마스코트 인형":"Mint frog plush toy","샛노란 병아리 인형":"Yellow chick plush toy","학회 우수논문상 상장":"Conference best-paper award certificate","연구재단 우수연구 표창장":"Research foundation citation","학술대회 최우수 발표상 상장":"Conference presentation award certificate","학술연구 혁신 표창장":"Research innovation certificate","학위논문 초안 및 연구 바인더":"Dissertation draft and research binder","학술대회 Best Paper Award 크리스털 기념패":"Conference best-paper crystal plaque","연구 우승 팻말 및 챔피언십 기념패":"Research achievement plaque","따뜻한 스탠드 조명 빛":"Warm desk lamp light","원경 산 능선 및 지평선 층운":"Distant mountain ridge and clouds","원경 원근 파티클":"Distant seasonal particles","중경 캠퍼스 시계탑과 연구동":"Campus clock tower and research building","캠퍼스 본관 시계탑 건물":"Campus clock tower","아치형 창문의 연구동 건물 실루엣":"Research building with arched windows","캠퍼스 중경 가로수":"Campus trees","근경 가로수 및 창틀 디테일":"Nearby trees and window frame","창틀 그림자":"Window frame shading","흩날리는 벚꽃 꽃잎 다층 픽셀":"Cherry blossom petals at different depths","여름 소나기 빗살 픽셀":"Summer rain","가을 단풍과 은행잎 픽셀":"Autumn maple and ginkgo leaves","펄펄 날리는 입체 함박눈 픽셀":"Winter snowflakes","흩날리는 벚꽃 꽃잎 픽셀":"Cherry blossom petals","뭉게구름 픽셀":"Summer clouds","낙엽 픽셀":"Autumn leaves","내리는 픽셀 눈송이":"Winter snowflakes","창밖 봄 풍경":"Spring outside the window","창밖 여름 풍경":"Summer outside the window","창밖 가을 풍경":"Autumn outside the window","창밖 겨울 풍경":"Winter outside the window"};
+const ROOM_ART_EN={"학술 저널과 학위논문 바인더 서가":"Academic journals and dissertation bookshelf","학위논문 하드커버 바인더 서가":"Hardcover dissertation volumes","전공 원서 및 학술 레퍼런스":"Textbooks and academic references","알록달록한 학술 저널 컬렉션":"Academic journal collection","건식 랩 서버 랙과 실시간 LED 인디케이터":"Dry-lab server rack and status LEDs","실시간 LED 인디케이터":"Server status LEDs","캡슐 커피 머신":"Capsule coffee machine","연구실 탕비 간식 박스":"Break-area snack basket","책상 밑 멀티탭 전선 정리함":"Under-desk cable organizer","연구원 가방 걸이와 백팩":"Bag hook and backpack","연구실 페이퍼 바스켓 휴지통":"Paper wastebasket","칠판 하단 트레이의 분필과 지우개":"Board tray with chalk and eraser","연구 일정 벽걸이 달력":"Research calendar","포스트잇과 자석 핀 메모":"Sticky notes and magnetic memo pins","습식 랩 플라스크 건조대와 시약 선반":"Wet-lab flask drying rack and reagent shelf","작은 동물 인형 더미와 인형 피라미드":"Stacked animal plush toys","하얀 찹쌀떡 고양이 인형":"White cat plush toy","갈색 아기 곰 인형":"Brown bear plush toy","쫑긋한 귀의 분홍 토끼 인형":"Pink rabbit plush toy","민트 개구리 마스코트 인형":"Mint frog plush toy","샛노란 병아리 인형":"Yellow chick plush toy","학회 우수논문상 상장":"Conference best-paper award certificate","연구재단 우수연구 표창장":"Research foundation citation","학술대회 최우수 발표상 상장":"Conference presentation award certificate","학술연구 혁신 표창장":"Research innovation certificate","학위논문 초안 및 연구 바인더":"Dissertation draft and research binder","학술대회 Best Paper Award 크리스털 기념패":"Conference best-paper crystal plaque","연구 우승 팻말 및 챔피언십 기념패":"Research achievement plaque","따뜻한 스탠드 조명 빛":"Warm desk lamp light","원경 산 능선 및 지평선 층운":"Distant mountain ridge and clouds","원경 원근 파티클":"Distant seasonal particles","중경 캠퍼스 시계탑과 연구동":"Campus clock tower and research building","캠퍼스 본관 시계탑 건물":"Campus clock tower","아치형 창문의 연구동 건물 실루엣":"Research building with arched windows","캠퍼스 중경 가로수":"Campus trees","근경 가로수 및 창틀 디테일":"Nearby trees and window frame","창틀 그림자":"Window frame shading","흩날리는 벚꽃 꽃잎 다층 픽셀":"Cherry blossom petals at different depths","여름 소나기 빗살 픽셀":"Summer rain","가을 단풍과 은행잎 픽셀":"Autumn maple and ginkgo leaves","펄펄 날리는 입체 함박눈 픽셀":"Winter snowflakes","흩날리는 벚꽃 꽃잎 픽셀":"Cherry blossom petals","뭉게구름 픽셀":"Summer clouds","낙엽 픽셀":"Autumn leaves","내리는 픽셀 눈송이":"Winter snowflakes","창밖 봄 풍경":"Spring outside the window","창밖 여름 풍경":"Summer outside the window","창밖 가을 풍경":"Autumn outside the window","창밖 겨울 풍경":"Winter outside the window","머리맡 원목 협탁과 휴게 소품":"Bedside nightstand and rest accessories","머리맡 머그잔":"Bedside mug","따뜻한 머그잔 김":"Warm mug steam","머리맡 스탠드 무드등":"Bedside mood lamp","따뜻한 스탠드 무드등 조명":"Warm mood lamp light","포근한 무릎 담요 주름":"Cozy lap blanket folds","따뜻하고 나른한 휴식 분위기 조명":"Warm and relaxing rest lighting atmosphere","스트레칭 폼 요가매트와 폼롤러":"Stretching foam yoga mat and foam roller","스트레칭 폼 요가매트":"Stretching foam yoga mat","스트레칭 폼롤러":"Stretching foam roller","휴게 쪽잠 쿠션":"Low rest nap cushion","라꾸라꾸 침대":"Folding cot","간이침대":"Camp cot","낚시침대":"Fishing cot"};
 export function miniRoomArt(state,...args){const art=miniRoomArtSource(state,...args),localized=state.locale==='en'?art.replace(/aria-label="([^"]*)"/g,(_,label)=>`aria-label="${ROOM_ART_EN[label]??(label.endsWith(' 연구실 현판')?label.replace(' 연구실 현판',' lab plaque'):label)}"`):art;return state.locale==='en'?localizeArtworkLabels(localized).replace(/aria-label="([^"]*)"/g,(_,label)=>`aria-label="${CONTENT_EN[label]??(label.endsWith(' 화분')?`${CONTENT_EN[label.slice(0,-3)]??'Indoor plant'} pot`:label.startsWith('도트로 표현한 작은')?'Pixel-art research laboratory':label)}"`):art;}
