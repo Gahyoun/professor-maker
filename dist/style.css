@@ -328,3 +328,7 @@ html{scroll-behavior:smooth;scroll-padding-top:var(--lab-scroll-offset,20px)}bod
 @media(max-width:650px){.student-voice{grid-template-columns:48px minmax(0,1fr);gap:8px 12px;padding:12px!important}.student-voice .voice-character{width:48px}}
 
 .proposal .rest-request{color:#547264;font-size:12px;line-height:1.65;margin-top:6px;}
+
+.telemetry-choice .telemetry-status,.telemetry-choice .analytics-transport-detail{overflow-wrap:anywhere;line-height:1.6;margin:8px 0}
+.telemetry-choice .analytics-retry{position:static;max-width:100%;min-height:44px;white-space:normal;margin-top:4px}
+.telemetry-choice .analytics-retry[hidden]{display:none}
